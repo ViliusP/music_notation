@@ -4,18 +4,23 @@ version: 0.0.1
 homepage: https://todo.com
 
 environment:
-  sdk: '>=2.19.3 <3.0.0'
-  flutter: ">=1.17.0"
+  sdk: '>=2.17.0 <3.0.0'
+  flutter: ">=3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
+
+  xml: ^6.2.0
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
   flutter_lints: ^2.0.0
+
+  xml_serializable: ^2.2.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
