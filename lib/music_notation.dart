@@ -1,7 +1,4 @@
 library music_notation;
 
-/// A Calculator.
-class Calculator {
-  /// Returns [value] plus 1.
-  int addOne(int value) => value + 1;
-}
+export '/musicxml_parser/musicxml_parser.dart';
+export '/notation_painter/notation_painter.dart';
