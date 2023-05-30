@@ -3,6 +3,9 @@
 import 'dart:io';
 import 'dart:async';
 
+import 'package:cli/xsd_to_dart.dart';
+import 'package:xml/xml.dart';
+
 const schemaFiles = [
   "timepart.xsl",
   "xml.xsd",
@@ -40,12 +43,13 @@ const schemaFiles = [
 ];
 
 const repo = "https://raw.githubusercontent.com/w3c/musicxml/gh-pages/schema/";
+const metaFilename = "meta.txt";
 
 Future recordDate() async {
   String formattedDate = DateTime.now().toIso8601String();
 
   String filePath =
-      './tools/raw_schemas/meta.txt'; // Replace with your desired file path
+      './tools/raw_schemas/$metaFilename'; // Replace with your desired file path
 
   File file = File(filePath);
   await file.writeAsString("Downloaded at\n", mode: FileMode.writeOnly);
@@ -63,13 +67,13 @@ Future download(String link, String name) {
           response.pipe(File(name).openWrite())));
 }
 
-
 /// Checks if a folder contains only the provided files.
 ///
 /// Returns `true` if the folder contains only the provided files, otherwise `false`.
 bool checkFolderForOnlyFiles(String folderPath, List<String> files) {
   Directory directory = Directory(folderPath);
-  List<String> folderFiles = directory.listSync()
+  List<String> folderFiles = directory
+      .listSync()
       .whereType<File>()
       .map((entity) => entity.path.split('/').last)
       .toList();
@@ -104,15 +108,30 @@ void clearFolder(String folderPath) {
   }
 }
 
+Future generateCode(
+    {required String destination, required String filePath}) async {
+  final content = File(filePath).readAsStringSync();
+
+  final document = XmlDocument.parse(content);
+
+  XsdToDart generator = XsdToDart(document: document);
+
+  final code = await generator.generateCode();
+
+  final outputFilePath = '$destination/generated_classes.dart';
+  File(outputFilePath).writeAsStringSync(code);
+
+  print('Dart classes generated successfully at: $outputFilePath');
+}
 
 main(List<String> arguments) async {
   const schemaFolder = './tools/raw_schemas';
 
   // Check if the folder contains all the required files
-  bool hasAllFiles = checkFolderForOnlyFiles(schemaFolder, schemaFiles);
+  bool hasAllFiles =
+      checkFolderForOnlyFiles(schemaFolder, [...schemaFiles, metaFilename]);
 
   if (arguments.contains("force-read") || !hasAllFiles) {
-
     print("Clearing existing files");
 
     clearFolder(schemaFolder);
@@ -134,11 +153,10 @@ main(List<String> arguments) async {
   //   dest: './lib/material_design_icons_flutter.dart',
   //   info: info,
   // );
-  // await generateCode(
-  //   template: './tool/icon_map.dart.template',
-  //   dest: './lib/icon_map.dart',
-  //   info: info,
-  // );
+  await generateCode(
+    destination: './lib/models',
+    filePath: "$schemaFolder/musicxml.xsd",
+  );
   // File('./tool/materialdesignicons-webfont.ttf')
   //     .renameSync('./lib/fonts/materialdesignicons-webfont.ttf');
   // File('./tool/_variables.scss').deleteSync();

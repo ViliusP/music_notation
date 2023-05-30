@@ -1,0 +1,26 @@
+class {{ type.name }} {
+  {% if type.base != '' %}
+  {{ type.base }} _value;
+
+  {{ type.base }} get value => _value;
+
+  set value({{ type.base }} value) {
+    // add any necessary validation here
+    _value = value;
+  }
+
+  {{ type.name }}({{ type.base }} value) {
+    this.value = value;
+  }
+  {% else %}
+  {% for field in type.fields %}
+  {{ field.type }}? {{ field.name }};
+  {% endfor %}
+  
+  {{ type.name }}({
+    {% for field in type.fields %}
+    this.{{ field.name }},
+    {% endfor %}
+  });
+  {% endif %}
+}
