@@ -1,5 +1,7 @@
 import 'package:collection/collection.dart';
+import 'package:intl/intl.dart';
 import 'package:music_notation/models/generic.dart';
+import 'package:music_notation/models/invalid_xml_element_exception.dart';
 import 'package:xml/xml.dart';
 
 /// Identification contains basic metadata about the score.
@@ -91,7 +93,11 @@ class Identification {
 /// The type attribute is only needed when there are multiple encoder elements
 class Encoding {
   String? software;
-  String? encodingDate;
+
+  /// Date format: yyyy-mm-dd
+  DateTime? encodingDate;
+  static final DateFormat _encodingDateFormat = DateFormat('yyyy-MM-dd');
+
   List<Support> supports;
 
   Encoding(
@@ -102,7 +108,7 @@ class Encoding {
 
   factory Encoding.fromXml(XmlElement xmlElement) {
     String? software;
-    String? encodingDate;
+    DateTime? encodingDate;
     List<Support> supports = [];
 
     for (var element in xmlElement.children.whereType<XmlElement>()) {
@@ -111,7 +117,15 @@ class Encoding {
           software = element.text;
           break;
         case 'encoding-date':
-          encodingDate = element.text;
+          String encodingDateText = element.text;
+          try {
+            encodingDate = _encodingDateFormat.parseStrict(encodingDateText);
+          } catch (e) {
+            throw InvalidXmlElementException(
+              "Attribute 'encoding-date' is not a valid DateTime: $encodingDateText",
+              xmlElement,
+            );
+          }
           break;
         case 'supports':
           supports.add(Support.fromXml(element));
@@ -140,7 +154,7 @@ class Support {
   /// Required, type - NMTOKEN.
   String element;
 
-  /// type -NMTOKEN.
+  /// type - NMTOKEN.
   String? attribute;
 
   String? value;
@@ -167,27 +181,35 @@ class Support {
     var mappedType = _typeMap[type];
 
     if (mappedType == null) {
-      // TODO: better error
-      throw "Error";
+      throw InvalidXmlElementException(
+        "Invalid or missing 'type' attribute",
+        xmlElement,
+      );
     }
 
     var element = xmlElement.getAttribute('element');
 
     if (element == null) {
-      // TODO: better error
-      throw "Error";
+      throw InvalidXmlElementException(
+        "Invalid or missing 'element' attribute",
+        xmlElement,
+      );
     }
 
     if (!Nmtoken.validate(element)) {
-      // TODO: better error
-      throw "Not NMTOKEN: $element";
+      throw InvalidXmlElementException(
+        "Attribute 'element' is not a valid NMTOKEN: $element",
+        xmlElement,
+      );
     }
 
     var attribute = xmlElement.getAttribute('attribute');
 
-    if (attribute != null && Nmtoken.validate(attribute)) {
-      // TODO: better error
-      throw "Not NMTOKEN: $attribute";
+    if (attribute != null && !Nmtoken.validate(attribute)) {
+      throw InvalidXmlElementException(
+        "Attribute 'attribute' is not a valid NMTOKEN: $attribute",
+        xmlElement,
+      );
     }
 
     return Support(
@@ -210,28 +232,18 @@ class MiscellaneousField {
   MiscellaneousField({required this.value, required this.name});
 
   factory MiscellaneousField.fromXml(XmlElement xmlElement) {
-    // TODO: name required;
+    var name = xmlElement.getAttribute('name');
+
+    if (name != null) {
+      throw InvalidXmlElementException(
+        "Invalid or missing 'name' attribute",
+        xmlElement,
+      );
+    }
 
     return MiscellaneousField(
       value: xmlElement.text,
-      name: xmlElement.getAttribute('name')!,
+      name: name!,
     );
   }
 }
-
-// class Miscellaneous {
-//   final List<MiscellaneousField> fields;
-
-//   Miscellaneous({required this.fields});
-
-//   factory Miscellaneous.fromXml(XmlElement xmlElement) {
-//     var fields = xmlElement
-//         .findElements('miscellaneous-field')
-//         .map((element) => MiscellaneousField.fromXml(element))
-//         .toList();
-
-//     return Miscellaneous(
-//       fields: fields,
-//     );
-//   }
-// }

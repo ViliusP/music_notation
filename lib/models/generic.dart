@@ -15,6 +15,9 @@ class TypedText {
   }
 }
 
+/// The lexical and value spaces of xs:NMTOKEN are the set of XML 1.0 “name tokens,” i.e.,
+/// tokens composed of characters, digits, “.”, “:”, “-”,
+/// and the characters defined by Unicode, such as “combining” or “extender”.
 class Nmtoken {
   /// Checks if provided [value] is valid NMTOKEN.
   ///
