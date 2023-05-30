@@ -2526,7 +2526,7 @@ The placement attribute is used when the dynamics are associated with a note. It
 		<xs:annotation>
 			<xs:documentation>The empty-print-style-align-id type represents an empty element with print-style-align and optional-unique-id attribute groups.</xs:documentation>
 		</xs:annotation>
-		<xs:attributeGroup ref="print-style-align"/>
+		<xs:attributeGroup ref=""/>
 		<xs:attributeGroup ref="optional-unique-id"/>
 	</xs:complexType>
 

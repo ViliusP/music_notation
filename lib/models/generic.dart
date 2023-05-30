@@ -30,3 +30,14 @@ class Nmtoken {
     return true;
   }
 }
+
+/// The rotation-degrees type specifies rotation, pan, and elevation values in degrees. Values range from -180 to 180.
+class RotationDegrees {
+  /// Return true if [value] is between -180 (inclusive) and 180 (inclusive).
+  static bool validate(double value) {
+    if (value >= -180 && value <= 180) {
+      return true;
+    }
+    return false;
+  }
+}
