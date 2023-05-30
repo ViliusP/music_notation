@@ -1,4 +1,4 @@
-import 'package:music_notation/models/manually_created/score_part.dart';
+import 'package:music_notation/models/score_part.dart';
 
 class PartList {
   ScorePart? scorePart;

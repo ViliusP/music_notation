@@ -1,4 +1,4 @@
-import 'package:music_notation/models/manually_created/score.dart';
+import 'package:music_notation/models/score.dart';
 
 /// The score-partwise element is the root element for a partwise MusicXML score.
 /// It includes a score-header group followed by a series of parts with measures inside.

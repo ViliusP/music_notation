@@ -1,5 +1,4 @@
-import 'package:music_notation/models/manually_created/identification.dart';
-import 'package:xml/xml.dart';
+import 'package:music_notation/models/identification.dart';
 
 /// The score-part type collects part-wide information for each part in a score.
 ///
@@ -47,20 +46,3 @@ class ScorePart {
 
   ScorePart({this.id, this.partName});
 }
-
-/// The typed-text type represents a text element with a type attribute.
-class TypedText {
-  String value;
-  String type;
-
-  TypedText({required this.value, required this.type});
-
-  factory TypedText.fromXml(XmlElement xmlElement) {
-    return TypedText(
-      value: xmlElement.text,
-      type: xmlElement.getAttribute('type') ?? '',
-    );
-  }
-}
-
-class Miscellaneous {}

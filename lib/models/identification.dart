@@ -1,8 +1,6 @@
 import 'package:collection/collection.dart';
-import 'package:music_notation/models/manually_created/nmtoken.dart';
+import 'package:music_notation/models/generic.dart';
 import 'package:xml/xml.dart';
-
-import 'package:music_notation/models/manually_created/score_part.dart';
 
 /// Identification contains basic metadata about the score.
 ///
