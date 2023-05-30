@@ -13,6 +13,8 @@ dependencies:
 
   xml: ^6.2.0
 
+  collection: ^1.17.0
+
 
 dev_dependencies:
   flutter_test:
