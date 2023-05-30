@@ -1,3 +1,6 @@
+/// The mode type is used to specify major/minor and other mode distinctions. Valid
+/// mode values include major, minor, dorian, phrygian, lydian, mixolydian, aeolian,
+/// ionian, locrian, and none.
 class Mode {
   String _value;
 
@@ -8,8 +11,6 @@ class Mode {
     _value = value;
   }
 
-  Mode(String value) {
-    this.value = value;
-  }
+  Mode(this._value);
 
 }

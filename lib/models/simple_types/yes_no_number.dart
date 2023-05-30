@@ -1,3 +1,5 @@
+/// The yes-no-number type is used for attributes that can be either boolean or
+/// numeric values.
 class YesNoNumber {
    _value;
 
@@ -8,8 +10,6 @@ class YesNoNumber {
     _value = value;
   }
 
-  YesNoNumber( value) {
-    this.value = value;
-  }
+  YesNoNumber(this._value);
 
 }

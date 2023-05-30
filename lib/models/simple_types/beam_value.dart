@@ -1,3 +1,5 @@
+/// The beam-value type represents the type of beam associated with each of 8 beam
+/// levels (up to 1024th notes) available for each note.
 class BeamValue {
   String _value;
 
@@ -8,8 +10,6 @@ class BeamValue {
     _value = value;
   }
 
-  BeamValue(String value) {
-    this.value = value;
-  }
+  BeamValue(this._value);
 
 }

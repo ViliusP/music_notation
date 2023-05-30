@@ -1,3 +1,4 @@
+/// The stem-value type represents the notated stem direction.
 class StemValue {
   String _value;
 
@@ -8,8 +9,6 @@ class StemValue {
     _value = value;
   }
 
-  StemValue(String value) {
-    this.value = value;
-  }
+  StemValue(this._value);
 
 }

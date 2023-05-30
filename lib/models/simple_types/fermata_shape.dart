@@ -1,3 +1,5 @@
+/// The fermata-shape type represents the shape of the fermata sign. The empty value
+/// is equivalent to the normal value.
 class FermataShape {
   String _value;
 
@@ -8,8 +10,6 @@ class FermataShape {
     _value = value;
   }
 
-  FermataShape(String value) {
-    this.value = value;
-  }
+  FermataShape(this._value);
 
 }

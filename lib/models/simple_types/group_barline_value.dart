@@ -1,3 +1,4 @@
+/// The group-barline-value type indicates if the group should have common barlines.
 class GroupBarlineValue {
   String _value;
 
@@ -8,8 +9,6 @@ class GroupBarlineValue {
     _value = value;
   }
 
-  GroupBarlineValue(String value) {
-    this.value = value;
-  }
+  GroupBarlineValue(this._value);
 
 }

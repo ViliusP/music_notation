@@ -1,3 +1,5 @@
+/// The number-of-lines type is used to specify the number of lines in text
+/// decoration attributes.
 class NumberOfLines {
   int _value;
 
@@ -8,8 +10,6 @@ class NumberOfLines {
     _value = value;
   }
 
-  NumberOfLines(int value) {
-    this.value = value;
-  }
+  NumberOfLines(this._value);
 
 }

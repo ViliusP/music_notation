@@ -1,3 +1,4 @@
+/// The caesura-value type represents the shape of the caesura sign.
 class CaesuraValue {
   String _value;
 
@@ -8,8 +9,6 @@ class CaesuraValue {
     _value = value;
   }
 
-  CaesuraValue(String value) {
-    this.value = value;
-  }
+  CaesuraValue(this._value);
 
 }

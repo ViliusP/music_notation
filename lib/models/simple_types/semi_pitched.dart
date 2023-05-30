@@ -1,3 +1,5 @@
+/// The semi-pitched type represents categories of indefinite pitch for percussion
+/// instruments.
 class SemiPitched {
   String _value;
 
@@ -8,8 +10,6 @@ class SemiPitched {
     _value = value;
   }
 
-  SemiPitched(String value) {
-    this.value = value;
-  }
+  SemiPitched(this._value);
 
 }

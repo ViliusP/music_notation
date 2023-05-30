@@ -1,3 +1,6 @@
+/// The effect-value type represents pictograms for sound effect percussion
+/// instruments. The cannon, lotus flute, and megaphone values are in addition to
+/// Stone's list.
 class EffectValue {
   String _value;
 
@@ -8,8 +11,6 @@ class EffectValue {
     _value = value;
   }
 
-  EffectValue(String value) {
-    this.value = value;
-  }
+  EffectValue(this._value);
 
 }

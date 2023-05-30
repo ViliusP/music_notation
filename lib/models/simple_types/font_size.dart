@@ -1,3 +1,5 @@
+/// The font-size can be one of the CSS font sizes (xx-small, x-small, small,
+/// medium, large, x-large, xx-large) or a numeric point size.
 class FontSize {
    _value;
 
@@ -8,8 +10,6 @@ class FontSize {
     _value = value;
   }
 
-  FontSize( value) {
-    this.value = value;
-  }
+  FontSize(this._value);
 
 }

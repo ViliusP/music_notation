@@ -1,3 +1,6 @@
+/// Lyric hyphenation is indicated by the syllabic type. The single, begin, end, and
+/// middle values represent single-syllable words, word-beginning syllables,
+/// word-ending syllables, and mid-word syllables, respectively.
 class Syllabic {
   String _value;
 
@@ -8,8 +11,6 @@ class Syllabic {
     _value = value;
   }
 
-  Syllabic(String value) {
-    this.value = value;
-  }
+  Syllabic(this._value);
 
 }

@@ -1,3 +1,5 @@
+/// The hole-closed-value type represents whether the hole is closed, open, or
+/// half-open.
 class HoleClosedValue {
   String _value;
 
@@ -8,8 +10,6 @@ class HoleClosedValue {
     _value = value;
   }
 
-  HoleClosedValue(String value) {
-    this.value = value;
-  }
+  HoleClosedValue(this._value);
 
 }

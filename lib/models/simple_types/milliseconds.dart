@@ -1,3 +1,4 @@
+/// The milliseconds type represents an integral number of milliseconds.
 class Milliseconds {
   int _value;
 
@@ -8,8 +9,6 @@ class Milliseconds {
     _value = value;
   }
 
-  Milliseconds(int value) {
-    this.value = value;
-  }
+  Milliseconds(this._value);
 
 }

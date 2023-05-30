@@ -1,3 +1,6 @@
+/// The wood-value type represents pictograms for wood percussion instruments. The
+/// maraca and maracas values distinguish the one- and two-maraca versions of the
+/// pictogram.
 class WoodValue {
   String _value;
 
@@ -8,8 +11,6 @@ class WoodValue {
     _value = value;
   }
 
-  WoodValue(String value) {
-    this.value = value;
-  }
+  WoodValue(this._value);
 
 }

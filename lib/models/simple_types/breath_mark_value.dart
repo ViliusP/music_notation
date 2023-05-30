@@ -1,3 +1,4 @@
+/// The breath-mark-value type represents the symbol used for a breath mark.
 class BreathMarkValue {
   String _value;
 
@@ -8,8 +9,6 @@ class BreathMarkValue {
     _value = value;
   }
 
-  BreathMarkValue(String value) {
-    this.value = value;
-  }
+  BreathMarkValue(this._value);
 
 }

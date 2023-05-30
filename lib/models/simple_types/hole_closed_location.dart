@@ -1,3 +1,5 @@
+/// The hole-closed-location type indicates which portion of the hole is filled in
+/// when the corresponding hole-closed-value is half.
 class HoleClosedLocation {
   String _value;
 
@@ -8,8 +10,6 @@ class HoleClosedLocation {
     _value = value;
   }
 
-  HoleClosedLocation(String value) {
-    this.value = value;
-  }
+  HoleClosedLocation(this._value);
 
 }

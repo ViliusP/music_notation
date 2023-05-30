@@ -1,3 +1,4 @@
+/// The percent type specifies a percentage from 0 to 100.
 class Percent {
   double _value;
 
@@ -8,8 +9,6 @@ class Percent {
     _value = value;
   }
 
-  Percent(double value) {
-    this.value = value;
-  }
+  Percent(this._value);
 
 }

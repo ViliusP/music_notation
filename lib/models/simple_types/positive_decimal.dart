@@ -1,3 +1,4 @@
+/// The positive-decimal type specifies a positive decimal value.
 class PositiveDecimal {
   double _value;
 
@@ -8,8 +9,6 @@ class PositiveDecimal {
     _value = value;
   }
 
-  PositiveDecimal(double value) {
-    this.value = value;
-  }
+  PositiveDecimal(this._value);
 
 }

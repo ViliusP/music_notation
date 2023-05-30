@@ -1,3 +1,5 @@
+/// The membrane-value type represents pictograms for membrane percussion
+/// instruments.
 class MembraneValue {
   String _value;
 
@@ -8,8 +10,6 @@ class MembraneValue {
     _value = value;
   }
 
-  MembraneValue(String value) {
-    this.value = value;
-  }
+  MembraneValue(this._value);
 
 }

@@ -1,3 +1,5 @@
+/// The number of tremolo marks is represented by a number from 0 to 8: the same as
+/// beam-level with 0 added.
 class TremoloMarks {
   int _value;
 
@@ -8,8 +10,6 @@ class TremoloMarks {
     _value = value;
   }
 
-  TremoloMarks(int value) {
-    this.value = value;
-  }
+  TremoloMarks(this._value);
 
 }

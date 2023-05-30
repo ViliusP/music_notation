@@ -1,3 +1,6 @@
+/// The metal-value type represents pictograms for metal percussion instruments. The
+/// hi-hat value refers to a pictogram like Stone's high-hat cymbals but without the
+/// long vertical line at the bottom.
 class MetalValue {
   String _value;
 
@@ -8,8 +11,6 @@ class MetalValue {
     _value = value;
   }
 
-  MetalValue(String value) {
-    this.value = value;
-  }
+  MetalValue(this._value);
 
 }

@@ -1,3 +1,5 @@
+/// The numeral-value type represents a Roman numeral or Nashville number value as a
+/// positive integer from 1 to 7.
 class NumeralValue {
   int _value;
 
@@ -8,8 +10,6 @@ class NumeralValue {
     _value = value;
   }
 
-  NumeralValue(int value) {
-    this.value = value;
-  }
+  NumeralValue(this._value);
 
 }

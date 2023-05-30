@@ -1,3 +1,5 @@
+/// The harmon-closed-location type indicates which portion of the symbol is filled
+/// in when the corresponding harmon-closed-value is half.
 class HarmonClosedLocation {
   String _value;
 
@@ -8,8 +10,6 @@ class HarmonClosedLocation {
     _value = value;
   }
 
-  HarmonClosedLocation(String value) {
-    this.value = value;
-  }
+  HarmonClosedLocation(this._value);
 
 }

@@ -1,3 +1,4 @@
+/// The handbell-value type represents the type of handbell technique being notated.
 class HandbellValue {
   String _value;
 
@@ -8,8 +9,6 @@ class HandbellValue {
     _value = value;
   }
 
-  HandbellValue(String value) {
-    this.value = value;
-  }
+  HandbellValue(this._value);
 
 }

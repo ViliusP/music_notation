@@ -1,3 +1,5 @@
+/// The positive-integer-or-empty values can be either a positive integer or an
+/// empty string.
 class PositiveIntegerOrEmpty {
    _value;
 
@@ -8,8 +10,6 @@ class PositiveIntegerOrEmpty {
     _value = value;
   }
 
-  PositiveIntegerOrEmpty( value) {
-    this.value = value;
-  }
+  PositiveIntegerOrEmpty(this._value);
 
 }

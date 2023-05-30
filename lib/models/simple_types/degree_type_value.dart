@@ -1,3 +1,6 @@
+/// The degree-type-value type indicates whether the current degree element is an
+/// addition, alteration, or subtraction to the kind of the current chord in the
+/// harmony element.
 class DegreeTypeValue {
   String _value;
 
@@ -8,8 +11,6 @@ class DegreeTypeValue {
     _value = value;
   }
 
-  DegreeTypeValue(String value) {
-    this.value = value;
-  }
+  DegreeTypeValue(this._value);
 
 }

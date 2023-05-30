@@ -1,3 +1,5 @@
+/// The stick-material type represents the material being displayed in a stick
+/// pictogram.
 class StickMaterial {
   String _value;
 
@@ -8,8 +10,6 @@ class StickMaterial {
     _value = value;
   }
 
-  StickMaterial(String value) {
-    this.value = value;
-  }
+  StickMaterial(this._value);
 
 }

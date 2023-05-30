@@ -1,3 +1,5 @@
+/// The harmon-closed-value type represents whether the harmon mute is closed, open,
+/// or half-open.
 class HarmonClosedValue {
   String _value;
 
@@ -8,8 +10,6 @@ class HarmonClosedValue {
     _value = value;
   }
 
-  HarmonClosedValue(String value) {
-    this.value = value;
-  }
+  HarmonClosedValue(this._value);
 
 }

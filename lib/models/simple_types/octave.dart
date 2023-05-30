@@ -1,3 +1,5 @@
+/// Octaves are represented by the numbers 0 to 9, where 4 indicates the octave
+/// started by middle C.
 class Octave {
   int _value;
 
@@ -8,8 +10,6 @@ class Octave {
     _value = value;
   }
 
-  Octave(int value) {
-    this.value = value;
-  }
+  Octave(this._value);
 
 }

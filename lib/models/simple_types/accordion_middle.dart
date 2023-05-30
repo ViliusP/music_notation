@@ -1,3 +1,6 @@
+/// The accordion-middle type may have values of 1, 2, or 3, corresponding to having
+/// 1 to 3 dots in the middle section of the accordion registration symbol. This
+/// type is not used if no dots are present.
 class AccordionMiddle {
   int _value;
 
@@ -8,8 +11,6 @@ class AccordionMiddle {
     _value = value;
   }
 
-  AccordionMiddle(int value) {
-    this.value = value;
-  }
+  AccordionMiddle(this._value);
 
 }

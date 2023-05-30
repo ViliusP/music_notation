@@ -1,3 +1,4 @@
+/// The midi-16 type is used to express MIDI 1.0 values that range from 1 to 16.
 class Midi16 {
   int _value;
 
@@ -8,8 +9,6 @@ class Midi16 {
     _value = value;
   }
 
-  Midi16(int value) {
-    this.value = value;
-  }
+  Midi16(this._value);
 
 }

@@ -1,3 +1,5 @@
+/// The millimeters type is a number representing millimeters. This is used in the
+/// scaling element to provide a default scaling from tenths to physical units.
 class Millimeters {
   double _value;
 
@@ -8,8 +10,6 @@ class Millimeters {
     _value = value;
   }
 
-  Millimeters(double value) {
-    this.value = value;
-  }
+  Millimeters(this._value);
 
 }

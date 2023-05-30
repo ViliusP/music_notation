@@ -1,3 +1,5 @@
+/// The staff-number type indicates staff numbers within a multi-staff part. Staves
+/// are numbered from top to bottom, with 1 being the top staff on a part.
 class StaffNumber {
   int _value;
 
@@ -8,8 +10,6 @@ class StaffNumber {
     _value = value;
   }
 
-  StaffNumber(int value) {
-    this.value = value;
-  }
+  StaffNumber(this._value);
 
 }

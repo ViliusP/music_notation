@@ -1,3 +1,6 @@
+/// The pitched-value type represents pictograms for pitched percussion instruments.
+/// The chimes and tubular chimes values distinguish the single-line and double-line
+/// versions of the pictogram.
 class PitchedValue {
   String _value;
 
@@ -8,8 +11,6 @@ class PitchedValue {
     _value = value;
   }
 
-  PitchedValue(String value) {
-    this.value = value;
-  }
+  PitchedValue(this._value);
 
 }

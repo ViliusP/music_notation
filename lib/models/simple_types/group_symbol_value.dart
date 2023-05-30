@@ -1,3 +1,5 @@
+/// The group-symbol-value type indicates how the symbol for a group or multi-staff
+/// part is indicated in the score.
 class GroupSymbolValue {
   String _value;
 
@@ -8,8 +10,6 @@ class GroupSymbolValue {
     _value = value;
   }
 
-  GroupSymbolValue(String value) {
-    this.value = value;
-  }
+  GroupSymbolValue(this._value);
 
 }

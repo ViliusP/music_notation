@@ -1,3 +1,6 @@
+/// The beater-value type represents pictograms for beaters, mallets, and sticks
+/// that do not have different materials represented in the pictogram. The finger
+/// and hammer values are in addition to Stone's list.
 class BeaterValue {
   String _value;
 
@@ -8,8 +11,6 @@ class BeaterValue {
     _value = value;
   }
 
-  BeaterValue(String value) {
-    this.value = value;
-  }
+  BeaterValue(this._value);
 
 }

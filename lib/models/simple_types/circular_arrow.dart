@@ -1,3 +1,5 @@
+/// The circular-arrow type represents the direction in which a circular arrow
+/// points, using Unicode arrow terminology.
 class CircularArrow {
   String _value;
 
@@ -8,8 +10,6 @@ class CircularArrow {
     _value = value;
   }
 
-  CircularArrow(String value) {
-    this.value = value;
-  }
+  CircularArrow(this._value);
 
 }

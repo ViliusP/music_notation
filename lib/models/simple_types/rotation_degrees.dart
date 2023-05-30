@@ -1,3 +1,5 @@
+/// The rotation-degrees type specifies rotation, pan, and elevation values in
+/// degrees. Values range from -180 to 180.
 class RotationDegrees {
   double _value;
 
@@ -8,8 +10,6 @@ class RotationDegrees {
     _value = value;
   }
 
-  RotationDegrees(double value) {
-    this.value = value;
-  }
+  RotationDegrees(this._value);
 
 }

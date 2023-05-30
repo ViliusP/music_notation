@@ -1,3 +1,5 @@
+/// The step type represents a step of the diatonic scale, represented using the
+/// English letters A through G.
 class Step {
   String _value;
 
@@ -8,8 +10,6 @@ class Step {
     _value = value;
   }
 
-  Step(String value) {
-    this.value = value;
-  }
+  Step(this._value);
 
 }

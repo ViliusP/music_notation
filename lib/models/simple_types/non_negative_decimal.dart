@@ -1,3 +1,4 @@
+/// The non-negative-decimal type specifies a non-negative decimal value.
 class NonNegativeDecimal {
   double _value;
 
@@ -8,8 +9,6 @@ class NonNegativeDecimal {
     _value = value;
   }
 
-  NonNegativeDecimal(double value) {
-    this.value = value;
-  }
+  NonNegativeDecimal(this._value);
 
 }

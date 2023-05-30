@@ -1,3 +1,5 @@
+/// The arrow-direction type represents the direction in which an arrow points,
+/// using Unicode arrow terminology.
 class ArrowDirection {
   String _value;
 
@@ -8,8 +10,6 @@ class ArrowDirection {
     _value = value;
   }
 
-  ArrowDirection(String value) {
-    this.value = value;
-  }
+  ArrowDirection(this._value);
 
 }

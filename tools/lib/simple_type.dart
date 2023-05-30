@@ -23,12 +23,18 @@ class SimpleType {
   factory SimpleType.fromElement(XmlElement element) {
     String? name = element.getAttribute("name");
 
+    print(element
+        .findElements('xs:annotation')
+        .firstOrNull
+        ?.findElements('xs:documentation')
+        .firstOrNull);
+
     String? documentation = element
         .findElements('xs:annotation')
         .firstOrNull
         ?.findElements('xs:documentation')
-        .first
-        .value;
+        .firstOrNull
+        ?.innerText;
 
     String? restrictionBase = element
         .findElements('xs:restriction')
@@ -72,30 +78,64 @@ class SimpleType {
   }
 
   String toCode(Environment env) {
-    return env.getTemplate('simple_type_value.template').render({
+    Map<String, Object?> data = {
       "name": kebabToCamel(name ?? ""),
-      "comment": documentation,
+      "comment": _breakSentence(documentation ?? "", 80, '\n/// '),
       "restriction_base": _baseMap[restrictionBase],
       "restriction_values": restrictionValues.map((e) => {e.a: e.b}),
-    });
+    };
+
+    return env.getTemplate('simple_type_value.template').render(data);
   }
 
   static const _baseMap = {
-    "xs:token": "",
+    "xs:token": "String",
     "xs:positiveInteger": "int",
     "xs:decimal": "double",
     "xs:string": "String",
     "comma-separated-text": "String",
     "null": "dynamic",
     "xs:nonNegativeInteger": "int",
-    "divisions": "",
-    "xs:NMTOKEN": "",
+    "divisions": "double",
+    "xs:NMTOKEN": "String",
     "smufl-glyph-name": "",
-    "xs:date": "Datetime",
+    "xs:date": "DateTime",
     "xs:integer": "int",
     "system-relation-number": "",
     "note-type-value": ""
   };
+
+  /// Breaks a long sentence into multiple lines after every n characters without splitting words.
+  ///
+  /// Parameters:
+  ///   - [sentence]: The input sentence to break.
+  ///   - [n]: The maximum number of characters per line.
+  ///   - [lineBreak]: The line break character(s) to insert after every n characters. Default is '\n'.
+  ///
+  /// Returns the sentence with line breaks inserted after every n characters.
+  String _breakSentence(String sentence, int n, [String lineBreak = '\n']) {
+    final words = sentence.split(' ');
+    final lines = <String>[];
+
+    String currentLine = '';
+    for (final word in words) {
+      if (currentLine.isNotEmpty &&
+          (currentLine.length + word.length + 1) > n) {
+        lines.add(currentLine);
+        currentLine = '';
+      }
+      if (currentLine.isNotEmpty) {
+        currentLine += ' ';
+      }
+      currentLine += word;
+    }
+
+    if (currentLine.isNotEmpty) {
+      lines.add(currentLine);
+    }
+
+    return lines.join(lineBreak);
+  }
 
   // String restrictionBaseToType(String? restrictionBase) {}
 }

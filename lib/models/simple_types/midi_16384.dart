@@ -1,3 +1,5 @@
+/// The midi-16384 type is used to express MIDI 1.0 values that range from 1 to
+/// 16,384.
 class Midi16384 {
   int _value;
 
@@ -8,8 +10,6 @@ class Midi16384 {
     _value = value;
   }
 
-  Midi16384(int value) {
-    this.value = value;
-  }
+  Midi16384(this._value);
 
 }

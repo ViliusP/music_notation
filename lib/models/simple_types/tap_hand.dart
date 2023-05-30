@@ -1,3 +1,6 @@
+/// The tap-hand type represents the symbol to use for a tap element. The left and
+/// right values refer to the SMuFL guitarLeftHandTapping and guitarRightHandTapping
+/// glyphs respectively.
 class TapHand {
   String _value;
 
@@ -8,8 +11,6 @@ class TapHand {
     _value = value;
   }
 
-  TapHand(String value) {
-    this.value = value;
-  }
+  TapHand(this._value);
 
 }

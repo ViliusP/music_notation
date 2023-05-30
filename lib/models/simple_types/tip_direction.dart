@@ -1,3 +1,5 @@
+/// The tip-direction type represents the direction in which the tip of a stick or
+/// beater points, using Unicode arrow terminology.
 class TipDirection {
   String _value;
 
@@ -8,8 +10,6 @@ class TipDirection {
     _value = value;
   }
 
-  TipDirection(String value) {
-    this.value = value;
-  }
+  TipDirection(this._value);
 
 }

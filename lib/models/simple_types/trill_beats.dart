@@ -1,3 +1,5 @@
+/// The trill-beats type specifies the beats used in a trill-sound or bend-sound
+/// attribute group. It is a decimal value with a minimum value of 2.
 class TrillBeats {
   double _value;
 
@@ -8,5 +10,6 @@ class TrillBeats {
     _value = value;
   }
 
-  TrillBeats(this.value) {}
+  TrillBeats(this._value);
+
 }

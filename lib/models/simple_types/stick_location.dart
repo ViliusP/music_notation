@@ -1,3 +1,5 @@
+/// The stick-location type represents pictograms for the location of sticks,
+/// beaters, or mallets on cymbals, gongs, drums, and other instruments.
 class StickLocation {
   String _value;
 
@@ -8,8 +10,6 @@ class StickLocation {
     _value = value;
   }
 
-  StickLocation(String value) {
-    this.value = value;
-  }
+  StickLocation(this._value);
 
 }

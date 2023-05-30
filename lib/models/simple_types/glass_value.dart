@@ -1,3 +1,4 @@
+/// The glass-value type represents pictograms for glass percussion instruments.
 class GlassValue {
   String _value;
 
@@ -8,8 +9,6 @@ class GlassValue {
     _value = value;
   }
 
-  GlassValue(String value) {
-    this.value = value;
-  }
+  GlassValue(this._value);
 
 }
