@@ -1,0 +1,11 @@
+ {% else %}
+  {% for field in type.fields %}
+  {{ field.type }}? {{ field.name }};
+  {% endfor %}
+  
+  {{ type.name }}({
+    {% for field in type.fields %}
+    this.{{ field.name }},
+    {% endfor %}
+  });
+  {% endif %}

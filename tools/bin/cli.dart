@@ -49,7 +49,7 @@ Future recordDate() async {
   String formattedDate = DateTime.now().toIso8601String();
 
   String filePath =
-      './tools/raw_schemas/$metaFilename'; // Replace with your desired file path
+      '../tools/raw_schemas/$metaFilename'; // Replace with your desired file path
 
   File file = File(filePath);
   await file.writeAsString("Downloaded at\n", mode: FileMode.writeOnly);
@@ -108,24 +108,47 @@ void clearFolder(String folderPath) {
   }
 }
 
-Future generateCode(
-    {required String destination, required String filePath}) async {
+void createFolderIfNotExists(String folderPath) {
+  var directory = Directory(folderPath);
+
+  if (!directory.existsSync()) {
+    directory.createSync(recursive: true);
+    print('Folder created: $folderPath');
+  } else {
+    print('Folder already exists: $folderPath');
+  }
+}
+
+Future generateCode({
+  required String destination,
+  required String filePath,
+}) async {
   final content = File(filePath).readAsStringSync();
 
   final document = XmlDocument.parse(content);
 
   XsdToDart generator = XsdToDart(document: document);
 
-  final code = await generator.generateCode();
+  final codes = await generator.generateCode();
 
-  final outputFilePath = '$destination/generated_classes.dart';
-  File(outputFilePath).writeAsStringSync(code);
+  final folders = codes.keys.map((k) => k.split("/").first).toSet();
 
-  print('Dart classes generated successfully at: $outputFilePath');
+  for (var folder in folders) {
+    final String path = "$destination/$folder";
+    createFolderIfNotExists(path);
+  }
+
+  for (var codeEntry in codes.entries) {
+    final outputFilePath = '$destination/${codeEntry.key}.dart';
+
+    File(outputFilePath).writeAsStringSync(codeEntry.value);
+
+    print('Class was generated successfully at:$outputFilePath');
+  }
 }
 
 main(List<String> arguments) async {
-  const schemaFolder = './tools/raw_schemas';
+  const schemaFolder = '../tools/raw_schemas';
 
   // Check if the folder contains all the required files
   bool hasAllFiles =
@@ -147,28 +170,10 @@ main(List<String> arguments) async {
     await recordDate();
   }
 
-  // print('generating');
-  // await generateCode(
-  //   template: './tool/material_design_icons_flutter.dart.template',
-  //   dest: './lib/material_design_icons_flutter.dart',
-  //   info: info,
-  // );
   await generateCode(
-    destination: './lib/models',
+    destination: '../lib/models',
     filePath: "$schemaFolder/musicxml.xsd",
   );
-  // File('./tool/materialdesignicons-webfont.ttf')
-  //     .renameSync('./lib/fonts/materialdesignicons-webfont.ttf');
-  // File('./tool/_variables.scss').deleteSync();
-  // var spec = File('./pubspec.yaml').readAsStringSync();
-  // RegExpMatch? match =
-  //     RegExp(r'version:\s(\d+)\.(\d+)\.(\d+)').firstMatch(spec);
-  // if (match == null) {
-  //   throw 'no version in spec';
-  // }
-  // var currentVersion = match[3];
-  // var latestVersion = info.version.replaceAll('.', '');
-  // print(
-  //     'done, latest version: ${info.version}, need publish: ${currentVersion != latestVersion}');
+
   exit(0);
 }

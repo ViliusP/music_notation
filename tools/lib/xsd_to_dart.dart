@@ -1,6 +1,7 @@
 import 'dart:io';
 
-import 'package:cli/xsd.dart';
+import 'package:cli/simple_type.dart';
+import 'package:cli/utils.dart';
 import 'package:jinja/jinja.dart';
 import 'package:jinja/loaders.dart';
 import 'package:xml/xml.dart';
@@ -12,8 +13,8 @@ class XsdToDart {
     required this.document,
   });
 
-  Future<String> generateCode() async {
-    var templatesUri = Platform.script.resolve('templates');
+  Future<Map<String, String>> generateCode() async {
+    var templatesUri = Platform.script.resolve('../templates');
 
     var env = Environment(
       autoReload: true,
@@ -22,23 +23,36 @@ class XsdToDart {
       trimBlocks: true,
     );
 
-    _generateSimpleTypes(env);
+    Map<String, String> codes = {};
 
-    return "";
+    codes.addAll(_generateSimpleTypes(env));
+
+    return codes;
   }
 
-  Future<String> _generateSimpleTypes(Environment env) async {
-    final simpleTypes = document.findAllElements('xs:simpleType');
-    for (var element in simpleTypes.take(3)) {
-      SimpleType type = SimpleType.fromElement(element);
-      // print('Element name: ${element.getAttribute('name')}');
-      // print(env.getTemplate('simple_type_value.template').render({
-      //   'users': [
-      //     {'fullname': 'John Doe', 'email': 'johndoe@dev.py'},
-      //     {'fullname': 'Jane Doe', 'email': 'janedoe@dev.py'},
-      //   ]
-      // }));
+  Map<String, String> _generateSimpleTypes(Environment env) {
+    final simpleTypesElements =
+        document.rootElement.findElements('xs:simpleType');
+
+    List<SimpleType> simpleTypes =
+        simpleTypesElements.map((e) => SimpleType.fromElement(e)).toList();
+
+    Map<String, String> codes = {};
+
+    String folder = "simple_types";
+
+    for (var simpleType in simpleTypes) {
+      if (simpleType.name == null) {
+        continue;
+      }
+
+      final String filename = kebabToSnake(simpleType.name!);
+
+      codes["$folder/$filename"] = simpleType.toCode(env);
     }
-    return Future.value("");
+
+    print(simpleTypes.map((e) => e.restrictionBase).toSet());
+
+    return codes;
   }
 }

@@ -1,0 +1,15 @@
+class NumberOfLines {
+  int _value;
+
+  int get value => _value;
+
+  set value(int value) {
+    // add any necessary validation here
+    _value = value;
+  }
+
+  NumberOfLines(int value) {
+    this.value = value;
+  }
+
+}
