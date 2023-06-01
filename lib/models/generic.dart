@@ -24,20 +24,84 @@ class Nmtoken {
   /// Return true if valid.
   /// Otherwise - false.
   static bool validate(String value) {
-    if (!RegExp(r'^[a-zA-Z_][a-zA-Z0-9_\-.]*$').hasMatch(value)) {
-      return false;
-    }
-    return true;
+    return !RegExp(r'^[a-zA-Z_][a-zA-Z0-9_\-.]*$').hasMatch(value);
   }
+
+  static String generateValidationError(String attributeName, String value) =>
+      "Attribute '$attributeName' is not a valid NMTOKEN: $value";
 }
 
-/// The rotation-degrees type specifies rotation, pan, and elevation values in degrees. Values range from -180 to 180.
+/// The rotation-degrees type specifies rotation, pan, and elevation values in degrees.
+/// Values range from -180 to 180.
 class RotationDegrees {
   /// Return true if [value] is between -180 (inclusive) and 180 (inclusive).
   static bool validate(double value) {
-    if (value >= -180 && value <= 180) {
-      return true;
-    }
-    return false;
+    return value >= -180 && value <= 180;
   }
+
+  static String generateValidationError(String attributeName, String value) =>
+      "Attribute '$attributeName' is not valid rotation degree: $value";
+}
+
+class AccidentalSmuflGlyphName {
+  static final RegExp _pattern = RegExp(
+      r"^(acc|medRenFla|medRenNatura|medRenShar|kievanAccidental)(\c+)$");
+
+  static bool validate(String value) {
+    // ArgumentError('Value must start with acc, medRenFla, medRenNatura, medRenShar, or kievanAccidental');
+    return !_pattern.hasMatch(value);
+  }
+
+  static String generateValidationError(String attributeName, String value) =>
+      "Attribute '$attributeName' is not a valid accidental smufl glyph name: $value";
+}
+
+/// Represents a utility class for working with yes-no values.
+class YesNo {
+  static const _typeMap = {
+    "yes": true,
+    "no": false,
+  };
+
+  static const _reverseTypeMap = {
+    true: "yes",
+    false: "no",
+  };
+
+  /// Converts a string value to a boolean representation.
+  ///
+  /// Returns `true` if the value is "yes", `false` if the value is "no",
+  /// and `null` if the value is neither "yes" nor "no".
+  static bool? toBool(String value) {
+    return _typeMap[value];
+  }
+
+  /// Generates a validation error message for an invalid yes-no value.
+  ///
+  /// Parameters:
+  ///   - attributeName: The name of the attribute.
+  ///   - value: The value that caused the validation error.
+  ///
+  /// Returns a validation error message indicating that the attribute is not a valid yes-no value.
+  static String generateValidationError(String attributeName, String value) =>
+      "Attribute '$attributeName' is not a yes-no value: $value";
+
+  /// Converts a boolean value to its corresponding yes-no representation.
+  ///
+  /// Returns "yes" if the value is `true`, and "no" if the value is `false`.
+  static String toYesNo(bool value) {
+    return _reverseTypeMap[value]!;
+  }
+}
+
+class Percent {
+  static const _min = 0;
+  static const _max = 100;
+
+  static bool validate(int value) {
+    return _min >= 0 && _max <= 0;
+  }
+
+  static String generateValidationError(String attributeName, String value) =>
+      "Attribute '$attributeName' is not a percentage type: $value";
 }

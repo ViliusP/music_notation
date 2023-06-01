@@ -22,6 +22,60 @@ class FormattedText {
   }
 }
 
+// <xs:complexType name="accidental-text">
+
+// 		<xs:extension base="accidental-value">
+// 			<xs:attributeGroup ref="text-formatting"/>
+// 			<xs:attribute name="smufl" type="smufl-accidental-glyph-name"/>
+// 		</xs:extension>
+// 	</xs:simpleContent>
+// </xs:complexType>
+
+// <xs:simpleType name="smufl-accidental-glyph-name">
+// 	<xs:annotation>
+// 		<xs:documentation>The smufl-accidental-glyph-name type is used to reference a specific Standard Music Font Layout (SMuFL) accidental character. The value is a SMuFL canonical glyph name that starts with one of the strings used at the start of glyph names for SMuFL accidentals.</xs:documentation>
+// 	</xs:annotation>
+// 	<xs:restriction base="smufl-glyph-name">
+// 		<xs:pattern value="(acc|medRenFla|medRenNatura|medRenShar|kievanAccidental)(\c+)"/>
+// 	</xs:restriction>
+// </xs:simpleType>
+
+// The accidental-text type represents an element with an accidental value and text-formatting attributes.
+class AccidentalText {
+  // smufl-accidental-glyph-name
+  String smufl;
+  TextFormatting formatting;
+
+  AccidentalText({
+    required this.smufl,
+    required this.formatting,
+  });
+
+  factory AccidentalText.fromXml(XmlElement xmlElement) {
+    if (!Nmtoken.validate(xmlElement.text)) {
+      // TODO: attributeName
+      final String message = Nmtoken.generateValidationError(
+        "attributeName",
+        xmlElement.text,
+      );
+      throw InvalidXmlElementException(message, xmlElement);
+    }
+
+    if (!AccidentalSmuflGlyphName.validate(xmlElement.text)) {
+      final String message = AccidentalSmuflGlyphName.generateValidationError(
+        "attributeName",
+        xmlElement.text,
+      );
+      throw InvalidXmlElementException(message, xmlElement);
+    }
+
+    return AccidentalText(
+      smufl: xmlElement.text,
+      formatting: TextFormatting.fromXml(xmlElement),
+    );
+  }
+}
+
 /// The text-formatting  collects the common formatting attributes for text elements.
 /// Default values may differ across the elements that use this group.
 class TextFormatting {
@@ -82,6 +136,11 @@ class TextFormatting {
       xmlElement.findElements('text-rotation').first.innerText,
     );
 
+    if (rotation == null || !RotationDegrees.validate(rotation)) {
+      // adasdasdasdas
+      throw "bad rotation";
+    }
+
     var letterSpacing = double.tryParse(
       xmlElement.findElements('letter-spacing').first.innerText,
     );
@@ -89,11 +148,6 @@ class TextFormatting {
     var lineHeight = double.tryParse(
       xmlElement.findElements('letter-spacing').first.innerText,
     );
-
-    if (rotation == null || !RotationDegrees.validate(rotation)) {
-      // adasdasdasdas
-      throw "bad rotation";
-    }
 
     return TextFormatting(
       justify: LeftCenterRight.fromString(xmlElement.text),
@@ -297,6 +351,7 @@ class Font {
   Font({this.fontFamily});
 
   factory Font.fromXml(XmlElement xmlElement) {
+    // TODO: fully parse
     return Font(
       fontFamily: xmlElement.getAttribute('font-family'),
     );

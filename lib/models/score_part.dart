@@ -1,6 +1,11 @@
+import 'package:music_notation/models/midi.dart';
+import 'package:xml/xml.dart';
+
+import 'package:music_notation/models/generic.dart';
 import 'package:music_notation/models/identification.dart';
 import 'package:music_notation/models/text.dart';
-import 'package:xml/xml.dart';
+
+import 'instruments.dart';
 
 /// The score-part type collects part-wide information for each part in a score.
 ///
@@ -13,28 +18,14 @@ import 'package:xml/xml.dart';
 ///
 /// The score-instrument elements are used when there are multiple instruments per track.
 class ScorePart {
-// 		<xs:element name="part-name-display" type="name-display" minOccurs="0"/>
-// 		<xs:element name="part-abbreviation" type="part-name" minOccurs="0"/>
-// 		<xs:element name="part-abbreviation-display" type="name-display" minOccurs="0"/>
-// 		<xs:element name="group" type="xs:string" minOccurs="0" maxOccurs="unbounded">
-// 			<xs:annotation>
-// 				<xs:documentation>The group element allows the use of different versions of the part for different purposes. Typical values include score, parts, sound, and data. Ordering information can be derived from the ordering within a MusicXML score or opus.</xs:documentation>
-// 			</xs:annotation>
-// 		</xs:element>
-// 		<xs:element name="score-instrument" type="score-instrument" minOccurs="0" maxOccurs="unbounded"/>
-// 		<xs:element name="player" type="player" minOccurs="0" maxOccurs="unbounded"/>
-// 		<xs:sequence minOccurs="0" maxOccurs="unbounded">
-// 			<xs:element name="midi-device" type="midi-device" minOccurs="0"/>
-// 			<xs:element name="midi-instrument" type="midi-instrument" minOccurs="0"/>
-// 		</xs:sequence>
-
-  String? id;
+  /// Required.
+  String id;
 
   Identification? identification;
 
   List<PartLink>? partLinks;
 
-  /// he part-name type describes the name or abbreviation of a score-part element.
+  /// The part-name type describes the name or abbreviation of a score-part element.
   ///
   /// Formatting attributes for the part-name element are deprecated in Version 2.0 in favor of the new part-name-display and part-abbreviation-display elements.
   ///
@@ -44,7 +35,7 @@ class ScorePart {
   /// ```
   String? partName;
 
-  // NameDisplay partNameDispaly;
+  String? partAbbreviation;
 
   /// The name-display type is used for exact formatting of multi-font text
   /// in part and group names to the left of the system.
@@ -54,9 +45,106 @@ class ScorePart {
   /// Language for the display-text element is Italian ("it") by default.
   ///
   /// Minimal occurence - 0.
-  String? partNameDisplay;
+  NameDisplay? partNameDisplay;
 
-  ScorePart({this.id, this.partName});
+  NameDisplay? partAbbreviationDisplay;
+
+  /// The group element allows the use of different versions of the part for different purposes.
+  /// Typical values include score, parts, sound, and data.
+  /// Ordering information can be derived from the ordering within a MusicXML score or opus.
+  List<String> groups;
+
+  List<ScoreInstrument> scoreInstruments;
+
+  List<Player> players;
+
+  final List<MidiDevice> midiDevices;
+  final List<MidiInstrument> midiInstruments;
+
+  ScorePart({
+    this.identification,
+    this.partLinks = const [],
+    required this.partName,
+    this.partNameDisplay,
+    this.partAbbreviation,
+    this.partAbbreviationDisplay,
+    this.groups = const [],
+    this.scoreInstruments = const [],
+    this.players = const [],
+    this.midiDevices = const [],
+    this.midiInstruments = const [],
+    required this.id,
+  });
+
+  factory ScorePart.fromXml(XmlElement xmlElement) {
+    Identification? identification;
+    final partLinks = <PartLink>[];
+    String? partName;
+    NameDisplay? partNameDisplay;
+    String? partAbbreviation;
+    NameDisplay? partAbbreviationDisplay;
+    final groups = <String>[];
+    final scoreInstruments = <ScoreInstrument>[];
+    final players = <Player>[];
+    final midiDevices = <MidiDevice>[];
+    final midiInstruments = <MidiInstrument>[];
+    final id = xmlElement.getAttribute('id')!;
+
+    for (var child in xmlElement.children.whereType<XmlElement>()) {
+      switch (child.name.local) {
+        case 'identification':
+          identification = Identification.fromXml(child);
+          break;
+        case 'part-link':
+          partLinks.add(PartLink.fromXml(child));
+          break;
+        case 'part-name':
+          // partName = PartName.fromXml(child);
+          partName = child.text;
+          break;
+        case 'part-name-display':
+          partNameDisplay = NameDisplay.fromXml(child);
+          break;
+        case 'part-abbreviation':
+          // partAbbreviation = PartName.fromXml(child);
+          partAbbreviation = child.text;
+          break;
+        case 'part-abbreviation-display':
+          partAbbreviationDisplay = NameDisplay.fromXml(child);
+          break;
+        case 'group':
+          groups.add(child.text);
+          break;
+        case 'score-instrument':
+          scoreInstruments.add(ScoreInstrument.fromXml(child));
+          break;
+        case 'player':
+          players.add(Player.fromXml(child));
+          break;
+        case 'midi-device':
+          midiDevices.add(MidiDevice.fromXml(child));
+          break;
+        case 'midi-instrument':
+          midiInstruments.add(MidiInstrument.fromXml(child));
+          break;
+      }
+    }
+
+    return ScorePart(
+      identification: identification,
+      partLinks: partLinks,
+      partName: partName!,
+      partNameDisplay: partNameDisplay,
+      partAbbreviation: partAbbreviation,
+      partAbbreviationDisplay: partAbbreviationDisplay,
+      groups: groups,
+      scoreInstruments: scoreInstruments,
+      players: players,
+      midiDevices: midiDevices,
+      midiInstruments: midiInstruments,
+      id: id,
+    );
+  }
 }
 
 /// The part-link type allows MusicXML data for both score and parts to be contained within a single compressed MusicXML file.
@@ -64,7 +152,7 @@ class ScorePart {
 /// In the case of a single compressed MusicXML file,
 /// the link href values are paths that are relative to the root folder of the zip file.
 class PartLink {
-  String? linkAttributes;
+  LinkAttributes? linkAttributes;
 
   /// Multiple part-link elements can link a condensed part within a score file to multiple MusicXML parts files.
   /// For example, a "Clarinet 1 and 2" part in a score file could link to separate "Clarinet 1" and "Clarinet 2" part files.
@@ -87,7 +175,31 @@ class PartLink {
   PartLink({
     this.instrumentLinks,
     this.groupLinks,
+    this.linkAttributes,
   });
+
+  factory PartLink.fromXml(XmlElement xmlElement) {
+    List<String>? instrumentLinks;
+    var instrumentLinkElements = xmlElement.findElements('instrument-link');
+    if (instrumentLinkElements.isNotEmpty) {
+      instrumentLinks =
+          instrumentLinkElements.map((element) => element.text).toList();
+    }
+
+    List<String>? groupLink;
+    var groupLinkElements = xmlElement.findElements('group-link');
+    if (groupLinkElements.isNotEmpty) {
+      groupLink = groupLinkElements.map((element) => element.text).toList();
+    }
+
+    LinkAttributes linkAttributes = LinkAttributes.fromXml(xmlElement);
+
+    return PartLink(
+      instrumentLinks: instrumentLinks,
+      groupLinks: groupLink,
+      linkAttributes: linkAttributes,
+    );
+  }
 }
 
 /// The name-display type is used for exact formatting of multi-font text in part and group names to the left of the system.
@@ -97,44 +209,112 @@ class PartLink {
 /// Enclosure for the display-text element is none by default. Language for the display-text element is Italian ("it") by default.
 class NameDisplay {
   List<FormattedText>? displayTexts;
-  // List<AccidentalText>? accidentalTexts;
-  // PrintObject printObject;
+  List<AccidentalText>? accidentalTexts;
+
+  /// The print-object attribute specifies whether or not to print an object (e.g. a note or a rest).
+  /// It is yes (true) by default.
+  bool printObject;
 
   NameDisplay({
     required this.displayTexts,
-    // required this.accidentalTexts,
-    // required this.printObject,
+    required this.accidentalTexts,
+    this.printObject = true,
   });
 
   factory NameDisplay.fromXml(XmlElement xmlElement) {
     var displayTexts = <FormattedText>[];
-    // var accidentalTexts = <AccidentalText>[];
 
     for (var element in xmlElement.findElements('display-text')) {
       displayTexts.add(FormattedText.fromXml(element));
     }
 
-    // for (var element in xmlElement.findElements('accidental-text')) {
-    //   accidentalTexts.add(AccidentalText.fromXml(element));
-    // }
+    var accidentalTexts = <AccidentalText>[];
+
+    for (var element in xmlElement.findElements('accidental-text')) {
+      accidentalTexts.add(AccidentalText.fromXml(element));
+    }
+
+    bool? printObject = YesNo.toBool(xmlElement.innerText);
+
+    // Checks if provided value is "yes", "no" or nothing.
+    // If it is something different, it throws error;
+    if (xmlElement.innerText.isNotEmpty && printObject == null) {
+      // TODO: correct attribute
+      YesNo.generateValidationError(
+        "xmlElement.innerText",
+        xmlElement.innerText,
+      );
+    }
 
     return NameDisplay(
       displayTexts: displayTexts,
-      // accidentalTexts: accidentalTexts,
-      // printObject: PrintObject.fromXml(xmlElement),
+      accidentalTexts: accidentalTexts,
+      printObject: printObject ?? true,
+    );
+  }
+}
+
+/// The player type allows for multiple players per score-part for use in listening applications.
+///
+/// One player may play multiple instruments, while a single instrument may include multiple players in divisi sections.
+class Player {
+  /// Required.
+  String id;
+
+  /// The player-name element is typically used within a software application, rather than appearing on the printed page of a score.
+  /// name=player-name
+  String name;
+
+  Player({
+    required this.id,
+    required this.name,
+  });
+
+  factory Player.fromXml(XmlElement xmlElement) {
+    // TODO: not implemented
+    throw UnimplementedError("TODO: not implemented");
+  }
+}
+
+/// The link-attributes group includes all the simple XLink attributes supported in the MusicXML format.
+///
+/// It is also used to connect a MusicXML score with MusicXML parts or a MusicXML opus.
+class LinkAttributes {
+  final String href;
+  final String type;
+  final String? role;
+  final String? title;
+  final String show;
+  final String actuate;
+
+  LinkAttributes({
+    required this.href,
+    this.type = 'simple',
+    this.role,
+    this.title,
+    this.show = 'replace',
+    this.actuate = 'onRequest',
+  });
+
+  factory LinkAttributes.fromXml(XmlElement xmlElement) {
+    return LinkAttributes(
+      href: xmlElement.getAttribute('xlink:href')!,
+      type: xmlElement.getAttribute('xlink:type') ?? 'simple',
+      role: xmlElement.getAttribute('xlink:role'),
+      title: xmlElement.getAttribute('xlink:title'),
+      show: xmlElement.getAttribute('xlink:show') ?? 'replace',
+      actuate: xmlElement.getAttribute('xlink:actuate') ?? 'onRequest',
     );
   }
 
-  // <xs:complexType name="name-display">
-  // 	<xs:annotation>
-  // 		<xs:documentation>The name-display type is used for exact formatting of multi-font text in part and group names to the left of the system. The print-object attribute can be used to determine what, if anything, is printed at the start of each system. Enclosure for the display-text element is none by default. Language for the display-text element is Italian ("it") by default.</xs:documentation>
-  // 	</xs:annotation>
-  // 	<xs:sequence>
-  // 		<xs:choice minOccurs="0" maxOccurs="unbounded">
-  // 			<xs:element name="display-text" type="formatted-text"/>
-  // 			<xs:element name="accidental-text" type="accidental-text"/>
-  // 		</xs:choice>
-  // 	</xs:sequence>
-  // 	<xs:attributeGroup ref="print-object"/>
-  // </xs:complexType>
+  Map<String, String?> toXml() {
+    return {
+      'xlink:href': href,
+      'xlink:type': type,
+      'xlink:role': role,
+      'xlink:title': title,
+      'xlink:show': show,
+      'xlink:actuate': actuate,
+    };
+  }
 }
