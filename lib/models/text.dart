@@ -1,8 +1,8 @@
-import 'package:music_notation/models/generic.dart';
-import 'package:music_notation/models/printing.dart';
 import 'package:xml/xml.dart';
 
+import 'package:music_notation/models/generic.dart';
 import 'package:music_notation/models/invalid_xml_element_exception.dart';
+import 'package:music_notation/models/printing.dart';
 
 /// The formatted-text type represents a text element with text-formatting attributes
 class FormattedText {
@@ -356,6 +356,10 @@ class Font {
       fontFamily: xmlElement.getAttribute('font-family'),
     );
   }
+
+  toXml() {
+    // TODO
+  }
 }
 
 // <xs:attributeGroup name="font">
@@ -450,5 +454,156 @@ class Color {
       }
     }
     return Color(value: colorValue);
+  }
+}
+
+/// The lyric-font type specifies the default font for a particular name and number of lyric.
+class LyricsFont {
+  // type="xs:NMTOKEN"
+  String? number;
+  String? name;
+  Font? font;
+
+  LyricsFont({
+    required this.number,
+    required this.name,
+    required this.font,
+  });
+
+  factory LyricsFont.fromXml(XmlElement element) {
+    // TODO check
+    if (element.name.local != 'lyric-font') {
+      throw FormatException("Unexpected element name: ${element.name.local}");
+    }
+
+    final lang = element.getAttribute('xml:lang');
+    if (lang == null) {
+      throw const FormatException('Missing required attribute "xml:lang"');
+    }
+
+    XmlElement? fontElement = element.getElement("font")?.firstElementChild;
+
+    return LyricsFont(
+      number: element.getAttribute('number'),
+      name: element.getAttribute('name'),
+      font: fontElement != null ? Font.fromXml(fontElement) : null,
+    );
+  }
+
+  XmlElement toXml() {
+    final builder = XmlBuilder();
+    builder.element('lyric-font', attributes: {
+      if (number != null) 'number': number!,
+      if (name != null) 'name': name!,
+      'font': font?.toXml()
+    });
+    return builder.buildDocument().rootElement;
+  }
+}
+
+/// The lyric-language type specifies the default language for a particular name and number of lyric.
+class LyricLanguage {
+  // type="xs:NMTOKEN"
+  final String? number;
+  final String? name;
+  final String lang;
+
+  LyricLanguage({this.number, this.name, required this.lang});
+
+  factory LyricLanguage.fromXml(XmlElement element) {
+    if (element.name.local != 'lyric-language') {
+      throw FormatException("Unexpected element name: ${element.name.local}");
+    }
+
+    final lang = element.getAttribute('xml:lang');
+    if (lang == null) {
+      throw FormatException('Missing required attribute "xml:lang"');
+    }
+
+    return LyricLanguage(
+      number: element.getAttribute('number'),
+      name: element.getAttribute('name'),
+      lang: lang,
+    );
+  }
+
+  XmlElement toXml() {
+    final builder = XmlBuilder();
+    builder.element('lyric-language', attributes: {
+      if (number != null) 'number': number!,
+      if (name != null) 'name': name!,
+      'xml:lang': lang
+    });
+    return builder.buildDocument().rootElement;
+  }
+
+  @override
+  String toString() =>
+      'LyricLanguage(number: $number, name: $name, lang: $lang)';
+}
+
+/// The formatted-text-id type represents a text element with text-formatting and id attributes.
+class FormattedTextId {
+  final String content;
+  final String textFormatting;
+  final String optionalUniqueId;
+
+  FormattedTextId({
+    required this.content,
+    required this.textFormatting,
+    required this.optionalUniqueId,
+  });
+
+  factory FormattedTextId.fromXml(XmlElement xmlElement) {
+    return FormattedTextId(
+      content: xmlElement.text,
+      textFormatting: xmlElement.getAttribute('text-formatting') ?? '',
+      optionalUniqueId: xmlElement.getAttribute('optional-unique-id') ?? '',
+    );
+  }
+
+  XmlElement toXml() {
+    return XmlElement(
+      XmlName('formatted-text-id'),
+      [
+        XmlAttribute(XmlName('text-formatting'), textFormatting),
+        XmlAttribute(XmlName('optional-unique-id'), optionalUniqueId),
+      ],
+      [XmlText(content)],
+    );
+  }
+}
+
+/// The formatted-symbol-id type represents a SMuFL musical symbol element with formatting and id attributes.
+class FormattedSymbolId {
+  /// Type="xs:NMTOKEN"
+  /// TODO: validate
+  final String content;
+  final String symbolFormatting;
+  final String optionalUniqueId;
+
+  FormattedSymbolId({
+    required this.content,
+    required this.symbolFormatting,
+    required this.optionalUniqueId,
+  });
+
+  factory FormattedSymbolId.fromXml(XmlElement xmlElement) {
+    return FormattedSymbolId(
+      content: xmlElement.text,
+      symbolFormatting: xmlElement.getAttribute('symbol-formatting') ?? '',
+      optionalUniqueId: xmlElement.getAttribute('optional-unique-id') ?? '',
+    );
+  }
+
+  XmlElement toXml() {
+    return XmlElement(
+      XmlName('formatted-symbol-id'),
+      [
+        XmlAttribute(XmlName('symbol-formatting'), symbolFormatting),
+        XmlAttribute(XmlName('optional-unique-id'), optionalUniqueId),
+      ],
+      [XmlText(content)],
+    );
   }
 }

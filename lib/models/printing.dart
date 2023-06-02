@@ -1,3 +1,4 @@
+import 'package:music_notation/models/generic.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/models/text.dart';
@@ -147,5 +148,43 @@ class Position {
       relativeX: double.tryParse(xmlElement.getAttribute('relative-x') ?? ''),
       relativeY: double.tryParse(xmlElement.getAttribute('relative-y') ?? ''),
     );
+  }
+}
+
+/// The empty-print-style-align-object type represents an empty element with print-object and print-style-align attribute groups.
+class EmptyPrintObjectStyleAlign {
+  /// The print-object attribute specifies whether or not to print an object (e.g. a note or a rest).
+  /// It is yes (true) by default.
+  bool printObject;
+  PrintStyleAlign? printStyleAlign;
+
+  EmptyPrintObjectStyleAlign({
+    required this.printStyleAlign,
+    this.printObject = true,
+  });
+
+  factory EmptyPrintObjectStyleAlign.fromXml(XmlElement xmlElement) {
+    bool? printObject = YesNo.toBool(xmlElement.innerText);
+
+    // Checks if provided value is "yes", "no" or nothing.
+    // If it is something different, it throws error;
+    if (xmlElement.innerText.isNotEmpty && printObject == null) {
+      // TODO: correct attribute
+      YesNo.generateValidationError(
+        "xmlElement.innerText",
+        xmlElement.innerText,
+      );
+    }
+
+    return EmptyPrintObjectStyleAlign(
+      printStyleAlign: null, // TODO
+      printObject: printObject ?? true,
+    );
+  }
+
+  XmlElement toXml() {
+    var builder = XmlBuilder();
+    builder.element('empty-print-object-style-align');
+    return builder.buildDocument().rootElement;
   }
 }

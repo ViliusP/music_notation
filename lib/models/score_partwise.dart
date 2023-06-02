@@ -1,19 +1,17 @@
-import 'package:music_notation/models/identification.dart';
-import 'package:music_notation/models/score.dart';
+import 'package:music_notation/models/score_header.dart';
 
 /// The score-partwise element is the root element for a partwise MusicXML score.
 /// It includes a score-header group followed by a series of parts with measures inside.
 /// The document-attributes attribute group includes the version attribute.
 class ScorePartwise {
-  String? version;
-
-  PartList? partList;
-  List<Part>? parts;
+  final ScoreHeader scoreHeader;
+  // final List<Part> parts;
+  // final DocumentAttributes documentAttributes;
 
   ScorePartwise({
-    this.version,
-    this.partList,
-    this.parts,
+    required this.scoreHeader,
+    // required this.parts,
+    // required this.documentAttributes,
   });
 }
 
@@ -41,3 +39,5 @@ class ScorePartwise {
 	// 		<xs:attributeGroup ref="document-attributes"/>
 	// 	</xs:complexType>
 	// </xs:element>
+
+  
