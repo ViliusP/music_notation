@@ -1,36 +1,9 @@
+import 'package:music_notation/models/editioral.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/models/printing.dart';
 import 'package:music_notation/models/score_part.dart';
 import 'package:music_notation/models/text.dart';
-
-// <xs:complexType name="part-list">
-// 	<xs:annotation>
-// 		<xs:documentation>The part-list identifies the different musical parts in this document. Each part has an ID that is used later within the musical data. Since parts may be encoded separately and combined later, identification elements are present at both the score and score-part levels. There must be at least one score-part, combined as desired with part-group elements that indicate braces and brackets. Parts are ordered from top to bottom in a score based on the order in which they appear in the part-list.</xs:documentation>
-// 	</xs:annotation>
-// 	<xs:sequence>
-// 		<xs:group ref="part-group" minOccurs="0" maxOccurs="unbounded"/>
-// 		<xs:group ref="score-part"/>
-// 		<xs:choice minOccurs="0" maxOccurs="unbounded">
-// 			<xs:group ref="part-group"/>
-// 			<xs:group ref="score-part"/>
-// 		</xs:choice>
-// 	</xs:sequence>
-// </xs:complexType>
-//
-
-// 	<xs:group name="score-part">
-// 		<xs:annotation>
-// 			<xs:documentation>The score-part element is defined within a group due to its multiple uses within the part-list element.</xs:documentation>
-// 		</xs:annotation>
-// 		<xs:sequence>
-// 			<xs:element name="score-part" type="score-part">
-// 				<xs:annotation>
-// 					<xs:documentation>Each MusicXML part corresponds to a track in a Standard MIDI Format 1 file. The score-instrument elements are used when there are multiple instruments per track. The midi-device element is used to make a MIDI device or port assignment for the given track. Initial midi-instrument assignments may be made here as well.</xs:documentation>
-// 				</xs:annotation>
-// 			</xs:element>
-// 		</xs:sequence>
-// 	</xs:group>
 
 /// The part-list identifies the different musical parts in this document.
 ///
@@ -273,16 +246,6 @@ class Editorial {
   });
 
   static fromXml(XmlElement? element) {}
-}
-
-/// The footnote element specifies editorial information that appears in footnotes in the printed score.
-///
-/// It is defined within a group due to its multiple uses within the MusicXML schema.
-class Footnote {
-  FormattedText value;
-  Footnote({
-    required this.value,
-  });
 }
 
 /// The level element specifies editorial information for different MusicXML elements.
