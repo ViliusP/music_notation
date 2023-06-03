@@ -56,6 +56,20 @@ class AccidentalSmuflGlyphName {
       "Attribute '$attributeName' is not a valid accidental smufl glyph name: $value";
 }
 
+/// The smufl-pictogram-glyph-name type is used to reference a specific Standard Music Font Layout (SMuFL) percussion pictogram character.
+///
+/// The value is a SMuFL canonical glyph name that starts with pict.
+class SmuflPictogramGlyphName {
+  static final RegExp _pattern = RegExp(r'pict\c+');
+
+  static bool validate(String value) {
+    return !_pattern.hasMatch(value);
+  }
+
+  static String generateValidationError(String attributeName, String value) =>
+      "Attribute '$attributeName' is not a valid smufl pictogram glyph: $value";
+}
+
 /// Represents a utility class for working with yes-no values.
 class YesNo {
   static const _typeMap = {
