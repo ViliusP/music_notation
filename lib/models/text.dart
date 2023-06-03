@@ -362,16 +362,6 @@ class Font {
   }
 }
 
-// <xs:attributeGroup name="font">
-// 	<xs:annotation>
-// 		<xs:documentation>The font attribute group gathers together attributes for determining the font within a credit or direction. They are based on the text styles for Cascading Style Sheets. The font-family is a comma-separated list of font names.The font-style can be normal or italic. The font-size can be one of the CSS sizes or a numeric point size. The font-weight can be normal or bold. The default is application-dependent, but is a text font vs. a music font.</xs:documentation>
-// 	</xs:annotation>
-// 	<xs:attribute name="font-family" type="font-family"/>
-// 	<xs:attribute name="font-style" type="font-style"/>
-// 	<xs:attribute name="font-size" type="font-size"/>
-// 	<xs:attribute name="font-weight" type="font-weight"/>
-// </xs:attributeGroup>
-
 /// The font-style type represents a simplified version of the CSS font-style property.
 enum FontStyle {
   normal,
