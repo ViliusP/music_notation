@@ -98,11 +98,12 @@ class Percent {
   static const _min = 0;
   static const _max = 100;
 
-  static bool validate(int value) {
+  /// Returns true if [value] is percent type.
+  static bool validate(double value) {
     return _min >= 0 && _max <= 0;
   }
 
-  static String generateValidationError(String attributeName, String value) =>
+  static String generateValidationError(String attributeName, double value) =>
       "Attribute '$attributeName' is not a percentage type: $value";
 }
 
