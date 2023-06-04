@@ -24,9 +24,8 @@ void main() {
       expect(note, isNotNull);
     });
 
-   
-  test('should parse all properties #2', () {
-    String input = '''
+    test('should parse all properties #2', () {
+      String input = '''
         <note default-x="128.60" default-y="10.00" xml:id="note213">
           <pitch>
               <step>F</step>
@@ -49,18 +48,16 @@ void main() {
         </note>
       ''';
 
-    var rootElement = XmlDocument.parse(input).rootElement;
+      var rootElement = XmlDocument.parse(input).rootElement;
 
-    var note = Note.fromXml(rootElement);
+      var note = Note.fromXml(rootElement);
 
-    expect(note, isNotNull);
-  });
+      expect(note, isNotNull);
+    });
 
-
-
-  group('Grace', () {
-    test('should be null if not exists', () {
-      String input = '''
+    group('Grace', () {
+      test('should be null if not exists', () {
+        String input = '''
         <note>
             <pitch>
                 <step>C</step>
@@ -71,15 +68,15 @@ void main() {
         </note>
       ''';
 
-      var rootElement = XmlDocument.parse(input).rootElement;
+        var rootElement = XmlDocument.parse(input).rootElement;
 
-      var note = Note.fromXml(rootElement);
+        var note = Note.fromXml(rootElement);
 
-      expect(note.grace, isNull);
-    });
+        expect(note.grace, isNull);
+      });
 
-    test('should parse if exists', () {
-      String input = '''
+      test('should parse if exists', () {
+        String input = '''
         <note default-x="224.55" default-y="-10.00" xml:id="note7">
             <grace />
             <pitch>
@@ -89,41 +86,42 @@ void main() {
         </note>
       ''';
 
-      var rootElement = XmlDocument.parse(input).rootElement;
+        var rootElement = XmlDocument.parse(input).rootElement;
 
-      var note = Note.fromXml(rootElement);
+        var note = Note.fromXml(rootElement);
 
-      expect(note.grace, isNotNull);
+        expect(note.grace, isNotNull);
+      });
     });
-  });
 
-  test('should parse all properties', () {
-    String input = '''
+    test('should parse all properties', () {
+      String input = '''
         <grace slash="no" steal-time-following="33"/>
       ''';
 
-    var rootElement = XmlDocument.parse(input).rootElement;
+      var rootElement = XmlDocument.parse(input).rootElement;
 
-    var grace = Grace.fromXml(rootElement);
+      var grace = Grace.fromXml(rootElement);
 
-    expect(grace.slash, false);
-    expect(grace.stealTimeFollowing, 33);
-    expect(grace.stealTimePrevious, null);
-    expect(grace.makeTime, null);
-  });
+      expect(grace.slash, false);
+      expect(grace.stealTimeFollowing, 33);
+      expect(grace.stealTimePrevious, null);
+      expect(grace.makeTime, null);
+    });
 
-  test('should parse all properties #2', () {
-    String input = '''
+    test('should parse all properties #2', () {
+      String input = '''
         <grace slash="yes"/>
       ''';
 
-    var rootElement = XmlDocument.parse(input).rootElement;
+      var rootElement = XmlDocument.parse(input).rootElement;
 
-    var grace = Grace.fromXml(rootElement);
+      var grace = Grace.fromXml(rootElement);
 
-    expect(grace.slash, true);
-    expect(grace.stealTimeFollowing, null);
-    expect(grace.stealTimePrevious, null);
-    expect(grace.makeTime, null);
+      expect(grace.slash, true);
+      expect(grace.stealTimeFollowing, null);
+      expect(grace.stealTimePrevious, null);
+      expect(grace.makeTime, null);
+    });
   });
 }
