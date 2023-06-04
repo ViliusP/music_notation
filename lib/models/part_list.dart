@@ -1,4 +1,7 @@
+import 'package:collection/collection.dart';
 import 'package:music_notation/models/editioral.dart';
+import 'package:music_notation/models/generic.dart';
+import 'package:music_notation/models/utilities.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/models/printing.dart';
@@ -289,15 +292,55 @@ class LevelType {
 ///
 /// It is used by the level and accidental elements.
 class LevelDisplay {
-  bool parentheses;
-  bool bracket;
-  SymbolSize size;
+  /// Specifies whether or not parentheses are put around a symbol for an editorial indication.
+  ///
+  /// If not specified, it is left to application defaults.
+  bool? parentheses;
+
+  /// Specifies whether or not brackets are put around a symbol for an editorial indication.
+  ///
+  /// If not specified, it is left to application defaults.
+  bool? bracket;
+
+  /// Specifies the symbol size to use for an editorial indication.
+  ///
+  /// If not specified, it is left to application defaults.
+  SymbolSize? size;
 
   LevelDisplay({
-    required this.parentheses,
-    required this.bracket,
-    required this.size,
+    this.parentheses,
+    this.bracket,
+    this.size,
   });
+
+  factory LevelDisplay.fromXml(XmlElement xmlElement) {
+    String? rawParentheses = xmlElement.getAttribute("parentheses");
+    bool? parentheses;
+
+    if (rawParentheses != null) {
+      parentheses = YesNo.toBool(rawParentheses);
+    }
+
+    String? rawBracket = xmlElement.getAttribute("bracket");
+    bool? bracket;
+
+    if (rawBracket != null) {
+      bracket = YesNo.toBool(rawBracket);
+    }
+
+    String? rawSimbolSize = xmlElement.getAttribute("symbol-size");
+    SymbolSize? size;
+
+    if (rawSimbolSize != null) {
+      size = SymbolSize.fromString(rawSimbolSize);
+    }
+
+    return LevelDisplay(
+      parentheses: parentheses,
+      bracket: bracket,
+      size: size,
+    );
+  }
 }
 
 /// The symbol-size type is used to distinguish between full, cue sized, grace cue sized, and oversized symbols.
@@ -306,6 +349,15 @@ enum SymbolSize {
   cue,
   graceCue,
   large;
+
+  static SymbolSize? fromString(String value) {
+    return SymbolSize.values.firstWhereOrNull(
+      (e) => e.name == hyphenToCamelCase(value),
+    );
+  }
+
+  @override
+  String toString() => camelCaseToHyphen(name);
 }
 
 /// The start-stop-single type is used for an attribute of musical elements
