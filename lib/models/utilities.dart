@@ -23,3 +23,7 @@ String camelCaseToHyphen(String input) {
 
   return hyphenSeparated;
 }
+
+Map inverseMap(Map f) {
+  return f.map((k, v) => MapEntry(v, k));
+}

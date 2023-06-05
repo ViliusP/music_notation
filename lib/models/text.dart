@@ -1,3 +1,4 @@
+import 'package:music_notation/models/note.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/models/generic.dart';
@@ -5,7 +6,7 @@ import 'package:music_notation/models/invalid_xml_element_exception.dart';
 import 'package:music_notation/models/printing.dart';
 
 /// The formatted-text type represents a text element with text-formatting attributes
-class FormattedText {
+class FormattedText extends NoteheadTextContent {
   String value;
   TextFormatting formatting;
 
@@ -41,7 +42,7 @@ class FormattedText {
 // </xs:simpleType>
 
 // The accidental-text type represents an element with an accidental value and text-formatting attributes.
-class AccidentalText {
+class AccidentalText extends NoteheadTextContent {
   // smufl-accidental-glyph-name
   String smufl;
   TextFormatting formatting;
@@ -343,9 +344,16 @@ class Font {
   /// The fantasy style refers to decorative text such as found in older German-style printing.
   ///
   // TODO: nullable or not?
+  // TOOD: Remove "font" word from properties.
   String? fontFamily;
+
+  /// Normal or italic style.
   FontStyle? fontStyle;
+
+  /// One of the CSS sizes or a numeric point size.
   FontSize? fontSize;
+
+  /// Normal or bold weight.
   FontWeight? fontWeight;
 
   Font({this.fontFamily});

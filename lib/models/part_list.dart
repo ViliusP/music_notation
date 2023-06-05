@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:music_notation/models/data_types/start_stop.dart';
 import 'package:music_notation/models/editioral.dart';
 import 'package:music_notation/models/generic.dart';
 import 'package:music_notation/models/utilities.dart';
@@ -248,7 +249,7 @@ class Editorial {
     required this.level,
   });
 
-  static fromXml(XmlElement? element) {}
+  static fromXml(XmlElement? xmlElement) {}
 }
 
 /// The level element specifies editorial information for different MusicXML elements.
@@ -358,32 +359,4 @@ enum SymbolSize {
 
   @override
   String toString() => camelCaseToHyphen(name);
-}
-
-/// The start-stop-single type is used for an attribute of musical elements
-/// that can be used for either multi-note or single-note musical elements, as for groupings.
-///
-/// When multiple elements with the same tag are used within the same note,
-/// their order within the MusicXML document should match the musical score order.
-enum StartStopSingle {
-  start,
-  stop,
-  single;
-}
-
-/// The start-stop type is used for an attribute of musical elements that can either start or stop, such as tuplets.
-///
-/// The values of start and stop refer to how an element appears in musical score order, not in MusicXML document order.
-/// An element with a stop attribute may precede the corresponding element with a start attribute within a MusicXML document.
-/// This is particularly common in multi-staff music.
-/// For example, the stopping point for a tuplet may appear in staff 1 before the starting point for the tuplet appears in staff 2 later in the document.
-///
-/// When multiple elements with the same tag are used within the same note, their order within the MusicXML document should match the musical score order.
-enum StartStop {
-  start,
-  stop;
-
-  static fromString(String value) {
-    throw UnimplementedError();
-  }
 }
