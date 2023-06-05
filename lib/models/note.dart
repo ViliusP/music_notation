@@ -66,18 +66,8 @@
 // 		<xs:attributeGroup ref="optional-unique-id"/>
 // 	</xs:complexType>
 
-// 	<xs:complexType name="note-type">
-// 		<xs:annotation>
-// 			<xs:documentation>The note-type type indicates the graphic note type. Values range from 1024th to maxima. The size attribute indicates full, cue, grace-cue, or large size. The default is full for regular notes, grace-cue for notes that contain both grace and cue elements, and cue for notes that contain either a cue or a grace element, but not both.</xs:documentation>
-// 		</xs:annotation>
-// 		<xs:simpleContent>
-// 			<xs:extension base="note-type-value">
-// 				<xs:attribute name="size" type="symbol-size"/>
-// 			</xs:extension>
-// 		</xs:simpleContent>
-// 	</xs:complexType>
-
 import 'package:collection/collection.dart';
+import 'package:music_notation/models/elements/notations/notation.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/models/editioral.dart';
@@ -86,6 +76,7 @@ import 'package:music_notation/models/invalid_xml_element_exception.dart';
 import 'package:music_notation/models/music_data.dart';
 import 'package:music_notation/models/part_list.dart';
 import 'package:music_notation/models/printing.dart';
+import 'package:music_notation/models/text.dart';
 import 'package:music_notation/models/utilities.dart';
 
 /// Notes are the most common type of MusicXML data.
@@ -133,12 +124,19 @@ class Note extends MusicDataElement {
   final List<EmptyPlacement>? dots;
   final Accidental? accidental;
   final TimeModification? timeModification;
-  // final Stem? stem;
-  // final Notehead? notehead;
-  // final NoteheadText? noteheadText;
-  // final Staff? staff;
-  // final List<Beam>? beams;
-  // final List<Notations>? notations;
+  final Stem? stem;
+  final Notehead? notehead;
+  final NoteheadText? noteheadText;
+
+  /// Staff assignment is only needed for music notated on multiple staves.
+  ///
+  /// Used by both notes and directions. Staff values are numbers, with 1 referring to the top-most staff in a part.
+  ///
+  /// Positive integer
+  final int? staff;
+
+  final List<Beam>? beams;
+  final List<Notations>? notations;
   // final List<Lyric>? lyrics;
   // final Play? play;
   // final Listen? listen;
@@ -165,12 +163,12 @@ class Note extends MusicDataElement {
     this.dots,
     this.accidental,
     this.timeModification,
-    // this.stem,
-    // this.notehead,
-    // this.noteheadText,
-    // this.staff,
-    // this.beams,
-    // this.notations,
+    this.stem,
+    this.notehead,
+    this.noteheadText,
+    this.staff,
+    this.beams,
+    this.notations,
     // this.lyrics,
     // this.play,
     // this.listen,
@@ -217,12 +215,51 @@ class Note extends MusicDataElement {
       timeModification = TimeModification.fromXml(maybeTimeModificationElement);
     }
 
+    XmlElement? maybeStemElement = xmlElement.findElements("stem").firstOrNull;
+    Stem? stem;
+    if (maybeStemElement != null) {
+      stem = Stem.fromXml(maybeStemElement);
+    }
+
+    XmlElement? maybeNoteheadElement =
+        xmlElement.findElements("notehead").firstOrNull;
+    Notehead? notehead;
+    if (maybeNoteheadElement != null) {
+      notehead = Notehead.fromXml(maybeNoteheadElement);
+    }
+
+    XmlElement? maybeNoteheadTextElement =
+        xmlElement.findElements("notehead-text").firstOrNull;
+
+    NoteheadText? noteheadText;
+    if (maybeNoteheadTextElement != null) {
+      noteheadText = NoteheadText.fromXml(maybeNoteheadTextElement);
+    }
+
+    String? rawStaff = xmlElement.findElements("staff").firstOrNull?.innerText;
+
+    int? staff = int.tryParse(rawStaff ?? "");
+    if (rawStaff != null && (staff == null || staff < 1)) {
+      throw InvalidXmlElementException(
+        "Staff value is non valid positiveInteger: $staff",
+        xmlElement,
+      );
+    }
+
+    Iterable<XmlElement> beamElements = xmlElement.findElements("beam");
+    List<Beam> beams = beamElements.map((e) => Beam.fromXml(e)).toList();
+
     return Note(
       grace: grace,
       editorialVoice: EditorialVoice.fromXml(xmlElement),
       type: type,
       accidental: accidental,
       timeModification: timeModification,
+      stem: stem,
+      notehead: notehead,
+      noteheadText: noteheadText,
+      staff: staff,
+      beams: beams,
     );
   }
 
@@ -534,12 +571,14 @@ class NoteType {
   final SymbolSize size;
 
   NoteType({
-    this.value,
+    required this.value,
     this.size = SymbolSize.full,
   });
 
   factory NoteType.fromXml(XmlElement xmlElement) {
-    return NoteType();
+    return NoteType(
+      value: NoteTypeValue.maxima,
+    );
   }
 }
 
@@ -615,16 +654,35 @@ class EmptyPlacement {
   PrintStyle? printStyle;
 
   /// The placement attribute indicates whether something is above or below another element, such as a note or a notation.
-  AboveBelow? placement;
+  Placement? placement;
 }
 
 /// The above-below type is used to indicate whether one element appears above or below another element.
-enum AboveBelow {
+enum Placement {
+  /// This element appears above the reference element.
   above,
+
+  /// This element appears below the reference element.
   below;
 
-  static AboveBelow? fromString(String value) {
-    return AboveBelow.values.firstWhereOrNull((v) => v.name == value);
+  static Placement? fromString(String value) {
+    return Placement.values.firstWhereOrNull((v) => v.name == value);
+  }
+
+  @override
+  String toString() => name;
+}
+
+/// The orientation attribute indicates whether slurs and ties are overhand (tips down) or underhand (tips up). This is distinct from the placement attribute used by any notation type.
+enum Orientation {
+  /// Tips of curved lines are overhand (tips down).
+  over,
+
+  /// Tips of curved lines are underhand (tips up).
+  under;
+
+  static Orientation? fromString(String value) {
+    return Orientation.values.firstWhereOrNull((v) => v.name == value);
   }
 
   @override
@@ -866,4 +924,410 @@ class TimeModification {
     }
     return count;
   }
+}
+
+/// Stems can be down, up, none, or double.
+///
+/// For down and up stems, the position attributes can be used to specify stem length.
+///
+/// The relative values specify the end of the stem relative to the program default.
+///
+/// Default values specify an absolute end stem position.
+///
+/// Negative values of relative-y that would flip a stem instead of shortening it are ignored.
+///
+/// A stem element associated with a rest refers to a stemlet.
+class Stem {
+  StemValue value;
+  Color color;
+  Position position;
+
+  Stem({
+    required this.value,
+    required this.color,
+    required this.position,
+  });
+
+  factory Stem.fromXml(XmlElement xmlElement) {
+    StemValue? value = StemValue.fromString(xmlElement.innerText ?? "");
+
+    if (value == null) {
+      throw XmlElementRequired("Steam value is missing");
+    }
+
+    return Stem(
+      value: value,
+      color: Color.fromXml(xmlElement),
+      position: Position.fromXml(xmlElement),
+    );
+  }
+/*  */
+}
+
+/// The stem-value type represents the notated stem direction.
+enum StemValue {
+  down,
+  up,
+  double,
+  none;
+
+  /// Converts provided string value to [StemValue].
+  ///
+  /// Returns null if that name does not exists.
+  static StemValue? fromString(String value) {
+    return StemValue.values.firstWhereOrNull(
+      (e) => e.name == value,
+    );
+  }
+
+  @override
+  String toString() => name;
+}
+
+/// The notehead type indicates shapes other than the open and closed ovals associated with note durations.
+
+/// The smufl attribute can be used to specify a particular notehead, allowing application interoperability without requiring every SMuFL glyph to have a MusicXML element equivalent.
+/// This attribute can be used either with the "other" value, or to refine a specific notehead value such as "cluster".
+/// Noteheads in the SMuFL Note name noteheads and Note name noteheads supplement ranges (U+E150–U+E1AF and U+EEE0–U+EEFF) should not use the smufl attribute or the "other" value,
+/// but instead use the notehead-text element.
+///
+/// For the enclosed shapes, the default is to be hollow for half notes and longer, and filled otherwise.
+/// The filled attribute can be set to change this if needed.
+///
+/// If the parentheses attribute is set to yes, the notehead is parenthesized.
+///
+/// It is no by default.
+class Notehead {
+  NoteheadValue value;
+
+  /// Changes the appearance of enclosed shapes from the default of hollow for half notes and longer, and filled otherwise.
+  ///
+  /// Attribute of type "yes-no". Optional.
+  bool filled;
+
+  /// If yes, the notehead is parenthesized. It is no if not specified.
+  bool parentheses;
+
+  /// Indicates a particular Standard Music Font Layout (SMuFL) character using its canonical glyph name.
+  ///
+  /// Sometimes this is a formatting choice, and sometimes this is a refinement of the semantic meaning of an element.
+  String? smufl;
+
+  Color color;
+
+  Font font;
+
+  Notehead({
+    required this.value,
+    required this.filled,
+    this.parentheses = false,
+    this.smufl,
+    required this.color,
+    required this.font,
+  });
+
+  factory Notehead.fromXml(XmlElement xmlElement) {
+    NoteheadValue? value = NoteheadValue.fromString(xmlElement.innerText);
+
+    if (value == null) {
+      throw XmlElementRequired("Notehead value is missing");
+    }
+
+    String? parenthesesAttribute = xmlElement.getAttribute("parentheses");
+
+    bool? parentheses = YesNo.toBool(parenthesesAttribute ?? "");
+
+    if (parenthesesAttribute != null && parentheses == null) {
+      final String message = YesNo.generateValidationError(
+        "parentheses",
+        parenthesesAttribute,
+      );
+
+      throw InvalidXmlElementException(message, xmlElement);
+    }
+
+    String? smuflAttribute = xmlElement.getAttribute("smufl");
+
+    if (smuflAttribute != null && !Nmtoken.validate(smuflAttribute)) {
+      final String message = Nmtoken.generateValidationError(
+        "parentheses",
+        smuflAttribute,
+      );
+
+      throw InvalidXmlElementException(message, xmlElement);
+    }
+
+    return Notehead(
+      value: value,
+      filled: _determineDefaultFilled(xmlElement),
+      parentheses: false,
+      smufl: smuflAttribute,
+      color: Color.fromXml(xmlElement),
+      font: Font.fromXml(xmlElement),
+    );
+  }
+
+  static bool _determineDefaultFilled(XmlElement xmlElement) {
+    // TODO
+    return false;
+  }
+}
+
+/// The notehead-value type indicates shapes other than the open and closed ovals associated with note durations.
+///
+/// The values do, re, mi, fa, fa up, so, la, and ti correspond to Aikin's 7-shape system.
+///
+/// The fa up shape is typically used with upstems; the fa shape is typically used with downstems or no stems.
+///
+/// The arrow shapes differ from triangle and inverted triangle by being centered on the stem.
+///
+/// Slashed and back slashed notes include both the normal notehead and a slash. The triangle shape has the tip of the triangle pointing up;
+/// the inverted triangle shape has the tip of the triangle pointing down. The left triangle shape is a right triangle with the hypotenuse facing up and to the left.
+///
+/// The other notehead covers noteheads other than those listed here.
+///
+/// It is usually used in combination with the smufl attribute to specify a particular SMuFL notehead.
+///
+/// The smufl attribute may be used with any notehead value to help specify the appearance of symbols that share the same MusicXML semantics.
+///
+/// Noteheads in the SMuFL Note name noteheads and Note name noteheads supplement ranges (U+E150–U+E1AF and U+EEE0–U+EEFF) should not use the smufl attribute or the "other" value,
+/// but instead use the notehead-text element.
+enum NoteheadValue {
+  slash,
+  triangle,
+  diamond,
+  square,
+  cross,
+  x,
+  circleX,
+  invertedTriangle,
+  arrowDown,
+  arrowUp,
+  circled,
+  slashed,
+  backSlashed,
+  normal,
+  cluster,
+  circleDot,
+  leftTriangle,
+  rectangle,
+  none,
+  aikinDo,
+  aikinRe,
+  aikinMi,
+  aikinFa,
+  aikinFaUp,
+  aikinSo,
+  aikinLa,
+  aikinTi,
+  other;
+
+  static const _map = {
+    'slash': slash,
+    'triangle': triangle,
+    'diamond': diamond,
+    'square': square,
+    'cross': cross,
+    'x': x,
+    'circle-x': circleX,
+    'inverted triangle': invertedTriangle,
+    'arrow down': arrowDown,
+    'arrow up': arrowUp,
+    'circled': circled,
+    'slashed': slashed,
+    'back slashed': backSlashed,
+    'normal': normal,
+    'cluster': cluster,
+    'circle dot': circleDot,
+    'left triangle': leftTriangle,
+    'rectangle': rectangle,
+    'none': none,
+    'do': aikinDo,
+    're': aikinRe,
+    'mi': aikinMi,
+    'fa': aikinFa,
+    'fa up': aikinFaUp,
+    'so': aikinSo,
+    'la': aikinLa,
+    'ti': aikinTi,
+    'other': other,
+  };
+
+  /// Converts provided string value to [StemValue].
+  ///
+  /// Returns null if that name does not exists.
+  static NoteheadValue? fromString(String value) {
+    return _map[value];
+  }
+
+  @override
+  String toString() => inverseMap(_map)[this];
+}
+
+abstract class NoteheadTextContent {}
+
+class NoteheadText {
+  final List<NoteheadTextContent> contents;
+
+  NoteheadText(this.contents);
+
+  factory NoteheadText.fromXml(XmlElement element) {
+    var contents = <NoteheadTextContent>[];
+    for (var child in element.children) {
+      if (child is XmlElement) {
+        if (child.name.local == 'display-text') {
+          contents.add(FormattedText.fromXml(child));
+        } else if (child.name.local == 'accidental-text') {
+          contents.add(AccidentalText.fromXml(child));
+        }
+      }
+    }
+    return NoteheadText(contents);
+  }
+}
+
+/// Beam values include begin, continue, end, forward hook, and backward hook.
+///
+/// Each beam in a note is represented with a separate <beam> element with a different number attribute, starting with the eighth note beam using a value of 1.
+class Beam {
+  /// Specifies an ID that is unique to the entire document.
+  String? id;
+
+  BeamValue value;
+
+  /// Indicates the color of an element.
+  Color color;
+
+  /// Deprecated as of Version 3.0. Formerly used for tremolos,
+  ///
+  /// it needs to be specified with a "yes" value for each <beam> using it.
+  bool repeater;
+
+  /// Beams that have a begin value may also have a fan attribute to indicate accelerandos and ritardandos using fanned beams.
+  ///
+  /// The fan attribute may also be used with a continue value if the fanning direction changes on that note.
+  ///
+  /// The value is none if not specified.
+  Fan fan;
+
+  /// Indicates eighth note through 1024th note beams using number values 1 thru 8 respectively.
+  ///
+  /// The default value is 1.
+  ///
+  /// Note that this attribute does not distinguish sets of beams that overlap, as it does for <slur> and other elements.
+  /// Beaming groups are distinguished by being in different voices, and/or the presence or absence of <grace> and <cue> elements.
+  int number;
+
+  Beam({
+    this.id,
+    required this.value,
+    required this.color,
+    this.repeater = false,
+    this.fan = Fan.none,
+    this.number = 1,
+  });
+
+  factory Beam.fromXml(XmlElement xmlElement) {
+    BeamValue? beamValue = BeamValue.fromString(xmlElement.innerText);
+
+    if (beamValue == null) {
+      throw XmlElementRequired(
+        "Valid beam value is required: ${xmlElement.innerText}",
+      );
+    }
+
+    String? repeaterAttribute = xmlElement.getAttribute("repeater");
+    bool? repeater = YesNo.toBool(repeaterAttribute ?? "");
+
+    // Checking if provided "repeater" attribute is valid yes-no value.
+    if (repeaterAttribute != null && repeater == null) {
+      final String message = YesNo.generateValidationError(
+        "repeater",
+        repeaterAttribute,
+      );
+      throw InvalidXmlElementException(
+        message,
+        xmlElement,
+      );
+    }
+
+    String? fanAttribute = xmlElement.getAttribute("fan");
+    Fan? fan = Fan.fromString(fanAttribute ?? "");
+    if (fanAttribute != null && fan == null) {
+      final String message =
+          "Bad fan attribute value was provided: $fanAttribute";
+      throw InvalidXmlElementException(
+        message,
+        xmlElement,
+      );
+    }
+
+    String? numberAttribute = xmlElement.getAttribute("number");
+    int? number = BeamLevel.tryParse(numberAttribute ?? "");
+    if (numberAttribute != null && number == null) {
+      final String message =
+          "Bad number attribute value was provided: $fanAttribute";
+      throw InvalidXmlElementException(
+        message,
+        xmlElement,
+      );
+    }
+
+    return Beam(
+      value: beamValue,
+      id: xmlElement.getAttribute("id"),
+      color: Color.fromXml(xmlElement),
+      repeater: repeater ?? false,
+      fan: fan ?? Fan.none,
+      number: number ?? 1,
+    );
+  }
+}
+
+/// The beam-value type represents the type of beam associated with each of 8 beam levels (up to 1024th notes) available for each note.
+enum BeamValue {
+  begin,
+
+  /// Continue is reserved keyword, so it was change to [bContinue].
+  bContinue,
+  end,
+  forwardHook,
+  backwardHook;
+
+  static const _map = {
+    'begin': begin,
+    'continue': bContinue,
+    'diamond': end,
+    'forward hook': forwardHook,
+    'backward hook': backwardHook,
+  };
+
+  /// Converts provided string value to [BeamValue].
+  ///
+  /// Returns null if that name does not exists.
+  static BeamValue? fromString(String value) {
+    return _map[value];
+  }
+
+  @override
+  String toString() => inverseMap(_map)[this];
+}
+
+/// The fan type represents the type of beam fanning present on a note, used to represent accelerandos and ritardandos.
+enum Fan {
+  accel,
+  rit,
+  none;
+
+  /// Converts provided string value to [Fan].
+  ///
+  /// Returns null if that name does not exists.
+  static Fan? fromString(String value) {
+    return Fan.values.firstWhereOrNull(
+      (element) => element.name == value,
+    );
+  }
+
+  @override
+  String toString() => name;
 }
