@@ -1,3 +1,4 @@
+import 'package:music_notation/models/elements/notations/notation.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/models/data_types/start_stop.dart';
@@ -12,37 +13,36 @@ class Ornaments {
   String? id;
 
   final List<Ornament> values;
+  final List<AccidentalMark> accidentalMarks;
 
-  Ornaments(this.values);
+  Ornaments(this.values, this.accidentalMarks);
 
   static Ornaments fromXmlElement(XmlElement xmlElement) {
     var ornaments = <Ornament>[];
     for (var child in xmlElement.children) {
       if (child is XmlElement) {
         switch (child.name.local) {
-          case 'trill-mark':
-            ornaments.add(TrillMark(EmptyTrillSound.fromXmlElement(child)));
-            break;
-          case 'turn':
-            ornaments.add(Turn(HorizontalTurn.fromXmlElement(child)));
-            break;
-          // Repeat for other ornament types...
-          case 'accidental-mark':
-            ornaments.add(AccidentalMark(AccidentalMark.fromXmlElement(child)));
-            break;
+          // case 'trill-mark':
+          //   ornaments.add(TrillMark(EmptyTrillSound.fromXmlElement(child)));
+          //   break;
+          // case 'turn':
+          //   ornaments.add(Turn(HorizontalTurn.fromXmlElement(child)));
+          //   break;
+          // // Repeat for other ornament types...
+          // case 'accidental-mark':
+          //   ornaments.add(AccidentalMark(AccidentalMark.fromXmlElement(child)));
+          //   break;
         }
       }
     }
-    return Ornaments(ornaments);
+    return Ornaments(ornaments, []);
   }
 }
 
 abstract class Ornament {
-  String name;
+  final String name;
 
-  Ornament({
-    required this.name,
-  });
+  Ornament(this.name);
 }
 
 /// The empty-trill-sound type represents an empty element with print-style, placement, and trill-sound attributes.
@@ -61,7 +61,7 @@ abstract class Ornament {
 ///
 /// ### haydn
 /// The haydn element represents the Haydn ornament. This is defined in SMuFL as ornamentHaydn.
-class EmptyTrillSound extends Ornament {
+class EmptyTrillSound implements Ornament {
   static const availableNames = [
     "trill-mark",
     "vertical-turn",
@@ -70,6 +70,9 @@ class EmptyTrillSound extends Ornament {
     "haydn"
   ];
 
+  @override
+  String name;
+
   PrintStyle printStyle;
 
   Placement placement;
@@ -77,11 +80,11 @@ class EmptyTrillSound extends Ornament {
   TrillSound trillSound;
 
   EmptyTrillSound({
-    required super.name,
+    required this.name,
     required this.printStyle,
     required this.placement,
     required this.trillSound,
-  }) : super();
+  });
 }
 
 /// The trill-sound attribute group includes attributes used to guide the sound of trills, mordents, turns, shakes, and wavy lines. The default choices are:
@@ -99,22 +102,45 @@ class EmptyTrillSound extends Ornament {
 /// - The default for second-beat is "12", not "25".
 /// - The default for last-beat is "24", not "75".
 class TrillSound {
-  StartNote startNOte;
-  TrillStep trillStep;
-  TwoNoteTurn twoNoteTurn;
+  StartNote? startNote;
+  TrillStep? trillStep;
+  TwoNoteTurn? twoNoteTurn;
 
-  bool accerelate;
-  ThrillBeats beats;
-  double secondBeat;
-  double lastBeat;
+  bool? accerelate;
 
-// 		<xs:attribute name="start-note" type="start-note"/>
-// 		<xs:attribute name="trill-step" type="trill-step"/>
-// 		<xs:attribute name="two-note-turn" type="two-note-turn"/>
-// 		<xs:attribute name="accelerate" type="yes-no"/>
-// 		<xs:attribute name="beats" type="trill-beats"/>
-// 		<xs:attribute name="second-beat" type="percent"/>
-// 		<xs:attribute name="last-beat" type="percent"/>
+  /// The trill-beats type specifies the beats used in a trill-sound or bend-sound attribute group.
+  ///
+  /// It is a decimal value with a minimum value of 2.
+  ///
+  /// type of trill beats.
+  int? beats;
+
+  /// type of percent.
+  double? secondBeat;
+
+  /// type of percent.
+  double? lastBeat;
+}
+
+/// The start-note type describes the starting note of trills and mordents for playback, relative to the current note.
+enum StartNote {
+  upper,
+  main,
+  below;
+}
+
+/// The trill-step type describes the alternating note of trills and mordents for playback, relative to the current note.
+enum TrillStep {
+  whole,
+  half,
+  unison;
+}
+
+/// The two-note-turn type describes the ending notes of trills and mordents for playback, relative to the current note.
+enum TwoNoteTurn {
+  whole,
+  half,
+  none;
 }
 
 /// The horizontal-turn type represents turn elements that are horizontal rather than vertical.
@@ -170,7 +196,10 @@ class HorizontalTurn extends EmptyTrillSound {
 /// they should always have type="continue" set.
 ///
 /// The smufl attribute specifies a particular wavy line glyph from the SMuFL Multi-segment lines range.
-class WavyLine extends Ornament {
+class WavyLine implements Ornament {
+  @override
+  String name;
+
   StartStopContinue type;
 
   // type="number-level"
@@ -183,7 +212,8 @@ class WavyLine extends Ornament {
     required this.type,
     required this.number,
     required this.smufl,
-  }) : super(name: '');
+    required this.name,
+  });
 }
 
 class EmptyPlacementOrnament extends EmptyPlacement implements Ornament {
@@ -245,15 +275,20 @@ class Mordent extends EmptyTrillSound {
 /// The other-placement-text type represents a text element with print-style, placement, and smufl attribute groups.
 ///
 /// This type is used by MusicXML notation extension elements to allow specification of specific SMuFL glyphs without needed to add every glyph as a MusicXML element.
-class OtherPlacementText extends Ornament {
-  OtherPlacementText({required super.name});
-// <xs:complexType name="other-placement-text">>
-// 	<xs:simpleContent>
-// 		<xs:extension base="xs:string">
-// 			<xs:attributeGroup ref="print-style"/>
-// 			<xs:attributeGroup ref="placement"/>
-// 			<xs:attributeGroup ref="smufl"/>
-// 		</xs:extension>
-// 	</xs:simpleContent>
-// </xs:complexType>
+class OtherPlacementText implements Ornament {
+  @override
+  String name;
+
+  PrintStyle printStyle;
+
+  Placement placement;
+
+  String smulf;
+
+  OtherPlacementText({
+    required this.name,
+    required this.printStyle,
+    required this.placement,
+    required this.smulf,
+  });
 }
