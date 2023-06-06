@@ -68,6 +68,7 @@
 
 import 'package:collection/collection.dart';
 import 'package:music_notation/models/elements/notations/notation.dart';
+import 'package:music_notation/models/elements/note/lyric.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/models/editioral.dart';
@@ -137,7 +138,7 @@ class Note extends MusicDataElement {
 
   final List<Beam>? beams;
   final List<Notations>? notations;
-  // final List<Lyric>? lyrics;
+  final List<Lyric>? lyrics;
   // final Play? play;
   // final Listen? listen;
   // final XPosition? xPosition;
@@ -169,7 +170,7 @@ class Note extends MusicDataElement {
     this.staff,
     this.beams,
     this.notations,
-    // this.lyrics,
+    this.lyrics,
     // this.play,
     // this.listen,
     // this.xPosition,
@@ -249,6 +250,9 @@ class Note extends MusicDataElement {
     Iterable<XmlElement> beamElements = xmlElement.findElements("beam");
     List<Beam> beams = beamElements.map((e) => Beam.fromXml(e)).toList();
 
+    Iterable<XmlElement> lyricsElements = xmlElement.findElements("lyrics");
+    List<Lyric> lyrics = lyricsElements.map((e) => Lyric.fromXml(e)).toList();
+
     return Note(
       grace: grace,
       editorialVoice: EditorialVoice.fromXml(xmlElement),
@@ -260,6 +264,7 @@ class Note extends MusicDataElement {
       noteheadText: noteheadText,
       staff: staff,
       beams: beams,
+      lyrics: lyrics,
     );
   }
 
