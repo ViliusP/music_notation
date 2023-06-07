@@ -1,6 +1,6 @@
 import 'package:xml/xml.dart';
 
-import 'package:music_notation/models/note.dart';
+import 'package:music_notation/models/elements/note/note.dart';
 import 'package:music_notation/models/part_list.dart';
 import 'package:music_notation/models/printing.dart';
 import 'package:music_notation/models/text.dart';

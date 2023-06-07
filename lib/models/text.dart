@@ -1,4 +1,4 @@
-import 'package:music_notation/models/note.dart';
+import 'package:music_notation/models/elements/note/note.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/models/generic.dart';
@@ -17,7 +17,7 @@ class FormattedText extends NoteheadTextContent {
 
   factory FormattedText.fromXml(XmlElement xmlElement) {
     return FormattedText(
-      value: xmlElement.text,
+      value: xmlElement.value ?? "", // TODO: throw on null value.
       formatting: TextFormatting.fromXml(xmlElement),
     );
   }
@@ -233,14 +233,14 @@ enum NumberOfLines {
 ///
 /// It extends the CSS version by allow double or triple lines instead of just being on or off.
 class TextDecoration {
-  NumberOfLines underline;
-  NumberOfLines overline;
-  NumberOfLines lineThrough;
+  NumberOfLines? underline;
+  NumberOfLines? overline;
+  NumberOfLines? lineThrough;
 
   TextDecoration({
-    required this.underline,
-    required this.overline,
-    required this.lineThrough,
+    this.underline,
+    this.overline,
+    this.lineThrough,
   });
 
   factory TextDecoration.fromXml(XmlElement xmlElement) {
@@ -436,9 +436,11 @@ class FontSize {
 
 /// As in SVG 1.1, colors are defined in terms of the sRGB color space (IEC 61966).
 class Color {
-  String? value;
+  final String? value;
 
   Color({this.value});
+
+  const Color.empty() : value = null;
 
   factory Color.fromXml(XmlElement xmlElement) {
     String? colorValue = xmlElement.getAttribute('color');

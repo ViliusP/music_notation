@@ -187,7 +187,7 @@ class Scaling {
 class Link {}
 
 class Empty {
-  Empty();
+  const Empty();
 }
 
 class BeamLevel {
@@ -280,4 +280,23 @@ class NumberLevel {
 
   static String generateValidationError(String attributeName, double value) =>
       "Attribute '$attributeName' is not a percentage type: $value";
+}
+
+/// The time-only type is used to indicate that a particular playback- or listening-related element only applies particular times through a repeated section.
+///
+/// The value is a comma-separated list of positive integers arranged in ascending order,
+/// indicating which times through the repeated section that the element applies.
+class TimeOnly {
+  static const String _pattern = r'[1-9][0-9]*(, ?[1-9][0-9]*)*';
+
+  /// Checks if provided [value] is valid time-only.
+  ///
+  /// Return true if valid.
+  /// Otherwise - false.
+  static bool validate(String value) {
+    return !RegExp(_pattern).hasMatch(value);
+  }
+
+  static String generateValidationError(String attributeName, String value) =>
+      "Attribute '$attributeName' is not a valid time-only: $value";
 }

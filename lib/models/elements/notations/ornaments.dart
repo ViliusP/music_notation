@@ -2,7 +2,7 @@ import 'package:music_notation/models/elements/notations/notation.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/models/data_types/start_stop.dart';
-import 'package:music_notation/models/note.dart';
+import 'package:music_notation/models/elements/note/note.dart';
 import 'package:music_notation/models/printing.dart';
 
 /// Ornaments can be any of several types, followed optionally by accidentals.

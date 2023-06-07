@@ -1,4 +1,4 @@
-import 'package:music_notation/models/note.dart';
+import 'package:music_notation/models/elements/note/note.dart';
 import 'package:test/test.dart';
 import 'package:xml/xml.dart';
 
