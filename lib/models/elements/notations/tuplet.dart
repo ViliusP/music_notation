@@ -1,6 +1,7 @@
 import 'package:music_notation/models/data_types/line_shape.dart';
 import 'package:music_notation/models/data_types/start_stop.dart';
 import 'package:music_notation/models/elements/note/note.dart';
+import 'package:music_notation/models/elements/note/note_type.dart';
 import 'package:music_notation/models/printing.dart';
 import 'package:music_notation/models/text.dart';
 
