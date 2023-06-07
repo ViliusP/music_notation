@@ -1,4 +1,4 @@
-import 'package:music_notation/models/elements/note/notehead.dart';
+import 'package:music_notation/models/elements/music_data/note/notehead.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/models/generic.dart';

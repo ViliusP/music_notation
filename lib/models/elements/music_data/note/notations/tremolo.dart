@@ -12,7 +12,7 @@
 // 		</xs:simpleContent>
 // 	</xs:complexType>
 
-import 'package:music_notation/models/elements/notations/ornaments.dart';
+import 'package:music_notation/models/elements/music_data/note/notations/ornaments.dart';
 
 /// The tremolo ornament can be used to indicate single-note, double-note, or unmeasured tremolos.
 ///

@@ -67,22 +67,22 @@
 // 	</xs:complexType>
 
 import 'package:collection/collection.dart';
-import 'package:music_notation/models/elements/notations/notation.dart';
-import 'package:music_notation/models/elements/note/accidental.dart';
-import 'package:music_notation/models/elements/note/beam.dart';
-import 'package:music_notation/models/elements/note/listen.dart';
-import 'package:music_notation/models/elements/note/lyric.dart';
-import 'package:music_notation/models/elements/note/note_type.dart';
-import 'package:music_notation/models/elements/note/notehead.dart';
-import 'package:music_notation/models/elements/note/play.dart';
-import 'package:music_notation/models/elements/note/stem.dart';
-import 'package:music_notation/models/elements/note/time_modification.dart';
+import 'package:music_notation/models/elements/music_data/note/notations/notation.dart';
+import 'package:music_notation/models/elements/music_data/note/accidental.dart';
+import 'package:music_notation/models/elements/music_data/note/beam.dart';
+import 'package:music_notation/models/elements/music_data/note/listen.dart';
+import 'package:music_notation/models/elements/music_data/note/lyric.dart';
+import 'package:music_notation/models/elements/music_data/note/note_type.dart';
+import 'package:music_notation/models/elements/music_data/note/notehead.dart';
+import 'package:music_notation/models/elements/music_data/note/play.dart';
+import 'package:music_notation/models/elements/music_data/note/stem.dart';
+import 'package:music_notation/models/elements/music_data/note/time_modification.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/models/editioral.dart';
 import 'package:music_notation/models/generic.dart';
 import 'package:music_notation/models/invalid_xml_element_exception.dart';
-import 'package:music_notation/models/music_data.dart';
+import 'package:music_notation/models/elements/music_data/music_data.dart';
 import 'package:music_notation/models/part_list.dart';
 import 'package:music_notation/models/printing.dart';
 import 'package:music_notation/models/text.dart';
@@ -123,6 +123,7 @@ class Note extends MusicDataElement {
   final Grace? grace;
   final EditorialVoice editorialVoice;
 
+  // TODO:
   // final FullNote? fullNote;
   // final Cue? cue;
   // final List<Instrument>? instruments;

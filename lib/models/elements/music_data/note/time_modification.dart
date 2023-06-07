@@ -1,4 +1,4 @@
-import 'package:music_notation/models/elements/note/note_type.dart';
+import 'package:music_notation/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/models/invalid_xml_element_exception.dart';
 import 'package:xml/xml.dart';
 

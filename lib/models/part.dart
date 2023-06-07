@@ -1,4 +1,4 @@
-import 'package:music_notation/models/music_data.dart';
+import 'package:music_notation/models/elements/music_data/music_data.dart';
 import 'package:xml/xml.dart';
 
 class Part {

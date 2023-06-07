@@ -1,5 +1,5 @@
-import 'package:music_notation/models/elements/notations/notation.dart';
-import 'package:music_notation/models/elements/note/note.dart';
+import 'package:music_notation/models/elements/music_data/note/notations/notation.dart';
+import 'package:music_notation/models/elements/music_data/note/note.dart';
 import 'package:music_notation/models/printing.dart';
 import 'package:music_notation/models/text.dart';
 

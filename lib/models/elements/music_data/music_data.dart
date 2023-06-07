@@ -34,7 +34,9 @@ class MusicData {
 
   toXml() {}
 
-  fromXml(XmlElement? element) {}
+  factory MusicData.fromXml(XmlElement element) {
+    return MusicData(data: []);
+  }
 }
 
 abstract class MusicDataElement {}
