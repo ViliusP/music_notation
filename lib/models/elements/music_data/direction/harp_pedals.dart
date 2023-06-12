@@ -13,6 +13,7 @@ class HarpPedals implements DirectionType {
 
   PrintStyleAlign printStyleAlign;
 
+  /// Specifies an ID that is unique to the entire document.
   String id;
 
   HarpPedals({

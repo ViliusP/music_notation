@@ -55,6 +55,12 @@ class DashedFormatting {
     this.dashLength,
     this.spaceLength,
   });
+
+  DashedFormatting.empty();
+
+  factory DashedFormatting.fromXml(XmlElement xmlElement) {
+    return DashedFormatting();
+  }
 }
 
 /// The bezier attribute group is used to indicate the curvature of slurs and ties,

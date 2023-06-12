@@ -228,7 +228,7 @@ class GroupName {
   PrintStyle printStyle;
 
   /// The justify is deprecated in MusicXML 2.0 in favor of the new group-name-display and group-abbreviation-display elements.
-  LeftCenterRight justify;
+  HorizontalAlignment justify;
 
   GroupName({
     required this.value,

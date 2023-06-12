@@ -30,7 +30,7 @@ abstract class Metronome {
   ///
   /// For elements where the justify attribute is present but the halign attribute is not,
   /// the justify attribute indicates horizontal alignment as well as justification.
-  LeftCenterRight justify;
+  HorizontalAlignment justify;
 
   /// Indicates whether or not to put the metronome mark in parentheses. It is no if not specified.
   bool parentheses;

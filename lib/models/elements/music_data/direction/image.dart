@@ -36,4 +36,17 @@ class Image implements DirectionType {
 /// so it does not include a baseline value.
 ///
 /// Defaults are implementation-dependent.
-enum VerticalImageAlignment { top, middle, bottom }
+
+enum VerticalImageAlignment {
+  top,
+  middle,
+  bottom;
+
+  static VerticalImageAlignment fromString(String value) {
+    for (var element in VerticalImageAlignment.values) {
+      if (element.name.contains(value)) return element;
+    }
+    // TODO: better exception
+    throw "Invalid VerticalAlignment value: $value";
+  }
+}

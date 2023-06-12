@@ -59,7 +59,7 @@ class Lyric {
   ///
   /// For elements where the justify attribute is present but the halign attribute is not,
   /// the justify attribute indicates horizontal alignment as well as justification.
-  LeftCenterRight? justify;
+  HorizontalAlignment? justify;
 
   Position position;
 

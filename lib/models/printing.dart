@@ -19,23 +19,23 @@ class PrintStyleAlign {
   /// If it is not present, its value is the same as for the justify attribute.
   ///
   /// For elements where a justify attribute is not allowed, the default is implementation-dependent.
-  LeftCenterRight? horizontalAlign;
+  HorizontalAlignment? horizontalAlignment;
 
   VerticalAlignment? verticalAlignment;
 
   PrintStyleAlign({
     required this.printStlye,
-    required this.horizontalAlign,
+    required this.horizontalAlignment,
     required this.verticalAlignment,
   });
 
   factory PrintStyleAlign.fromXml(XmlElement xmlElement) {
-    LeftCenterRight? horizontalAlign;
+    HorizontalAlignment? horizontalAlign;
     VerticalAlignment? verticalAlignment;
 
     var halign = xmlElement.getAttribute("halign");
     if (halign != null) {
-      horizontalAlign = LeftCenterRight.fromString(halign);
+      horizontalAlign = HorizontalAlignment.fromString(halign);
     }
 
     var valign = xmlElement.getAttribute("valign");
@@ -46,7 +46,7 @@ class PrintStyleAlign {
     // TODO: check
     return PrintStyleAlign(
       printStlye: PrintStyle.fromXml(xmlElement),
-      horizontalAlign: horizontalAlign,
+      horizontalAlignment: horizontalAlign,
       verticalAlignment: verticalAlignment,
     );
   }

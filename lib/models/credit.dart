@@ -34,6 +34,7 @@
 // 		<xs:attributeGroup ref="optional-unique-id"/>
 // 	</xs:complexType>
 
+import 'package:music_notation/models/elements/music_data/direction/image.dart';
 import 'package:music_notation/models/text.dart';
 import 'package:xml/xml.dart';
 
@@ -336,8 +337,8 @@ class ImageAttributes {
   double? height;
   double? width;
   Position position;
-  LeftCenterRight? hAlign;
-  VerticalAlignmentImage? vAlign;
+  HorizontalAlignment? horizontalAlignment;
+  VerticalImageAlignment? verticalAlignment;
 
   ImageAttributes({
     required this.source,
@@ -345,8 +346,8 @@ class ImageAttributes {
     this.height,
     this.width,
     required this.position,
-    this.hAlign,
-    this.vAlign,
+    this.horizontalAlignment,
+    this.verticalAlignment,
   });
 
   factory ImageAttributes.fromXml(XmlElement xmlElement) {
@@ -356,10 +357,10 @@ class ImageAttributes {
       height: double.tryParse(xmlElement.getAttribute('height') ?? ''),
       width: double.tryParse(xmlElement.getAttribute('width') ?? ''),
       position: Position.fromXml(xmlElement),
-      hAlign: LeftCenterRight.fromString(
+      horizontalAlignment: HorizontalAlignment.fromString(
         xmlElement.getAttribute('halign') ?? "",
       ),
-      vAlign: VerticalAlignmentImage.fromString(
+      verticalAlignment: VerticalImageAlignment.fromString(
         xmlElement.getAttribute('valign-image') ?? "",
       ),
     );
@@ -382,35 +383,17 @@ class ImageAttributes {
       );
     }
     // TODO position.toXml()
-    if (hAlign != null) {
+    if (horizontalAlignment != null) {
       element.attributes.add(
-        XmlAttribute(XmlName('halign'), hAlign.toString()),
+        XmlAttribute(XmlName('halign'), horizontalAlignment.toString()),
       ); // TODO check toString
     }
-    if (vAlign != null) {
+    if (verticalAlignment != null) {
       element.attributes.add(
-        XmlAttribute(XmlName('valign-image'), vAlign.toString()),
+        XmlAttribute(XmlName('valign-image'), verticalAlignment.toString()),
       ); // TODO check toString
     }
 
     return element;
-  }
-}
-
-/// The valign-image type is used to indicate vertical alignment for images and graphics,
-/// so it does not include a baseline value.
-///
-/// Defaults are implementation-dependent.
-enum VerticalAlignmentImage {
-  top,
-  middle,
-  bottom;
-
-  static VerticalAlignmentImage fromString(String value) {
-    for (var element in VerticalAlignmentImage.values) {
-      if (element.name.contains(value)) return element;
-    }
-    // TODO: better exception
-    throw "Invalid VerticalAlignment value: $value";
   }
 }

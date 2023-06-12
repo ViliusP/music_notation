@@ -1,7 +1,8 @@
+import 'package:music_notation/models/elements/music_data/direction/direction_type.dart';
 import 'package:music_notation/models/printing.dart';
 
 /// The string-mute type represents string mute on and mute off symbols.
-class StringMute {
+class StringMute implements DirectionType {
   // Specifies if the string mute is going on or off.
   ///
   /// XML: ```<xs:attribute name="type" type="on-off" use="required"/>```

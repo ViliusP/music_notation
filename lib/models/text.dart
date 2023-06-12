@@ -85,7 +85,7 @@ class TextFormatting {
   /// The default value varies for different elements.
   ///
   /// For elements where the justify attribute is present but the halign attribute is not, the justify attribute indicates horizontal alignment as well as justification.
-  LeftCenterRight? justify;
+  HorizontalAlignment? justify;
   PrintStyleAlign? printStyleAlign;
   TextDecoration? textDecoration;
   double? textRotation;
@@ -151,7 +151,7 @@ class TextFormatting {
     );
 
     return TextFormatting(
-      justify: LeftCenterRight.fromString(xmlElement.text),
+      justify: HorizontalAlignment.fromString(xmlElement.value ?? ""),
       printStyleAlign: PrintStyleAlign.fromXml(xmlElement),
       textDecoration: TextDecoration.fromXml(xmlElement),
       textRotation: rotation,
@@ -160,7 +160,7 @@ class TextFormatting {
       lang: xmlElement.getAttribute('xml:lang'),
       space: xmlElement.getAttribute('xml:space'),
       textDirection: TextDirection.fromXml(xmlElement),
-      enclosure: EnclosureShape.fromString(xmlElement.text),
+      enclosure: EnclosureShape.fromString(xmlElement.value ?? ""),
     );
   }
 }
@@ -260,13 +260,13 @@ class TextDecoration {
 }
 
 /// The left-center-right type is used to define horizontal alignment and text justification.
-enum LeftCenterRight {
+enum HorizontalAlignment {
   left,
   center,
   right;
 
-  static LeftCenterRight fromString(String value) {
-    for (var element in LeftCenterRight.values) {
+  static HorizontalAlignment fromString(String value) {
+    for (var element in HorizontalAlignment.values) {
       if (element.name.contains(value)) return element;
     }
     // TODO: better exception
