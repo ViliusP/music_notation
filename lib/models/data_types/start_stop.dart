@@ -39,7 +39,7 @@ enum StartStopContinue {
   /// Continuation of an element, including system breaks.
   ///
   /// "continue".
-  vContinue;
+  tContinue;
 }
 
 /// The start-stop-single type is used for an attribute of musical elements
@@ -51,4 +51,11 @@ enum StartStopSingle {
   start,
   stop,
   single;
+}
+
+enum UpDownStopContinue {
+  up,
+  down,
+  stop,
+  tContinue;
 }
