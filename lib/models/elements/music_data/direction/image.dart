@@ -1,0 +1,39 @@
+import 'package:music_notation/models/elements/music_data/direction/direction_type.dart';
+import 'package:music_notation/models/printing.dart';
+import 'package:music_notation/models/text.dart';
+
+/// The image type is used to include graphical images in a score.
+class Image implements DirectionType {
+  String source;
+
+  String type;
+
+  double height;
+
+  double width;
+
+  Position position;
+
+  HorizontalAlignment horizontalAlignment;
+
+  VerticalImageAlignment verticalAlignment;
+
+  String? id;
+
+  Image({
+    required this.source,
+    required this.type,
+    required this.height,
+    required this.width,
+    required this.position,
+    required this.horizontalAlignment,
+    required this.verticalAlignment,
+    required this.id,
+  });
+}
+
+/// The valign-image type is used to indicate vertical alignment for images and graphics,
+/// so it does not include a baseline value.
+///
+/// Defaults are implementation-dependent.
+enum VerticalImageAlignment { top, middle, bottom }
