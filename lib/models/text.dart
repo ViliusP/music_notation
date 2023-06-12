@@ -546,29 +546,34 @@ class LyricLanguage {
 class FormattedTextId {
   final String content;
   final String textFormatting;
-  final String optionalUniqueId;
+  final String? id;
 
   FormattedTextId({
     required this.content,
     required this.textFormatting,
-    required this.optionalUniqueId,
+    required this.id,
   });
 
   factory FormattedTextId.fromXml(XmlElement xmlElement) {
     return FormattedTextId(
-      content: xmlElement.text,
+      content: xmlElement.value ?? "",
       textFormatting: xmlElement.getAttribute('text-formatting') ?? '',
-      optionalUniqueId: xmlElement.getAttribute('optional-unique-id') ?? '',
+      id: xmlElement.getAttribute('optional-unique-id'),
     );
   }
 
   XmlElement toXml() {
+    List<XmlAttribute> attributes = [];
+
+    attributes.add(XmlAttribute(XmlName('text-formatting'), textFormatting));
+
+    if (id != null) {
+      attributes.add(XmlAttribute(XmlName('optional-unique-id'), id!));
+    }
+
     return XmlElement(
       XmlName('formatted-text-id'),
-      [
-        XmlAttribute(XmlName('text-formatting'), textFormatting),
-        XmlAttribute(XmlName('optional-unique-id'), optionalUniqueId),
-      ],
+      attributes,
       [XmlText(content)],
     );
   }
