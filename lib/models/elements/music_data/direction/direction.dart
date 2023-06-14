@@ -1,6 +1,8 @@
 import 'package:xml/xml.dart';
 
+import 'package:music_notation/models/data_types/system_relation.dart';
 import 'package:music_notation/models/elements/music_data/music_data.dart';
+import 'package:music_notation/models/elements/music_data/note/note.dart';
 import 'package:music_notation/models/elements/offset.dart';
 
 /// A direction is a musical indication that is not necessarily attached to a specific note.
@@ -23,39 +25,55 @@ class Direction extends MusicDataElement {
 
   Offset? offset;
 
+  EditorialVoice editorialVoice;
+
+  /// Staff assignment is only needed for music notated on multiple staves.
+  ///
+  /// Staff values are numbers, with 1 referring to the top-most staff in a part.
+  int? staff;
+
   // ------------------------- //
   // ------ Attributes ------- //
   // ------------------------- //
 
+  /// Changes the default-x position of a direction.
+  ///
+  /// It indicates that the left-hand side of the direction is aligned
+  /// with the left-hand side of the time signature.
+  ///
+  /// If no time signature is present,
+  /// the direction is aligned with the left-hand side of the first music notational element in the measure.
+  ///
+  /// If a default-x, justify, or halign attribute is present, it overrides this attribute.
+  bool directive;
+
+  String? id;
+
+  Placement? placement;
+
+  SystemRelation system;
+
   Direction({
     required this.types,
     this.offset,
+    required this.editorialVoice,
+    this.staff,
+    required this.directive,
+    this.id,
+    this.placement,
+    required this.system,
   });
 
   factory Direction.fromXml(XmlElement xmlElement) {
     return Direction(
       types: [],
+      directive: false,
+      editorialVoice: EditorialVoice(),
+      system: SystemRelation.none,
     );
   }
 }
 
-// 	<xs:complexType name="direction">
-// 		<xs:annotation>
-// 			<xs:documentation></xs:documentation>
-// 		</xs:annotation>
-// 		<xs:sequence>
-// 			<xs:element name="direction-type" type="direction-type" maxOccurs="unbounded"/>
-// 			<xs:element name="offset" type="offset" minOccurs="0"/>
-// 			<xs:group ref="editorial-voice-direction"/>
-// 			<xs:group ref="staff" minOccurs="0"/>
-// 			<xs:element name="sound" type="sound" minOccurs="0"/>
-// 			<xs:element name="listening" type="listening" minOccurs="0"/>
-// 		</xs:sequence>
-// 		<xs:attributeGroup ref="placement"/>
-// 		<xs:attributeGroup ref="directive"/>
-// 		<xs:attributeGroup ref="system-relation"/>
-// 		<xs:attributeGroup ref="optional-unique-id"/>
-// 	</xs:complexType>
 /// Textual direction types may have more than 1 component due to multiple fonts.
 ///
 /// The dynamics element may also be used in the notations element.

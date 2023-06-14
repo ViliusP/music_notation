@@ -59,7 +59,7 @@ class TypedSwing extends Swing {
 
   int second;
 
-  SwingTypeValue type;
+  SwingTypeValue? type;
 
   TypedSwing({
     required this.first,

@@ -1,3 +1,4 @@
+import 'package:music_notation/models/elements/listening.dart';
 import 'package:xml/xml.dart';
 
 /// The listen and listening types, new in Version 4.0, specify different ways that a score following or machine listening application can interact with a performer.
@@ -65,13 +66,20 @@ class Wait extends ListenAction {
   }) : super(name: 'wait');
 }
 
-class OtherListening extends ListenAction {
+class OtherListening extends ListenAction implements ListeningInteraction {
   String? type;
 
   OtherListening({
     required super.player,
     required super.timeOnly,
   }) : super(name: 'other-listening');
+
+  factory OtherListening.fromXml(XmlElement xmlElement) {
+    return OtherListening(
+      player: "",
+      timeOnly: "",
+    );
+  }
 }
 
 
