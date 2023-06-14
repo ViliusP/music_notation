@@ -85,6 +85,11 @@ class MetronomeBeatUnit extends Metronome {
 class PerMinute {
   String value;
 
+  /// Font includes:
+  /// - A comma-separated list of font names;
+  /// - One of the CSS sizes or a numeric point size.
+  /// - Normal or italic style.
+  /// - Normal or bold weight.
   Font font;
 
   PerMinute({

@@ -233,7 +233,14 @@ class Elision {
   // ------ Attributes ------- //
   // ------------------------- //
 
+  /// Font includes:
+  /// - A comma-separated list of font names;
+  /// - One of the CSS sizes or a numeric point size.
+  /// - Normal or italic style.
+  /// - Normal or bold weight.
   Font font;
+
+  /// Indicates the color of an element.
   Color color;
 
   /// smufl-lyrics-glyph-name
@@ -272,8 +279,16 @@ class TextElementData {
   // ------ Attributes ------- //
   // ------------------------- //
 
+  /// Font includes:
+  /// - A comma-separated list of font names;
+  /// - One of the CSS sizes or a numeric point size.
+  /// - Normal or italic style.
+  /// - Normal or bold weight.
   Font font;
+
+  /// Indicates the color of an element.
   Color color;
+
   TextDecoration decoration;
 
   /// The rotation attribute is used to rotate text around the alignment point specified by the halign and valign attributes.

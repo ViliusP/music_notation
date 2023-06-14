@@ -47,10 +47,13 @@ class Direction extends MusicDataElement {
   /// If a default-x, justify, or halign attribute is present, it overrides this attribute.
   bool directive;
 
+  /// Specifies an ID that is unique to the entire document.
   String? id;
 
+  /// Indicates whether something is above or below another element, such as a note or a notation.
   Placement? placement;
 
+  /// Distinguishes elements that are associated with a system rather than the particular part where the element appears.
   SystemRelation system;
 
   Direction({

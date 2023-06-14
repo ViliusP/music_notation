@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:music_notation/models/data_types/group_symbol_value.dart';
 import 'package:music_notation/models/data_types/start_stop.dart';
 import 'package:music_notation/models/editioral.dart';
 import 'package:music_notation/models/generic.dart';
@@ -193,15 +194,6 @@ class GroupSymbol {
   });
 
   static fromXml(XmlElement? element) {}
-}
-
-/// The group-symbol-value type indicates how the symbol for a group or multi-staff part is indicated in the score.
-enum GroupSymbolValue {
-  none,
-  brace,
-  line,
-  bracket,
-  square;
 }
 
 /// The group-barline type indicates if the group should have common barlines.

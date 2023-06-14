@@ -33,8 +33,14 @@ class Notehead {
   /// Sometimes this is a formatting choice, and sometimes this is a refinement of the semantic meaning of an element.
   String? smufl;
 
+  /// Indicates the color of an element.
   Color color;
 
+  /// Font includes:
+  /// - A comma-separated list of font names;
+  /// - One of the CSS sizes or a numeric point size.
+  /// - Normal or italic style.
+  /// - Normal or bold weight.
   Font font;
 
   Notehead({

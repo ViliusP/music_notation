@@ -109,8 +109,14 @@ class TupletNumber {
   /// The value space of nonNegativeInteger is the infinite set {0,1,2,...}. The base type of nonNegativeInteger is integer.
   int value;
 
+  /// Font includes:
+  /// - A comma-separated list of font names;
+  /// - One of the CSS sizes or a numeric point size.
+  /// - Normal or italic style.
+  /// - Normal or bold weight.
   Font font;
 
+  /// Indicates the color of an element.
   Color color;
 
   TupletNumber({
@@ -124,6 +130,11 @@ class TupletNumber {
 class TupletType {
   NoteTypeValue value;
 
+  /// Font includes:
+  /// - A comma-separated list of font names;
+  /// - One of the CSS sizes or a numeric point size.
+  /// - Normal or italic style.
+  /// - Normal or bold weight.
   Font font;
 
   /// Indicates the color of an element.
@@ -138,8 +149,14 @@ class TupletType {
 
 /// The tuplet-dot type is used to specify dotted tuplet types.
 class TupletDot {
+  /// Font includes:
+  /// - A comma-separated list of font names;
+  /// - One of the CSS sizes or a numeric point size.
+  /// - Normal or italic style.
+  /// - Normal or bold weight.
   Font font;
 
+  /// Indicates the color of an element.
   Color color;
 
   TupletDot({
@@ -154,14 +171,3 @@ enum ShowTuplet {
   both,
   none;
 }
-
-// <xs:simpleType name="show-tuplet">
-// 	<xs:annotation>
-// 		<xs:documentation></xs:documentation>
-// 	</xs:annotation>
-// 	<xs:restriction base="xs:token">
-// 		<xs:enumeration value="actual"/>
-// 		<xs:enumeration value="both"/>
-// 		<xs:enumeration value="none"/>
-// 	</xs:restriction>
-// </xs:simpleType>
