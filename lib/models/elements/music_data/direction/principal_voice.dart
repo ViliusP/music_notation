@@ -1,5 +1,5 @@
 import 'package:music_notation/models/data_types/start_stop.dart';
-import 'package:music_notation/models/elements/music_data/direction/direction_type.dart';
+import 'package:music_notation/models/elements/music_data/direction/direction.dart';
 import 'package:music_notation/models/printing.dart';
 
 class PrincipalVoice implements DirectionType {

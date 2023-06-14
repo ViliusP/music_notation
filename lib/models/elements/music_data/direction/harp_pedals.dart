@@ -1,4 +1,4 @@
-import 'package:music_notation/models/elements/music_data/direction/direction_type.dart';
+import 'package:music_notation/models/elements/music_data/direction/direction.dart';
 import 'package:music_notation/models/elements/music_data/note/note.dart';
 import 'package:music_notation/models/printing.dart';
 
