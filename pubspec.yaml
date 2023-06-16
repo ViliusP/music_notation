@@ -34,7 +34,7 @@ flutter:
   fonts:
     - family: Sebastian
       fonts:
-        - asset: smufl_fonts/sebastian/sebastian.otf
+        - asset: lib/smufl_fonts/Sebastian/Sebastian.otf
     - family: SebastianText
       fonts:
-        - asset: smufl_fonts/sebastianText.ttf
+        - asset: lib/smufl_fonts/Sebastian/SebastianText.otf 

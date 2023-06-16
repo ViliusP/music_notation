@@ -1,0 +1,20 @@
+import 'package:flutter/widgets.dart';
+import 'package:music_notation/src/models/score.dart';
+import 'package:music_notation/src/notation_painter/score_partwise_painter.dart';
+
+class NotationCanvas extends StatelessWidget {
+  final ScorePartwise scorePartwise;
+
+  const NotationCanvas({
+    super.key,
+    required this.scorePartwise,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: ScorePartwisePainter(scorePartwise),
+      size: const Size(100, 100),
+    );
+  }
+}

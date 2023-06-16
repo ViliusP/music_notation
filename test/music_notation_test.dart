@@ -1,6 +1,6 @@
 // import 'package:flutter_test/flutter_test.dart';
 
-// import 'package:music_notation/music_notation.dart';
+// import 'package:music_notation/src/music_notation.dart';
 
 // void main() {
 //   test('adds one to input values', () {
