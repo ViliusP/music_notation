@@ -146,6 +146,11 @@ class ScorePart implements PartListElement {
       id: id,
     );
   }
+
+  // TODO
+  XmlElement toXml() {
+    return XmlElement(XmlName("local"));
+  }
 }
 
 /// The part-link type allows MusicXML data for both score and parts to be contained within a single compressed MusicXML file.
