@@ -2,6 +2,7 @@ import 'package:music_notation/src/models/data_types/group_symbol_value.dart';
 import 'package:music_notation/src/models/data_types/start_stop.dart';
 import 'package:music_notation/src/models/elements/editorial.dart';
 import 'package:music_notation/src/models/elements/score/score_part.dart';
+import 'package:music_notation/src/models/invalid_xml_element_exception.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/printing.dart';
@@ -11,17 +12,29 @@ import 'package:music_notation/src/models/text.dart';
 ///
 /// Each part has an ID that is used later within the musical data.
 ///
-/// Since parts may be encoded separately and combined later, identification elements are present at both the score and score-part levels.
+/// Since parts may be encoded separately and combined later,
+/// identification elements are present at both the score and score-part levels.
 ///
-/// There must be at least one score-part, combined as desired with part-group elements that indicate braces and brackets.
+/// There must be at least one score-part,
+/// combined as desired with part-group elements that indicate braces and brackets.
 ///
-/// Parts are ordered from top to bottom in a score based on the order in which they appear in the part-list.
+/// Parts are ordered from top to bottom in a score based on the order
+/// in which they appear in the part-list.
+///
+/// For full specification,
+/// see: https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/part-list/.
 class PartList {
-  // TODO: wtf this spec?
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
+
+  /// For defintion look at [PartGroup].
   final List<PartGroup> partGroups;
+
+  /// For defintion look at [ScorePart].
   final ScorePart scorePart;
 
-  /// // This could be PartGroup or ScorePart;
+  /// This list can conntain [PartGroup] and/or [ScorePart].
   final List<PartListElement> additionalParts;
 
   PartList({
@@ -31,45 +44,62 @@ class PartList {
   });
 
   factory PartList.fromXml(XmlElement xmlElement) {
-    return PartList(scorePart: ScorePart.fromXml(xmlElement));
-    // return PartList(
-    //   partGroups: xmlElement
-    //       .findElements('part-group')
-    //       .map((e) => PartGroup.fromXml(e))
-    //       .toList(),
-    //   scorePart: xmlElement
-    //       .findElements('score-part')
-    //       .map((e) => ScorePart.fromXml(e))
-    //       .toList(),
-    //   additionalPartGroupOrScorePart:
-    //       xmlElement.children.whereType<XmlElement>().map((e) {
-    //     final element = e;
-    //     switch (element.name.toString()) {
-    //       case 'part-group':
-    //         return PartGroup.fromXml(element);
-    //       case 'score-part':
-    //         return ScorePart.fromXml(element);
-    //       default:
-    //         throw ArgumentError(
-    //             'Unsupported element ${element.name.toString()}');
-    //     }
-    //   }).toList(),
-    // );
+    final partGroupsElements = xmlElement.children
+        .whereType<XmlElement>()
+        .takeWhile((element) => element.name.local == 'part-group')
+        .map((e) => PartGroup.fromXml(xmlElement));
+
+    final children = xmlElement.children.whereType<XmlElement>().toList();
+    final firstScorePartIndex = children.indexWhere(
+      (element) => element.name.local == 'score-part',
+    );
+
+    if (firstScorePartIndex == -1) {
+      throw XmlElementRequired('No "score-part" element found in "part-list"');
+    }
+
+    final firstScorePart = children[firstScorePartIndex];
+    final remainingElements = children.sublist(firstScorePartIndex + 1);
+
+    final List<PartListElement> additionalParts = [];
+
+    for (var element in remainingElements) {
+      switch (element.name.local) {
+        case 'score-part':
+          additionalParts.add(ScorePart.fromXml(element));
+          break;
+        case 'part-group':
+          additionalParts.add(PartGroup.fromXml(element));
+          break;
+        default:
+          throw InvalidXmlElementException(
+            'Wrong child in "part-list" element',
+            xmlElement,
+          );
+      }
+    }
+
+    return PartList(
+      partGroups: partGroupsElements.toList(),
+      scorePart: ScorePart.fromXml(firstScorePart),
+      additionalParts: additionalParts,
+    );
   }
 
+  // TODO: test
   XmlElement toXml() {
     final children = <XmlElement>[];
     children.addAll(partGroups.map((e) => e.toXml()));
-    // children.addAll(scoreParts.map((e) => e.toXml()));
-    // children.addAll(additionalPartGroupOrScorePart.map((e) {
-    //   if (e is PartGroup) {
-    //     return e.toXml();
-    //   } else if (e is ScorePart) {
-    //     return e.toXml();
-    //   } else {
-    //     throw ArgumentError('Unsupported type ${e.runtimeType}');
-    //   }
-    // }));
+    children.add(scorePart.toXml());
+    children.addAll(additionalParts.map((e) {
+      if (e is PartGroup) {
+        return e.toXml();
+      } else if (e is ScorePart) {
+        return e.toXml();
+      } else {
+        throw ArgumentError('Unsupported type ${e.runtimeType}');
+      }
+    }));
     return XmlElement(XmlName('part-list'), [], children);
   }
 }
