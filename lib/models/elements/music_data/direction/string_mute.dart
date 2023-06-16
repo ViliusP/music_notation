@@ -1,5 +1,4 @@
 import 'package:music_notation/models/elements/music_data/direction/direction.dart';
-import 'package:music_notation/models/elements/music_data/direction/direction_type.dart';
 import 'package:music_notation/models/printing.dart';
 
 /// The string-mute type represents string mute on and mute off symbols.
