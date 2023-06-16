@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
+import 'package:music_notation/src/models/elements/editorial.dart';
 import 'package:music_notation/src/models/generic.dart';
 import 'package:music_notation/src/models/invalid_xml_element_exception.dart';
-import 'package:music_notation/src/models/part_list.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/utilities.dart';
 import 'package:xml/xml.dart';

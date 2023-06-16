@@ -1,13 +1,10 @@
-import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/data_types/group_symbol_value.dart';
 import 'package:music_notation/src/models/data_types/start_stop.dart';
-import 'package:music_notation/src/models/editioral.dart';
-import 'package:music_notation/src/models/generic.dart';
-import 'package:music_notation/src/models/utilities.dart';
+import 'package:music_notation/src/models/elements/editorial.dart';
+import 'package:music_notation/src/models/elements/score/score_part.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/printing.dart';
-import 'package:music_notation/src/models/score_part.dart';
 import 'package:music_notation/src/models/text.dart';
 
 /// The part-list identifies the different musical parts in this document.
@@ -22,40 +19,42 @@ import 'package:music_notation/src/models/text.dart';
 class PartList {
   // TODO: wtf this spec?
   final List<PartGroup> partGroups;
-  final List<ScorePart> scoreParts;
-  final List<dynamic>
-      additionalPartGroupOrScorePart; // This could be PartGroup or ScorePart
+  final ScorePart scorePart;
+
+  /// // This could be PartGroup or ScorePart;
+  final List<PartListElement> additionalParts;
 
   PartList({
-    required this.partGroups,
-    required this.scoreParts,
-    required this.additionalPartGroupOrScorePart,
+    this.partGroups = const [],
+    required this.scorePart,
+    this.additionalParts = const [],
   });
 
   factory PartList.fromXml(XmlElement xmlElement) {
-    return PartList(
-      partGroups: xmlElement
-          .findElements('part-group')
-          .map((e) => PartGroup.fromXml(e))
-          .toList(),
-      scoreParts: xmlElement
-          .findElements('score-part')
-          .map((e) => ScorePart.fromXml(e))
-          .toList(),
-      additionalPartGroupOrScorePart:
-          xmlElement.children.whereType<XmlElement>().map((e) {
-        final element = e;
-        switch (element.name.toString()) {
-          case 'part-group':
-            return PartGroup.fromXml(element);
-          case 'score-part':
-            return ScorePart.fromXml(element);
-          default:
-            throw ArgumentError(
-                'Unsupported element ${element.name.toString()}');
-        }
-      }).toList(),
-    );
+    return PartList(scorePart: ScorePart.fromXml(xmlElement));
+    // return PartList(
+    //   partGroups: xmlElement
+    //       .findElements('part-group')
+    //       .map((e) => PartGroup.fromXml(e))
+    //       .toList(),
+    //   scorePart: xmlElement
+    //       .findElements('score-part')
+    //       .map((e) => ScorePart.fromXml(e))
+    //       .toList(),
+    //   additionalPartGroupOrScorePart:
+    //       xmlElement.children.whereType<XmlElement>().map((e) {
+    //     final element = e;
+    //     switch (element.name.toString()) {
+    //       case 'part-group':
+    //         return PartGroup.fromXml(element);
+    //       case 'score-part':
+    //         return ScorePart.fromXml(element);
+    //       default:
+    //         throw ArgumentError(
+    //             'Unsupported element ${element.name.toString()}');
+    //     }
+    //   }).toList(),
+    // );
   }
 
   XmlElement toXml() {
@@ -75,6 +74,8 @@ class PartList {
   }
 }
 
+abstract class PartListElement {}
+
 /// The part-group element indicates groupings of parts in the score, usually indicated by braces and brackets.
 ///
 /// Braces that are used for multi-staff parts should be defined in the attributes element for that part.
@@ -91,7 +92,7 @@ class PartList {
 /// By default, multi-staff parts include a brace symbol and (if appropriate given the bar-style) common barlines.
 ///
 /// The symbol formatting for a multi-staff part can be more fully specified using the part-symbol element.
-class PartGroup {
+class PartGroup implements PartListElement {
   GroupName? name;
   GroupName? nameAbbrevation;
 
@@ -233,122 +234,4 @@ class GroupName {
   });
 
   static fromXml(XmlElement? element) {}
-}
-
-/// The editorial group specifies editorial information for a musical element.
-class Editorial {
-  Footnote? footnote;
-
-  Level? level;
-
-  Editorial({
-    this.footnote,
-    this.level,
-  });
-
-  Editorial.empty();
-
-  static Editorial fromXml(XmlElement xmlElement) {
-    return Editorial();
-  }
-}
-
-/// The level type is used to specify editorial information for different MusicXML elements.
-///
-/// The content contains identifying and/or descriptive text about the editorial status of the parent element.
-///
-/// If the reference attribute is yes, this indicates editorial information that is for display only and should not affect playback.
-///
-/// For instance, a modern edition of older music may set reference="yes" on the attributes containing the music's original clef, key, and time signature.
-/// It is no if not specified.
-///
-/// The type attribute indicates whether the editorial information applies to the start of a series of symbols, the end of a series of symbols, or a single symbol.
-///
-/// It is single if not specified for compatibility with earlier MusicXML versions.
-class Level {
-  String value;
-  bool reference;
-  LevelDisplay display;
-
-  Level({
-    required this.value,
-    required this.reference,
-    required this.display,
-  });
-}
-
-/// The level-display attribute group specifies three common ways to indicate editorial indications:
-///
-/// putting parentheses or square brackets around a symbol, or making the symbol a different size.
-///
-/// If not specified, they are left to application defaults.
-///
-/// It is used by the level and accidental elements.
-class LevelDisplay {
-  /// Specifies whether or not parentheses are put around a symbol for an editorial indication.
-  ///
-  /// If not specified, it is left to application defaults.
-  bool? parentheses;
-
-  /// Specifies whether or not brackets are put around a symbol for an editorial indication.
-  ///
-  /// If not specified, it is left to application defaults.
-  bool? bracket;
-
-  /// Specifies the symbol size to use for an editorial indication.
-  ///
-  /// If not specified, it is left to application defaults.
-  SymbolSize? size;
-
-  LevelDisplay({
-    this.parentheses,
-    this.bracket,
-    this.size,
-  });
-
-  factory LevelDisplay.fromXml(XmlElement xmlElement) {
-    String? rawParentheses = xmlElement.getAttribute("parentheses");
-    bool? parentheses;
-
-    if (rawParentheses != null) {
-      parentheses = YesNo.toBool(rawParentheses);
-    }
-
-    String? rawBracket = xmlElement.getAttribute("bracket");
-    bool? bracket;
-
-    if (rawBracket != null) {
-      bracket = YesNo.toBool(rawBracket);
-    }
-
-    String? rawSimbolSize = xmlElement.getAttribute("symbol-size");
-    SymbolSize? size;
-
-    if (rawSimbolSize != null) {
-      size = SymbolSize.fromString(rawSimbolSize);
-    }
-
-    return LevelDisplay(
-      parentheses: parentheses,
-      bracket: bracket,
-      size: size,
-    );
-  }
-}
-
-/// The symbol-size type is used to distinguish between full, cue sized, grace cue sized, and oversized symbols.
-enum SymbolSize {
-  full,
-  cue,
-  graceCue,
-  large;
-
-  static SymbolSize? fromString(String value) {
-    return SymbolSize.values.firstWhereOrNull(
-      (e) => e.name == hyphenToCamelCase(value),
-    );
-  }
-
-  @override
-  String toString() => camelCaseToHyphen(name);
 }

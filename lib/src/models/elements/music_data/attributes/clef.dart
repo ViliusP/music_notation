@@ -1,4 +1,4 @@
-import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
+import 'package:music_notation/src/models/data_types/symbol_size.dart';
 import 'package:music_notation/src/models/printing.dart';
 
 /// Clefs are represented by a combination of sign, line, and clef-octave-change elements.

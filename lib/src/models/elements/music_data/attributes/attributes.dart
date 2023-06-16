@@ -1,4 +1,4 @@
-import 'package:music_notation/src/models/editioral.dart';
+import 'package:music_notation/src/models/elements/editorial.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/attribute_directive.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/key.dart';
@@ -7,7 +7,6 @@ import 'package:music_notation/src/models/elements/music_data/attributes/part_sy
 import 'package:music_notation/src/models/elements/music_data/attributes/staff_details.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
-import 'package:music_notation/src/models/part_list.dart';
 import 'package:xml/xml.dart';
 
 /// The attributes element contains musical information that typically changes on measure boundaries.

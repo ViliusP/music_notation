@@ -67,6 +67,7 @@
 // 	</xs:complexType>
 
 import 'package:collection/collection.dart';
+import 'package:music_notation/src/models/elements/editorial.dart';
 import 'package:music_notation/src/models/elements/music_data/note/notations/notation.dart';
 import 'package:music_notation/src/models/elements/music_data/note/accidental.dart';
 import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
@@ -79,11 +80,9 @@ import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
 import 'package:music_notation/src/models/elements/music_data/note/time_modification.dart';
 import 'package:xml/xml.dart';
 
-import 'package:music_notation/src/models/editioral.dart';
 import 'package:music_notation/src/models/generic.dart';
 import 'package:music_notation/src/models/invalid_xml_element_exception.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
-import 'package:music_notation/src/models/part_list.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/text.dart';
 

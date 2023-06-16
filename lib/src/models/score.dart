@@ -1,5 +1,6 @@
-import 'package:music_notation/src/models/part.dart';
-import 'package:music_notation/src/models/score_header.dart';
+import 'package:music_notation/src/models/elements/score/part.dart';
+import 'package:music_notation/src/models/elements/score/score_header.dart';
+import 'package:xml/xml.dart';
 
 /// The score-partwise element is the root element for a partwise MusicXML score.
 /// It includes a score-header group followed by a series of parts with measures inside.
@@ -15,6 +16,13 @@ class ScorePartwise {
     required this.parts,
     this.version = "1.0",
   });
+
+  factory ScorePartwise.fromXml(XmlDocument xmlDocument) {
+    return ScorePartwise(
+      scoreHeader: ScoreHeader.fromXml(xmlDocument.rootElement),
+      parts: [],
+    );
+  }
 }
 
 /// The score-timewise element is the root element for a timewise MusicXML score.

@@ -1,3 +1,4 @@
+import 'package:music_notation/src/models/elements/score/score_part.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:xml/xml.dart';
 
@@ -5,7 +6,6 @@ import 'package:music_notation/src/models/data_types/system_relation.dart';
 import 'package:music_notation/src/models/defaults.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 import 'package:music_notation/src/models/generic.dart';
-import 'package:music_notation/src/models/score_part.dart';
 
 /// The print type contains general printing parameters, including layout elements.
 ///

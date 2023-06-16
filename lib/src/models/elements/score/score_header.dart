@@ -1,21 +1,9 @@
 import 'package:music_notation/src/models/credit.dart';
 import 'package:music_notation/src/models/defaults.dart';
 import 'package:music_notation/src/models/elements/link.dart';
+import 'package:music_notation/src/models/elements/score/part_list.dart';
 import 'package:music_notation/src/models/identification.dart';
-import 'package:music_notation/src/models/part_list.dart';
-import 'package:music_notation/src/models/score_part.dart';
 import 'package:xml/xml.dart';
-
-// <xs:group name="score-header">
-// 	<xs:annotation>
-// 		<xs:documentation></xs:documentation>
-// 	</xs:annotation>
-// 	<xs:sequence>
-
-// 		<xs:element name="credit" type="credit" minOccurs="0" maxOccurs="unbounded"/>
-// 		<xs:element name="part-list" type="part-list"/>
-// 	</xs:sequence>
-// </xs:group>
 
 /// The score-header group contains basic score metadata about the work and movement,
 /// score-wide defaults for layout and fonts,
@@ -45,16 +33,16 @@ class ScoreHeader {
 
   factory ScoreHeader.fromXml(XmlElement xmlElement) {
     return ScoreHeader(
-      work: Work.fromXml(xmlElement.findElements('work').first),
-      movementNumber: xmlElement.getElement('movement-number')?.text,
-      movementTitle: xmlElement.getElement('movement-title')?.text,
-      identification: Identification.fromXml(
-          xmlElement.findElements('identification').first),
-      defaults: Defaults.fromXml(xmlElement.findElements('defaults').first),
-      credits: xmlElement
-          .findElements('credit')
-          .map((e) => Credit.fromXml(e))
-          .toList(),
+      // work: Work.fromXml(xmlElement.findElements('work').first),
+      // movementNumber: xmlElement.getElement('movement-number')?.text,
+      // movementTitle: xmlElement.getElement('movement-title')?.text,
+      // identification: Identification.fromXml(
+      //     xmlElement.findElements('identification').first),
+      // defaults: Defaults.fromXml(xmlElement.findElements('defaults').first),
+      // credits: xmlElement
+      //     .findElements('credit')
+      //     .map((e) => Credit.fromXml(e))
+      //     .toList(),
       partList: PartList.fromXml(xmlElement.findElements('part-list').first),
     );
   }

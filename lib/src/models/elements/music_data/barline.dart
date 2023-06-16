@@ -1,3 +1,4 @@
+import 'package:music_notation/src/models/elements/editorial.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 import 'package:xml/xml.dart';
 
@@ -6,7 +7,6 @@ import 'package:music_notation/src/models/elements/music_data/direction/coda.dar
 import 'package:music_notation/src/models/elements/music_data/direction/segno.dart';
 import 'package:music_notation/src/models/elements/music_data/note/notations/notation.dart';
 import 'package:music_notation/src/models/elements/music_data/note/notations/ornaments.dart';
-import 'package:music_notation/src/models/part_list.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/text.dart';
 

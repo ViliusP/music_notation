@@ -1,12 +1,12 @@
 import 'package:music_notation/src/models/elements/link.dart';
+import 'package:music_notation/src/models/elements/score/part_list.dart';
+import 'package:music_notation/src/models/instruments.dart';
 import 'package:music_notation/src/models/midi.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/generic.dart';
 import 'package:music_notation/src/models/identification.dart';
 import 'package:music_notation/src/models/text.dart';
-
-import 'instruments.dart';
 
 /// The score-part type collects part-wide information for each part in a score.
 ///
@@ -18,7 +18,7 @@ import 'instruments.dart';
 /// Initial midi-instrument assignments may be made here as well.
 ///
 /// The score-instrument elements are used when there are multiple instruments per track.
-class ScorePart {
+class ScorePart implements PartListElement {
   /// Required.
   String id;
 
