@@ -1,3 +1,4 @@
+import 'package:music_notation/models/editioral.dart';
 import 'package:music_notation/models/elements/music_data/attributes/attribute_directive.dart';
 import 'package:music_notation/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/models/elements/music_data/attributes/key.dart';
@@ -5,13 +6,15 @@ import 'package:music_notation/models/elements/music_data/attributes/measure_sty
 import 'package:music_notation/models/elements/music_data/attributes/part_symbol.dart';
 import 'package:music_notation/models/elements/music_data/attributes/staff_details.dart';
 import 'package:music_notation/models/elements/music_data/attributes/time.dart';
+import 'package:music_notation/models/elements/music_data/music_data.dart';
 import 'package:music_notation/models/part_list.dart';
+import 'package:xml/xml.dart';
 
 /// The attributes element contains musical information that typically changes on measure boundaries.
 /// This includes key and time signatures, clefs, transpositions, and staving.
 /// When attributes are changed mid-measure, it affects the music in score order,
 /// not in MusicXML document order.
-class Attributes {
+class Attributes implements MusicDataElement {
   // ------------------------- //
   // ------   Content   ------ //
   // ------------------------- //
@@ -73,7 +76,7 @@ class Attributes {
   /// It is only used in score files that contain a concert-score element in the defaults.
   ///
   /// This allows concert scores with transposed parts to be represented in a single uncompressed MusicXML file.
-  List<Transposition> tranposition;
+  List<Transposition> tranpositions;
 
   /// Directives are like directions, but can be grouped together with attributes for convenience.
   ///
@@ -93,17 +96,23 @@ class Attributes {
   Attributes({
     required this.editorial,
     this.divisions,
-    required this.keys,
-    required this.times,
-    required this.staves,
+    this.keys = const [],
+    this.times = const [],
+    this.staves = 1,
     this.partSymbol,
-    required this.instruments,
-    required this.clefs,
-    required this.staffDetails,
-    required this.tranposition,
-    required this.directives,
-    required this.measureStyles,
+    this.instruments = 1,
+    this.clefs = const [],
+    this.staffDetails = const [],
+    this.tranpositions = const [],
+    this.directives = const [],
+    this.measureStyles = const [],
   });
+
+  static Attributes fromXml(XmlElement xmlElement) {
+    return Attributes(
+      editorial: Editorial.fromXml(xmlElement),
+    );
+  }
 }
 
 abstract class Transposition {

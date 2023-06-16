@@ -9,7 +9,7 @@ import 'package:xml/xml.dart';
 ///
 /// Duration values should always be positive,
 /// and should not cross measure boundaries or mid-measure changes in the divisions value.
-class Forward extends MusicDataElement {
+class Forward implements MusicDataElement {
   /// The duration element is defined within a group due to its uses within the note, figured-bass, backup, and forward elements.
   double duration;
 

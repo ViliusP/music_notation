@@ -1,8 +1,10 @@
 import 'package:music_notation/models/elements/music_data/harmony/harmony.dart';
 import 'package:music_notation/models/elements/music_data/note/note.dart';
 import 'package:music_notation/models/elements/style_text.dart';
+import 'package:music_notation/models/invalid_xml_element_exception.dart';
 import 'package:music_notation/models/printing.dart';
 import 'package:music_notation/models/text.dart';
+import 'package:xml/xml.dart';
 
 /// A harmony element can contain many stacked chords (e.g. V of II).
 ///
@@ -31,8 +33,22 @@ abstract class HarmonyChord {
     required this.kind,
     this.inversion,
     this.bass,
-    required this.degree,
+    this.degree = const [],
   });
+
+  static HarmonyChord fromXml(XmlElement xmlElement) {
+    switch (xmlElement.name.local) {
+      case "root":
+        return HarmonyRootChord.fromXml(xmlElement);
+      case "numeral":
+        return HarmonyNumeralChord.fromXml(xmlElement);
+      case "function":
+        return HarmonyFunctionChord.fromXml(xmlElement);
+
+      default:
+        throw ("Hello world"); // TODO
+    }
+  }
 }
 
 /// The root type indicates a pitch like C, D, E vs. a scale degree like 1, 2, 3.
@@ -55,14 +71,21 @@ class HarmonyRootChord extends HarmonyChord {
   /// The location attribute indicates whether the alteration should appear to the left or the right of the root-step;
   ///
   /// it is right by default.
-  HarmonyAlter rootAlter;
+  HarmonyAlter? rootAlter;
 
   HarmonyRootChord({
     required this.rootStep,
-    required this.rootAlter,
+    this.rootAlter,
     required super.kind,
-    required super.degree,
+    super.degree,
   });
+
+  static HarmonyRootChord fromXml(XmlElement xmlElement) {
+    return HarmonyRootChord(
+      kind: Kind.fromXml(xmlElement),
+      rootStep: StyledStep.fromXml(xmlElement),
+    );
+  }
 }
 
 /// The numeral type represents the Roman numeral or Nashville number part of a harmony.
@@ -92,8 +115,15 @@ class HarmonyNumeralChord extends HarmonyChord {
     this.harmonyAlter,
     this.key,
     required super.kind,
-    required super.degree,
+    super.degree,
   });
+
+  static HarmonyNumeralChord fromXml(XmlElement xmlElement) {
+    return HarmonyNumeralChord(
+      value: NumeralRoot.fromXml(xmlElement),
+      kind: Kind.fromXml(xmlElement),
+    );
+  }
 }
 
 /// The numeral-root type represents the Roman numeral or
@@ -107,15 +137,22 @@ class HarmonyNumeralChord extends HarmonyChord {
 class NumeralRoot {
   int value;
 
-  String text;
+  String? text;
 
   PrintStyle printStyle;
 
   NumeralRoot({
     required this.value,
-    required this.text,
+    this.text,
     required this.printStyle,
   });
+
+  factory NumeralRoot.fromXml(XmlElement xmlElement) {
+    return NumeralRoot(
+      value: 1,
+      printStyle: PrintStyle.fromXml(xmlElement),
+    );
+  }
 }
 
 /// The numeral-key type is used when the key for the numeral is different
@@ -186,8 +223,15 @@ class HarmonyFunctionChord extends HarmonyChord {
     required this.value,
     required this.printStyle,
     required super.kind,
-    required super.degree,
   });
+
+  static HarmonyFunctionChord fromXml(XmlElement xmlElement) {
+    return HarmonyFunctionChord(
+      value: xmlElement.innerText,
+      printStyle: PrintStyle.fromXml(xmlElement),
+      kind: Kind.fromXml(xmlElement),
+    );
+  }
 }
 
 /// The degree type is used to add, alter, or subtract individual notes in the chord.
@@ -316,16 +360,6 @@ enum DegreeSymbolValue {
 /// The attributes are used to indicate the formatting of the symbol.
 /// Since the kind element is the constant in all the harmony-chord groups
 /// that can make up a polychord, many formatting attributes are here.
-//
-/// The use-symbols attribute is yes if the kind should be represented
-/// when possible with harmony symbols rather than letters and numbers.
-///
-/// These symbols include:
-/// - major: a triangle, like Unicode 25B3
-/// - minor: -, like Unicode 002D
-/// - augmented: +, like Unicode 002B
-/// - diminished: °, like Unicode 00B0
-/// - half-diminished: ø, like Unicode 00F8
 ///
 /// For the major-minor kind, only the minor symbol is used when use-symbols is yes.
 /// The major symbol is set using the symbol attribute in the degree-value element.
@@ -345,32 +379,84 @@ enum DegreeSymbolValue {
 /// In this case, the corresponding degree elements should have the print-object attribute set to "no"
 /// to keep redundant alterations from being displayed.
 class Kind {
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
+
   KindValue value;
 
-  bool useSymbols;
+  // ------------------------- //
+  // ------ Attributes ------- //
+  // ------------------------- //
 
-  String text;
+  /// The use-symbols attribute is yes if the kind should be represented
+  /// when possible with harmony symbols rather than letters and numbers.
+  ///
+  /// These symbols include:
+  /// - major: a triangle, like Unicode 25B3
+  /// - minor: -, like Unicode 002D
+  /// - augmented: +, like Unicode 002B
+  /// - diminished: °, like Unicode 00B0
+  /// - half-diminished: ø, like Unicode 00F8
+  bool? useSymbols;
 
-  bool stackDegree;
+  /// Describes how the [Kind] should be spelled in a score.
+  ///
+  /// If the [useSymbols] attribute is true, this value follows the symbol.
+  ///
+  /// The default is implementation-dependent.
+  String? text;
 
-  bool parenthesesDegrees;
+  /// If yes, the [Degree] elements should be stacked above each other.
+  ///
+  /// The default is implementation-dependent.
+  bool? stackDegree;
+
+  /// The parentheses-degrees attribute is yes if all the degrees should be in parentheses.
+  ///
+  /// The default is implementation-dependent.
+  bool? parenthesesDegrees;
+
+  /// The bracket-degrees attribute is yes if all the degrees should be in a bracket.
+  ///
+  /// The default is implementation-dependent.
+  bool? bracketDegrees;
 
   PrintStyle printStyle;
 
-  HorizontalAlignment horizontalAlignment;
+  HorizontalAlignment? horizontalAlignment;
 
-  VerticalAlignment verticalAlignment;
+  VerticalAlignment? verticalAlignment;
 
   Kind({
     required this.value,
-    required this.useSymbols,
-    required this.text,
-    required this.stackDegree,
-    required this.parenthesesDegrees,
+    this.useSymbols,
+    this.text,
+    this.stackDegree,
+    this.parenthesesDegrees,
     required this.printStyle,
-    required this.horizontalAlignment,
-    required this.verticalAlignment,
+    this.horizontalAlignment,
+    this.verticalAlignment,
   });
+
+  factory Kind.fromXml(XmlElement xmlElement) {
+    String? rawValue = xmlElement.value;
+
+    if (rawValue == null) {
+      throw XmlElementRequired("The <kind> element must have content");
+    }
+
+    KindValue? value = KindValue.fromString(rawValue);
+
+    if (value == null) {
+      throw XmlElementRequired("The <kind> element must have correct content");
+    }
+
+    return Kind(
+      value: value,
+      printStyle: PrintStyle.fromXml(xmlElement),
+    );
+  }
 }
 
 /// A kind-value indicates the type of chord.
@@ -459,6 +545,10 @@ enum KindValue {
   tristan,
   other,
   none;
+
+  static KindValue? fromString(String value) {
+    throw UnimplementedError();
+  }
 }
 
 /// The inversion type represents harmony inversions.
@@ -526,13 +616,21 @@ class Bass {
 class StyledStep {
   Step value;
 
-  String text;
+  /// Indicates how the root should appear in a score if not using the element contents.
+  String? text;
 
   PrintStyle printStyle;
 
   StyledStep({
     required this.value,
-    required this.text,
+    this.text,
     required this.printStyle,
   });
+
+  factory StyledStep.fromXml(XmlElement xmlElement) {
+    return StyledStep(
+      value: Step.A,
+      printStyle: PrintStyle.fromXml(xmlElement),
+    );
+  }
 }

@@ -1,3 +1,4 @@
+import 'package:music_notation/models/elements/music_data/music_data.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/models/data_types/system_relation.dart';
@@ -27,7 +28,7 @@ import 'package:music_notation/models/text.dart';
 ///
 /// The segno, coda, and divisions attributes work the same way as in the sound element.
 /// They are used for playback when barline elements contain segno or coda child elements.
-class Barline {
+class Barline implements MusicDataElement {
   // ------------------------- //
   // ------   Content   ------ //
   // ------------------------- //
@@ -129,27 +130,6 @@ enum BarlineLocation {
   /// Mid-measure barline;
   middle;
 }
-
-// <xs:complexType name="barline">
-// 	<xs:annotation>
-// 		<xs:documentation></xs:documentation>
-// 	</xs:annotation>
-// 	<xs:sequence>
-// 		<xs:element name="bar-style" type="bar-style-color" minOccurs="0"/>
-// 		<xs:group ref="editorial"/>
-// 		<xs:element name="wavy-line" type="wavy-line" minOccurs="0"/>
-// 		<xs:element name="segno" type="segno" minOccurs="0"/>
-// 		<xs:element name="coda" type="coda" minOccurs="0"/>
-// 		<xs:element name="fermata" type="fermata" minOccurs="0" maxOccurs="2"/>
-// 		<xs:element name="ending" type="ending" minOccurs="0"/>
-// 		<xs:element name="repeat" type="repeat" minOccurs="0"/>
-// 	</xs:sequence>
-// 	<xs:attribute name="location" type="right-left-middle" default="right"/>
-// 	<xs:attribute name="segno" type="xs:token"/>
-// 	<xs:attribute name="coda" type="xs:token"/>
-// 	<xs:attribute name="divisions" type="divisions"/>
-// 	<xs:attributeGroup ref="optional-unique-id"/>
-// </xs:complexType>
 
 enum BarStyle {
   regular,

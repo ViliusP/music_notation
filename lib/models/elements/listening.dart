@@ -1,6 +1,8 @@
+import 'package:xml/xml.dart';
+
+import 'package:music_notation/models/elements/music_data/music_data.dart';
 import 'package:music_notation/models/elements/music_data/note/listen.dart';
 import 'package:music_notation/models/elements/offset.dart';
-import 'package:xml/xml.dart';
 
 /// The listen and listening types, new in Version 4.0,
 /// specify different ways that a score following or machine listening application can interact with a performer.
@@ -13,8 +15,19 @@ import 'package:xml/xml.dart';
 /// the listening offset element overrides the direction offset element if both elements are present.
 /// Note that the offset reflects the intended musical position for the change in state.
 /// It should not be used to compensate for latency issues in particular hardware configurations.
-class Listening {
+class Listening implements MusicDataElement {
+  List<ListeningInteraction> interactions;
+
   Offset? offset;
+
+  Listening({
+    required this.interactions,
+    this.offset,
+  });
+
+  factory Listening.fromXml(XmlElement xmlElement) {
+    return Listening(interactions: []);
+  }
 }
 
 /// The sync type specifies the style that a score following application

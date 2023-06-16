@@ -34,12 +34,13 @@
 // 		<xs:attributeGroup ref="optional-unique-id"/>
 // 	</xs:complexType>
 
+import 'package:music_notation/models/elements/bookmark.dart';
+import 'package:music_notation/models/elements/link.dart';
 import 'package:music_notation/models/elements/music_data/direction/image.dart';
 import 'package:music_notation/models/text.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/models/printing.dart';
-import 'package:music_notation/models/score_part.dart';
 
 /// The credit type represents the appearance of the title, composer, arranger, lyricist, copyright, dedication, and other text, symbols, and graphics that commonly appear on the first page of a score.
 ///
@@ -135,70 +136,6 @@ class Credit {
     }
 
     return xmlElement;
-  }
-}
-
-/// The link type serves as an outgoing simple XLink.
-///
-/// If a relative link is used within a document that is part of a compressed MusicXML file,
-/// the link is relative to the root folder of the zip file.
-class Link {
-  LinkAttributes attributes;
-  int? elementPosition;
-  String? name;
-  Position position;
-
-  Link({
-    required this.attributes,
-    this.elementPosition,
-    this.name,
-    required this.position,
-  });
-
-  factory Link.fromXml(XmlElement xmlElement) {
-    return Link(
-      name: xmlElement.getAttribute('name'),
-      position: Position.fromXml(xmlElement),
-      attributes: LinkAttributes.fromXml(xmlElement),
-      elementPosition: int.tryParse(xmlElement.getAttribute('element') ?? ''),
-    );
-  }
-
-  XmlElement toXml() {
-    var element = XmlElement(XmlName('link'));
-
-    if (elementPosition != null) {
-      element.attributes.add(
-        XmlAttribute(XmlName('element'), elementPosition.toString()),
-      );
-    }
-    // TODO
-
-    return element;
-  }
-}
-
-/// The bookmark type serves as a well-defined target for an incoming simple XLink.
-class Bookmark {
-  String id;
-  int? elementPosition;
-  String? elementName;
-
-  Bookmark({
-    required this.id,
-    this.elementPosition,
-    this.elementName,
-  });
-
-  factory Bookmark.fromXml(XmlElement xmlElement) {
-    // TODO
-    return Bookmark(id: "");
-  }
-
-  XmlElement toXml() {
-    var element = XmlElement(XmlName('bookmark'));
-
-    return element;
   }
 }
 

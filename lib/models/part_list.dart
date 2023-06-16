@@ -136,6 +136,8 @@ class PartGroup {
 // 		<xs:attribute name="number" type="xs:token" default="1"/>
 
   factory PartGroup.fromXml(XmlElement xmlElement) {
+    XmlElement? editorialElement = xmlElement.getElement('editorial');
+
     return PartGroup(
       name: GroupName.fromXml(xmlElement.getElement('group-name')),
       nameDisplay: NameDisplay.fromXml(
@@ -150,7 +152,9 @@ class PartGroup {
       groupBarline:
           GroupBarline.fromXml(xmlElement.getElement('group-barline')),
       groupTime: xmlElement.getElement('group-time') != null,
-      editorial: Editorial.fromXml(xmlElement.getElement('editorial')),
+      editorial: editorialElement != null
+          ? Editorial.fromXml(editorialElement)
+          : Editorial.empty(),
       type: StartStop.fromString(xmlElement.getAttribute('type')!),
       number: xmlElement.getAttribute('number', namespace: '*') ?? '1',
     );
@@ -233,24 +237,20 @@ class GroupName {
 
 /// The editorial group specifies editorial information for a musical element.
 class Editorial {
-  Footnote footnote;
+  Footnote? footnote;
 
-  Level level;
+  Level? level;
+
   Editorial({
-    required this.footnote,
-    required this.level,
+    this.footnote,
+    this.level,
   });
 
-  static fromXml(XmlElement? xmlElement) {}
-}
+  Editorial.empty();
 
-/// The level element specifies editorial information for different MusicXML elements.
-///
-/// It is defined within a group due to its multiple uses within the MusicXML schema.
-class Level {
-  LevelType level;
-
-  Level(this.level);
+  static Editorial fromXml(XmlElement xmlElement) {
+    return Editorial();
+  }
 }
 
 /// The level type is used to specify editorial information for different MusicXML elements.
@@ -265,15 +265,15 @@ class Level {
 /// The type attribute indicates whether the editorial information applies to the start of a series of symbols, the end of a series of symbols, or a single symbol.
 ///
 /// It is single if not specified for compatibility with earlier MusicXML versions.
-class LevelType {
+class Level {
   String value;
   bool reference;
-  LevelDisplay diplay;
+  LevelDisplay display;
 
-  LevelType({
+  Level({
     required this.value,
     required this.reference,
-    required this.diplay,
+    required this.display,
   });
 }
 

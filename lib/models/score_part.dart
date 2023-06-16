@@ -1,3 +1,4 @@
+import 'package:music_notation/models/elements/link.dart';
 import 'package:music_notation/models/midi.dart';
 import 'package:xml/xml.dart';
 
@@ -273,48 +274,5 @@ class Player {
   factory Player.fromXml(XmlElement xmlElement) {
     // TODO: not implemented
     throw UnimplementedError("TODO: not implemented");
-  }
-}
-
-/// The link-attributes group includes all the simple XLink attributes supported in the MusicXML format.
-///
-/// It is also used to connect a MusicXML score with MusicXML parts or a MusicXML opus.
-class LinkAttributes {
-  final String href;
-  final String type;
-  final String? role;
-  final String? title;
-  final String show;
-  final String actuate;
-
-  LinkAttributes({
-    required this.href,
-    this.type = 'simple',
-    this.role,
-    this.title,
-    this.show = 'replace',
-    this.actuate = 'onRequest',
-  });
-
-  factory LinkAttributes.fromXml(XmlElement xmlElement) {
-    return LinkAttributes(
-      href: xmlElement.getAttribute('xlink:href')!,
-      type: xmlElement.getAttribute('xlink:type') ?? 'simple',
-      role: xmlElement.getAttribute('xlink:role'),
-      title: xmlElement.getAttribute('xlink:title'),
-      show: xmlElement.getAttribute('xlink:show') ?? 'replace',
-      actuate: xmlElement.getAttribute('xlink:actuate') ?? 'onRequest',
-    );
-  }
-
-  Map<String, String?> toXml() {
-    return {
-      'xlink:href': href,
-      'xlink:type': type,
-      'xlink:role': role,
-      'xlink:title': title,
-      'xlink:show': show,
-      'xlink:actuate': actuate,
-    };
   }
 }

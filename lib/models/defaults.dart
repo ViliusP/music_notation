@@ -86,25 +86,25 @@ class Defaults {
 
 /// The layout group specifies the sequence of page, system, and staff layout elements that is common to both the defaults and print elements.
 class Layout {
-  PageLayout? pageLayout;
-  SystemLayout? systemLayout;
-  List<StaffLayout> staffLayouts;
+  PageLayout? page;
+  SystemLayout? system;
+  List<StaffLayout> staffs;
 
   Layout({
-    this.pageLayout,
-    this.systemLayout,
-    this.staffLayouts = const [],
+    this.page,
+    this.system,
+    this.staffs = const [],
   });
 
   factory Layout.fromXml(XmlElement xmlElement) {
     return Layout(
-      pageLayout: xmlElement.getElement('page-layout') != null
+      page: xmlElement.getElement('page-layout') != null
           ? PageLayout.fromXml(xmlElement.getElement('page-layout')!)
           : null,
-      systemLayout: xmlElement.getElement('system-layout') != null
+      system: xmlElement.getElement('system-layout') != null
           ? SystemLayout.fromXml(xmlElement.getElement('system-layout')!)
           : null,
-      staffLayouts: xmlElement
+      staffs: xmlElement
           .findElements('staff-layout')
           .map((element) => StaffLayout.fromXml(element))
           .toList(),
@@ -114,13 +114,13 @@ class Layout {
   XmlElement toXml() {
     var builder = XmlBuilder();
     builder.element('layout', nest: () {
-      if (pageLayout != null) {
-        builder.element('page-layout', nest: pageLayout!.toXml());
+      if (page != null) {
+        builder.element('page-layout', nest: page!.toXml());
       }
-      if (systemLayout != null) {
-        builder.element('system-layout', nest: systemLayout!.toXml());
+      if (system != null) {
+        builder.element('system-layout', nest: system!.toXml());
       }
-      for (var staffLayout in staffLayouts) {
+      for (var staffLayout in staffs) {
         builder.element('staff-layout', nest: staffLayout.toXml());
       }
     });

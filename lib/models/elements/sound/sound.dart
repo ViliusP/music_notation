@@ -1,3 +1,4 @@
+import 'package:music_notation/models/elements/music_data/music_data.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/models/elements/music_data/note/play.dart';
@@ -51,7 +52,7 @@ import 'package:music_notation/models/midi.dart';
 /// the sound offset element overrides the direction offset element if both elements are present.
 /// Note that the offset reflects the intended musical position for the change in sound.
 /// It should not be used to compensate for latency issues in particular hardware configurations.
-class Sound {
+class Sound implements MusicDataElement {
   // ------------------------- //
   // ------   Content   ------ //
   // ------------------------- //
@@ -79,7 +80,7 @@ class Sound {
   ///
   /// By default, a dacapo attribute indicates that the jump should occur the first time through.
   /// The times that jumps occur can be changed by using the time-only attribute.
-  bool dacapo;
+  bool? dacapo;
 
   /// Indicates the end point for a backward jump to a segno sign.
   /// If there are multiple jumps,
@@ -118,7 +119,7 @@ class Sound {
   /// such as a minuet and trio where no repeat is displayed at the start of the trio.
   /// This usually occurs after a barline.
   /// When used it always has the value of "yes".
-  bool forwardRepeat;
+  bool? forwardRepeat;
 
   /// Follows the final note or rest in a movement with a da capo or dal segno direction.
   /// If numeric, the value represents the actual duration of the final note or rest,
@@ -131,16 +132,16 @@ class Sound {
   String? timeOnly;
 
   /// Indicates which times to apply the sound element
-  /// if the <sound> element applies only particular times through a repeat.
-  bool pizzicato;
+  /// if the [Sound] element applies only particular times through a repeat.
+  bool? pizzicato;
 
   /// Allows placing of sound in a 3-D space relative to the listener,
   /// expressed in degrees ranging from -180 to 180. 0 is straight ahead,
   /// -90 is hard left, 90 is hard right, and -180 and 180 are directly behind the listener.
   ///
   /// Deprecated as of Version 2.0.
-  /// The <pan> element in the <midi-instrument> element should be used instead.
-  /// If both are present, the <pan> element takes priority.
+  /// The [pan] element in the [MidiInstrument] element should be used instead.
+  /// If both are present, the [pan] element takes priority.
   double? pan;
 
   /// Allows placing of sound in a 3-D space relative to the listener,
@@ -180,16 +181,16 @@ class Sound {
     this.offset,
     this.tempo,
     this.dynamics,
-    required this.dacapo,
+    this.dacapo,
     this.segno,
     this.delsegno,
     this.coda,
     this.tocoda,
     this.divisions,
-    required this.forwardRepeat,
+    this.forwardRepeat,
     this.fine,
     this.timeOnly,
-    required this.pizzicato,
+    this.pizzicato,
     this.pan,
     this.elevation,
     this.damperPedal,
@@ -198,6 +199,10 @@ class Sound {
     this.id,
     required this.soundSequence,
   });
+
+  static Sound fromXml(XmlElement xmlElement) {
+    return Sound(soundSequence: SoundSequence.fromXml(xmlElement));
+  }
 }
 
 /// An abstract class representing a yes-no-number type in MusicXML.
@@ -254,4 +259,8 @@ class SoundSequence {
     this.midiInstrument,
     this.play,
   });
+
+  factory SoundSequence.fromXml(XmlElement xmlElement) {
+    return SoundSequence();
+  }
 }

@@ -1,5 +1,6 @@
 import 'package:music_notation/models/credit.dart';
 import 'package:music_notation/models/defaults.dart';
+import 'package:music_notation/models/elements/link.dart';
 import 'package:music_notation/models/identification.dart';
 import 'package:music_notation/models/part_list.dart';
 import 'package:music_notation/models/score_part.dart';

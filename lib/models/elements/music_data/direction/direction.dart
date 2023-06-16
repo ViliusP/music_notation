@@ -16,7 +16,7 @@ import 'package:music_notation/models/elements/offset.dart';
 /// By default, a series of direction-type elements and a series of child elements of a direction-type within a single direction element follow one another in sequence visually.
 ///
 /// For a series of direction-type children, non-positional formatting attributes are carried over from the previous element by default.
-class Direction extends MusicDataElement {
+class Direction implements MusicDataElement {
   // ------------------------- //
   // ------   Content   ------ //
   // ------------------------- //

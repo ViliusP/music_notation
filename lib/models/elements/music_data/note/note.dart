@@ -115,7 +115,7 @@ import 'package:music_notation/models/text.dart';
 /// If a note is played only particular times through a repeat, the time-only attribute shows which times to play the note.
 ///
 /// The pizzicato attribute is used when just this note is sounded pizzicato, vs. the pizzicato element which changes overall playback between pizzicato and arco.
-class Note extends MusicDataElement {
+class Note implements MusicDataElement {
   // ------------------------- //
   // ------   Content   ------ //
   // ------------------------- //

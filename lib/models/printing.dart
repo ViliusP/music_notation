@@ -29,6 +29,8 @@ class PrintStyleAlign {
     required this.verticalAlignment,
   });
 
+  PrintStyleAlign.empty();
+
   factory PrintStyleAlign.fromXml(XmlElement xmlElement) {
     HorizontalAlignment? horizontalAlign;
     VerticalAlignment? verticalAlignment;

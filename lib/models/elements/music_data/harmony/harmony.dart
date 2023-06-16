@@ -27,10 +27,14 @@ import 'package:music_notation/models/data_types/left_right.dart';
 import 'package:music_notation/models/data_types/system_relation.dart';
 import 'package:music_notation/models/elements/music_data/harmony/chord.dart';
 import 'package:music_notation/models/elements/music_data/harmony/frame.dart';
+import 'package:music_notation/models/elements/music_data/music_data.dart';
 import 'package:music_notation/models/elements/music_data/note/note.dart';
 import 'package:music_notation/models/elements/offset.dart';
+import 'package:music_notation/models/generic.dart';
+import 'package:music_notation/models/invalid_xml_element_exception.dart';
 import 'package:music_notation/models/part_list.dart';
 import 'package:music_notation/models/printing.dart';
+import 'package:xml/xml.dart';
 
 /// The harmony type represents harmony analysis,including chord symbols
 /// in popular music as well as functional harmony analysis in classical music.
@@ -54,7 +58,7 @@ import 'package:music_notation/models/printing.dart';
 ///
 /// Harmony-chords with diagonal or horizontal arrangement are separated
 /// by diagonal lines or slashes.
-class Harmony {
+class Harmony implements MusicDataElement {
   // ------------------------- //
   // ------   Content   ------ //
   // ------------------------- //
@@ -78,7 +82,7 @@ class Harmony {
   ///
   /// Explicit harmonies have all note present in the music;
   /// implied have some notes missing but implied; alternate represents alternate analyses.
-  HarmonyType type;
+  HarmonyType? type;
 
   /// Specifies whether or not to print an object. It is yes if not specified.
   bool printObject;
@@ -92,36 +96,68 @@ class Harmony {
   ///
   /// Harmony-chords with diagonal or horizontal arrangement are separated
   /// by diagonal lines or slashes.
-  HarmonyArrangement arrangement;
+  HarmonyArrangement? arrangement;
 
   /// For definition, look at [PrintStyle].
   PrintStyle printStyle;
 
   /// Indicates whether something is above or below another element, such as a note or a notation.
-  Placement placement;
+  Placement? placement;
 
   /// Distinguishes elements that are associated with a system
   /// rather than the particular part where the element appears.
-  SystemRelation system;
+  SystemRelation? system;
 
   /// Specifies an ID that is unique to the entire document.
   String? id;
 
   Harmony({
     required this.chords,
-    required this.arrangement,
-    required this.type,
     this.frame,
     this.offset,
+    this.type,
     required this.editorial,
     this.staff,
-    required this.printObject,
-    required this.printFrame,
+    this.printObject = true,
+    this.printFrame = false,
     required this.printStyle,
+    this.arrangement,
     required this.placement,
     required this.system,
     this.id,
   });
+
+  static Harmony fromXml(XmlElement xmlElement) {
+    List<HarmonyChord> chords = [];
+
+    if (chords.isEmpty) {
+      throw XmlElementRequired("One or more times");
+    }
+
+    bool? printObject = YesNo.toBool(
+      xmlElement.getAttribute("print-object") ?? "",
+    );
+
+    bool? printFrame = YesNo.toBool(
+      xmlElement.getAttribute("print-frame") ?? "",
+    );
+
+    return Harmony(
+      chords: chords,
+      editorial: Editorial.fromXml(xmlElement),
+      staff: int.tryParse(xmlElement.getElement("staff")?.value ?? ""),
+      printObject: printObject ?? true,
+      printFrame: printFrame ?? false,
+      printStyle: PrintStyle.fromXml(xmlElement),
+      placement: Placement.fromString(
+        xmlElement.getAttribute("placement") ?? "",
+      ),
+      system: SystemRelation.fromString(
+        xmlElement.getAttribute("system-relation") ?? "",
+      ),
+      id: xmlElement.getAttribute("id"),
+    );
+  }
 }
 
 /// The harmony-arrangement type indicates how stacked
