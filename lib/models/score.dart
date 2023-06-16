@@ -16,3 +16,19 @@ class ScorePartwise {
     this.version = "1.0",
   });
 }
+
+/// The score-timewise element is the root element for a timewise MusicXML score.
+/// It includes a score-header group followed by a series of measures with parts inside.
+/// The document-attributes attribute group includes the version attribute.
+class ScoreTimewise {
+  final ScoreHeader scoreHeader;
+  // final List<Part> parts; TODO
+
+  final String version;
+
+  ScoreTimewise({
+    required this.scoreHeader,
+    // required this.parts,
+    this.version = "1.0",
+  });
+}
