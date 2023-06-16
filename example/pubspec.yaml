@@ -34,6 +34,9 @@ dependencies:
   music_notation:
       path: ../
 
+  # A lightweight library for parsing, traversing, querying, transforming and building XML documents.
+  xml: ^6.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
