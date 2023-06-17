@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 
+import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/data_types/group_symbol_value.dart';
 import 'package:music_notation/src/models/data_types/start_stop.dart';
 import 'package:music_notation/src/models/elements/editorial.dart';
@@ -76,7 +77,7 @@ class PartGroup implements PartListElement {
     this.nameAbbrevation,
     this.nameDisplay,
     this.nameDisplayAbbrevation,
-    this.groupSymbol,
+    this.groupSymbol = const GroupSymbol.none(),
     this.groupBarline,
     this.groupTime,
     required this.editorial,
@@ -111,16 +112,17 @@ class PartGroup implements PartListElement {
       'group-abbreviation-display',
     );
 
-    // Attributes parsing:
-    String? rawType = xmlElement.getAttribute('type');
-    StartStop? type = StartStop.fromString(rawType ?? "");
+    XmlElement? groupSymbolElement = xmlElement.getElement(
+      'group-symbol',
+    );
 
-    if (type == null) {
-      throw XmlAttributeRequired(
-        message: "Type attribute is required in 'part-group' element",
-        xmlElement: xmlElement,
+    XmlElement? groupBarlineElement = xmlElement.getElement(
+      'group-barline',
       );
-    }
+
+    XmlElement? groupTimeElement = xmlElement.getElement('group-time');
+
+    // Attributes parsing:
 
     return PartGroup(
       name:
@@ -131,11 +133,13 @@ class PartGroup implements PartListElement {
       nameAbbrevation: nameDisplayAbbrevationElement != null
           ? GroupName.fromXml(nameDisplayAbbrevationElement)
           : null,
-      groupSymbol: GroupSymbol.fromXml(xmlElement.getElement('group-symbol')),
-      groupBarline:
-          GroupBarline.fromXml(xmlElement.getElement('group-barline')),
-      groupTime:
-          xmlElement.getElement('group-time') != null ? const Empty() : null,
+      groupSymbol: groupSymbolElement != null
+          ? GroupSymbol.fromXml(groupSymbolElement)
+          : const GroupSymbol.none(),
+      groupBarline: groupBarlineElement != null
+          ? GroupBarline.fromXml(groupBarlineElement)
+          : null,
+      groupTime: groupTimeElement != null ? const Empty() : null,
       editorial: Editorial.fromXml(xmlElement),
       type: type,
       number: xmlElement.getAttribute('number') ?? '1',
@@ -171,16 +175,40 @@ class PartGroup implements PartListElement {
 ///
 /// It is none if not specified.
 class GroupSymbol {
-  GroupSymbolValue value = GroupSymbolValue.none;
+  final GroupSymbolValue value;
 
-  Position position;
-  Color color;
+  /// For defintion, look at [Position].
+  final Position position;
+
+  /// Indicates the color of an element.
+  final Color color;
+
   GroupSymbol({
+    required this.value,
     required this.position,
     required this.color,
   });
 
-  static fromXml(XmlElement? element) {}
+  const GroupSymbol.none({
+    this.value = GroupSymbolValue.none,
+    this.position = const Position(),
+    this.color = const Color.empty(),
+  });
+
+  factory GroupSymbol.fromXml(XmlElement xmlElement) {
+    return GroupSymbol(
+      value: GroupSymbolValue.fromXml(xmlElement),
+      position: Position.fromXml(xmlElement),
+      color: Color.fromXml(xmlElement),
+    );
+  }
+
+  // TODO: finish and test.
+  XmlElement toXml() {
+    final builder = XmlBuilder();
+
+    return builder.buildDocument().rootElement;
+  }
 }
 
 /// The [GroupBarline] type indicates if the group should have common barlines.
