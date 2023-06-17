@@ -47,6 +47,7 @@ class ScoreHeader {
     );
   }
 
+  // TODO: finish and test
   XmlElement toXml() {
     final builder = XmlBuilder();
     builder.element('score-header', nest: () {

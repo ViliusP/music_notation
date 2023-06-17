@@ -1,7 +1,7 @@
 import 'package:music_notation/src/models/data_types/start_stop.dart';
 import 'package:music_notation/src/models/elements/music_data/note/notations/notation.dart';
 import 'package:music_notation/src/models/printing.dart';
-import 'package:music_notation/src/models/text.dart';
+import 'package:music_notation/src/models/elements/text/text.dart';
 
 /// Glissando and slide types both indicate rapidly moving from one pitch to the other so that individual notes are not discerned.
 ///

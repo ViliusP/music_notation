@@ -4,7 +4,7 @@ import 'package:music_notation/src/models/elements/music_data/note/note_type.dar
 import 'package:music_notation/src/models/elements/music_data/note/time_modification.dart';
 import 'package:music_notation/src/models/generic.dart';
 import 'package:music_notation/src/models/printing.dart';
-import 'package:music_notation/src/models/text.dart';
+import 'package:music_notation/src/models/elements/text/text.dart';
 
 /// The metronome element represents metronome marks and other metric relationships.
 ///

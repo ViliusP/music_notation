@@ -1,12 +1,11 @@
 import 'package:music_notation/src/models/elements/link.dart';
+import 'package:music_notation/src/models/elements/score/name_display.dart';
 import 'package:music_notation/src/models/elements/score/part_list.dart';
 import 'package:music_notation/src/models/instruments.dart';
 import 'package:music_notation/src/models/midi.dart';
 import 'package:xml/xml.dart';
 
-import 'package:music_notation/src/models/generic.dart';
 import 'package:music_notation/src/models/identification.dart';
-import 'package:music_notation/src/models/text.dart';
 
 /// The score-part type collects part-wide information for each part in a score.
 ///
@@ -204,58 +203,6 @@ class PartLink {
       instrumentLinks: instrumentLinks,
       groupLinks: groupLink,
       linkAttributes: linkAttributes,
-    );
-  }
-}
-
-/// The name-display type is used for exact formatting of multi-font text in part and group names to the left of the system.
-///
-/// The print-object attribute can be used to determine what, if anything, is printed at the start of each system.
-///
-/// Enclosure for the display-text element is none by default. Language for the display-text element is Italian ("it") by default.
-class NameDisplay {
-  List<FormattedText>? displayTexts;
-  List<AccidentalText>? accidentalTexts;
-
-  /// The print-object attribute specifies whether or not to print an object (e.g. a note or a rest).
-  /// It is yes (true) by default.
-  bool printObject;
-
-  NameDisplay({
-    required this.displayTexts,
-    required this.accidentalTexts,
-    this.printObject = true,
-  });
-
-  factory NameDisplay.fromXml(XmlElement xmlElement) {
-    var displayTexts = <FormattedText>[];
-
-    for (var element in xmlElement.findElements('display-text')) {
-      displayTexts.add(FormattedText.fromXml(element));
-    }
-
-    var accidentalTexts = <AccidentalText>[];
-
-    for (var element in xmlElement.findElements('accidental-text')) {
-      accidentalTexts.add(AccidentalText.fromXml(element));
-    }
-
-    bool? printObject = YesNo.toBool(xmlElement.innerText);
-
-    // Checks if provided value is "yes", "no" or nothing.
-    // If it is something different, it throws error;
-    if (xmlElement.innerText.isNotEmpty && printObject == null) {
-      // TODO: correct attribute
-      YesNo.generateValidationError(
-        "xmlElement.innerText",
-        xmlElement.innerText,
-      );
-    }
-
-    return NameDisplay(
-      displayTexts: displayTexts,
-      accidentalTexts: accidentalTexts,
-      printObject: printObject ?? true,
     );
   }
 }

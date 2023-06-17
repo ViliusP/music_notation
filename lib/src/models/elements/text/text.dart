@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:xml/xml.dart';
 
@@ -276,7 +277,7 @@ enum HorizontalAlignment {
     return HorizontalAlignment.values.singleWhereOrNull(
       (element) => element.name == value,
     );
-    }
+  }
 
   /// Generates a validation error message for an invalid [HorizontalAlignment] value.
   ///

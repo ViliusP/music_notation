@@ -3,7 +3,7 @@ import 'package:music_notation/src/models/data_types/start_stop.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/printing.dart';
-import 'package:music_notation/src/models/text.dart';
+import 'package:music_notation/src/models/elements/text/text.dart';
 
 /// A tuplet element is present when a tuplet is to be displayed graphically, in addition to the sound data provided by the time-modification elements.
 /// The number attribute is used to distinguish nested tuplets.

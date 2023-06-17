@@ -1,6 +1,6 @@
 import 'package:music_notation/src/models/data_types/group_symbol_value.dart';
 import 'package:music_notation/src/models/printing.dart';
-import 'package:music_notation/src/models/text.dart';
+import 'package:music_notation/src/models/elements/text/text.dart';
 
 /// The part-symbol type indicates how a symbol for a multi-staff part is indicated in the score;
 /// brace is the default value.

@@ -3,7 +3,7 @@ import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/style_text.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/printing.dart';
-import 'package:music_notation/src/models/text.dart';
+import 'package:music_notation/src/models/elements/text/text.dart';
 import 'package:xml/xml.dart';
 
 /// A harmony element can contain many stacked chords (e.g. V of II).

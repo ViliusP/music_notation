@@ -1,5 +1,5 @@
 import 'package:music_notation/src/models/elements/music_data/direction/direction.dart';
-import 'package:music_notation/src/models/text.dart';
+import 'package:music_notation/src/models/elements/text/text.dart';
 import 'package:xml/xml.dart';
 
 /// The rehearsal element specifies letters, numbers, and section names that are notated in the score for reference during rehearsal.

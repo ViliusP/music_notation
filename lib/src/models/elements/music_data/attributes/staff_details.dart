@@ -28,7 +28,7 @@
 
 import 'package:music_notation/src/models/elements/music_data/direction/scordatura.dart';
 import 'package:music_notation/src/models/elements/music_data/note/notations/notation.dart';
-import 'package:music_notation/src/models/text.dart';
+import 'package:music_notation/src/models/elements/text/text.dart';
 
 /// The staff-details element is used to indicate different types of staves.
 ///

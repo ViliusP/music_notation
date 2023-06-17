@@ -8,7 +8,7 @@ import 'package:music_notation/src/models/elements/music_data/direction/segno.da
 import 'package:music_notation/src/models/elements/music_data/note/notations/notation.dart';
 import 'package:music_notation/src/models/elements/music_data/note/notations/ornaments.dart';
 import 'package:music_notation/src/models/printing.dart';
-import 'package:music_notation/src/models/text.dart';
+import 'package:music_notation/src/models/elements/text/text.dart';
 
 /// If a barline is other than a normal single barline,
 /// it should be represented by a barline type that describes it.

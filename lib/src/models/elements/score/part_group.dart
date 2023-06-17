@@ -1,10 +1,16 @@
+// ignore_for_file: deprecated_member_use_from_same_package
+
 import 'package:music_notation/src/models/data_types/group_symbol_value.dart';
 import 'package:music_notation/src/models/data_types/start_stop.dart';
 import 'package:music_notation/src/models/elements/editorial.dart';
+import 'package:music_notation/src/models/elements/score/name_display.dart';
 import 'package:music_notation/src/models/elements/score/part_list.dart';
-import 'package:music_notation/src/models/elements/score/score_part.dart';
+import 'package:music_notation/src/models/exceptions.dart';
+import 'package:music_notation/src/models/generic.dart';
 import 'package:music_notation/src/models/printing.dart';
-import 'package:music_notation/src/models/text.dart';
+import 'package:music_notation/src/models/elements/text/text.dart';
+import 'package:music_notation/src/models/utilities.dart';
+import 'package:music_notation/src/models/utilities/common_attributes.dart';
 import 'package:xml/xml.dart';
 
 /// The part-group element indicates groupings of parts in the score, usually indicated by braces and brackets.
@@ -24,7 +30,12 @@ import 'package:xml/xml.dart';
 ///
 /// The symbol formatting for a multi-staff part can be more fully specified using the part-symbol element.
 class PartGroup implements PartListElement {
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
+
   GroupName? name;
+
   GroupName? nameAbbrevation;
 
   /// Formatting specified in the group-name-display element overrides formatting specified in the group-name element.
@@ -33,21 +44,33 @@ class PartGroup implements PartListElement {
   /// Formatting specified in the group-abbreviation-display element overrides formatting specified in the group-abbreviation element.
   NameDisplay? nameDisplayAbbrevation;
 
+  /// For defintion look at [GroupSymbol].
   GroupSymbol? groupSymbol;
 
+  /// For defintion look at [GroupBarline].
   GroupBarline? groupBarline;
 
   /// The group-time element indicates that the displayed time signatures should stretch across all parts and staves in the group.
   ///
   /// Type of "empty".
   /// The empty type represents an empty element with no attributes.
-  bool? groupTime;
+  Empty? groupTime;
 
+  /// For defintion look at [Editorial].
   Editorial editorial;
 
+  // ------------------------- //
+  // ------ Attributes ------- //
+  // ------------------------- //
+
+  /// Indicates the start or stop of the [PartGroup].
   StartStop type;
 
-  String number = "1";
+  /// Distinguishes overlapping and nested [PartGroup] elements, not a sequence
+  /// of [PartGroup] elements.
+  ///
+  /// The default value is 1.
+  String number;
 
   PartGroup({
     this.name,
@@ -59,39 +82,68 @@ class PartGroup implements PartListElement {
     this.groupTime,
     required this.editorial,
     required this.type,
-    required this.number,
+    this.number = "1",
   });
 
-// 			<xs:group ref="editorial"/>
-// 		</xs:sequence>
-// 		<xs:attribute name="type" type="start-stop" use="required"/>
-// 		<xs:attribute name="number" type="xs:token" default="1"/>
+  // Field(s): quantifier
+  static const Map<String, XmlQuantifier> _xmlExpectedOrder = {
+    'group-name': XmlQuantifier.optional,
+    'group-name-display': XmlQuantifier.optional,
+    'group-abbreviation': XmlQuantifier.optional,
+    'group-abbreviation-display': XmlQuantifier.optional,
+    'group-symbol': XmlQuantifier.optional,
+    'group-barline': XmlQuantifier.optional,
+    'group-time': XmlQuantifier.optional,
+    'footnote': XmlQuantifier.optional,
+    'level': XmlQuantifier.optional,
+  };
 
   factory PartGroup.fromXml(XmlElement xmlElement) {
-    XmlElement? editorialElement = xmlElement.getElement('editorial');
+    validateSequence(xmlElement, _xmlExpectedOrder);
+
+    // Content parsing:
+    XmlElement? groupNameElement = xmlElement.getElement("group-name");
+
+    XmlElement? nameDisplayElement = xmlElement.getElement(
+      "group-name-display",
+    );
+
+    XmlElement? nameDisplayAbbrevationElement = xmlElement.getElement(
+      'group-abbreviation-display',
+    );
+
+    // Attributes parsing:
+    String? rawType = xmlElement.getAttribute('type');
+    StartStop? type = StartStop.fromString(rawType ?? "");
+
+    if (type == null) {
+      throw XmlAttributeRequired(
+        message: "Type attribute is required in 'part-group' element",
+        xmlElement: xmlElement,
+      );
+    }
 
     return PartGroup(
-      name: GroupName.fromXml(xmlElement.getElement('group-name')),
-      nameDisplay: NameDisplay.fromXml(
-        xmlElement.getElement('group-name-display')!,
-      ),
-      nameAbbrevation:
-          GroupName.fromXml(xmlElement.getElement('group-abbreviation')),
-      nameDisplayAbbrevation: NameDisplay.fromXml(
-        xmlElement.getElement('group-abbreviation-display')!,
-      ),
+      name:
+          groupNameElement != null ? GroupName.fromXml(groupNameElement) : null,
+      nameDisplay: nameDisplayElement != null
+          ? NameDisplay.fromXml(nameDisplayElement)
+          : null,
+      nameAbbrevation: nameDisplayAbbrevationElement != null
+          ? GroupName.fromXml(nameDisplayAbbrevationElement)
+          : null,
       groupSymbol: GroupSymbol.fromXml(xmlElement.getElement('group-symbol')),
       groupBarline:
           GroupBarline.fromXml(xmlElement.getElement('group-barline')),
-      groupTime: xmlElement.getElement('group-time') != null,
-      editorial: editorialElement != null
-          ? Editorial.fromXml(editorialElement)
-          : Editorial.empty(),
-      type: StartStop.fromString(xmlElement.getAttribute('type')!),
-      number: xmlElement.getAttribute('number', namespace: '*') ?? '1',
+      groupTime:
+          xmlElement.getElement('group-time') != null ? const Empty() : null,
+      editorial: Editorial.fromXml(xmlElement),
+      type: type,
+      number: xmlElement.getAttribute('number') ?? '1',
     );
   }
 
+  // TODO: finish and test.
   XmlElement toXml() {
     final builder = XmlBuilder();
     // builder.element('part-group', attributes: {

@@ -194,13 +194,15 @@ class BeamLevel {
 
   /// Throws [FormatExpcetion] if provided value is not integer.
   ///
-  /// Thorws [InvalidMusicXmlType] if provided value is integer but not beam-level.
+  /// Throws [InvalidMusicXmlType] if provided value is integer but not beam-level.
   static int parse(String value) {
     int parsedValue = int.parse(value);
 
     if (parsedValue < _min || parsedValue > _max) {
       throw InvalidMusicXmlType(
-          "Provided value - $value is not beam-level type");
+        message: "Provided value - $value is not beam-level type",
+        xmlElement: null,
+      );
     }
 
     return parsedValue;
@@ -260,7 +262,9 @@ class NumberLevel {
 
     if (parsedValue < _min || parsedValue > _max) {
       throw InvalidMusicXmlType(
-          "Provided value - $value is not beam-level type");
+        message: "Provided value - $value is not beam-level type",
+        xmlElement: null,
+      );
     }
 
     return parsedValue;

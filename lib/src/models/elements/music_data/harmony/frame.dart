@@ -5,7 +5,7 @@ import 'package:music_notation/src/models/elements/fret.dart';
 import 'package:music_notation/src/models/elements/music_data/direction/image.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/printing.dart';
-import 'package:music_notation/src/models/text.dart';
+import 'package:music_notation/src/models/elements/text/text.dart';
 
 /// The frame type represents a frame or fretboard diagram used together with a chord symbol.
 ///

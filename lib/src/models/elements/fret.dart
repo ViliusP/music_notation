@@ -1,4 +1,4 @@
-import 'package:music_notation/src/models/text.dart';
+import 'package:music_notation/src/models/elements/text/text.dart';
 
 /// The fret element is used with tablature notation and chord diagrams.
 ///

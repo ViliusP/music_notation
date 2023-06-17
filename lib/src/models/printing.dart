@@ -1,7 +1,7 @@
 import 'package:music_notation/src/models/generic.dart';
 import 'package:xml/xml.dart';
 
-import 'package:music_notation/src/models/text.dart';
+import 'package:music_notation/src/models/elements/text/text.dart';
 
 /// The print-style-align attribute group adds the halign and valign attributes to the position, font, and color attributes.
 class PrintStyleAlign {
