@@ -42,7 +42,7 @@ class PartList {
     final partGroupsElements = xmlElement.children
         .whereType<XmlElement>()
         .takeWhile((element) => element.name.local == 'part-group')
-        .map((e) => PartGroup.fromXml(xmlElement));
+        .map((e) => PartGroup.fromXml(e));
 
     final children = xmlElement.children.whereType<XmlElement>().toList();
     final firstScorePartIndex = children.indexWhere(

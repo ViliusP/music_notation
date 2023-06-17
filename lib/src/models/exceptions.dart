@@ -79,6 +79,8 @@ class InvalidXmlSequence implements Exception {
 
   @override
   String toString() {
-    return 'InvalidMusicXmlType: $message';
+    String xml = xmlElement.toXmlString(pretty: true);
+
+    return 'InvalidMusicXmlType: $message\n$xml';
   }
 }
