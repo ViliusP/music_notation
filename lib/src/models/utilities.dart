@@ -1,3 +1,6 @@
+import 'package:music_notation/src/models/exceptions.dart';
+import 'package:xml/xml.dart';
+
 String hyphenToCamelCase(String input) {
   List<String> parts = input.split('-');
   String camelCase = parts[0];
@@ -26,4 +29,90 @@ String camelCaseToHyphen(String input) {
 
 Map inverseMap(Map f) {
   return f.map((k, v) => MapEntry(v, k));
+}
+
+enum XmlQuantifier {
+  /// minOccurs="0" maxOccurs="unbounded"
+  zeroOrMore(0, null),
+
+  /// minOccurs="1" maxOccurs="unbounded"
+  oneOrMore(1, null),
+
+  /// minOccurs="0"
+  optional(0, 1),
+
+  /// use="required"
+  required(1, 1);
+
+  const XmlQuantifier(this.minOccurences, this.maxOccurences);
+
+  final int minOccurences;
+
+  final int? maxOccurences;
+}
+
+var sequence = {
+  "display-text|accidental-text": XmlQuantifier.zeroOrMore,
+};
+
+void validateSequence(
+  XmlElement xmlElement,
+  Map<String, XmlQuantifier> sequence,
+) {
+  final childrenNames = xmlElement.children
+      .whereType<XmlElement>()
+      .map((child) => child.name.toString())
+      .toList();
+
+  int i = 0;
+  for (var entry in sequence.entries) {
+    var elementName = entry.key;
+    var quantifier = entry.value;
+
+    switch (quantifier) {
+      case XmlQuantifier.zeroOrMore:
+        while (i < childrenNames.length && childrenNames[i] == elementName) {
+          i++;
+        }
+        break;
+      case XmlQuantifier.oneOrMore:
+        if (i >= childrenNames.length || childrenNames[i] != elementName) {
+          throw InvalidXmlSequence(
+            message:
+                'Invalid sequence. Expected "$elementName", found ${i < childrenNames.length ? childrenNames[i] : 'end of elements'}',
+            xmlElement: xmlElement,
+            sequence: sequence,
+          );
+        }
+        i++;
+        while (i < childrenNames.length && childrenNames[i] == elementName) {
+          i++;
+        }
+        break;
+      case XmlQuantifier.optional:
+        if (i < childrenNames.length && childrenNames[i] == elementName) {
+          i++;
+        }
+        break;
+      case XmlQuantifier.required:
+        if (i >= childrenNames.length || childrenNames[i] != elementName) {
+          throw InvalidXmlSequence(
+            message:
+                'Invalid sequence. Expected "$elementName", found ${i < childrenNames.length ? childrenNames[i] : 'end of elements'}',
+            xmlElement: xmlElement,
+            sequence: sequence,
+          );
+        }
+        i++;
+        break;
+    }
+  }
+  if (i != childrenNames.length) {
+    throw InvalidXmlSequence(
+      message:
+          'Invalid sequence. Found extra elements after validating sequence.',
+      xmlElement: xmlElement,
+      sequence: sequence,
+    );
+  }
 }
