@@ -118,11 +118,9 @@ class PartGroup implements PartListElement {
 
     XmlElement? groupBarlineElement = xmlElement.getElement(
       'group-barline',
-      );
+    );
 
     XmlElement? groupTimeElement = xmlElement.getElement('group-time');
-
-    // Attributes parsing:
 
     return PartGroup(
       name:
@@ -141,7 +139,7 @@ class PartGroup implements PartListElement {
           : null,
       groupTime: groupTimeElement != null ? const Empty() : null,
       editorial: Editorial.fromXml(xmlElement),
-      type: type,
+      type: StartStop.fromXml(xmlElement),
       number: xmlElement.getAttribute('number') ?? '1',
     );
   }
