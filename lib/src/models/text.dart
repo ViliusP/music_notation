@@ -272,13 +272,21 @@ enum HorizontalAlignment {
   center,
   right;
 
-  static HorizontalAlignment fromString(String value) {
-    for (var element in HorizontalAlignment.values) {
-      if (element.name.contains(value)) return element;
+  static HorizontalAlignment? fromString(String value) {
+    return HorizontalAlignment.values.singleWhereOrNull(
+      (element) => element.name == value,
+    );
     }
-    // TODO: better exception
-    throw "Invalid LeftCenterRight value: $value";
-  }
+
+  /// Generates a validation error message for an invalid [HorizontalAlignment] value.
+  ///
+  /// Parameters:
+  ///   - attributeName: The name of the attribute.
+  ///   - value: The value that caused the validation error.
+  ///
+  /// Returns a validation error message indicating that the attribute is not a valid yes-no value.
+  static String generateValidationError(String attributeName, String value) =>
+      "Attribute '$attributeName' is not a horizontal-alignment value: $value";
 }
 
 /// The enclosure-shape type describes the shape and presence/absence of an enclosure around text or symbols.

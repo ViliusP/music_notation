@@ -146,23 +146,62 @@ class GroupBarline {
 
 /// The group-name type describes the name or abbreviation of a part-group element.
 ///
-/// Formatting attributes in the group-name type are deprecated in
-///
-/// Version 2.0 in favor of the new group-name-display and group-abbreviation-display elements.
+/// Formatting attributes in the group-name type are deprecated in Version 2.0
+/// in favor of the new group-name-display and group-abbreviation-display elements.
+@Deprecated("deprecated in Version 2.0 in favor of the new GroupNameDisplay")
 class GroupName {
   String value;
 
-  /// The print-style is deprecated in MusicXML 2.0 in favor of the new group-name-display and group-abbreviation-display elements.
+  /// The print-style is deprecated in MusicXML 2.0 in
+  /// favor of the new group-name-display and group-abbreviation-display elements.
   PrintStyle printStyle;
 
-  /// The justify is deprecated in MusicXML 2.0 in favor of the new group-name-display and group-abbreviation-display elements.
-  HorizontalAlignment justify;
+  /// Indicates left, center, or right justification.
+  /// The default value varies for different elements.
+  /// For elements where the justify attribute is present
+  /// but the halign attribute is not, the justify attribute indicates
+  /// horizontal alignment as well as justification.
+  ///
+  /// The justify is deprecated in MusicXML 2.0
+  /// in favor of the new group-name-display and group-abbreviation-display elements.
+  HorizontalAlignment? justify;
 
   GroupName({
     required this.value,
     required this.printStyle,
-    required this.justify,
+    this.justify,
   });
 
-  static fromXml(XmlElement? element) {}
+  factory GroupName.fromXml(XmlElement xmlElement) {
+    // Content parsing:
+    if (xmlElement.children.length != 1 ||
+        xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
+      throw InvalidXmlElementException(
+        message: "Group name element should contain only text",
+        xmlElement: xmlElement,
+      );
+    }
+    String content = xmlElement.children.first.value!;
+
+    // Attributes parsing:
+    String? rawJustify = xmlElement.getAttribute(CommonAttributes.justify);
+    HorizontalAlignment? justify = HorizontalAlignment.fromString(
+      rawJustify ?? "",
+    );
+    if (rawJustify != null && justify == null) {
+      throw InvalidMusicXmlType(
+        message: HorizontalAlignment.generateValidationError(
+          CommonAttributes.justify,
+          rawJustify,
+        ),
+        xmlElement: xmlElement,
+      );
+    }
+
+    return GroupName(
+      value: content,
+      printStyle: PrintStyle.fromXml(xmlElement),
+      justify: justify,
+    );
+  }
 }
