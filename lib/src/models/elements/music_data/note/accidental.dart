@@ -2,7 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/elements/editorial.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/printing.dart';
-import 'package:music_notation/src/models/utilities.dart';
+import 'package:music_notation/src/models/utilities/case_transformers.dart';
 import 'package:music_notation/src/models/utilities/type_parsers.dart';
 import 'package:xml/xml.dart';
 

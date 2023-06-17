@@ -9,7 +9,6 @@ import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/generic.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/elements/text/text.dart';
-import 'package:music_notation/src/models/utilities/common_attributes.dart';
 import 'package:music_notation/src/models/utilities/xml_format_validators.dart';
 import 'package:xml/xml.dart';
 
@@ -50,10 +49,10 @@ class PartGroup implements PartListElement {
   /// For defintion look at [GroupBarline].
   GroupBarline? groupBarline;
 
-  /// The group-time element indicates that the displayed time signatures should stretch across all parts and staves in the group.
+  /// The [groupTime] element indicates that the displayed time signatures
+  /// should stretch across all parts and staves in the group.
   ///
-  /// Type of "empty".
-  /// The empty type represents an empty element with no attributes.
+  /// The [Empty] type represents an empty element with no attributes.
   Empty? groupTime;
 
   /// For defintion look at [Editorial].
@@ -235,25 +234,10 @@ class GroupName {
     }
     String content = xmlElement.children.first.value!;
 
-    // Attributes parsing:
-    String? rawJustify = xmlElement.getAttribute(CommonAttributes.justify);
-    HorizontalAlignment? justify = HorizontalAlignment.fromString(
-      rawJustify ?? "",
-    );
-    if (rawJustify != null && justify == null) {
-      throw InvalidMusicXmlType(
-        message: HorizontalAlignment.generateValidationError(
-          CommonAttributes.justify,
-          rawJustify,
-        ),
-        xmlElement: xmlElement,
-      );
-    }
-
     return GroupName(
       value: content,
       printStyle: PrintStyle.fromXml(xmlElement),
-      justify: justify,
+      justify: HorizontalAlignment.fromXml(xmlElement),
     );
   }
 }

@@ -1,4 +1,3 @@
-import 'package:music_notation/src/models/generic.dart';
 import 'package:music_notation/src/models/utilities/type_parsers.dart';
 import 'package:xml/xml.dart';
 

@@ -1,3 +1,5 @@
+import 'package:music_notation/src/models/exceptions.dart';
+import 'package:music_notation/src/models/utilities/common_attributes.dart';
 import 'package:xml/xml.dart';
 
 /// The typed-text type represents a text element with a type attribute.
@@ -107,4 +109,52 @@ class Scaling {
     });
     return builder.buildDocument().rootElement;
   }
+}
+
+/// The xml:space attribute in XML signals whether or not the parser
+/// should remove or preserve white spaces.
+enum XmlSpace {
+  /// The value [vDefault] signals that the application's
+  /// default white-space processing modes are acceptable for this element.
+  ///
+  /// In XML, it is 'default', but in Dart the 'default' keyword is reserved,
+  /// so it has been changed to 'vDefault'.
+  vDefault,
+
+  /// The value [preserve] indicates the intent for applications to preserve all the white space.
+  preserve;
+
+  static const _mapping = {
+    "default": vDefault,
+    "preserve": preserve,
+  };
+
+  static XmlSpace? fromString(String value) {
+    return _mapping[value];
+  }
+
+  static XmlSpace? fromXml(XmlElement xmlElement) {
+    String? rawXmlSpace = xmlElement.getAttribute(CommonAttributes.xmlSpace);
+    XmlSpace? xmlSpace = fromString(rawXmlSpace ?? "");
+    if (rawXmlSpace != null && xmlSpace == null) {
+      throw InvalidMusicXmlType(
+        message: generateValidationError(
+          CommonAttributes.justify,
+          rawXmlSpace,
+        ),
+        xmlElement: xmlElement,
+      );
+    }
+    return xmlSpace;
+  }
+
+  /// Generates a validation error message for an invalid [HorizontalAlignment] value.
+  ///
+  /// Parameters:
+  ///   - attributeName: The name of the attribute.
+  ///   - value: The value that caused the validation error.
+  ///
+  /// Returns a validation error message indicating that the attribute is not a valid yes-no value.
+  static String generateValidationError(String attributeName, String value) =>
+      "Attribute '$attributeName' is not a xml:space value: $value";
 }

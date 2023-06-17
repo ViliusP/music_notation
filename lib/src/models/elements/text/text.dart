@@ -1,5 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/exceptions.dart';
+import 'package:music_notation/src/models/generic.dart';
+import 'package:music_notation/src/models/utilities/common_attributes.dart';
 import 'package:music_notation/src/models/utilities/type_parsers.dart';
 import 'package:xml/xml.dart';
 
@@ -18,8 +20,18 @@ class FormattedText extends TextElementBase {
   });
 
   factory FormattedText.fromXml(XmlElement xmlElement) {
+    // Content parsing:
+    if (xmlElement.children.length != 1 ||
+        xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
+      throw InvalidXmlElementException(
+        message:
+            "Formatted text element should contain only one children - text",
+        xmlElement: xmlElement,
+      );
+    }
+
     return FormattedText(
-      value: xmlElement.value ?? "", // TODO: throw on null value.
+      value: xmlElement.children.first.value!,
       formatting: TextFormatting.fromXml(xmlElement),
     );
   }
@@ -37,6 +49,16 @@ class AccidentalText extends TextElementBase {
   });
 
   factory AccidentalText.fromXml(XmlElement xmlElement) {
+    // Content parsing:
+    if (xmlElement.children.length != 1 ||
+        xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
+      throw InvalidXmlElementException(
+        message:
+            "Formatted text element should contain only one children - accidental-value",
+        xmlElement: xmlElement,
+      );
+    }
+
     if (!Nmtoken.validate(xmlElement.text)) {
       // TODO: attributeName
       final String message = Nmtoken.generateValidationError(
@@ -74,10 +96,19 @@ class TextFormatting {
   ///
   /// The default value varies for different elements.
   ///
-  /// For elements where the justify attribute is present but the halign attribute is not, the justify attribute indicates horizontal alignment as well as justification.
+  /// For elements where the justify attribute is present but the halign attribute is not,
+  /// the justify attribute indicates horizontal alignment as well as justification.
   HorizontalAlignment? justify;
+
+  /// For definition, look at: [PrintStyleAlign].
   PrintStyleAlign? printStyleAlign;
+
+  /// For definition, look at: [TextDecoration].
   TextDecoration? textDecoration;
+
+  /// Used to rotate text around the alignment point specified by the halign and valign attributes.
+  ///
+  /// Positive values are clockwise rotations, while negative values are counter-clockwise rotations.
   double? textRotation;
 
   /// The letter-spacing attribute specifies text tracking.
@@ -100,13 +131,30 @@ class TextFormatting {
   /// The exact normal value is implementation-dependent, but values between 100 and 120 are recommended.
   ///
   /// Null value means normal.
-  // TODO: Check if null value is possible
   double? lineHeight;
+
+  /// Specifies the language used in the element content.
+  ///
+  /// It is Italian ("it") if not specified.
   String? lang;
-  String? space;
+
+  ///Indicates whether white space should be preserved by applications.
+  XmlSpace? space;
+
+  /// The text-direction attribute is used to adjust and
+  /// override the Unicode bidirectional text algorithm,
+  /// similar to the Directionality data category in the
+  /// [W3C Internationalization Tag Set recommendation](https://www.w3.org/TR/2007/REC-its-20070403/#directionality).
+  ///
+  /// The default value is ltr. This attribute is typically used by applications
+  /// that store text in left-to-right visual order rather than logical order.
+  ///
+  /// Such applications can use the lro value to better communicate
+  /// with other applications that more fully support bidirectional text.
   TextDirection? textDirection;
 
-  /// The enclosure attribute group is used to specify the formatting of an enclosure around text or symbols.
+  /// The enclosure attribute group is used to specify
+  /// the formatting of an enclosure around text or symbols.
   EnclosureShape? enclosure;
 
   TextFormatting({
@@ -116,41 +164,30 @@ class TextFormatting {
     this.textRotation,
     this.letterSpacing,
     this.lineHeight,
-    this.lang,
+    this.lang = "it",
     this.space,
-    this.textDirection,
+    this.textDirection = TextDirection.ltr,
     this.enclosure,
   });
 
   factory TextFormatting.fromXml(XmlElement xmlElement) {
-    var rotation = double.tryParse(
-      xmlElement.findElements('text-rotation').first.innerText,
-    );
-
-    if (rotation == null || !RotationDegrees.validate(rotation)) {
-      // adasdasdasdas
-      throw "bad rotation";
-    }
-
-    var letterSpacing = double.tryParse(
-      xmlElement.findElements('letter-spacing').first.innerText,
-    );
-
-    var lineHeight = double.tryParse(
-      xmlElement.findElements('letter-spacing').first.innerText,
-    );
-
     return TextFormatting(
-      justify: HorizontalAlignment.fromString(xmlElement.value ?? ""),
+      justify: HorizontalAlignment.fromXml(xmlElement),
       printStyleAlign: PrintStyleAlign.fromXml(xmlElement),
       textDecoration: TextDecoration.fromXml(xmlElement),
-      textRotation: rotation,
-      letterSpacing: letterSpacing,
-      lineHeight: lineHeight,
+      textRotation: RotationDegrees.fromXml(xmlElement),
+      letterSpacing: NumberOrNormal.fromXml(
+        xmlElement,
+        CommonAttributes.letterSpacing,
+      ),
+      lineHeight: NumberOrNormal.fromXml(
+        xmlElement,
+        CommonAttributes.lineHeight,
+      ),
       lang: xmlElement.getAttribute('xml:lang'),
-      space: xmlElement.getAttribute('xml:space'),
+      space: XmlSpace.fromXml(xmlElement),
       textDirection: TextDirection.fromXml(xmlElement),
-      enclosure: EnclosureShape.fromString(xmlElement.value ?? ""),
+      enclosure: EnclosureShape.fromXml(xmlElement),
     );
   }
 }
@@ -180,13 +217,31 @@ enum TextDirection {
   lro,
   rlo;
 
-  static TextDirection fromXml(XmlElement xmlElement) {
-    // TODO:
-    throw InvalidXmlElementException(
-      message: "Attribute 'text-direction' is not a valid",
-      xmlElement: xmlElement,
+  static TextDirection? fromString(String value) {
+    return TextDirection.values.firstWhereOrNull(
+      (element) => element.name == value,
     );
   }
+
+  static TextDirection? fromXml(XmlElement xmlElement) {
+    String? rawValue = xmlElement.getAttribute(CommonAttributes.textDirection);
+    TextDirection? value = fromString(
+      rawValue ?? "",
+    );
+    if (rawValue != null && value == null) {
+      throw InvalidMusicXmlType(
+        message: generateValidationError(
+          CommonAttributes.justify,
+          rawValue,
+        ),
+        xmlElement: xmlElement,
+      );
+    }
+    return value;
+  }
+
+  static String generateValidationError(String attributeName, String value) =>
+      "Attribute '$attributeName' is not a text-direction value: $value";
 }
 
 /// The number-of-lines type is used to specify the number of lines in text decoration attributes.
@@ -261,6 +316,23 @@ enum HorizontalAlignment {
     );
   }
 
+  static HorizontalAlignment? fromXml(XmlElement xmlElement) {
+    String? rawJustify = xmlElement.getAttribute(CommonAttributes.justify);
+    HorizontalAlignment? justify = HorizontalAlignment.fromString(
+      rawJustify ?? "",
+    );
+    if (rawJustify != null && justify == null) {
+      throw InvalidMusicXmlType(
+        message: generateValidationError(
+          CommonAttributes.justify,
+          rawJustify,
+        ),
+        xmlElement: xmlElement,
+      );
+    }
+    return justify;
+  }
+
   /// Generates a validation error message for an invalid [HorizontalAlignment] value.
   ///
   /// Parameters:
@@ -272,9 +344,11 @@ enum HorizontalAlignment {
       "Attribute '$attributeName' is not a horizontal-alignment value: $value";
 }
 
-/// The enclosure-shape type describes the shape and presence/absence of an enclosure around text or symbols.
+/// The enclosure-shape type describes the shape and
+/// presence/absence of an enclosure around text or symbols.
 ///
-/// A bracket enclosure is similar to a rectangle with the bottom line missing, as is common in jazz notation.
+/// A bracket enclosure is similar to a rectangle
+/// with the bottom line missing, as is common in jazz notation.
 ///
 /// An inverted-bracket enclosure is similar to a rectangle with the top line missing.
 enum EnclosureShape {
@@ -294,11 +368,31 @@ enum EnclosureShape {
   decagon,
   none;
 
-  static EnclosureShape fromString(String value) {
-    return EnclosureShape.values.firstWhere((e) => e.name.toString() == value,
-        // TODO: better exception
-        orElse: () => throw 'Invalid EnclosureShape value: $value');
+  static EnclosureShape? fromString(String value) {
+    return EnclosureShape.values.firstWhereOrNull(
+      (e) => e.name.toString() == value,
+    );
   }
+
+  static EnclosureShape? fromXml(XmlElement xmlElement) {
+    String? rawValue = xmlElement.getAttribute(CommonAttributes.enclosureShape);
+    EnclosureShape? value = fromString(
+      rawValue ?? "",
+    );
+    if (rawValue != null && value == null) {
+      throw InvalidMusicXmlType(
+        message: generateValidationError(
+          CommonAttributes.enclosureShape,
+          rawValue,
+        ),
+        xmlElement: xmlElement,
+      );
+    }
+    return value;
+  }
+
+  static String generateValidationError(String attributeName, String value) =>
+      "Attribute '$attributeName' is not a enclosure-shape value: $value";
 }
 
 /// The valign type is used to indicate vertical alignment to the top, middle, bottom, or baseline of the text.
