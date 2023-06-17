@@ -183,16 +183,76 @@ class GroupSymbol {
   static fromXml(XmlElement? element) {}
 }
 
-/// The group-barline type indicates if the group should have common barlines.
+/// The [GroupBarline] type indicates if the group should have common barlines.
 class GroupBarline {
-  GroupSymbolValue value;
-  Color color; // Maybe could be extend class Colarable (not implemented yet)
+  GroupBarlineValue value;
+  Color color;
   GroupBarline({
     required this.value,
-    required this.color,
+    this.color = const Color.empty(),
   });
 
-  static fromXml(XmlElement? element) {}
+  factory GroupBarline.fromXml(XmlElement xmlElement) {
+    return GroupBarline(
+      value: GroupBarlineValue.fromXml(xmlElement),
+      color: Color.fromXml(xmlElement),
+    );
+  }
+
+  // TODO: finish and test.
+  XmlElement toXml() {
+    final builder = XmlBuilder();
+
+    return builder.buildDocument().rootElement;
+  }
+}
+
+/// The [GroupBarlineValue] type indicates if the [PartGroup] should have common barlines.
+enum GroupBarlineValue {
+  yes,
+  no,
+  mensurstrich;
+
+  static GroupBarlineValue? fromString(String value) {
+    return GroupBarlineValue.values.firstWhereOrNull(
+      (e) => e.name == value.toLowerCase(),
+    );
+  }
+
+  /// Takes content from element and converts it to [GroupBarlineValue].
+  ///
+  /// In musicXML, group-barline-value is content and always required.
+  static GroupBarlineValue fromXml(XmlElement xmlElement) {
+    if (xmlElement.children.length != 1 ||
+        xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
+      throw InvalidXmlElementException(
+        message:
+            "${xmlElement.name} element should contain only one children - group-barline-value",
+        xmlElement: xmlElement,
+      );
+    }
+
+    String rawValue = xmlElement.children.first.value!;
+    GroupBarlineValue? value = GroupBarlineValue.fromString(rawValue);
+    if (value == null) {
+      throw InvalidMusicXmlType(
+        message: generateValidationError(
+          rawValue,
+        ),
+        xmlElement: xmlElement,
+      );
+    }
+    return value;
+  }
+
+  /// Generates a validation error message for an invalid [GroupBarlineValue] value.
+  ///
+  /// Parameters:
+  ///   - value: The value that caused the validation error.
+  ///
+  /// Returns a validation error message indicating that the value is not a valid group-barline-value.
+  static String generateValidationError(String value) =>
+      "Content is not a group-barline-value: $value";
 }
 
 /// The group-name type describes the name or abbreviation of a part-group element.
