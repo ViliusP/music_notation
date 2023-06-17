@@ -1,13 +1,13 @@
 import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/exceptions.dart';
+import 'package:music_notation/src/models/utilities/type_parsers.dart';
 import 'package:xml/xml.dart';
 
-import 'package:music_notation/src/models/generic.dart';
 import 'package:music_notation/src/models/printing.dart';
 
 abstract class TextElementBase {}
 
-/// The formatted-text type represents a text element with text-formatting attributes
+/// The [FormattedText] type represents a text element with [TextFormatting] attributes.
 class FormattedText extends TextElementBase {
   String value;
   TextFormatting formatting;
@@ -25,25 +25,7 @@ class FormattedText extends TextElementBase {
   }
 }
 
-// <xs:complexType name="accidental-text">
-
-// 		<xs:extension base="accidental-value">
-// 			<xs:attributeGroup ref="text-formatting"/>
-// 			<xs:attribute name="smufl" type="smufl-accidental-glyph-name"/>
-// 		</xs:extension>
-// 	</xs:simpleContent>
-// </xs:complexType>
-
-// <xs:simpleType name="smufl-accidental-glyph-name">
-// 	<xs:annotation>
-// 		<xs:documentation>The smufl-accidental-glyph-name type is used to reference a specific Standard Music Font Layout (SMuFL) accidental character. The value is a SMuFL canonical glyph name that starts with one of the strings used at the start of glyph names for SMuFL accidentals.</xs:documentation>
-// 	</xs:annotation>
-// 	<xs:restriction base="smufl-glyph-name">
-// 		<xs:pattern value="(acc|medRenFla|medRenNatura|medRenShar|kievanAccidental)(\c+)"/>
-// 	</xs:restriction>
-// </xs:simpleType>
-
-// The accidental-text type represents an element with an accidental value and text-formatting attributes.
+/// The [AccidentalText] type represents an element with an accidental value and [TextFormatting] attributes.
 class AccidentalText extends TextElementBase {
   // smufl-accidental-glyph-name
   String smufl;
@@ -85,7 +67,7 @@ class AccidentalText extends TextElementBase {
   }
 }
 
-/// The text-formatting  collects the common formatting attributes for text elements.
+/// The [TextFormatting] collects the common formatting attributes for text elements.
 /// Default values may differ across the elements that use this group.
 class TextFormatting {
   /// The justify attribute is used to indicate left, center, or right justification.

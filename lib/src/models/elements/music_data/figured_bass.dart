@@ -4,8 +4,8 @@ import 'package:music_notation/src/models/elements/music_data/note/lyric.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/style_text.dart';
 import 'package:music_notation/src/models/exceptions.dart';
-import 'package:music_notation/src/models/generic.dart';
 import 'package:music_notation/src/models/printing.dart';
+import 'package:music_notation/src/models/utilities/type_parsers.dart';
 import 'package:xml/xml.dart';
 
 /// The figured-bass element represents figured bass notation.

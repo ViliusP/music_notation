@@ -1,4 +1,4 @@
-import 'package:music_notation/src/models/utilities.dart';
+import 'package:music_notation/src/models/utilities/xml_format_validators.dart';
 import 'package:xml/xml.dart';
 
 /// Exception that is thrown when an invalid XmlElement is encountered

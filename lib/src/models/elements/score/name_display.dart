@@ -1,8 +1,8 @@
 import 'package:music_notation/src/models/exceptions.dart';
-import 'package:music_notation/src/models/generic.dart';
 import 'package:music_notation/src/models/elements/text/text.dart';
-import 'package:music_notation/src/models/utilities.dart';
 import 'package:music_notation/src/models/utilities/common_attributes.dart';
+import 'package:music_notation/src/models/utilities/type_parsers.dart';
+import 'package:music_notation/src/models/utilities/xml_format_validators.dart';
 import 'package:xml/xml.dart';
 
 /// The name-display type is used for exact formatting of multi-font text in part and group names to the left of the system.
