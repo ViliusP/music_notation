@@ -51,10 +51,22 @@ enum XmlQuantifier {
   final int? maxOccurences;
 }
 
-var sequence = {
-  "display-text|accidental-text": XmlQuantifier.zeroOrMore,
-};
-
+/// Validates the order and number of child elements within the provided [xmlElement] based on the [sequence] map.
+///
+/// The [sequence] map should consist of element names as keys, and [XmlQuantifier]s as values. The order of elements in
+/// the map should represent the expected order of child elements in the [xmlElement]. Multiple possible element names
+/// can be specified for a single position by separating them with a '|' symbol in the key.
+///
+/// Each [XmlQuantifier] value defines the expected number of occurrences of the corresponding element(s) in the [xmlElement].
+/// See the [XmlQuantifier] enum for more details on the available options.
+///
+/// The function throws an [InvalidXmlSequence] exception if the child elements of the [xmlElement] do not match the
+/// expected [sequence], either in order or number.
+///
+/// This function is especially useful for validating XML parsed from schemas that have strict requirements for the
+/// order and cardinality of elements.
+///
+/// Choice: 'display-text|accidental-text'.
 void validateSequence(
   XmlElement xmlElement,
   Map<String, XmlQuantifier> sequence,
