@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:music_notation/src/models/invalid_xml_element_exception.dart';
+import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/text.dart';
 import 'package:xml/xml.dart';

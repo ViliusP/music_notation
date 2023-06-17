@@ -1,7 +1,7 @@
 import 'package:music_notation/src/models/elements/music_data/harmony/harmony.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/style_text.dart';
-import 'package:music_notation/src/models/invalid_xml_element_exception.dart';
+import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/text.dart';
 import 'package:xml/xml.dart';

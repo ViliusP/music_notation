@@ -1,5 +1,5 @@
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
-import 'package:music_notation/src/models/invalid_xml_element_exception.dart';
+import 'package:music_notation/src/models/exceptions.dart';
 import 'package:xml/xml.dart';
 
 /// Time modification indicates tuplets, double-note tremolos, and other durational changes.

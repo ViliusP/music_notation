@@ -122,8 +122,9 @@ class Encoding {
             encodingDate = _encodingDateFormat.parseStrict(encodingDateText);
           } catch (e) {
             throw InvalidXmlElementException(
-              "Attribute 'encoding-date' is not a valid DateTime: $encodingDateText",
-              xmlElement,
+              message:
+                  "Attribute 'encoding-date' is not a valid DateTime: $encodingDateText",
+              xmlElement: xmlElement,
             );
           }
           break;
@@ -182,8 +183,8 @@ class Support {
 
     if (mappedType == null) {
       throw InvalidXmlElementException(
-        "Invalid or missing 'type' attribute",
-        xmlElement,
+        message: "Invalid or missing 'type' attribute",
+        xmlElement: xmlElement,
       );
     }
 
@@ -191,15 +192,15 @@ class Support {
 
     if (element == null) {
       throw InvalidXmlElementException(
-        "Invalid or missing 'element' attribute",
-        xmlElement,
+        message: "Invalid or missing 'element' attribute",
+        xmlElement: xmlElement,
       );
     }
 
     if (!Nmtoken.validate(element)) {
       throw InvalidXmlElementException(
-        "Attribute 'element' is not a valid NMTOKEN: $element",
-        xmlElement,
+        message: "Attribute 'element' is not a valid NMTOKEN: $element",
+        xmlElement: xmlElement,
       );
     }
 
@@ -207,8 +208,8 @@ class Support {
 
     if (attribute != null && !Nmtoken.validate(attribute)) {
       throw InvalidXmlElementException(
-        "Attribute 'attribute' is not a valid NMTOKEN: $attribute",
-        xmlElement,
+        message: "Attribute 'attribute' is not a valid NMTOKEN: $attribute",
+        xmlElement: xmlElement,
       );
     }
 
@@ -236,8 +237,8 @@ class MiscellaneousField {
 
     if (name != null) {
       throw InvalidXmlElementException(
-        "Invalid or missing 'name' attribute",
-        xmlElement,
+        message: "Invalid or missing 'name' attribute",
+        xmlElement: xmlElement,
       );
     }
 

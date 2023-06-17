@@ -68,8 +68,8 @@ class PartList {
           break;
         default:
           throw InvalidXmlElementException(
-            'Wrong child in "part-list" element',
-            xmlElement,
+            message: 'Wrong child in "part-list" element',
+            xmlElement: xmlElement,
           );
       }
     }

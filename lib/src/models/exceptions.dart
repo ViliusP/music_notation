@@ -12,7 +12,10 @@ class InvalidXmlElementException implements Exception {
 
   /// Creates an instance of the InvalidXmlElementException with an
   /// error [message] and the offending [xmlElement].
-  InvalidXmlElementException(this.message, this.xmlElement);
+  InvalidXmlElementException({
+    required this.message,
+    required this.xmlElement,
+  });
 
   @override
   String toString() {
@@ -23,7 +26,13 @@ class InvalidXmlElementException implements Exception {
 class InvalidMusicXmlType implements Exception {
   final String message;
 
-  InvalidMusicXmlType(this.message);
+  /// The XmlElement which caused the exception to be thrown.
+  final XmlElement? xmlElement;
+
+  const InvalidMusicXmlType({
+    required this.message,
+    required this.xmlElement,
+  });
 
   @override
   String toString() {

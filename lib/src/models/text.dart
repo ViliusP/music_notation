@@ -1,12 +1,13 @@
-import 'package:music_notation/src/models/elements/music_data/note/notehead.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/generic.dart';
 import 'package:music_notation/src/models/printing.dart';
 
+abstract class TextElementBase {}
+
 /// The formatted-text type represents a text element with text-formatting attributes
-class FormattedText extends NoteheadTextContent {
+class FormattedText extends TextElementBase {
   String value;
   TextFormatting formatting;
 
@@ -42,7 +43,7 @@ class FormattedText extends NoteheadTextContent {
 // </xs:simpleType>
 
 // The accidental-text type represents an element with an accidental value and text-formatting attributes.
-class AccidentalText extends NoteheadTextContent {
+class AccidentalText extends TextElementBase {
   // smufl-accidental-glyph-name
   String smufl;
   TextFormatting formatting;
@@ -59,7 +60,10 @@ class AccidentalText extends NoteheadTextContent {
         "attributeName",
         xmlElement.text,
       );
-      throw InvalidXmlElementException(message, xmlElement);
+      throw InvalidXmlElementException(
+        message: message,
+        xmlElement: xmlElement,
+      );
     }
 
     if (!AccidentalSmuflGlyphName.validate(xmlElement.text)) {
@@ -67,7 +71,10 @@ class AccidentalText extends NoteheadTextContent {
         "attributeName",
         xmlElement.text,
       );
-      throw InvalidXmlElementException(message, xmlElement);
+      throw InvalidXmlElementException(
+        message: message,
+        xmlElement: xmlElement,
+      );
     }
 
     return AccidentalText(
@@ -193,8 +200,8 @@ enum TextDirection {
   static TextDirection fromXml(XmlElement xmlElement) {
     // TODO:
     throw InvalidXmlElementException(
-      "Attribute 'text-direction' is not a valid",
-      xmlElement,
+      message: "Attribute 'text-direction' is not a valid",
+      xmlElement: xmlElement,
     );
   }
 }

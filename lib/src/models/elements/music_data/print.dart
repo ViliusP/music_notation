@@ -1,4 +1,4 @@
-import 'package:music_notation/src/models/elements/score/score_part.dart';
+import 'package:music_notation/src/models/elements/score/name_display.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:xml/xml.dart';
 

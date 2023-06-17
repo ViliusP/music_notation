@@ -1,5 +1,5 @@
+import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/generic.dart';
-import 'package:music_notation/src/models/invalid_xml_element_exception.dart';
 import 'package:music_notation/src/models/text.dart';
 import 'package:music_notation/src/models/utilities.dart';
 import 'package:xml/xml.dart';
@@ -69,7 +69,10 @@ class Notehead {
         parenthesesAttribute,
       );
 
-      throw InvalidXmlElementException(message, xmlElement);
+      throw InvalidXmlElementException(
+        message: message,
+        xmlElement: xmlElement,
+      );
     }
 
     String? smuflAttribute = xmlElement.getAttribute("smufl");
@@ -80,7 +83,10 @@ class Notehead {
         smuflAttribute,
       );
 
-      throw InvalidXmlElementException(message, xmlElement);
+      throw InvalidXmlElementException(
+        message: message,
+        xmlElement: xmlElement,
+      );
     }
 
     return Notehead(
@@ -190,15 +196,13 @@ enum NoteheadValue {
   String toString() => inverseMap(_map)[this];
 }
 
-abstract class NoteheadTextContent {}
-
 class NoteheadText {
-  final List<NoteheadTextContent> contents;
+  final List<TextElementBase> contents;
 
   NoteheadText(this.contents);
 
   factory NoteheadText.fromXml(XmlElement element) {
-    var contents = <NoteheadTextContent>[];
+    var contents = <TextElementBase>[];
     for (var child in element.children) {
       if (child is XmlElement) {
         if (child.name.local == 'display-text') {

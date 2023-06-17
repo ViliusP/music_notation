@@ -30,7 +30,10 @@ class MidiDevice {
     if (portElement != null &&
         (maybePort == null || !Midi.midi16.validate(maybePort))) {
       String message = Midi.midi16.generateValidationError("port", portElement);
-      throw InvalidXmlElementException(message, xmlElement);
+      throw InvalidXmlElementException(
+        message: message,
+        xmlElement: xmlElement,
+      );
     }
 
     return MidiDevice(
@@ -127,7 +130,10 @@ class MidiInstrument {
         "port",
         midiChannelElement,
       );
-      throw InvalidXmlElementException(message, xmlElement);
+      throw InvalidXmlElementException(
+        message: message,
+        xmlElement: xmlElement,
+      );
     }
 
     /// TODO: more validation

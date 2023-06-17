@@ -67,6 +67,7 @@ enum XmlQuantifier {
 /// order and cardinality of elements.
 ///
 /// Choice: 'display-text|accidental-text'.
+// TODO: end comment.
 void validateSequence(
   XmlElement xmlElement,
   Map<String, XmlQuantifier> sequence,

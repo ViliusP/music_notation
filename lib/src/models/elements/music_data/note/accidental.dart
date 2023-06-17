@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/elements/editorial.dart';
+import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/generic.dart';
-import 'package:music_notation/src/models/invalid_xml_element_exception.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/utilities.dart';
 import 'package:xml/xml.dart';
@@ -54,7 +54,10 @@ class Accidental {
     );
 
     if (value == null) {
-      throw InvalidXmlElementException("Bad Accidental value", xmlElement);
+      throw InvalidXmlElementException(
+        message: "Bad Accidental value",
+        xmlElement: xmlElement,
+      );
     }
 
     String? editorialAttribute = xmlElement.getAttribute("editorial");

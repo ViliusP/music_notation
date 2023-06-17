@@ -78,10 +78,10 @@ import 'package:music_notation/src/models/elements/music_data/note/notehead.dart
 import 'package:music_notation/src/models/elements/music_data/note/play.dart';
 import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
 import 'package:music_notation/src/models/elements/music_data/note/time_modification.dart';
+import 'package:music_notation/src/models/exceptions.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/generic.dart';
-import 'package:music_notation/src/models/invalid_xml_element_exception.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/text.dart';
@@ -301,8 +301,8 @@ class Note implements MusicDataElement {
     int? staff = int.tryParse(rawStaff ?? "");
     if (rawStaff != null && (staff == null || staff < 1)) {
       throw InvalidXmlElementException(
-        "Staff value is non valid positiveInteger: $staff",
-        xmlElement,
+        message: "Staff value is non valid positiveInteger: $staff",
+        xmlElement: xmlElement,
       );
     }
 
@@ -330,7 +330,10 @@ class Note implements MusicDataElement {
 
     if (printLagerAttribute != null && printLager == null) {
       // TODO
-      throw InvalidXmlElementException("", xmlElement);
+      throw InvalidXmlElementException(
+        message: "",
+        xmlElement: xmlElement,
+      );
     }
 
     return Note(
@@ -427,16 +430,22 @@ class Grace {
 
   void validate() {
     if (stealTimePrevious != null && !Percent.validate(stealTimePrevious!)) {
-      throw InvalidMusicXmlType(Percent.generateValidationError(
-        "steal-time-previous",
-        stealTimePrevious!,
-      ));
+      throw InvalidMusicXmlType(
+        message: Percent.generateValidationError(
+          "steal-time-previous",
+          stealTimePrevious!,
+        ),
+        xmlElement: null,
+      );
     }
     if (stealTimePrevious != null && !Percent.validate(stealTimeFollowing!)) {
-      throw InvalidMusicXmlType(Percent.generateValidationError(
-        "steal-time-following",
-        stealTimeFollowing!,
-      ));
+      throw InvalidMusicXmlType(
+        message: Percent.generateValidationError(
+          "steal-time-following",
+          stealTimeFollowing!,
+        ),
+        xmlElement: null,
+      );
     }
   }
 
