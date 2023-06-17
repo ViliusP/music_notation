@@ -1,4 +1,4 @@
-import 'package:music_notation/src/models/elements/music_data/note/accidental.dart';
+import 'package:music_notation/src/models/data_types/accidental_value.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/printing.dart';
 
