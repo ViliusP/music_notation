@@ -66,39 +66,48 @@ void validateSequence(
 
   int i = 0;
   for (var entry in sequence.entries) {
-    var elementName = entry.key;
+    var elementNames = entry.key.split("|");
     var quantifier = entry.value;
 
     switch (quantifier) {
       case XmlQuantifier.zeroOrMore:
-        while (i < childrenNames.length && childrenNames[i] == elementName) {
+        while (i < childrenNames.length &&
+            elementNames.contains(childrenNames[i])) {
           i++;
         }
         break;
       case XmlQuantifier.oneOrMore:
-        if (i >= childrenNames.length || childrenNames[i] != elementName) {
+        if (i >= childrenNames.length ||
+            !elementNames.contains(childrenNames[i])) {
+          String message = elementNames.length == 1
+              ? 'Invalid sequence. Expected "${elementNames[0]}", found ${i < childrenNames.length ? childrenNames[i] : 'end of elements'}'
+              : 'Invalid sequence. Expected one of ${elementNames.join(", ")}, found ${i < childrenNames.length ? childrenNames[i] : 'end of elements'}';
           throw InvalidXmlSequence(
-            message:
-                'Invalid sequence. Expected "$elementName", found ${i < childrenNames.length ? childrenNames[i] : 'end of elements'}',
+            message: message,
             xmlElement: xmlElement,
             sequence: sequence,
           );
         }
         i++;
-        while (i < childrenNames.length && childrenNames[i] == elementName) {
+        while (i < childrenNames.length &&
+            elementNames.contains(childrenNames[i])) {
           i++;
         }
         break;
       case XmlQuantifier.optional:
-        if (i < childrenNames.length && childrenNames[i] == elementName) {
+        if (i < childrenNames.length &&
+            elementNames.contains(childrenNames[i])) {
           i++;
         }
         break;
       case XmlQuantifier.required:
-        if (i >= childrenNames.length || childrenNames[i] != elementName) {
+        if (i >= childrenNames.length ||
+            !elementNames.contains(childrenNames[i])) {
+          String message = elementNames.length == 1
+              ? 'Invalid sequence. Expected "${elementNames[0]}", found ${i < childrenNames.length ? childrenNames[i] : 'end of elements'}'
+              : 'Invalid sequence. Expected one of ${elementNames.join(", ")}, found ${i < childrenNames.length ? childrenNames[i] : 'end of elements'}';
           throw InvalidXmlSequence(
-            message:
-                'Invalid sequence. Expected "$elementName", found ${i < childrenNames.length ? childrenNames[i] : 'end of elements'}',
+            message: message,
             xmlElement: xmlElement,
             sequence: sequence,
           );
