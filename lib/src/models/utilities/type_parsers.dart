@@ -191,17 +191,38 @@ class NumberOrNormal {
       "Attribute '$attributeName' is not valid number-or-normal: $value";
 }
 
+// Methods and attributes related to the SmuflGlyphName for accidentals in MusicXML.
 class AccidentalSmuflGlyphName {
+  /// A Regular Expression pattern to validate the SmuflGlyphName. It should start with 'acc', 'medRenFla', 'medRenNatura', 'medRenShar', or 'kievanAccidental'.
   static final RegExp _pattern = RegExp(
-      r"^(acc|medRenFla|medRenNatura|medRenShar|kievanAccidental)(\c+)$");
+    r"^(acc|medRenFla|medRenNatura|medRenShar|kievanAccidental)(\c+)$",
+  );
 
+  /// Validates the SmuflGlyphName.
+  ///
+  /// It returns true if the name is valid and false otherwise.
   static bool validate(String value) {
-    // ArgumentError('Value must start with acc, medRenFla, medRenNatura, medRenShar, or kievanAccidental');
-    return !_pattern.hasMatch(value);
+    return _pattern.hasMatch(value);
   }
 
+  /// generates an error message if the given SmuflGlyphName is invalid.
   static String generateValidationError(String attributeName, String value) =>
       "Attribute '$attributeName' is not a valid accidental smufl glyph name: $value";
+
+  /// Extracts the SmuflGlyphName from the given XmlElement
+  /// if it exists and is valid.
+  ///
+  /// If the SmuflGlyphName is not valid, it throws an InvalidMusicXmlType exception.
+  static String? fromXml(XmlElement xmlElement) {
+    String? smufl = xmlElement.getAttribute(CommonAttributes.smufl);
+    if (smufl == null || validate(smufl)) {
+      return smufl;
+    }
+    throw InvalidMusicXmlType(
+      message: "$smufl is not accidental smufl glyph",
+      xmlElement: xmlElement,
+    );
+  }
 }
 
 /// The smufl-pictogram-glyph-name type is used to reference a specific Standard Music Font Layout (SMuFL) percussion pictogram character.

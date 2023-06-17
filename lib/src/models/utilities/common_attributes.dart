@@ -7,4 +7,5 @@ class CommonAttributes {
   static const String xmlSpace = "xml:space";
   static const String textDirection = "dir";
   static const String enclosureShape = "enclosure";
+  static const String smufl = "smufl";
 }

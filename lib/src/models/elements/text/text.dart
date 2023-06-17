@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:music_notation/src/models/data_types/accidental_value.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/generic.dart';
 import 'package:music_notation/src/models/utilities/common_attributes.dart';
@@ -11,7 +12,17 @@ abstract class TextElementBase {}
 
 /// The [FormattedText] type represents a text element with [TextFormatting] attributes.
 class FormattedText extends TextElementBase {
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
+
   String value;
+
+  // ------------------------- //
+  // ------ Attributes ------- //
+  // ------------------------- //
+
+  /// For definition, look at [TextFormatting].
   TextFormatting formatting;
 
   FormattedText({
@@ -39,51 +50,33 @@ class FormattedText extends TextElementBase {
 
 /// The [AccidentalText] type represents an element with an accidental value and [TextFormatting] attributes.
 class AccidentalText extends TextElementBase {
-  // smufl-accidental-glyph-name
-  String smufl;
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
+
+  AccidentalValue value;
+
+  // ------------------------- //
+  // ------ Attributes ------- //
+  // ------------------------- //
+
+  /// Specifies the exact Standard Music Font Layout (SMuFL) accidental character,
+  /// using its SMuFL canonical glyph name.
+  String? smufl;
+
+  /// For definition, look at [TextFormatting].
   TextFormatting formatting;
 
   AccidentalText({
+    required this.value,
     required this.smufl,
     required this.formatting,
   });
 
   factory AccidentalText.fromXml(XmlElement xmlElement) {
-    // Content parsing:
-    if (xmlElement.children.length != 1 ||
-        xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
-      throw InvalidXmlElementException(
-        message:
-            "Formatted text element should contain only one children - accidental-value",
-        xmlElement: xmlElement,
-      );
-    }
-
-    if (!Nmtoken.validate(xmlElement.text)) {
-      // TODO: attributeName
-      final String message = Nmtoken.generateValidationError(
-        "attributeName",
-        xmlElement.text,
-      );
-      throw InvalidXmlElementException(
-        message: message,
-        xmlElement: xmlElement,
-      );
-    }
-
-    if (!AccidentalSmuflGlyphName.validate(xmlElement.text)) {
-      final String message = AccidentalSmuflGlyphName.generateValidationError(
-        "attributeName",
-        xmlElement.text,
-      );
-      throw InvalidXmlElementException(
-        message: message,
-        xmlElement: xmlElement,
-      );
-    }
-
     return AccidentalText(
-      smufl: xmlElement.text,
+      value: AccidentalValue.fromXml(xmlElement),
+      smufl: AccidentalSmuflGlyphName.fromXml(xmlElement),
       formatting: TextFormatting.fromXml(xmlElement),
     );
   }
