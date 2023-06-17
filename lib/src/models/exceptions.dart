@@ -1,3 +1,4 @@
+import 'package:music_notation/src/models/utilities.dart';
 import 'package:xml/xml.dart';
 
 /// Exception that is thrown when an invalid XmlElement is encountered
@@ -30,6 +31,24 @@ class InvalidMusicXmlType implements Exception {
   }
 }
 
+class XmlAttributeRequired implements Exception {
+  /// A message that describes the error in detail.
+  final String message;
+
+  /// The XmlElement which caused the exception to be thrown.
+  final XmlElement xmlElement;
+
+  XmlAttributeRequired({
+    required this.message,
+    required this.xmlElement,
+  });
+
+  @override
+  String toString() {
+    return 'XmlAttributeRequired: $message';
+  }
+}
+
 class XmlElementRequired implements Exception {
   final String message;
 
@@ -38,5 +57,19 @@ class XmlElementRequired implements Exception {
   @override
   String toString() {
     return 'XmlElementRequired: $message';
+  }
+}
+
+class InvalidXmlSequence implements Exception {
+  final String? message;
+  final XmlElement xmlElement;
+  final Map<String, XmlQuantifier> sequence;
+
+  const InvalidXmlSequence(
+      {this.message, required this.xmlElement, required this.sequence});
+
+  @override
+  String toString() {
+    return 'InvalidMusicXmlType: $message';
   }
 }

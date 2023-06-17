@@ -54,7 +54,8 @@ class PrintStyleAlign {
   }
 }
 
-/// The print-style attribute group collects the most popular combination of printing attributes: position, font, and color.
+/// The print-style attribute group collects the most popular combination
+/// of printing attributes: position, font, and color.
 class PrintStyle {
   Position? position;
   Font? font;

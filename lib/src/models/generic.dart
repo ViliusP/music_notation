@@ -1,6 +1,5 @@
+import 'package:music_notation/src/models/exceptions.dart';
 import 'package:xml/xml.dart';
-
-import 'package:music_notation/src/models/invalid_xml_element_exception.dart';
 
 // abstract class XmlParsable {
 

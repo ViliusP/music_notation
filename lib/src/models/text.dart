@@ -1,8 +1,8 @@
 import 'package:music_notation/src/models/elements/music_data/note/notehead.dart';
+import 'package:music_notation/src/models/exceptions.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/generic.dart';
-import 'package:music_notation/src/models/invalid_xml_element_exception.dart';
 import 'package:music_notation/src/models/printing.dart';
 
 /// The formatted-text type represents a text element with text-formatting attributes

@@ -1,7 +1,7 @@
 import 'package:music_notation/src/models/elements/score/part_group.dart';
 import 'package:music_notation/src/models/elements/score/part_list.dart';
 import 'package:music_notation/src/models/elements/score/score_part.dart';
-import 'package:music_notation/src/models/invalid_xml_element_exception.dart';
+import 'package:music_notation/src/models/exceptions.dart';
 import 'package:test/test.dart';
 import 'package:xml/xml.dart';
 

@@ -1,4 +1,4 @@
-import 'package:music_notation/src/models/invalid_xml_element_exception.dart';
+import 'package:music_notation/src/models/exceptions.dart';
 import 'package:xml/xml.dart';
 
 /// The midi-device type corresponds to the DeviceName meta event in Standard MIDI Files.

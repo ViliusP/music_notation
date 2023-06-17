@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:intl/intl.dart';
+import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/generic.dart';
-import 'package:music_notation/src/models/invalid_xml_element_exception.dart';
 import 'package:xml/xml.dart';
 
 /// Identification contains basic metadata about the score.
