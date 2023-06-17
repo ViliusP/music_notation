@@ -85,7 +85,7 @@ enum AccidentalValue {
         xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
       throw InvalidXmlElementException(
         message:
-            "${xmlElement.name} element should contain only one children - accidental-value",
+            "${xmlElement.name} element must contain only one children - accidental-value",
         xmlElement: xmlElement,
       );
     }

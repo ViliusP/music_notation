@@ -132,12 +132,12 @@ class PrintStyle {
 ///
 /// When a MusicXML element or attribute refers to tenths, it means the global tenths defined by the scaling element, not the local tenths as adjusted by the staff-size element.</xs:documentation>
 class Position {
-  double? defaultX;
-  double? defaultY;
-  double? relativeX;
-  double? relativeY;
+  final double? defaultX;
+  final double? defaultY;
+  final double? relativeX;
+  final double? relativeY;
 
-  Position({
+  const Position({
     this.defaultX,
     this.defaultY,
     this.relativeX,

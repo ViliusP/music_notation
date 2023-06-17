@@ -185,13 +185,6 @@ class TextFormatting {
   }
 }
 
-// <xs:attributeGroup name="letter-spacing">
-// 	<xs:annotation>
-// 		<xs:documentation>The letter-spacing attribute specifies text tracking. Values are either "normal" or a number representing the number of ems to add between each letter. The number may be negative in order to subtract space. The default is normal, which allows flexibility of letter-spacing for purposes of text justification.</xs:documentation>
-// 	</xs:annotation>
-// 	<xs:attribute name="letter-spacing" type="number-or-normal"/>
-// </xs:attributeGroup>
-
 /// The text-direction type is used to adjust and override the Unicode bidirectional text algorithm, similar to the Directionality data category in the W3C Internationalization Tag Set recommendation.
 /// Values:
 ///   - ltr (left-to-right embed);
