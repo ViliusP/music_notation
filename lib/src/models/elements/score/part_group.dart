@@ -10,7 +10,7 @@ import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/generic.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/elements/text/text.dart';
-import 'package:music_notation/src/models/utilities/xml_format_validators.dart';
+import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 import 'package:xml/xml.dart';
 
 /// The part-group element indicates groupings of parts in the score, usually indicated by braces and brackets.

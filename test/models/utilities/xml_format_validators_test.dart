@@ -1,5 +1,5 @@
 import 'package:music_notation/src/models/exceptions.dart';
-import 'package:music_notation/src/models/utilities/xml_format_validators.dart';
+import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 import 'package:test/test.dart';
 import 'package:xml/xml.dart';
 
