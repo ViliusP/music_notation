@@ -1,3 +1,5 @@
+import 'package:collection/collection.dart';
+import 'package:equatable/equatable.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:xml/xml.dart';
 
@@ -21,85 +23,85 @@ enum XmlQuantifier {
   final int? maxOccurences;
 }
 
-/// Validates the order and number of child elements within the provided [xmlElement] based on the [sequence] map.
-///
-/// The [sequence] map should consist of element names as keys, and [XmlQuantifier]s as values. The order of elements in
-/// the map should represent the expected order of child elements in the [xmlElement]. Multiple possible element names
-/// can be specified for a single position by separating them with a '|' symbol in the key.
-///
-/// Each [XmlQuantifier] value defines the expected number of occurrences of the corresponding element(s) in the [xmlElement].
-/// See the [XmlQuantifier] enum for more details on the available options.
-///
-/// The function throws an [InvalidXmlSequence] exception if the child elements of the [xmlElement] do not match the
-/// expected [sequence], either in order or number.
-///
-/// This function is especially useful for validating XML parsed from schemas that have strict requirements for the
-/// order and cardinality of elements.
-///
-/// Choice: 'display-text|accidental-text'.
-// TODO: end comment.
+class ExpectedElement extends Equatable {
+  final Set<String> nameOptions;
+  final XmlQuantifier quantifier;
+
+  const ExpectedElement({
+    required this.nameOptions,
+    required this.quantifier,
+  });
+
+  // Factory constructor that transforms map-based sequence
+  factory ExpectedElement.transformFromMap(Map<dynamic, XmlQuantifier> map) {
+    // First, we need to make sure the key is a String
+    if (map.keys.every((element) => element is String)) {
+      // We should also handle the "|" character as a special case.
+      var names = (map.keys.first as String).split('|').toSet();
+      return ExpectedElement(
+        nameOptions: names,
+        quantifier: map.values.first,
+      );
+    }
+
+    // If the key is another Map, it means we have nested elements
+    if (map.keys.first is Map<dynamic, XmlQuantifier>) {
+      Map<dynamic, XmlQuantifier> nestedMap =
+          map.keys.first as Map<dynamic, XmlQuantifier>;
+      List<ExpectedElement> nestedElements = nestedMap.entries
+          .map((e) => ExpectedElement.transformFromMap({e.key: e.value}))
+          .toList();
+
+      // Union of all name options of nested elements
+      Set<String> nameOptions = nestedElements.fold(
+        <String>{},
+        (previousValue, element) => previousValue..addAll(element.nameOptions),
+      );
+
+      return NestedExpectedElement(
+        nameOptions: nameOptions,
+        quantifier: map.values.first,
+        nestedElements: nestedElements,
+      );
+    }
+
+    throw ArgumentError(
+        "The map key must be a String or another Map<dynamic, XmlQuantifier>");
+  }
+
+  @override
+  List<Object?> get props => [nameOptions, quantifier];
+}
+
+class NestedExpectedElement extends ExpectedElement {
+  final List<ExpectedElement> nestedElements;
+
+  const NestedExpectedElement({
+    required Set<String> nameOptions,
+    required XmlQuantifier quantifier,
+    required this.nestedElements,
+  }) : super(
+          nameOptions: nameOptions,
+          quantifier: quantifier,
+        );
+
+  @override
+  List<Object?> get props => [super.props, nestedElements];
+}
+
 void validateSequence(
   XmlElement xmlElement,
-  Map<String, XmlQuantifier> sequence,
+  Map<dynamic, XmlQuantifier> mapSequence,
 ) {
-  final childrenNames = xmlElement.children
-      .whereType<XmlElement>()
-      .map((child) => child.name.toString())
+  List<ExpectedElement> sequence = mapSequence.entries
+      .map((e) => ExpectedElement.transformFromMap({e.key: e.value}))
       .toList();
 
-  int i = 0;
-  for (var entry in sequence.entries) {
-    var elementNames = entry.key.split("|");
-    var quantifier = entry.value;
+  int elements = _validateSequence(xmlElement: xmlElement, sequence: sequence);
 
-    switch (quantifier) {
-      case XmlQuantifier.zeroOrMore:
-        while (i < childrenNames.length &&
-            elementNames.contains(childrenNames[i])) {
-          i++;
-        }
-        break;
-      case XmlQuantifier.oneOrMore:
-        if (i >= childrenNames.length ||
-            !elementNames.contains(childrenNames[i])) {
-          String message = elementNames.length == 1
-              ? 'Invalid sequence. Expected "${elementNames[0]}", found ${i < childrenNames.length ? childrenNames[i] : 'end of elements'}'
-              : 'Invalid sequence. Expected one of ${elementNames.join(", ")}, found ${i < childrenNames.length ? childrenNames[i] : 'end of elements'}';
-          throw InvalidXmlSequence(
-            message: message,
-            xmlElement: xmlElement,
-            sequence: sequence,
-          );
-        }
-        i++;
-        while (i < childrenNames.length &&
-            elementNames.contains(childrenNames[i])) {
-          i++;
-        }
-        break;
-      case XmlQuantifier.optional:
-        if (i < childrenNames.length &&
-            elementNames.contains(childrenNames[i])) {
-          i++;
-        }
-        break;
-      case XmlQuantifier.required:
-        if (i >= childrenNames.length ||
-            !elementNames.contains(childrenNames[i])) {
-          String message = elementNames.length == 1
-              ? 'Invalid sequence. Expected "${elementNames[0]}", found ${i < childrenNames.length ? childrenNames[i] : 'end of elements'}'
-              : 'Invalid sequence. Expected one of ${elementNames.join(", ")}, found ${i < childrenNames.length ? childrenNames[i] : 'end of elements'}';
-          throw InvalidXmlSequence(
-            message: message,
-            xmlElement: xmlElement,
-            sequence: sequence,
-          );
-        }
-        i++;
-        break;
-    }
-  }
-  if (i != childrenNames.length) {
+  int childrenLength = xmlElement.childElements.length;
+
+  if (elements != childrenLength) {
     throw InvalidXmlSequence(
       message:
           'Invalid sequence. Found extra elements after validating sequence.',
@@ -107,4 +109,124 @@ void validateSequence(
       sequence: sequence,
     );
   }
+}
+
+int _validateSequence({
+  required XmlElement xmlElement,
+  required List<ExpectedElement> sequence,
+  int startFrom = 0,
+}) {
+  final childrenNames = xmlElement.children
+      .whereType<XmlElement>()
+      .map((child) => child.name.toString())
+      .toList()
+      .sublist(startFrom);
+
+  int i = startFrom;
+  for (var expectedElement in sequence) {
+    if (expectedElement is NestedExpectedElement) {
+      int subSequenceMatches = 0;
+      bool subSequenceStart = false;
+      while (i < childrenNames.length) {
+        var matchedElement = expectedElement.nestedElements
+            .firstWhereOrNull((e) => e.nameOptions.contains(childrenNames[i]));
+
+        if (!subSequenceStart && matchedElement == null) {
+          break;
+        }
+
+        if (matchedElement == null) {
+          throw InvalidXmlSequence(
+            message:
+                'Invalid sequence. Unexpected "${childrenNames[i]}" in nested sequence.',
+            xmlElement: xmlElement,
+            sequence: sequence,
+          );
+        }
+
+        i = _validateSingleElement(
+          element: matchedElement,
+          index: i,
+          childrenNames: childrenNames,
+          xmlElement: xmlElement,
+          sequence: sequence,
+        );
+        subSequenceStart = true;
+        subSequenceMatches++;
+      }
+
+      if (expectedElement.quantifier == XmlQuantifier.oneOrMore &&
+          subSequenceMatches == 0) {
+        throw InvalidXmlSequence(
+          message:
+              'Invalid sequence. Expected at least one of the elements in ${expectedElement.nestedElements.map((e) => e.nameOptions.join(", ")).join(", ")}, found none',
+          xmlElement: xmlElement,
+          sequence: sequence,
+        );
+      }
+      continue;
+    }
+
+    i = _validateSingleElement(
+      element: expectedElement,
+      index: i,
+      childrenNames: childrenNames,
+      xmlElement: xmlElement,
+      sequence: sequence,
+    );
+  }
+  return i;
+}
+
+int _validateSingleElement({
+  required ExpectedElement element,
+  required int index,
+  required List<String> childrenNames,
+  required XmlElement xmlElement,
+  required List<ExpectedElement> sequence,
+}) {
+  int i = index;
+  switch (element.quantifier) {
+    case XmlQuantifier.zeroOrMore:
+      while (i < childrenNames.length &&
+          element.nameOptions.contains(childrenNames[i])) {
+        i++;
+      }
+      break;
+    case XmlQuantifier.oneOrMore:
+      if (i >= childrenNames.length ||
+          !element.nameOptions.contains(childrenNames[i])) {
+        throw InvalidXmlSequence(
+          message:
+              'Invalid sequence. Expected "${element.nameOptions.join(", ")}", found ${i < childrenNames.length ? childrenNames[i] : 'end of elements'}',
+          xmlElement: xmlElement,
+          sequence: sequence,
+        );
+      }
+      i++;
+      while (i < childrenNames.length &&
+          element.nameOptions.contains(childrenNames[i])) {
+        i++;
+      }
+      break;
+    case XmlQuantifier.optional:
+      if (i < childrenNames.length &&
+          element.nameOptions.contains(childrenNames[i])) {
+        i++;
+      }
+      break;
+    case XmlQuantifier.required:
+      if (i >= childrenNames.length ||
+          !element.nameOptions.contains(childrenNames[i])) {
+        throw InvalidXmlSequence(
+          message:
+              'Invalid sequence. Expected "${element.nameOptions.join(", ")}", found ${i < childrenNames.length ? childrenNames[i] : 'end of elements'}',
+          xmlElement: xmlElement,
+          sequence: sequence,
+        );
+      }
+      i++;
+      break;
+  }
+  return i;
 }

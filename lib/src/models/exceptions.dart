@@ -70,12 +70,15 @@ class XmlElementRequired implements Exception {
 }
 
 class InvalidXmlSequence implements Exception {
-  final String? message;
+  final String message;
   final XmlElement xmlElement;
-  final Map<String, XmlQuantifier> sequence;
+  final List<ExpectedElement> sequence;
 
-  const InvalidXmlSequence(
-      {this.message, required this.xmlElement, required this.sequence});
+  const InvalidXmlSequence({
+    required this.message,
+    required this.xmlElement,
+    required this.sequence,
+  });
 
   @override
   String toString() {
