@@ -72,7 +72,7 @@ class XmlElementRequired implements Exception {
 class InvalidXmlSequence implements Exception {
   final String message;
   final XmlElement xmlElement;
-  final List<ExpectedElement> sequence;
+  final Map<dynamic, XmlQuantifier> sequence;
 
   const InvalidXmlSequence({
     required this.message,

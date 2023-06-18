@@ -7,8 +7,9 @@ import 'package:xml/xml.dart';
 
 void main() {
   group('Part list parsing', () {
-    // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/assess-and-player-elements/
-    test('Should parse part list from <assess> and <player> example correctly',
+    // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/concert-score-and-for-part-elements/
+    test(
+        'Should parse part list from <concert-score> and <for-part> example correctly',
         () {
       String input = '''
         <part-list>

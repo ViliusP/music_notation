@@ -4,50 +4,6 @@ import 'package:test/test.dart';
 import 'package:xml/xml.dart';
 
 void main() {
-  group("Expected element", () {
-    test('transform function should correctly convert old format to new format',
-        () {
-      Map<dynamic, XmlQuantifier> oldSequence = {
-        "e1|e2": XmlQuantifier.required,
-        "e3": XmlQuantifier.required,
-        {
-          "ne1": XmlQuantifier.required,
-          "ne2": XmlQuantifier.required,
-        }: XmlQuantifier.oneOrMore,
-      };
-
-      List<ExpectedElement> expectedNewSequence = [
-        const ExpectedElement(
-          nameOptions: {"e1", "e2"},
-          quantifier: XmlQuantifier.required,
-        ),
-        const ExpectedElement(
-          nameOptions: {"e3"},
-          quantifier: XmlQuantifier.required,
-        ),
-        const NestedExpectedElement(
-          nameOptions: {"ne1", "ne2"},
-          quantifier: XmlQuantifier.oneOrMore,
-          nestedElements: [
-            ExpectedElement(
-              nameOptions: {"ne1"},
-              quantifier: XmlQuantifier.required,
-            ),
-            ExpectedElement(
-              nameOptions: {"ne2"},
-              quantifier: XmlQuantifier.required,
-            ),
-          ],
-        ),
-      ];
-
-      List<ExpectedElement> actualNewSequence = oldSequence.entries
-          .map((e) => ExpectedElement.transformFromMap({e.key: e.value}))
-          .toList();
-
-      expect(actualNewSequence, expectedNewSequence);
-    });
-  });
   group('Sequence validator', () {
     test('should validate all required', () {
       String rawXml = '''
@@ -79,6 +35,7 @@ void main() {
         returnsNormally,
       );
     });
+
     test('should throw expcetion when required is missing', () {
       String rawXml = '''
         <root>
@@ -443,7 +400,7 @@ void main() {
         {
           "ne1": XmlQuantifier.optional,
           "ne2": XmlQuantifier.optional,
-        }: XmlQuantifier.oneOrMore,
+        }: XmlQuantifier.zeroOrMore,
       };
 
       var xmlElement = XmlDocument.parse(rawXml).rootElement;
@@ -481,6 +438,34 @@ void main() {
         returnsNormally,
       );
     });
+    test('should validate required nested structure #3', () {
+      String rawXml = '''
+        <root>
+          <e1></e1>
+          <e3></e3>
+          <ne1></ne1>
+          <ne2></ne2>
+          <ne1></ne1>
+          <ne1></ne1>
+          <ne2></ne2>
+        </root>
+      ''';
+
+      Map<dynamic, XmlQuantifier> expectedOrder = {
+        "e1|e2": XmlQuantifier.required,
+        "e3": XmlQuantifier.required,
+        {
+          "ne1": XmlQuantifier.required,
+          "ne2": XmlQuantifier.optional,
+        }: XmlQuantifier.oneOrMore,
+      };
+
+      var xmlElement = XmlDocument.parse(rawXml).rootElement;
+      expect(
+        () => validateSequence(xmlElement, expectedOrder),
+        returnsNormally,
+      );
+    });
 
     test('should throw exception on invalid nested structure #1', () {
       String rawXml = '''
@@ -505,7 +490,7 @@ void main() {
       var xmlElement = XmlDocument.parse(rawXml).rootElement;
       expect(
         () => validateSequence(xmlElement, expectedOrder),
-        throwsA(isA<ArgumentError>()),
+        throwsA(isA<InvalidXmlSequence>()),
       );
     });
 
@@ -530,7 +515,7 @@ void main() {
       var xmlElement = XmlDocument.parse(rawXml).rootElement;
       expect(
         () => validateSequence(xmlElement, expectedOrder),
-        throwsA(isA<ArgumentError>()),
+        throwsA(isA<InvalidXmlSequence>()),
       );
     });
   });
