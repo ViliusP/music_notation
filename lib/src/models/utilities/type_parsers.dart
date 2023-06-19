@@ -261,6 +261,28 @@ class YesNo {
     return _typeMap[value];
   }
 
+  static bool fromXml(XmlElement xmlElement, String attributeName) {
+    String? rawAttribute = xmlElement.getAttribute(
+      attributeName,
+    );
+
+    bool? yesNo = YesNo.toBool(rawAttribute ?? "");
+
+    // Checks if provided value is "yes", "no" or nothing.
+    // If it is something different, it throws error;
+    if (rawAttribute != null && yesNo == null) {
+      final String message = YesNo.generateValidationError(
+        attributeName,
+        rawAttribute,
+      );
+      throw InvalidMusicXmlType(
+        message: message,
+        xmlElement: xmlElement,
+      );
+    }
+    return yesNo ?? true;
+  }
+
   /// Generates a validation error message for an invalid yes-no value.
   ///
   /// Parameters:

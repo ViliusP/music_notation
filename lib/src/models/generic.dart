@@ -2,17 +2,30 @@ import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/utilities/common_attributes.dart';
 import 'package:xml/xml.dart';
 
-/// The typed-text type represents a text element with a type attribute.
+/// The [TypedText] type represents a text element with a type attribute.
 class TypedText {
-  String value;
-  String type;
+  final String value;
+  final String? type;
 
-  TypedText({required this.value, required this.type});
+  TypedText({
+    required this.value,
+    required this.type,
+  });
 
   factory TypedText.fromXml(XmlElement xmlElement) {
+    // Content parsing:
+    if (xmlElement.children.length != 1 ||
+        xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
+      throw InvalidXmlElementException(
+        message: "Group name element should contain only text",
+        xmlElement: xmlElement,
+      );
+    }
+    String content = xmlElement.children.first.value!;
+
     return TypedText(
-      value: xmlElement.text,
-      type: xmlElement.getAttribute('type') ?? '',
+      value: content,
+      type: xmlElement.getAttribute('type'),
     );
   }
 }

@@ -53,28 +53,9 @@ class NameDisplay {
       }
     }
 
-    String? printObjectAttribute = xmlElement.getAttribute(
-      CommonAttributes.printObject,
-    );
-
-    bool? printObject = YesNo.toBool(printObjectAttribute ?? "");
-
-    // Checks if provided value is "yes", "no" or nothing.
-    // If it is something different, it throws error;
-    if (printObjectAttribute != null && printObject == null) {
-      final String message = YesNo.generateValidationError(
-        CommonAttributes.printObject,
-        printObjectAttribute,
-      );
-      throw InvalidMusicXmlType(
-        message: message,
-        xmlElement: xmlElement,
-      );
-    }
-
     return NameDisplay(
       texts: texts,
-      printObject: printObject ?? true,
+      printObject: YesNo.fromXml(xmlElement, CommonAttributes.printObject),
     );
   }
 }

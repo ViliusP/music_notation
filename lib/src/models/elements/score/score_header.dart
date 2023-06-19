@@ -2,7 +2,7 @@ import 'package:music_notation/src/models/credit.dart';
 import 'package:music_notation/src/models/defaults.dart';
 import 'package:music_notation/src/models/elements/link.dart';
 import 'package:music_notation/src/models/elements/score/part_list.dart';
-import 'package:music_notation/src/models/identification.dart';
+import 'package:music_notation/src/models/elements/score/identification.dart';
 import 'package:xml/xml.dart';
 
 /// The score-header group contains basic score metadata about the work and movement,

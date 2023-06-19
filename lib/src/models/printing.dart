@@ -57,14 +57,14 @@ class PrintStyleAlign {
 /// The print-style attribute group collects the most popular combination
 /// of printing attributes: position, font, and color.
 class PrintStyle {
-  Position? position;
-  Font? font;
-  Color? color;
+  final Position position;
+  final Font font;
+  final Color color;
 
-  PrintStyle({
-    this.position,
-    this.font,
-    this.color,
+  const PrintStyle({
+    required this.position,
+    required this.font,
+    required this.color,
   });
 
   factory PrintStyle.fromXml(XmlElement xmlElement) {

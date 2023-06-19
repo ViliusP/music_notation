@@ -149,7 +149,7 @@ class Sound implements MusicDataElement {
   /// 0 is level with the listener, 90 is directly above, and -90 is directly below.
   ///
   /// Deprecated as of Version 2.0.
-  /// The <elevation> element in the <midi-instrument> element should be used instead.
+  /// The [elevation] element in the <midi-instrument> element should be used instead.
   /// If both are present, the <elevation> element takes priority.
   double? elevation;
 
