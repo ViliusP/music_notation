@@ -1,3 +1,4 @@
+import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 import 'package:xml/xml.dart';
 
 /// The score-instrument type represents a single instrument within a score-part.
@@ -178,6 +179,38 @@ class VirtualInstrument {
     return VirtualInstrument(
       virtualLibrary: virtualLibrary,
       virtualName: virtualName,
+    );
+  }
+}
+
+/// The [InstrumentChange] represents a change to the virtual instrument sound for a given [ScoreInstrument].
+///
+/// The [id] attribute refers to the [ScoreInstrument] affected by the change.
+///
+/// All [InstrumentChange] child elements can also be initially specified within the [ScoreInstrument] element.
+class InstrumentChange extends VirtualInstrumentData {
+  /// Refers to the score instrument affected by the change.
+  String id;
+
+  InstrumentChange({
+    required this.id,
+    super.instrumentSound,
+    super.performanceType,
+    super.virtualInstrument,
+  });
+
+  factory InstrumentChange.fromXml(XmlElement xmlElement) {
+    final VirtualInstrumentData instrument = VirtualInstrumentData.fromXml(
+      xmlElement,
+    );
+
+    /// TODO: Check id if.
+
+    return InstrumentChange(
+      id: "id",
+      instrumentSound: instrument.instrumentSound,
+      performanceType: instrument.performanceType,
+      virtualInstrument: instrument.virtualInstrument,
     );
   }
 }

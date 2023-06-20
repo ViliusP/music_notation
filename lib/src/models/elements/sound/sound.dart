@@ -1,11 +1,11 @@
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
+import 'package:music_notation/src/models/elements/score/instruments.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/utilities/type_parsers.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/elements/music_data/note/play.dart';
 import 'package:music_notation/src/models/elements/offset.dart';
-import 'package:music_notation/src/models/elements/sound/instrument_change.dart';
 import 'package:music_notation/src/models/elements/sound/swing.dart';
 import 'package:music_notation/src/models/midi.dart';
 
