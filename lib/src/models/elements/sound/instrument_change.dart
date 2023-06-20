@@ -1,4 +1,4 @@
-import 'package:music_notation/src/models/instruments.dart';
+import 'package:music_notation/src/models/elements/score/instruments.dart';
 
 /// The instrument-change element type represents a change to the virtual instrument sound for a given score-instrument.
 ///
