@@ -1,4 +1,6 @@
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
+import 'package:music_notation/src/models/exceptions.dart';
+import 'package:music_notation/src/models/utilities/type_parsers.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/printing.dart';
@@ -43,16 +45,44 @@ class Link implements MusicDataElement {
   }
 }
 
-/// The link-attributes group includes all the simple XLink attributes supported in the MusicXML format.
+/// The [LinkAttributes] group includes all the simple XLink attributes supported in the MusicXML format.
 ///
 /// It is also used to connect a MusicXML score with MusicXML parts or a MusicXML opus.
 class LinkAttributes {
+  /// The [href] attribute provides the data that allows an application
+  /// to find a remote resource or resource fragment.
+  ///
+  /// See the definition in the [XML Linking Language recommendation](https://www.w3.org/TR/xlink11/#link-locators).
   final String href;
-  final String type;
+
+  final String? type;
+
+  /// The [role] attribute indicates a property of the link.
+  ///
+  /// See the definition in the [XML Linking Language recommendation](https://www.w3.org/TR/xlink11/#link-semantics).
   final String? role;
+
+  /// The title attribute describes the meaning of a link
+  /// or resource in a human-readable fashion.
+  ///
+  /// See the definition in the [XML Linking Language recommendation](https://www.w3.org/TR/xlink11/#link-semantics).
   final String? title;
-  final String show;
-  final String actuate;
+
+  /// The [show] attribute is used to communicate the desired presentation
+  /// of the ending resource on traversal from the starting resource.
+  ///
+  /// The default value is replace.
+  ///
+  /// See the definition in the [XML Linking Language recommendation](https://www.w3.org/TR/xlink11/#link-behaviors).
+  final String? show;
+
+  /// The actuate attribute is used to communicate the desired timing
+  /// of traversal from the starting resource to the ending resource.
+  ///
+  /// The default value is onRequest.
+  ///
+  /// See the definition in the [XML Linking Language recommendation](https://www.w3.org/TR/xlink11/#link-behaviors).
+  final String? actuate;
 
   LinkAttributes({
     required this.href,
@@ -64,8 +94,24 @@ class LinkAttributes {
   });
 
   factory LinkAttributes.fromXml(XmlElement xmlElement) {
+    String? href = xmlElement.getAttribute('xlink:href');
+
+    if (href == null || href.isEmpty) {
+      throw XmlAttributeRequired(
+        message: "xlink:href is required for xml for ${xmlElement.name.local}",
+        xmlElement: xmlElement,
+      );
+    }
+
+    if (!MusicXMLAnyURI.isValid(href)) {
+      throw InvalidMusicXmlType(
+        message: "xlink:href is not type of anyURI",
+        xmlElement: xmlElement,
+      );
+    }
+
     return LinkAttributes(
-      href: xmlElement.getAttribute('xlink:href')!,
+      href: href,
       type: xmlElement.getAttribute('xlink:type') ?? 'simple',
       role: xmlElement.getAttribute('xlink:role'),
       title: xmlElement.getAttribute('xlink:title'),
