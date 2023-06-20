@@ -60,12 +60,15 @@ class XmlAttributeRequired implements Exception {
 
 class XmlElementRequired implements Exception {
   final String message;
+  final XmlElement? xmlElement;
 
-  XmlElementRequired(this.message);
+  XmlElementRequired(this.message, [this.xmlElement]);
 
   @override
   String toString() {
-    return 'XmlElementRequired: $message';
+    final String xml = xmlElement?.toXmlString(pretty: true) ?? "";
+
+    return 'XmlElementRequired: $message\n$xml';
   }
 }
 

@@ -1,41 +1,43 @@
+// ignore_for_file: deprecated_member_use_from_same_package
+
+import 'package:music_notation/src/models/utilities/common_attributes.dart';
+import 'package:music_notation/src/models/utilities/type_parsers.dart';
+import 'package:xml/xml.dart';
+
 import 'package:music_notation/src/models/elements/link.dart';
 import 'package:music_notation/src/models/elements/score/name_display.dart';
 import 'package:music_notation/src/models/elements/score/part_list.dart';
+import 'package:music_notation/src/models/elements/text/text.dart';
+import 'package:music_notation/src/models/exceptions.dart';
+import 'package:music_notation/src/models/elements/score/identification.dart';
 import 'package:music_notation/src/models/instruments.dart';
 import 'package:music_notation/src/models/midi.dart';
-import 'package:xml/xml.dart';
+import 'package:music_notation/src/models/printing.dart';
+import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 
-import 'package:music_notation/src/models/identification.dart';
-
-/// The score-part type collects part-wide information for each part in a score.
+/// The [ScorePart] type collects part-wide information for each part in a score.
 ///
 /// Often, each MusicXML part corresponds to a track in a Standard MIDI Format 1 file.
 ///
-/// In this case, the midi-device element is used to make a MIDI device or port assignment
-/// for the given track or specific MIDI instruments.
+/// In this case, the [MidiDevice] elements is used to make a MIDI device or port assignment
+/// for the given track or specific [MidiInstrument].
 ///
-/// Initial midi-instrument assignments may be made here as well.
+/// Initial [midiInstruments] assignments may be made here as well.
 ///
-/// The score-instrument elements are used when there are multiple instruments per track.
+/// The [scoreInstruments] are used when there are multiple instruments per track.
+///
+/// More information at [The \<score-part\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/score-part/).
 class ScorePart implements PartListElement {
-  /// Required.
-  String id;
-
   Identification? identification;
 
-  List<PartLink>? partLinks;
+  List<PartLink> partLinks;
 
-  /// The part-name type describes the name or abbreviation of a score-part element.
+  /// The [partName] type describes the name or abbreviation of a score-part element.
   ///
   /// Formatting attributes for the part-name element are deprecated in Version 2.0 in favor of the new part-name-display and part-abbreviation-display elements.
-  ///
-  /// Important: it is just String and does not implement this part from XTS
-  /// ```xml
-  /// <xs:attributeGroup ref="part-name-text"/>
-  /// ```
-  String? partName;
+  PartName partName;
 
-  String? partAbbreviation;
+  PartName? partAbbreviation;
 
   /// The name-display type is used for exact formatting of multi-font text
   /// in part and group names to the left of the system.
@@ -43,8 +45,6 @@ class ScorePart implements PartListElement {
   /// if anything, is printed at the start of each system.
   /// Enclosure for the display-text element is none by default.
   /// Language for the display-text element is Italian ("it") by default.
-  ///
-  /// Minimal occurence - 0.
   NameDisplay? partNameDisplay;
 
   NameDisplay? partAbbreviationDisplay;
@@ -61,6 +61,9 @@ class ScorePart implements PartListElement {
   final List<MidiDevice> midiDevices;
   final List<MidiInstrument> midiInstruments;
 
+  /// Required.
+  String id;
+
   ScorePart({
     this.identification,
     this.partLinks = const [],
@@ -76,19 +79,37 @@ class ScorePart implements PartListElement {
     required this.id,
   });
 
+  // Field(s): quantifier
+  static const Map<dynamic, XmlQuantifier> _xmlExpectedOrder = {
+    'identification': XmlQuantifier.optional,
+    'part-link': XmlQuantifier.zeroOrMore,
+    'part-name': XmlQuantifier.required,
+    'part-name-display': XmlQuantifier.optional,
+    'part-abbreviation': XmlQuantifier.optional,
+    'part-abbreviation-display': XmlQuantifier.optional,
+    'group': XmlQuantifier.zeroOrMore,
+    'score-instrument': XmlQuantifier.zeroOrMore,
+    'player': XmlQuantifier.zeroOrMore,
+    {
+      'midi-device': XmlQuantifier.optional,
+      'midi-instrument': XmlQuantifier.optional,
+    }: XmlQuantifier.zeroOrMore,
+  };
+
   factory ScorePart.fromXml(XmlElement xmlElement) {
+    validateSequence(xmlElement, _xmlExpectedOrder);
+
     Identification? identification;
     final partLinks = <PartLink>[];
-    String? partName;
+    PartName? partName;
     NameDisplay? partNameDisplay;
-    String? partAbbreviation;
+    PartName? partAbbreviation;
     NameDisplay? partAbbreviationDisplay;
     final groups = <String>[];
     final scoreInstruments = <ScoreInstrument>[];
     final players = <Player>[];
     final midiDevices = <MidiDevice>[];
     final midiInstruments = <MidiInstrument>[];
-    final id = xmlElement.getAttribute('id')!;
 
     for (var child in xmlElement.children.whereType<XmlElement>()) {
       switch (child.name.local) {
@@ -99,21 +120,28 @@ class ScorePart implements PartListElement {
           partLinks.add(PartLink.fromXml(child));
           break;
         case 'part-name':
-          // partName = PartName.fromXml(child);
-          partName = child.text;
+          partName = PartName.fromXml(child);
           break;
         case 'part-name-display':
           partNameDisplay = NameDisplay.fromXml(child);
           break;
         case 'part-abbreviation':
-          // partAbbreviation = PartName.fromXml(child);
-          partAbbreviation = child.text;
+          partAbbreviation = PartName.fromXml(child);
           break;
         case 'part-abbreviation-display':
           partAbbreviationDisplay = NameDisplay.fromXml(child);
           break;
         case 'group':
-          groups.add(child.text);
+          var groupElement = child.firstElementChild;
+
+          if (groupElement == null ||
+              groupElement.nodeType != XmlNodeType.TEXT) {
+            throw InvalidXmlElementException(
+              message: 'Group must have text inside',
+              xmlElement: xmlElement,
+            );
+          }
+          groups.add(groupElement.value!);
           break;
         case 'score-instrument':
           scoreInstruments.add(ScoreInstrument.fromXml(child));
@@ -130,10 +158,26 @@ class ScorePart implements PartListElement {
       }
     }
 
+    String? id = xmlElement.getAttribute("id");
+
+    if (id == null || id.isEmpty) {
+      throw XmlAttributeRequired(
+        message: "'score-part' element must to have 'id' attribute",
+        xmlElement: xmlElement,
+      );
+    }
+
+    if (partName == null) {
+      throw XmlElementRequired(
+        "part-name is required in score-part element",
+        xmlElement,
+      );
+    }
+
     return ScorePart(
       identification: identification,
       partLinks: partLinks,
-      partName: partName!,
+      partName: partName,
       partNameDisplay: partNameDisplay,
       partAbbreviation: partAbbreviation,
       partAbbreviationDisplay: partAbbreviationDisplay,
@@ -146,7 +190,7 @@ class ScorePart implements PartListElement {
     );
   }
 
-  // TODO
+  // TODO: implement and test.
   XmlElement toXml() {
     return XmlElement(XmlName("local"));
   }
@@ -226,5 +270,57 @@ class Player {
   factory Player.fromXml(XmlElement xmlElement) {
     // TODO: not implemented
     throw UnimplementedError("TODO: not implemented");
+  }
+}
+
+/// The part-name type describes the name or abbreviation of a score-part element.
+///
+/// Formatting attributes for the [PartName] element are deprecated in Version 2.0
+/// in favor of the new [NameDisplay] elements.
+@Deprecated("Deprecated in Version 2.0")
+class PartName {
+  String value;
+
+  /// For definition see [PrintStyle].
+  PrintStyle printStyle;
+
+  /// Specifies whether or not to print an object.
+  ///
+  /// It is yes if not specified.
+  bool printObject;
+
+  /// Indicates left, center, or right justification.
+  ///
+  /// The default value varies for different elements.
+  ///
+  /// For elements where the justify attribute is present but the halign attribute is not,
+  /// the justify attribute indicates horizontal alignment as well as justification.
+  HorizontalAlignment? justify;
+
+  PartName({
+    required this.value,
+    required this.printStyle,
+    required this.printObject,
+    this.justify,
+  });
+
+  factory PartName.fromXml(XmlElement xmlElement) {
+    // Content parsing:
+    if (xmlElement.children.length != 1 ||
+        xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
+      throw InvalidXmlElementException(
+        message: "Group name element should contain only text",
+        xmlElement: xmlElement,
+      );
+    }
+    String content = xmlElement.children.first.value!;
+
+    return PartName(
+      value: content,
+      printStyle: PrintStyle.fromXml(xmlElement),
+      printObject:
+          YesNo.fromXml(xmlElement, CommonAttributes.printObject) ?? true,
+      justify: HorizontalAlignment.fromXml(xmlElement),
+    );
   }
 }
