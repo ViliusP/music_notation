@@ -56,17 +56,10 @@ void validateSequence(
 /// Arguments:
 /// - [xmlElement] The XML element to process.
 String _getConcatenatedNames(XmlElement xmlElement) {
-  final childrenNames = xmlElement.children
+  return xmlElement.children
       .whereType<XmlElement>()
       .map((child) => child.name.toString())
-      .toList();
-
-  final nestedNames = xmlElement.children
-      .whereType<XmlElement>()
-      .map((child) => _getConcatenatedNames(child))
-      .toList();
-
-  return [...childrenNames, ...nestedNames].join();
+      .join();
 }
 
 /// Generates the regular expression pattern based on the expected [sequence].

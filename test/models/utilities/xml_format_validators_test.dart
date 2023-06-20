@@ -518,5 +518,30 @@ void main() {
         throwsA(isA<InvalidXmlSequence>()),
       );
     });
+    test('should validate only direct children', () {
+      String rawXml = '''
+        <root>
+          <e1>
+            <e1e1></e1e1>
+            <e1e1></e1e1>
+            <e1e2></e1e2>
+            <e1e3></e1e3>
+          </e1>
+          <e2></e2>
+        </root>
+      ''';
+
+      Map<dynamic, XmlQuantifier> expectedOrder = {
+        "e1": XmlQuantifier.required,
+        "e2": XmlQuantifier.required,
+        "e3": XmlQuantifier.optional,
+      };
+
+      var xmlElement = XmlDocument.parse(rawXml).rootElement;
+      expect(
+        () => validateSequence(xmlElement, expectedOrder),
+        returnsNormally,
+      );
+    });
   });
 }
