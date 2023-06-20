@@ -48,8 +48,7 @@ void main() {
       expect(scorePart.players.length, 4);
     });
     // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/concert-score-and-for-part-elements/
-    test(
-        'should score parts from <concert-score> and <for-part> example correctly',
+    test('should parse from <concert-score> and <for-part> example correctly',
         () {
       String input = '''
         <score-part id="P1">
@@ -77,7 +76,7 @@ void main() {
       expect(scorePart.players.length, 4);
     });
     // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/ensemble-element/
-    test('should score parts from  <ensemble> example correctly', () {
+    test('should parse from  <ensemble> example correctly', () {
       String input = '''
         <score-part id="P1">
           <part-name>Viola.</part-name>
@@ -104,7 +103,7 @@ void main() {
       expect(scorePart.scoreInstruments.length, 1);
     });
     // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/instrument-change-element/
-    test('should score parts from <instrument-change> example correctly', () {
+    test('should parse from <instrument-change> example correctly', () {
       String input = '''
         <score-part id="P1">
           <part-name>Clarinet in Bb</part-name>
@@ -153,7 +152,7 @@ void main() {
       expect(scorePart.midiInstruments.length, 1);
     });
     // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/instrument-link-element/
-    test('should score parts from <instrument-link> example correctly', () {
+    test('should parse from <instrument-link> example correctly', () {
       String input = '''
         <score-part id="P1">
             <part-link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="p1.musicxml" xlink:title="Clarinet 1" xlink:show="new">
@@ -234,6 +233,160 @@ void main() {
           XmlDocument.parse(input).rootElement,
         ),
         throwsA(isA<InvalidXmlSequence>()),
+      );
+    });
+  });
+  group('PartLink parsing', () {
+    test('should throw on wrong content order', () {
+      String input = '''
+        <part-link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="p1.musicxml" xlink:title="Clarinet 1" xlink:show="new">
+          <group-link>parts</group-link>
+          <instrument-link id="P1-I1"/>
+        </part-link>
+      ''';
+
+      expect(
+        () => PartLink.fromXml(
+          XmlDocument.parse(input).rootElement,
+        ),
+        throwsA(isA<InvalidXmlSequence>()),
+      );
+    });
+    // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/instrument-link-element/
+    test('should parse from <instrument-link> example correctly #1', () {
+      String input = '''
+        <part-link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="p1.musicxml" xlink:title="Clarinet 1" xlink:show="new">
+          <instrument-link id="P1-I1"/>
+          <group-link>parts</group-link>
+        </part-link>
+      ''';
+
+      var partLink = PartLink.fromXml(
+        XmlDocument.parse(input).rootElement,
+      );
+
+      expect(partLink.linkAttributes.href, "p1.musicxml");
+      expect(partLink.linkAttributes.title, "Clarinet 1");
+      expect(partLink.linkAttributes.show, "new");
+      expect(partLink.instrumentLinks[0], "P1-I1");
+      expect(partLink.groupLinks[0], "parts");
+    });
+    // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/instrument-link-element/
+    test('should parse from <instrument-link> example correctly #2', () {
+      String input = '''
+        <part-link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="p2.musicxml" xlink:title="Clarinet 2" xlink:show="new">
+          <instrument-link id="P1-I2"/>
+          <group-link>parts</group-link>
+        </part-link>
+      ''';
+
+      var partLink = PartLink.fromXml(
+        XmlDocument.parse(input).rootElement,
+      );
+
+      expect(partLink.linkAttributes.href, "p2.musicxml");
+      expect(partLink.linkAttributes.title, "Clarinet 2");
+      expect(partLink.linkAttributes.show, "new");
+      expect(partLink.instrumentLinks[0], "P1-I2");
+      expect(partLink.groupLinks[0], "parts");
+    });
+    test('should throw on empty instrument-link id', () {
+      String input = '''
+        <part-link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="p2.musicxml" xlink:title="Clarinet 2" xlink:show="new">
+          <instrument-link id=""/>
+          <group-link>parts</group-link>
+        </part-link>
+      ''';
+
+      expect(
+        () => PartLink.fromXml(
+          XmlDocument.parse(input).rootElement,
+        ),
+        throwsA(isA<XmlAttributeRequired>()),
+      );
+    });
+    test('should throw on missing instrument-link id', () {
+      String input = '''
+        <part-link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="p2.musicxml" xlink:title="Clarinet 2" xlink:show="new">
+          <instrument-link/>
+          <group-link>parts</group-link>
+        </part-link>
+      ''';
+
+      expect(
+        () => PartLink.fromXml(
+          XmlDocument.parse(input).rootElement,
+        ),
+        throwsA(isA<XmlAttributeRequired>()),
+      );
+    });
+    test('should throw on missing group-link content', () {
+      String input = '''
+        <part-link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="p2.musicxml" xlink:title="Clarinet 2" xlink:show="new">
+          <instrument-link id="P1"/>
+          <group-link></group-link>
+        </part-link>
+      ''';
+
+      expect(
+        () => PartLink.fromXml(
+          XmlDocument.parse(input).rootElement,
+        ),
+        throwsA(isA<InvalidXmlElementException>()),
+      );
+    });
+    test('should throw on invalid group-link content', () {
+      String input = '''
+        <part-link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="p2.musicxml" xlink:title="Clarinet 2" xlink:show="new">
+          <instrument-link id="P1"/>
+          <group-link><hello-world></hello-world></group-link>
+        </part-link>
+      ''';
+
+      expect(
+        () => PartLink.fromXml(
+          XmlDocument.parse(input).rootElement,
+        ),
+        throwsA(isA<InvalidXmlElementException>()),
+      );
+    });
+    // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/part-link-element/
+    test('should parse from <part-link> example correctly', () {
+      String input = '''
+        <part-link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="p1.musicxml" xlink:title="Trumpet in Bb" xlink:show="new"/>
+      ''';
+
+      var partLink = PartLink.fromXml(
+        XmlDocument.parse(input).rootElement,
+      );
+
+      expect(partLink.linkAttributes.href, "p1.musicxml");
+      expect(partLink.linkAttributes.title, "Trumpet in Bb");
+      expect(partLink.linkAttributes.show, "new");
+    });
+
+    test('should throw if href attribute is missing', () {
+      String input = '''
+        <part-link xmlns:xlink="http://www.w3.org/1999/xlink"/>
+      ''';
+
+      expect(
+        () => PartLink.fromXml(
+          XmlDocument.parse(input).rootElement,
+        ),
+        throwsA(isA<XmlAttributeRequired>()),
+      );
+    });
+    test('should throw if href attribute is invalid', () {
+      String input = '''
+        <part-link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="hello world"/>
+      ''';
+
+      expect(
+        () => PartLink.fromXml(
+          XmlDocument.parse(input).rootElement,
+        ),
+        throwsA(isA<InvalidMusicXmlType>()),
       );
     });
   });

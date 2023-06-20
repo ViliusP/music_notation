@@ -196,57 +196,89 @@ class ScorePart implements PartListElement {
   }
 }
 
-/// The part-link type allows MusicXML data for both score and parts to be contained within a single compressed MusicXML file.
+/// The [PartLink] type allows MusicXML data for both score and parts to be contained within a single compressed MusicXML file.
 /// It links a score-part from a score document to MusicXML documents that contain parts data.
 /// In the case of a single compressed MusicXML file,
 /// the link href values are paths that are relative to the root folder of the zip file.
 class PartLink {
-  LinkAttributes? linkAttributes;
+  /// All the simple XLink attributes supported in the MusicXML format
+  LinkAttributes linkAttributes;
 
-  /// Multiple part-link elements can link a condensed part within a score file to multiple MusicXML parts files.
-  /// For example, a "Clarinet 1 and 2" part in a score file could link to separate "Clarinet 1" and "Clarinet 2" part files.
+  /// Multiple part-link elements can link a condensed part
+  /// within a score file to multiple MusicXML parts files.
+  /// For example, a "Clarinet 1 and 2" part in a score file could link
+  /// to separate "Clarinet 1" and "Clarinet 2" part files.
   ///
-  /// The instrument-link type distinguish which of the score-instruments within a score-part are in which part file.
+  /// The [instrumentLinks] type distinguish which of the score-instruments within a score-part are in which part file.
   ///
-  /// The instrument-link id attribute refers to a score-instrument id attribute.
+  /// The [instrumentLinks] id attribute refers to a [ScoreInstrument] id attribute.
   ///
   /// In XML schema it references to unique identifiers.
-  List<String>? instrumentLinks;
+  List<String> instrumentLinks;
 
-  /// Multiple part-link elements can reference different types of linked documents,
+  /// Multiple elements can reference different types of linked documents,
   /// such as parts and condensed score.
   ///
-  /// The optional group-link elements identify the groups used in the linked document.
+  /// The optional [groupLinks] identify the groups used in the linked document.
   ///
-  /// The content of a group-link element should match the content of a group element in the linked document.
-  List<String>? groupLinks;
+  /// The content of a [groupLinks] element should match the content of a group element in the linked document.
+  List<String> groupLinks;
 
   PartLink({
-    this.instrumentLinks,
-    this.groupLinks,
-    this.linkAttributes,
+    this.instrumentLinks = const [],
+    this.groupLinks = const [],
+    required this.linkAttributes,
   });
 
+  // Field(s): quantifier
+  static const Map<dynamic, XmlQuantifier> _xmlExpectedOrder = {
+    'instrument-link': XmlQuantifier.zeroOrMore,
+    'group-link': XmlQuantifier.zeroOrMore,
+  };
+
   factory PartLink.fromXml(XmlElement xmlElement) {
-    List<String>? instrumentLinks;
+    validateSequence(xmlElement, _xmlExpectedOrder);
+
+    List<String> instrumentLinks = [];
     var instrumentLinkElements = xmlElement.findElements('instrument-link');
     if (instrumentLinkElements.isNotEmpty) {
-      instrumentLinks =
-          instrumentLinkElements.map((element) => element.text).toList();
+      instrumentLinks.addAll(
+        instrumentLinkElements.map((element) {
+          String? id = element.getAttribute("id");
+          if (id == null || id.isEmpty) {
+            throw XmlAttributeRequired(
+              message: "'instrument-link' must have ID",
+              xmlElement: xmlElement,
+            );
+          }
+          return id;
+        }),
+      );
     }
 
-    List<String>? groupLink;
+    List<String> groupLink = [];
     var groupLinkElements = xmlElement.findElements('group-link');
     if (groupLinkElements.isNotEmpty) {
-      groupLink = groupLinkElements.map((element) => element.text).toList();
-    }
+      groupLink.addAll(
+        groupLinkElements.map((element) {
+          XmlNode? child = element.firstChild;
 
-    LinkAttributes linkAttributes = LinkAttributes.fromXml(xmlElement);
+          if (child?.nodeType != XmlNodeType.TEXT ||
+              child?.value?.isEmpty == true) {
+            throw InvalidXmlElementException(
+              message: "'group-link' content should be text",
+              xmlElement: xmlElement,
+            );
+          }
+          return child!.value!;
+        }),
+      );
+    }
 
     return PartLink(
       instrumentLinks: instrumentLinks,
       groupLinks: groupLink,
-      linkAttributes: linkAttributes,
+      linkAttributes: LinkAttributes.fromXml(xmlElement),
     );
   }
 }

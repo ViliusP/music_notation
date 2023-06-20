@@ -313,3 +313,35 @@ class Percent {
   static String generateValidationError(String attributeName, double value) =>
       "Attribute '$attributeName' is not a percentage type: $value";
 }
+
+/// Static methods for validating MusicXML anyURI type according to the MusicXML specification.
+///
+/// The MusicXML anyURI type represents a Uniform Resource Identifier (URI) used in MusicXML documents,
+/// including standard URI schemes (e.g., http, https, ftp)
+/// and MusicXML-specific fragment identifiers (e.g., p1.musicxml, p2.musicxml).
+/// This class provides a method to validate a string as a MusicXML anyURI.
+///
+/// The anyURI defined by the [W3C XML Schema standard](https://www.w3.org/TR/xmlschema-2/#anyURI).
+class MusicXMLAnyURI {
+  // Regular expression pattern for MusicXML anyURI validation.
+  // The pattern matches URIs with schemes (e.g., http, https, ftp)
+  // and MusicXML-specific fragment identifiers (e.g., p1.musicxml, p2.musicxml).
+  static final _pattern = RegExp(
+    r'^[^:/?#]+:|p[0-9]+\.musicxml$',
+    caseSensitive: false,
+  );
+
+  /// Validates a string as a MusicXML anyURI.
+  ///
+  /// Returns true if the input value is a valid MusicXML anyURI according to the MusicXML specification.
+  /// Returns false otherwise.
+  static bool isValid(String value) {
+    // Try parsing the value as a URI and check if it has a scheme (e.g., "http", "https", "ftp").
+    // If parsing is successful and the URI has a scheme, it is considered a valid anyURI.
+    // Uri.tryParse returns null if the parsing fails or the URI does not have a scheme.
+    //
+    // If standard URI parsing fails, it tries to parse MusicXMLAnyURI.
+    return (Uri.tryParse(value)?.hasScheme ?? false) ||
+        _pattern.hasMatch(value);
+  }
+}
