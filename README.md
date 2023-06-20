@@ -56,9 +56,22 @@ To display the parsed music notation, you can use the MusicNotation widget:
 MusicNotation(score: score)
 ```
 
-## Contributing
+## Future
 
-Contributions are welcome! Please open an issue if you encounter any problems, or a pull request if you have improvements to suggest.
+We understand that everyone believes they are the center of the universe, but let's face it, this package has its limitations. It may not fulfill all your extravagant demands or cater to every whim and fancy. Life is tough, and so is software development.
+
+Here are some features and improvements we are considering (but not guaranteed):
+
+- Support for additional XML validation rules and constraints;
+- Enhanced error handling and error reporting;
+- Improved documentation and examples;
+- Simple classes remake with upcoming [inline classes](https://github.com/dart-lang/language/blob/main/accepted/future-releases/inline-classes/feature-specification.md);
+
+### Contributing
+
+Contributions and feedback are always welcome. If you encounter any issues or have suggestions for improvements, feel free to open an issue or submit a pull request. However, please understand that the development and maintenance of this package depend on the availability and interests of the contributors.
+
+*We might pretend to care and even consider your suggestions. Just keep in mind that we're not here to cater to your every desire.*
 
 ## License
 
