@@ -37,11 +37,9 @@ void main() {
 
       var rootElement = XmlDocument.parse(input).rootElement;
 
-      List<XmlElement> children = rootElement.childElements.toList();
+      var software = Encoding.fromXml(rootElement);
 
-      var software = Encoding.fromXml(children[0]);
-
-      expect(software, isA<EncodingDate>);
+      expect(software, isA<EncodingDate>());
       expect((software as EncodingDate).value, DateTime(2019, 10, 10));
     });
     test('should throw on empty encoding-date', () {
@@ -51,11 +49,9 @@ void main() {
 
       var rootElement = XmlDocument.parse(input).rootElement;
 
-      List<XmlElement> children = rootElement.childElements.toList();
-
       expect(
-        () => Encoding.fromXml(children[0]),
-        throwsA(InvalidXmlElementException),
+        () => Encoding.fromXml(rootElement),
+        throwsA(isA<InvalidXmlElementException>()),
       );
     });
     test('should throw error on bad datetime', () {
@@ -67,7 +63,19 @@ void main() {
 
       expect(
         () => Encoding.fromXml(rootElement),
-        throwsA(InvalidXmlElementException),
+        throwsA(isA<FormatException>()),
+      );
+    });
+    test('should throw error on bad datetime', () {
+      String input = '''
+        <encoding-date><child>your child</child></encoding-date>
+      ''';
+
+      var rootElement = XmlDocument.parse(input).rootElement;
+
+      expect(
+        () => Encoding.fromXml(rootElement),
+        throwsA(isA<InvalidXmlElementException>()),
       );
     });
     test('should parse encoder', () {
@@ -76,13 +84,10 @@ void main() {
       ''';
 
       var rootElement = XmlDocument.parse(input).rootElement;
+      var encoder = Encoding.fromXml(rootElement);
 
-      List<XmlElement> children = rootElement.childElements.toList();
-
-      var software = Encoding.fromXml(children[0]);
-
-      expect(software, isA<Encoder>);
-      expect((software as Encoder).value, equals("Mark D. Lew"));
+      expect(encoder, isA<Encoder>());
+      expect((encoder as Encoder).value, equals("Mark D. Lew"));
     });
     test('should throw on empty encoder', () {
       String input = '''
@@ -91,11 +96,9 @@ void main() {
 
       var rootElement = XmlDocument.parse(input).rootElement;
 
-      List<XmlElement> children = rootElement.childElements.toList();
-
       expect(
-        () => Encoding.fromXml(children[0]),
-        throwsA(InvalidXmlElementException),
+        () => Encoding.fromXml(rootElement),
+        throwsA(isA<InvalidXmlElementException>()),
       );
     });
     test('should parse software', () {
@@ -105,11 +108,9 @@ void main() {
 
       var rootElement = XmlDocument.parse(input).rootElement;
 
-      List<XmlElement> children = rootElement.childElements.toList();
+      var software = Encoding.fromXml(rootElement);
 
-      var software = Encoding.fromXml(children[0]);
-
-      expect(software, isA<Software>);
+      expect(software, isA<Software>());
       expect((software as Software).value, equals("MuseScore 3.2.3"));
     });
     test('should throw on empty software', () {
@@ -119,11 +120,9 @@ void main() {
 
       var rootElement = XmlDocument.parse(input).rootElement;
 
-      List<XmlElement> children = rootElement.childElements.toList();
-
       expect(
-        () => Encoding.fromXml(children[0]),
-        throwsA(InvalidXmlElementException),
+        () => Encoding.fromXml(rootElement),
+        throwsA(isA<InvalidXmlElementException>()),
       );
     });
     test('should parse encoding description', () {
@@ -133,11 +132,9 @@ void main() {
 
       var rootElement = XmlDocument.parse(input).rootElement;
 
-      List<XmlElement> children = rootElement.childElements.toList();
+      var software = Encoding.fromXml(rootElement);
 
-      var software = Encoding.fromXml(children[0]);
-
-      expect(software, isA<EncodingDescription>);
+      expect(software, isA<EncodingDescription>());
       expect(
         (software as EncodingDescription).value,
         equals("MusicXML example"),
@@ -150,11 +147,9 @@ void main() {
 
       var rootElement = XmlDocument.parse(input).rootElement;
 
-      List<XmlElement> children = rootElement.childElements.toList();
-
       expect(
-        () => Encoding.fromXml(children[0]),
-        throwsA(InvalidXmlElementException),
+        () => Encoding.fromXml(rootElement),
+        throwsA(isA<InvalidXmlElementException>()),
       );
     });
   });
@@ -211,8 +206,10 @@ void main() {
           '<supports element=" Snoopy" type="yes" attribute="bold,brash"/>';
       var rootElement = XmlDocument.parse(input).rootElement;
 
-      expect(() => Supports.fromXml(rootElement),
-          throwsA(isA<InvalidMusicXmlType>()));
+      expect(
+        () => Supports.fromXml(rootElement),
+        throwsA(isA<InvalidMusicXmlType>()),
+      );
     });
 
     test('when parsing should throw error on missing element', () {

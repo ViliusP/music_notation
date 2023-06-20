@@ -1,7 +1,6 @@
-import 'dart:collection';
-
 import 'package:collection/collection.dart';
 import 'package:intl/intl.dart';
+import 'package:music_notation/src/models/utilities/common_attributes.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/exceptions.dart';
@@ -15,7 +14,7 @@ import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart'
 ///
 /// The creator, rights, source, and relation elements are based on Dublin Core.
 ///
-/// For more details go to [a](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/identification/)
+/// For more details go to [The \<identification\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/identification/)
 class Identification {
   /// The creator element is borrowed from Dublin Core.
   /// It is used for the creators of the score.
@@ -87,12 +86,11 @@ class Identification {
     List<Encoding>? encoding;
     if (encodingElement != null) {
       encoding = encodingElement.childElements
-          .map((element) => Encoding.fromXml(encodingElement))
+          .map((child) => Encoding.fromXml(child))
           .toList();
     }
 
-    var sourceElement = xmlElement.findElements('encoding').firstOrNull;
-
+    var sourceElement = xmlElement.findElements('source').firstOrNull;
     if (sourceElement != null && sourceElement.nodeType != XmlNodeType.TEXT) {
       throw InvalidXmlElementException(
         message: "'source' in 'identification' must to be text",
@@ -106,7 +104,9 @@ class Identification {
         .toList();
 
     var miscellaneous = xmlElement
-        .findElements('miscellaneous-field')
+        .findElements("miscellaneous")
+        .firstOrNull
+        ?.findElements('miscellaneous-field')
         .map((element) => MiscellaneousField.fromXml(element))
         .toList();
 
@@ -124,23 +124,24 @@ class Identification {
 /// The [Encoding] element contains information about who did the digital encoding,
 /// when, with what software, and in what aspects.
 ///
-/// Standard type values for the encoder element are music, words, and arrangement, but other types may be used.
+/// Standard type values for the encoder element are music, words, and arrangement,
+/// but other types may be used.
 /// The type attribute is only needed when there are multiple encoder elements.
-abstract class Encoding {
+sealed class Encoding {
   factory Encoding.fromXml(XmlElement xmlElement) {
     switch (xmlElement.name.local) {
-      case EncodingDate.xmlElementName:
+      case EncodingDate._xmlElementName:
         return EncodingDate.fromXml(xmlElement);
-      case Encoder.xmlElementName:
+      case Encoder._xmlElementName:
         return Encoder.fromXml(xmlElement);
-      case Software.xmlElementName:
+      case Software._xmlElementName:
         return Software.fromXml(xmlElement);
-      case EncodingDescription.xmlElementName:
+      case EncodingDescription._xmlElementName:
         return EncodingDescription.fromXml(xmlElement);
-      case Supports.xmlElementName:
+      case Supports._xmlElementName:
         return Supports.fromXml(xmlElement);
       default:
-        throw InvalidXmlElementException(
+        throw InvalidMusicXmlType(
           message: "'${xmlElement.name}' cannot be Encoding",
           xmlElement: xmlElement,
         );
@@ -153,33 +154,50 @@ class EncodingDate implements Encoding {
 
   /// Format for parsing [value] from musicXML.
   static final DateFormat _dateFormat = DateFormat('yyyy-MM-dd');
-  static const String xmlElementName = "encoding-date";
+  static const String _xmlElementName = "encoding-date";
 
   EncodingDate({
     required this.value,
   });
 
   factory EncodingDate.fromXml(XmlElement xmlElement) {
-    return EncodingDate(value: DateTime.now());
+    if (xmlElement.children.length != 1 ||
+        xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
+      throw InvalidXmlElementException(
+        message: "Group name element should contain only text",
+        xmlElement: xmlElement,
+      );
+    }
+    String content = xmlElement.children.first.value!;
+    return EncodingDate(
+      value: _dateFormat.parse(content),
+    );
   }
 }
 
 class Software implements Encoding {
   final String value;
 
-  static const String xmlElementName = "software";
+  static const String _xmlElementName = "software";
 
   Software({
     required this.value,
   });
 
   factory Software.fromXml(XmlElement xmlElement) {
-    return Software(value: "");
+    if (xmlElement.children.length != 1 ||
+        xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
+      throw InvalidXmlElementException(
+        message: "Group name element should contain only text",
+        xmlElement: xmlElement,
+      );
+    }
+    return Software(value: xmlElement.children.first.value!);
   }
 }
 
 class Encoder extends TypedText implements Encoding {
-  static const String xmlElementName = "encoder";
+  static const String _xmlElementName = "encoder";
 
   Encoder({
     required super.value,
@@ -199,74 +217,23 @@ class Encoder extends TypedText implements Encoding {
 class EncodingDescription implements Encoding {
   String value;
 
-  static const String xmlElementName = "encoding-description";
+  static const String _xmlElementName = "encoding-description";
 
   EncodingDescription({
     required this.value,
   });
 
   factory EncodingDescription.fromXml(XmlElement xmlElement) {
-    return EncodingDescription(value: "");
+    if (xmlElement.children.length != 1 ||
+        xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
+      throw InvalidXmlElementException(
+        message: "Group name element should contain only text",
+        xmlElement: xmlElement,
+      );
+    }
+    return EncodingDescription(value: xmlElement.children.first.value!);
   }
 }
-
-// /// Contains information about who did the digital encoding.
-// TypedText? encoder;
-
-// /// Specifies what software created the digital encoding.
-// String? software;
-
-// /// Descriptive information about the digital encoding that is not provided
-// /// in the other properties.
-// String encodingDescription;
-
-// /// Indicates if a MusicXML encoding supports a particular MusicXML elements.
-// List<Support> supports;
-
-// Encoding(
-//   this.encodingDate,
-//   this.encoder,
-//   this.software,
-//   this.encodingDescription,
-//   this.supports,
-// );
-
-// factory Encoding.fromXml(XmlElement xmlElement) {
-//   List<dynamic> encoding = [];
-
-//   String? software;
-//   DateTime? encodingDate;
-//   List<Support> supports = [];
-
-//   for (var element in xmlElement.children.whereType<XmlElement>()) {
-//     switch (element.name.local) {
-//       case 'software':
-//         software = element.text;
-//         break;
-//       case 'encoding-date':
-//         String encodingDateText = element.text;
-//         try {
-//           encodingDate = _encodingDateFormat.parseStrict(encodingDateText);
-//         } catch (e) {
-//           throw InvalidXmlElementException(
-//             message:
-//                 "Attribute 'encoding-date' is not a valid DateTime: $encodingDateText",
-//             xmlElement: xmlElement,
-//           );
-//         }
-//         break;
-//       case 'supports':
-//         supports.add(Support.fromXml(element));
-//         break;
-//     }
-//   }
-//   return Encoding();
-//   // return Encoding(
-//   //   software,
-//   //   encodingDate,
-//   //   supports,
-//   // );
-// }
 
 /// The supports type indicates if a MusicXML encoding supports a particular MusicXML element.
 /// This is recommended for elements like beam, stem, and accidental,
@@ -276,18 +243,29 @@ class EncodingDescription implements Encoding {
 /// to indicate support for particular attributes or particular values.
 /// This lets applications communicate, for example,
 /// that all system and/or page breaks are contained in the MusicXML file.
+///
+/// For more details go to [The \<supports\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/supports/).
 class Supports implements Encoding {
-  static const String xmlElementName = "supports";
+  static const String _xmlElementName = "supports";
 
-  /// Required
+  /// If yes, the absence of a particular element
+  /// with a specified attribute or value is meaningful.
+  ///
+  /// It indicates that this information is not present in the score.
+  ///
+  /// If no, the absence is not meaningful because the encoding
+  /// does not include this type of information.
   bool type;
 
-  /// Required, type - NMTOKEN.
+  /// Indicates the element that is supported or not by the encoding.
   String element;
 
-  /// type - NMTOKEN.
+  /// Indicates a specific element attribute that is supported or not by the encoding.
   String? attribute;
 
+  /// Indicates a specific attribute value that is supported or not by the encoding.
+  ///
+  /// Only used together with the attribute attribute.
   String? value;
 
   Supports({
@@ -297,21 +275,19 @@ class Supports implements Encoding {
     this.value,
   });
 
-  static const _typeMap = {
-    "yes": true,
-    "no": false,
-  };
-
-  // static const _reverseTypeMap = {
-  //   true: "yes",
-  //   false: "no",
-  // };
-
   factory Supports.fromXml(XmlElement xmlElement) {
-    var type = xmlElement.getAttribute('type');
-    var mappedType = _typeMap[type];
+    var typeAttribute = xmlElement.getAttribute(CommonAttributes.type);
 
-    if (mappedType == null) {
+    if (typeAttribute == null) {
+      throw XmlAttributeRequired(
+        message: "Missing '${CommonAttributes.type}' attribute",
+        xmlElement: xmlElement,
+      );
+    }
+
+    var type = YesNo.toBool(typeAttribute);
+
+    if (type == null) {
       throw InvalidXmlElementException(
         message: "Invalid or missing 'type' attribute",
         xmlElement: xmlElement,
@@ -321,14 +297,14 @@ class Supports implements Encoding {
     var element = xmlElement.getAttribute('element');
 
     if (element == null) {
-      throw InvalidXmlElementException(
+      throw XmlAttributeRequired(
         message: "Invalid or missing 'element' attribute",
         xmlElement: xmlElement,
       );
     }
 
     if (!Nmtoken.validate(element)) {
-      throw InvalidXmlElementException(
+      throw InvalidMusicXmlType(
         message: "Attribute 'element' is not a valid NMTOKEN: $element",
         xmlElement: xmlElement,
       );
@@ -337,14 +313,14 @@ class Supports implements Encoding {
     var attribute = xmlElement.getAttribute('attribute');
 
     if (attribute != null && !Nmtoken.validate(attribute)) {
-      throw InvalidXmlElementException(
+      throw InvalidMusicXmlType(
         message: "Attribute 'attribute' is not a valid NMTOKEN: $attribute",
         xmlElement: xmlElement,
       );
     }
 
     return Supports(
-      type: mappedType,
+      type: type,
       element: element,
       attribute: attribute,
       value: xmlElement.getAttribute('value'),
@@ -356,6 +332,8 @@ class Supports implements Encoding {
 /// each type of metadata can go in a miscellaneous-field element.
 ///
 /// The required [name] attribute indicates the type of metadata the element content represents.
+///
+/// For more details go to [The \<miscellaneous-field\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/miscellaneous-field/).
 class MiscellaneousField {
   final String value;
   final String name;

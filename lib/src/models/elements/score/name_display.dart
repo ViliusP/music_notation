@@ -55,7 +55,8 @@ class NameDisplay {
 
     return NameDisplay(
       texts: texts,
-      printObject: YesNo.fromXml(xmlElement, CommonAttributes.printObject),
+      printObject:
+          YesNo.fromXml(xmlElement, CommonAttributes.printObject) ?? true,
     );
   }
 }

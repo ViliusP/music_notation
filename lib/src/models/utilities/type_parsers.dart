@@ -110,7 +110,7 @@ class TimeOnly {
   /// Return true if valid.
   /// Otherwise - false.
   static bool validate(String value) {
-    return !RegExp(_pattern).hasMatch(value);
+    return RegExp(_pattern).hasMatch(value);
   }
 
   static String generateValidationError(String attributeName, String value) =>
@@ -126,7 +126,7 @@ class Nmtoken {
   /// Return true if valid.
   /// Otherwise - false.
   static bool validate(String value) {
-    return !RegExp(r'^[a-zA-Z_][a-zA-Z0-9_\-.]*$').hasMatch(value);
+    return RegExp(r'^[a-zA-Z_][a-zA-Z0-9_\-.]*$').hasMatch(value);
   }
 
   static String generateValidationError(String attributeName, String value) =>
@@ -163,7 +163,7 @@ class RotationDegrees {
       "Attribute '$attributeName' is not valid rotation degree: $value";
 }
 
-/// The number-or-normal values can be either a decimal number or the string "normal".
+/// The [NumberOrNormal] values can be either a decimal number or the string "normal".
 ///
 /// This is used by the line-height and letter-spacing attributes.
 ///
@@ -261,7 +261,7 @@ class YesNo {
     return _typeMap[value];
   }
 
-  static bool fromXml(XmlElement xmlElement, String attributeName) {
+  static bool? fromXml(XmlElement xmlElement, String attributeName) {
     String? rawAttribute = xmlElement.getAttribute(
       attributeName,
     );
@@ -280,7 +280,7 @@ class YesNo {
         xmlElement: xmlElement,
       );
     }
-    return yesNo ?? true;
+    return yesNo;
   }
 
   /// Generates a validation error message for an invalid yes-no value.

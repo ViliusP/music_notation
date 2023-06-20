@@ -67,7 +67,7 @@ Here are some features and improvements we are considering (but not guaranteed):
 - Improved documentation and examples;
 - Simple classes remake with upcoming [inline classes](https://github.com/dart-lang/language/blob/main/accepted/future-releases/inline-classes/feature-specification.md);
 
-### Contributing
+## Contributing
 
 Contributions and feedback are always welcome. If you encounter any issues or have suggestions for improvements, feel free to open an issue or submit a pull request. However, please understand that the development and maintenance of this package depend on the availability and interests of the contributors.
 
