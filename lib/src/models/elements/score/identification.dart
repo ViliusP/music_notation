@@ -89,9 +89,10 @@ class Identification {
           .map((child) => Encoding.fromXml(child))
           .toList();
     }
+    var sourceContent = xmlElement.getElement('source')?.firstChild;
 
-    var sourceElement = xmlElement.findElements('source').firstOrNull;
-    if (sourceElement != null && sourceElement.nodeType != XmlNodeType.TEXT) {
+    if (sourceContent?.value != null &&
+        sourceContent?.nodeType != XmlNodeType.TEXT) {
       throw InvalidXmlElementException(
         message: "'source' in 'identification' must to be text",
         xmlElement: xmlElement,
@@ -114,7 +115,7 @@ class Identification {
       creators: creators,
       rights: rights,
       encoding: encoding,
-      source: sourceElement?.value,
+      source: sourceContent?.value,
       relations: relations,
       miscellaneous: miscellaneous,
     );

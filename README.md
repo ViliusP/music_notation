@@ -62,7 +62,7 @@ We understand that everyone believes they are the center of the universe, but le
 
 Here are some features and improvements we are considering (but not guaranteed):
 
-- Support for additional XML validation rules and constraints;
+- Support for additional XML validation rules and constraints (e.g. 'token' type validation);
 - Enhanced error handling and error reporting;
 - Improved documentation and examples;
 - Simple classes remake with upcoming [inline classes](https://github.com/dart-lang/language/blob/main/accepted/future-releases/inline-classes/feature-specification.md);

@@ -4,20 +4,27 @@ import 'package:test/test.dart';
 import 'package:xml/xml.dart';
 
 void main() {
-  group('Identification', () {
-    // TODO: do more tests
+  group('Identification parsing', () {
     test('should parse all properties', () {
       String input = '''
         <identification>
+          <creator type="composer">Claude Debussy</creator>
+          <creator type="lyricist">Paul Bourget</creator>
+          <rights>Copyright © 2010 Recordare LLC</rights>
           <encoding>
-              <software>MuseScore 3.2.3</software>
-              <encoding-date>2019-10-10</encoding-date>
-              <supports element="accidental" type="yes" />
-              <supports element="beam" type="yes" />
-              <supports element="print" attribute="new-page" type="yes" value="yes" />
-              <supports element="print" attribute="new-system" type="yes" value="yes" />
-              <supports element="stem" type="yes" />
+              <encoder>Mark D. Lew</encoder>
+              <encoding-date>2010-12-17</encoding-date>
+              <software>Finale for Windows</software>
+              <encoding-description>MusicXML example</encoding-description>
+              <supports element="accidental" type="yes"/>
+              <supports element="beam" type="yes"/>
+              <supports element="stem" type="yes"/>
           </encoding>
+          <source>Based on E. Girod edition of 1891, republished by Dover in 1981.</source>
+          <relation>urn:ISBN:0-486-24131-9</relation>
+          <miscellaneous>
+              <miscellaneous-field name="difficulty-level">3</miscellaneous-field>
+          </miscellaneous>
         </identification>
       ''';
 
@@ -25,11 +32,34 @@ void main() {
 
       var identification = Identification.fromXml(rootElement);
 
+      expect(identification.creators?.length, 2);
+      expect(identification.rights, isNotNull);
       expect(identification.encoding, isNotNull);
+      expect(identification.source, isNotNull);
+      expect(identification.miscellaneous?.length, 1);
+    });
+    test('should throw on wrong order', () {
+      String input = '''
+        <identification>
+          <rights>Copyright © 2010 Recordare LLC</rights>
+          <creator type="composer">Claude Debussy</creator>
+          <creator type="lyricist">Paul Bourget</creator>
+          <miscellaneous>
+              <miscellaneous-field name="difficulty-level">3</miscellaneous-field>
+          </miscellaneous>
+        </identification>
+      ''';
+
+      var rootElement = XmlDocument.parse(input).rootElement;
+
+      expect(
+        () => Identification.fromXml(rootElement),
+        throwsA(isA<InvalidXmlSequence>()),
+      );
     });
   });
 
-  group('Encoding', () {
+  group('Encoding parsing', () {
     test('should parse encoding-date', () {
       String input = '''
         <encoding-date>2019-10-10</encoding-date>
@@ -154,7 +184,7 @@ void main() {
     });
   });
 
-  group('Support', () {
+  group('Support parsing', () {
     test('should parse element and type', () {
       String input = '<supports element="accidental" type="yes" />';
       var rootElement = XmlDocument.parse(input).rootElement;
