@@ -183,6 +183,10 @@ class TextFormatting {
       enclosure: EnclosureShape.fromXml(xmlElement),
     );
   }
+
+  Iterable<XmlAttribute> toXml() {
+    return [];
+  }
 }
 
 /// The text-direction type is used to adjust and override the Unicode bidirectional text algorithm, similar to the Directionality data category in the W3C Internationalization Tag Set recommendation.
@@ -423,34 +427,34 @@ class Font {
   ///
   // TODO: nullable or not?
   // TOOD: Remove "font" word from properties.
-  final String? fontFamily;
+  final String? family;
 
   /// Normal or italic style.
-  final FontStyle? fontStyle;
+  final FontStyle? style;
 
   /// One of the CSS sizes or a numeric point size.
-  final FontSize? fontSize;
+  final FontSize? size;
 
   /// Normal or bold weight.
-  final FontWeight? fontWeight;
+  final FontWeight? weight;
 
   Font({
-    this.fontStyle,
-    this.fontSize,
-    this.fontWeight,
-    this.fontFamily,
+    this.style,
+    this.size,
+    this.weight,
+    this.family,
   });
 
   const Font.empty()
-      : fontFamily = null,
-        fontStyle = null,
-        fontSize = null,
-        fontWeight = null;
+      : family = null,
+        style = null,
+        size = null,
+        weight = null;
 
   factory Font.fromXml(XmlElement xmlElement) {
     // TODO: fully parse
     return Font(
-      fontFamily: xmlElement.getAttribute('font-family'),
+      family: xmlElement.getAttribute('font-family'),
     );
   }
 
@@ -486,6 +490,8 @@ enum CssFontSize {
 class FontSize {
   final double? numericValue;
   final CssFontSize? cssFontValue;
+
+  dynamic get getValue => numericValue ?? cssFontValue;
 
   FontSize.fromDouble({this.numericValue}) : cssFontValue = null;
   FontSize.fromEnum({this.cssFontValue}) : numericValue = null;
@@ -634,7 +640,7 @@ class LyricLanguage {
 /// The formatted-text-id type represents a text element with text-formatting and id attributes.
 class FormattedTextId {
   final String content;
-  final String textFormatting;
+  final TextFormatting textFormatting;
   final String? id;
 
   FormattedTextId({
@@ -646,15 +652,15 @@ class FormattedTextId {
   factory FormattedTextId.fromXml(XmlElement xmlElement) {
     return FormattedTextId(
       content: xmlElement.value ?? "",
-      textFormatting: xmlElement.getAttribute('text-formatting') ?? '',
-      id: xmlElement.getAttribute('optional-unique-id'),
+      textFormatting: TextFormatting.fromXml(xmlElement),
+      id: xmlElement.getAttribute('id'),
     );
   }
 
   XmlElement toXml() {
     List<XmlAttribute> attributes = [];
 
-    attributes.add(XmlAttribute(XmlName('text-formatting'), textFormatting));
+    attributes.addAll(textFormatting.toXml());
 
     if (id != null) {
       attributes.add(XmlAttribute(XmlName('optional-unique-id'), id!));
@@ -674,19 +680,19 @@ class FormattedSymbolId {
   /// TODO: validate
   final String content;
   final String symbolFormatting;
-  final String optionalUniqueId;
+  final String id;
 
   FormattedSymbolId({
     required this.content,
     required this.symbolFormatting,
-    required this.optionalUniqueId,
+    required this.id,
   });
 
   factory FormattedSymbolId.fromXml(XmlElement xmlElement) {
     return FormattedSymbolId(
       content: xmlElement.text,
       symbolFormatting: xmlElement.getAttribute('symbol-formatting') ?? '',
-      optionalUniqueId: xmlElement.getAttribute('optional-unique-id') ?? '',
+      id: xmlElement.getAttribute('optional-unique-id') ?? '',
     );
   }
 
@@ -695,7 +701,7 @@ class FormattedSymbolId {
       XmlName('formatted-symbol-id'),
       [
         XmlAttribute(XmlName('symbol-formatting'), symbolFormatting),
-        XmlAttribute(XmlName('optional-unique-id'), optionalUniqueId),
+        XmlAttribute(XmlName('id'), id),
       ],
       [XmlText(content)],
     );
