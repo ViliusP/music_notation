@@ -5,7 +5,7 @@ import 'package:music_notation/src/models/elements/text/text.dart';
 
 /// The print-style-align attribute group adds the halign and valign attributes to the position, font, and color attributes.
 class PrintStyleAlign {
-  PrintStyle? printStlye;
+  PrintStyle? printStyle;
 
   /// In cases where text extends over more than one line, horizontal alignment and justify values can be different. The most typical case is for credits, such as:
   ///
@@ -24,7 +24,7 @@ class PrintStyleAlign {
   VerticalAlignment? verticalAlignment;
 
   PrintStyleAlign({
-    required this.printStlye,
+    required this.printStyle,
     required this.horizontalAlignment,
     required this.verticalAlignment,
   });
@@ -47,7 +47,7 @@ class PrintStyleAlign {
 
     // TODO: check
     return PrintStyleAlign(
-      printStlye: PrintStyle.fromXml(xmlElement),
+      printStyle: PrintStyle.fromXml(xmlElement),
       horizontalAlignment: horizontalAlign,
       verticalAlignment: verticalAlignment,
     );
