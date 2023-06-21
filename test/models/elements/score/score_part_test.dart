@@ -390,4 +390,102 @@ void main() {
       );
     });
   });
+
+  group("Player", () {
+    test("Should throw on multiple player names", () {
+      String input = '''
+        <player id="P1-M1">
+          <player-name>Soprano 1</player-name>
+          <player-name>Soprano 2</player-name>
+        </player>
+      ''';
+
+      expect(
+        () => Player.fromXml(
+          XmlDocument.parse(input).rootElement,
+        ),
+        throwsA(isA<InvalidXmlSequence>()),
+      );
+    });
+    test("Should throw on missing player names", () {
+      String input = '''
+        <player id="P1-M1">
+        </player>
+      ''';
+
+      expect(
+        () => Player.fromXml(
+          XmlDocument.parse(input).rootElement,
+        ),
+        throwsA(isA<InvalidXmlSequence>()),
+      );
+    });
+    test("Should throw on empty ID", () {
+      String input = '''
+        <player id="">
+          <player-name>Soprano 1</player-name>
+        </player>
+      ''';
+
+      expect(
+        () => Player.fromXml(
+          XmlDocument.parse(input).rootElement,
+        ),
+        throwsA(isA<XmlAttributeRequired>()),
+      );
+    });
+    test("Should throw on missing ID", () {
+      String input = '''
+        <player>
+          <player-name>Soprano 1</player-name>
+        </player>
+      ''';
+
+      expect(
+        () => Player.fromXml(
+          XmlDocument.parse(input).rootElement,
+        ),
+        throwsA(isA<XmlAttributeRequired>()),
+      );
+    });
+    // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/part-link-element/
+    test('should parse from <assess> and <player> example correctly', () {
+      var inputs = [
+        '''
+        <player id="P1-M1">
+          <player-name>Soprano 1</player-name>
+        </player>
+        ''',
+        '''
+        <player id="P1-M2">
+          <player-name>Soprano 2</player-name>
+        </player>
+        ''',
+        '''
+        <player id="P1-M3">
+          <player-name>Alto 1</player-name>
+        </player>
+        ''',
+        '''
+        <player id="P1-M4">
+          <player-name>Alto 2</player-name>
+        </player>
+        ''',
+      ];
+      var expectedOutputs = [
+        ("P1-M1", "Soprano 1"),
+        ("P1-M2", "Soprano 2"),
+        ("P1-M3", "Alto 1"),
+        ("P1-M4", "Alto 2"),
+      ];
+      for (var (i, input) in inputs.indexed) {
+        final player = Player.fromXml(
+          XmlDocument.parse(input).rootElement,
+        );
+
+        expect(player.id, expectedOutputs[i].$1);
+        expect(player.name, expectedOutputs[i].$2);
+      }
+    });
+  });
 }

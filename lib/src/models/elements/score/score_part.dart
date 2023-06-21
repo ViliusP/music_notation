@@ -10,7 +10,7 @@ import 'package:music_notation/src/models/elements/score/part_list.dart';
 import 'package:music_notation/src/models/elements/text/text.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/elements/score/identification.dart';
-import 'package:music_notation/src/models/instruments.dart';
+import 'package:music_notation/src/models/elements/score/instruments.dart';
 import 'package:music_notation/src/models/midi.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
@@ -61,7 +61,6 @@ class ScorePart implements PartListElement {
   final List<MidiDevice> midiDevices;
   final List<MidiInstrument> midiInstruments;
 
-  /// Required.
   String id;
 
   ScorePart({
@@ -132,7 +131,7 @@ class ScorePart implements PartListElement {
           partAbbreviationDisplay = NameDisplay.fromXml(child);
           break;
         case 'group':
-          var groupElement = child.firstElementChild;
+          var groupElement = child.firstChild;
 
           if (groupElement == null ||
               groupElement.nodeType != XmlNodeType.TEXT) {
@@ -285,13 +284,15 @@ class PartLink {
 
 /// The player type allows for multiple players per score-part for use in listening applications.
 ///
-/// One player may play multiple instruments, while a single instrument may include multiple players in divisi sections.
+/// One player may play multiple instruments,
+/// while a single instrument may include multiple players in divisi sections.
+///
+/// More information at [The \<player\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/player/)
 class Player {
-  /// Required.
+  /// An identifier for this. It is unique within this document.
   String id;
 
-  /// The player-name element is typically used within a software application, rather than appearing on the printed page of a score.
-  /// name=player-name
+  /// Typically used within a software application, rather than appearing on the printed page of a score
   String name;
 
   Player({
@@ -299,9 +300,35 @@ class Player {
     required this.name,
   });
 
+  static const Map<dynamic, XmlQuantifier> _xmlExpectedOrder = {
+    'player-name': XmlQuantifier.required,
+  };
+
   factory Player.fromXml(XmlElement xmlElement) {
-    // TODO: not implemented
-    throw UnimplementedError("TODO: not implemented");
+    validateSequence(xmlElement, _xmlExpectedOrder);
+
+    String? id = xmlElement.getAttribute("id");
+
+    if (id == null || id.isEmpty) {
+      throw XmlAttributeRequired(
+        message: "non-empty 'id' attribute is required for 'player' element",
+        xmlElement: xmlElement,
+      );
+    }
+
+    String? name = xmlElement.getElement('player-name')?.firstChild?.value;
+
+    if (name == null || name.isEmpty) {
+      throw InvalidXmlElementException(
+        message: "'player' element content must be non-empty text",
+        xmlElement: xmlElement,
+      );
+    }
+
+    return Player(
+      id: id,
+      name: name,
+    );
   }
 }
 
