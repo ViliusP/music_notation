@@ -1,3 +1,4 @@
+import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 import 'package:xml/xml.dart';
 
@@ -8,47 +9,82 @@ import 'package:xml/xml.dart';
 /// A score-instrument type is also required if the score specifies MIDI 1.0 channels, banks, or programs.
 /// An initial midi-instrument assignment can also be made here.
 /// MusicXML software should be able to automatically assign reasonable channels
-/// and instruments without these elements in simple cases, such as where part names match General MIDI instrument names.
+/// and instruments without these elements in simple cases,
+/// such as where part names match General MIDI instrument names.
 ///
-/// The score-instrument element can also distinguish multiple instruments of the same type that are on the same part,
+/// The [ScoreInstrument] element can also distinguish
+/// multiple instruments of the same type that are on the same part,
 /// such as Clarinet 1 and Clarinet 2 instruments within a Clarinets 1 and 2 part.
+///
+/// More information at [The \<score-instrument\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/score-instrument/).
+
 class ScoreInstrument {
+  /// An identifier for this. The [id] is unique to this document.
   final String id;
 
-  /// The instrument-name element is typically used within a software application,
+  /// The [instrumentName] is typically used within a software application,
   /// rather than appearing on the printed page of a score.
   final String instrumentName;
+
+  /// The optional [instrumentAbbreviation] is typically used within a software application,
+  /// rather than appearing on the printed page of a score.
   final String? instrumentAbbreviation;
 
-  /// The optional instrument-abbreviation element is typically used within a software application,
-  /// rather than appearing on the printed page of a score.
-  final VirtualInstrumentData? virtualInstrumentData;
+  final VirtualInstrumentData virtualInstrumentData;
 
   ScoreInstrument({
     required this.id,
     required this.instrumentName,
     this.instrumentAbbreviation,
-    this.virtualInstrumentData,
+    required this.virtualInstrumentData,
   });
 
+  // Field(s): quantifier
+  static final Map<dynamic, XmlQuantifier> _xmlExpectedOrder = {
+    'instrument-name': XmlQuantifier.required,
+    'instrument-abbreviation': XmlQuantifier.optional,
+  }..addAll(VirtualInstrumentData._xmlExpectedOrder);
+
   factory ScoreInstrument.fromXml(XmlElement xmlElement) {
-    String instrumentName =
-        xmlElement.findElements('instrument-name').single.text;
-    String? instrumentAbbreviation;
-    var abbreviationElement =
-        xmlElement.findElements('instrument-abbreviation').single;
-    instrumentAbbreviation = abbreviationElement.text;
-    VirtualInstrumentData? virtualInstrumentData;
-    var virtualInstrumentDataElement =
-        xmlElement.findElements('virtual-instrument-data').single;
-    virtualInstrumentData =
-        VirtualInstrumentData.fromXml(virtualInstrumentDataElement);
-    String id = xmlElement.getAttribute('id') ?? '';
+    validateSequence(xmlElement, _xmlExpectedOrder);
+
+    String? id = xmlElement.getAttribute('id');
+
+    if (id == null) {
+      throw XmlAttributeRequired(
+        message: "'id' attribute is required in 'score-instrument'",
+        xmlElement: xmlElement,
+      );
+    }
+
+    String? instrumentName =
+        xmlElement.getElement('instrument-name')?.firstChild?.value;
+
+    if (instrumentName == null) {
+      throw InvalidXmlElementException(
+        message: "'instrument-name' must have text content",
+        xmlElement: xmlElement,
+      );
+    }
+
+    XmlElement? instrumentAbbreviationElement =
+        xmlElement.getElement('instrument-abbreviation');
+
+    String? instrumentAbbreviation = instrumentAbbreviationElement?.value;
+
+    if (instrumentAbbreviationElement != null &&
+        instrumentAbbreviation == null) {
+      throw InvalidXmlElementException(
+        message: "'instrument-abbreviation' must should have text content",
+        xmlElement: xmlElement,
+      );
+    }
+
     return ScoreInstrument(
+      id: id,
       instrumentName: instrumentName,
       instrumentAbbreviation: instrumentAbbreviation,
-      virtualInstrumentData: virtualInstrumentData,
-      id: id,
+      virtualInstrumentData: VirtualInstrumentData.fromXml(xmlElement),
     );
   }
 
@@ -60,28 +96,31 @@ class ScoreInstrument {
         builder.element('instrument-abbreviation',
             nest: instrumentAbbreviation);
       }
-      if (virtualInstrumentData != null) {
-        // TODO; implement virtualInstrumentData.toXml()
-        // builder.element(
-        //   'virtual-instrument-data',
-        //   nest: virtualInstrumentData.toXml(),
-        // );
-      }
+      // if (virtualInstrumentData != null) {
+      // TODO; implement virtualInstrumentData.toXml()
+      // builder.element(
+      //   'virtual-instrument-data',
+      //   nest: virtualInstrumentData.toXml(),
+      // );
+      // }
     });
     return builder.buildDocument().rootElement;
   }
 }
 
-/// Virtual instrument data can be part of either the score-instrument element at the start of a part,
-/// or an instrument-change element within a part.
+/// [VirtualInstrumentData] can be part of either the [ScoreInstrument] element at the start of a part,
+/// or an [InstrumentChange] element within a part.
 class VirtualInstrumentData {
-  /// The instrument-sound element describes the default timbre of the score-instrument.
+  /// The [instrumentSound] element describes the default timbre of the [ScoreInstrument].
   ///
   /// This description is independent of a particular virtual or MIDI instrument specification
   /// and allows playback to be shared more easily between applications and libraries.
   final String? instrumentSound;
+
+  /// Defines if performance is intended by [Solo] instrument or [Ensemble].
   final PerformanceType? performanceType;
-  // Assuming VirtualInstrument is defined elsewhere
+
+  /// Defines a specific virtual instrument used for an [instrumentSound].
   final VirtualInstrument? virtualInstrument;
 
   VirtualInstrumentData({
@@ -89,6 +128,14 @@ class VirtualInstrumentData {
     this.performanceType,
     this.virtualInstrument,
   });
+
+  /// This isn't used directly in this class.
+  // Field(s): quantifier
+  static const Map<dynamic, XmlQuantifier> _xmlExpectedOrder = {
+    'instrument-sound': XmlQuantifier.optional,
+    'solo|ensemble': XmlQuantifier.optional,
+    'virtual-instrument': XmlQuantifier.optional,
+  };
 
   factory VirtualInstrumentData.fromXml(XmlElement xmlElement) {
     String? instrumentSound;
@@ -98,7 +145,7 @@ class VirtualInstrumentData {
     for (var child in xmlElement.children.whereType<XmlElement>()) {
       switch (child.name.local) {
         case 'instrument-sound':
-          instrumentSound = child.text;
+          instrumentSound = child.firstChild?.value;
           break;
         case 'solo':
           performanceType = Solo.fromXml(child);
@@ -120,7 +167,7 @@ class VirtualInstrumentData {
   }
 }
 
-abstract class PerformanceType {}
+sealed class PerformanceType {}
 
 /// The solo element is present if performance is intended by a solo instrument.
 class Solo extends PerformanceType {
@@ -129,9 +176,10 @@ class Solo extends PerformanceType {
   }
 }
 
-/// The ensemble element is present if performance is intended by an ensemble such as an orchestral section.
+/// The [Ensemble] is present if performance is intended by an ensemble such as an orchestral section.
 ///
-/// The text of the ensemble element contains the size of the section, or is empty if the ensemble size is not specified.
+/// The text of the ensemble element contains the size of the section,
+/// or is empty if the ensemble size is not specified.
 class Ensemble extends PerformanceType {
   final int? size;
 
@@ -140,20 +188,26 @@ class Ensemble extends PerformanceType {
   static Ensemble fromXml(XmlElement xmlElement) {
     /// Positive integer or empty.
     int? size;
-    var sizeStr = xmlElement.text;
-    if (sizeStr.isNotEmpty) {
-      size = int.tryParse(sizeStr);
+    var rawSize = xmlElement.innerText;
+    if (rawSize.isNotEmpty) {
+      size = int.tryParse(rawSize);
+    }
+    if (rawSize.isNotEmpty && (size ?? 0) < 1) {
+      throw InvalidXmlElementException(
+        message: "Ensemble content must be positive number or empty",
+        xmlElement: xmlElement,
+      );
     }
     return Ensemble(size: size);
   }
 }
 
-/// The virtual-instrument element defines a specific virtual instrument used for an instrument sound.
+/// Defines a specific virtual instrument used for an instrument sound.
 class VirtualInstrument {
-  // The virtual-library element indicates the virtual instrument library name.
+  /// Indicates the virtual instrument library name.
   final String? virtualLibrary;
 
-  /// The virtual-name element indicates the library-specific name for the virtual instrument.
+  /// Indicates the library-specific name for the virtual instrument.
   final String? virtualName;
 
   VirtualInstrument({
@@ -161,17 +215,37 @@ class VirtualInstrument {
     this.virtualName,
   });
 
+  // Field(s): quantifier
+  static const Map<dynamic, XmlQuantifier> _xmlExpectedOrder = {
+    'virtual-library': XmlQuantifier.optional,
+    'virtual-name': XmlQuantifier.optional,
+  };
+
   factory VirtualInstrument.fromXml(XmlElement xmlElement) {
+    validateSequence(xmlElement, _xmlExpectedOrder);
+
     String? virtualLibrary;
     String? virtualName;
 
     for (var child in xmlElement.children.whereType<XmlElement>()) {
       switch (child.name.local) {
         case 'virtual-library':
-          virtualLibrary = child.text;
+          virtualLibrary = child.firstChild?.value;
+          if (virtualLibrary == null) {
+            throw InvalidXmlElementException(
+              message: "'virtual-library' must have text in it's content",
+              xmlElement: xmlElement,
+            );
+          }
           break;
         case 'virtual-name':
-          virtualName = child.text;
+          virtualName = child.firstChild?.value;
+          if (virtualName == null) {
+            throw InvalidXmlElementException(
+              message: "'virtual-name' must have text in it's content",
+              xmlElement: xmlElement,
+            );
+          }
           break;
       }
     }
