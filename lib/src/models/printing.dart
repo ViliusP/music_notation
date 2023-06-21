@@ -74,6 +74,11 @@ class PrintStyle {
       color: Color.fromXml(xmlElement),
     );
   }
+
+  const PrintStyle.empty()
+      : position = const Position.empty(),
+        font = const Font.empty(),
+        color = const Color.empty();
 }
 
 /// For most elements, any program will compute a default x and y position. The position attributes let this be changed two ways.
@@ -143,6 +148,12 @@ class Position {
     this.relativeX,
     this.relativeY,
   });
+
+  const Position.empty()
+      : defaultX = 0,
+        defaultY = 0,
+        relativeX = 0,
+        relativeY = 0;
 
   factory Position.fromXml(XmlElement xmlElement) {
     return Position(

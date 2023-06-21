@@ -423,18 +423,29 @@ class Font {
   ///
   // TODO: nullable or not?
   // TOOD: Remove "font" word from properties.
-  String? fontFamily;
+  final String? fontFamily;
 
   /// Normal or italic style.
-  FontStyle? fontStyle;
+  final FontStyle? fontStyle;
 
   /// One of the CSS sizes or a numeric point size.
-  FontSize? fontSize;
+  final FontSize? fontSize;
 
   /// Normal or bold weight.
-  FontWeight? fontWeight;
+  final FontWeight? fontWeight;
 
-  Font({this.fontFamily});
+  Font({
+    this.fontStyle,
+    this.fontSize,
+    this.fontWeight,
+    this.fontFamily,
+  });
+
+  const Font.empty()
+      : fontFamily = null,
+        fontStyle = null,
+        fontSize = null,
+        fontWeight = null;
 
   factory Font.fromXml(XmlElement xmlElement) {
     // TODO: fully parse

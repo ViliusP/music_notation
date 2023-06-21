@@ -50,30 +50,54 @@ void main() {
     // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/concert-score-and-for-part-elements/
     test('should parse from <concert-score> and <for-part> example correctly',
         () {
-      String input = '''
+      List<String> inputs = [
+        '''
         <score-part id="P1">
           <part-name>Piccolo</part-name>
           <group>score</group>
         </score-part>
+        ''',
+        '''
         <score-part id="P2">
           <part-name>Oboe</part-name>
           <group>score</group>
         </score-part>
+        ''',
+        '''
         <score-part id="P3">
           <part-name>Bass Clarinet</part-name>
           <group>score</group>
         </score-part>
-      ''';
+        '''
+      ];
 
-      var scorePart = ScorePart.fromXml(
-        XmlDocument.parse(input).rootElement,
-      );
+      List<ScorePart> outputs = [
+        ScorePart(
+          id: "P1",
+          partName: PartName(value: "Piccolo"),
+          groups: ["score"],
+        ),
+        ScorePart(
+          id: "P2",
+          partName: PartName(value: "Oboe"),
+          groups: ["score"],
+        ),
+        ScorePart(
+          id: "P3",
+          partName: PartName(value: "Bass Clarinet"),
+          groups: ["score"],
+        ),
+      ];
 
-      expect(scorePart.id, "P1");
-      expect(scorePart.partName, isNotNull);
-      expect(scorePart.partNameDisplay, isNotNull);
-      expect(scorePart.scoreInstruments.length, 2);
-      expect(scorePart.players.length, 4);
+      for (var (index, input) in inputs.indexed) {
+        var scorePart = ScorePart.fromXml(
+          XmlDocument.parse(input).rootElement,
+        );
+
+        expect(scorePart.id, outputs[index].id);
+        expect(scorePart.partName.value, outputs[index].partName.value);
+        expect(scorePart.groups[0], outputs[index].groups[0]);
+      }
     });
     // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/ensemble-element/
     test('should parse from  <ensemble> example correctly', () {

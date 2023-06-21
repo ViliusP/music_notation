@@ -1,5 +1,4 @@
 // ignore_for_file: deprecated_member_use_from_same_package
-
 import 'package:music_notation/src/models/utilities/common_attributes.dart';
 import 'package:music_notation/src/models/utilities/type_parsers.dart';
 import 'package:xml/xml.dart';
@@ -358,8 +357,8 @@ class PartName {
 
   PartName({
     required this.value,
-    required this.printStyle,
-    required this.printObject,
+    this.printStyle = const PrintStyle.empty(),
+    this.printObject = true,
     this.justify,
   });
 
