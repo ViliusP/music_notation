@@ -429,7 +429,7 @@ class Grace {
   }
 
   void validate() {
-    if (stealTimePrevious != null && !Percent.validate(stealTimePrevious!)) {
+    if (stealTimePrevious != null && !Percent.isValid(stealTimePrevious!)) {
       throw InvalidMusicXmlType(
         message: Percent.generateValidationError(
           "steal-time-previous",
@@ -438,7 +438,7 @@ class Grace {
         xmlElement: null,
       );
     }
-    if (stealTimePrevious != null && !Percent.validate(stealTimeFollowing!)) {
+    if (stealTimePrevious != null && !Percent.isValid(stealTimeFollowing!)) {
       throw InvalidMusicXmlType(
         message: Percent.generateValidationError(
           "steal-time-following",

@@ -1,4 +1,6 @@
 import 'package:music_notation/src/models/exceptions.dart';
+import 'package:music_notation/src/models/utilities/type_parsers.dart';
+import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 import 'package:xml/xml.dart';
 
 /// Corresponds to the DeviceName meta event in Standard MIDI Files.
@@ -64,11 +66,9 @@ class MidiDevice {
   }
 }
 
-/// The midi-instrument type defines MIDI 1.0 instrument playback.
-///
-/// The midi-instrument element can be a part of either the score-instrument element at the start of a part, or the sound element within a part.
-///
-/// The id attribute refers to the score-instrument affected by the change.
+/// Defines MIDI 1.0 instrument playback.
+/// The [MidiInstrument] can be a part of either the score instrument element
+/// at the start of a part, or the sound element within a part.
 class MidiInstrument {
   /// The midi-channel element specifies a MIDI 1.0 channel numbers ranging from 1 to 16.
   ///
@@ -109,6 +109,8 @@ class MidiInstrument {
   ///
   /// For elevation, 0 is level with the listener, 90 is directly above, and -90 is directly below.
   final double? elevation;
+
+  /// Refers to the score-instrument affected by the change
   final String id;
 
   MidiInstrument({
@@ -123,85 +125,213 @@ class MidiInstrument {
     required this.id,
   });
 
+  // Field(s): quantifier
+  static const Map<dynamic, XmlQuantifier> _xmlExpectedOrder = {
+    'midi-channel': XmlQuantifier.optional,
+    'midi-name': XmlQuantifier.optional,
+    'midi-bank': XmlQuantifier.optional,
+    'midi-program': XmlQuantifier.optional,
+    'midi-unpitched': XmlQuantifier.optional,
+    'volume': XmlQuantifier.optional,
+    'pan': XmlQuantifier.optional,
+    'elevation': XmlQuantifier.optional,
+  };
+
   factory MidiInstrument.fromXml(XmlElement xmlElement) {
-    String? midiChannelElement = xmlElement.getAttribute('port');
+    validateSequence(xmlElement, _xmlExpectedOrder);
 
-    int? maybeMidiChannel = int.tryParse(xmlElement.getAttribute('port') ?? '');
-
+    XmlElement? midiChannelElement = xmlElement.getElement('midi-channel');
+    int? midiChannel = int.tryParse(
+      midiChannelElement?.firstChild?.value ?? '',
+    );
     if (midiChannelElement != null &&
-        (maybeMidiChannel == null || !Midi.midi16.isValid(maybeMidiChannel))) {
-      String message = Midi.midi16.generateValidationError(
-        "port",
-        midiChannelElement,
-      );
-      throw InvalidXmlElementException(
-        message: message,
+        (midiChannel == null || !Midi.midi16.isValid(midiChannel))) {
+      throw InvalidMusicXmlType(
+        message: "'midi-channel' content must be midi-16 data type",
         xmlElement: xmlElement,
       );
     }
 
-    /// TODO: more validation
+    XmlElement? midiNameElement = xmlElement.getElement('midi-name');
+    String? midiName = midiNameElement?.firstChild?.value;
+    if (midiNameElement != null && (midiName == null || midiName.isEmpty)) {
+      throw InvalidXmlElementException(
+        message: "'midi-name' must have non empty text content",
+        xmlElement: xmlElement,
+      );
+    }
+
+    XmlElement? midiBankElement = xmlElement.getElement('midi-bank');
+    int? midiBank = int.tryParse(
+      midiBankElement?.firstChild?.value ?? '',
+    );
+    if (midiBankElement != null &&
+        (midiBank == null || !Midi.midi16384.isValid(midiBank))) {
+      throw InvalidMusicXmlType(
+        message: "'midi-bank' content must be midi-16384",
+        xmlElement: xmlElement,
+      );
+    }
+
+    XmlElement? midiProgramElement = xmlElement.getElement('midi-program');
+    int? midiProgram = int.tryParse(
+      midiProgramElement?.firstChild?.value ?? '',
+    );
+    if (midiProgramElement != null &&
+        (midiProgram == null || !Midi.midi128.isValid(midiProgram))) {
+      throw InvalidMusicXmlType(
+        message: "'midi-program' content must be midi-128",
+        xmlElement: xmlElement,
+      );
+    }
+
+    XmlElement? midiUnpitchedElement = xmlElement.getElement('midi-unpitched');
+    int? midiUnpitched = int.tryParse(
+      midiUnpitchedElement?.firstChild?.value ?? '',
+    );
+    if (midiUnpitchedElement != null &&
+        (midiUnpitched == null || !Midi.midi128.isValid(midiUnpitched))) {
+      throw InvalidMusicXmlType(
+        message: "'midi-unpitched' content must be midi-128",
+        xmlElement: xmlElement,
+      );
+    }
+
+    XmlElement? volumeElement = xmlElement.getElement('volume');
+    double? volume = double.tryParse(
+      volumeElement?.firstChild?.value ?? '',
+    );
+    if (volumeElement != null && (volume == null || !Percent.isValid(volume))) {
+      throw InvalidMusicXmlType(
+        message: "'volume' content must be percent (double between 1 and 100)",
+        xmlElement: xmlElement,
+      );
+    }
+
+    XmlElement? panElement = xmlElement.getElement('pan');
+    double? pan = double.tryParse(
+      panElement?.firstChild?.value ?? '',
+    );
+    if (panElement != null && (pan == null || !RotationDegrees.isValid(pan))) {
+      throw InvalidMusicXmlType(
+        message: "'pan' content must be rotation-degrees",
+        xmlElement: xmlElement,
+      );
+    }
+
+    XmlElement? elevationElement = xmlElement.getElement('elevation');
+    double? elevation = double.tryParse(
+      elevationElement?.firstChild?.value ?? '',
+    );
+    if (elevationElement != null &&
+        (elevation == null || !RotationDegrees.isValid(elevation))) {
+      throw InvalidMusicXmlType(
+        message: "'elevation' content must be rotation-degrees",
+        xmlElement: xmlElement,
+      );
+    }
+
+    String? id = xmlElement.getAttribute("id");
+
+    if (id == null || id.isEmpty) {
+      throw XmlAttributeRequired(
+        message: "non-empty 'id' attribute required for 'midi-device' element",
+        xmlElement: xmlElement,
+      );
+    }
 
     return MidiInstrument(
-      midiChannel:
-          int.tryParse(xmlElement.getElement('midi-channel')?.text ?? ''),
-      midiName: xmlElement.getElement('midi-name')?.text,
-      midiBank: int.tryParse(xmlElement.getElement('midi-bank')?.text ?? ''),
-      midiProgram:
-          int.tryParse(xmlElement.getElement('midi-program')?.text ?? ''),
-      midiUnpitched:
-          int.tryParse(xmlElement.getElement('midi-unpitched')?.text ?? ''),
-      volume: double.tryParse(xmlElement.getElement('volume')?.text ?? ''),
-      pan: double.tryParse(xmlElement.getElement('pan')?.text ?? ''),
-      elevation:
-          double.tryParse(xmlElement.getElement('elevation')?.text ?? ''),
-      id: xmlElement.getAttribute('id')!,
+      midiChannel: midiChannel,
+      midiName: midiName,
+      midiBank: midiBank,
+      midiProgram: midiProgram,
+      midiUnpitched: midiUnpitched,
+      volume: volume,
+      pan: pan,
+      elevation: elevation,
+      id: id,
     );
   }
 
+  /// TODO: finish and test.
   XmlElement toXml() {
     List<XmlNode> children = [];
 
     if (midiChannel != null) {
-      children.add(XmlElement(
-          XmlName('midi-channel'), [], [XmlText(midiChannel.toString())]));
+      children.add(
+        XmlElement(
+          XmlName('midi-channel'),
+          [],
+          [XmlText(midiChannel.toString())],
+        ),
+      );
     }
 
     if (midiName != null) {
-      children.add(XmlElement(XmlName('midi-name'), [], [XmlText(midiName!)]));
+      children.add(
+        XmlElement(XmlName('midi-name'), [], [XmlText(midiName!)]),
+      );
     }
 
     if (midiBank != null) {
       children.add(
-          XmlElement(XmlName('midi-bank'), [], [XmlText(midiBank.toString())]));
+        XmlElement(
+          XmlName('midi-bank'),
+          [],
+          [XmlText(midiBank.toString())],
+        ),
+      );
     }
 
     if (midiProgram != null) {
-      children.add(XmlElement(
-          XmlName('midi-program'), [], [XmlText(midiProgram.toString())]));
+      children.add(
+        XmlElement(
+          XmlName('midi-program'),
+          [],
+          [XmlText(midiProgram.toString())],
+        ),
+      );
     }
 
     if (midiUnpitched != null) {
       children.add(XmlElement(
-          XmlName('midi-unpitched'), [], [XmlText(midiUnpitched.toString())]));
+        XmlName('midi-unpitched'),
+        [],
+        [XmlText(midiUnpitched.toString())],
+      ));
     }
 
     if (volume != null) {
-      children
-          .add(XmlElement(XmlName('volume'), [], [XmlText(volume.toString())]));
+      children.add(
+        XmlElement(
+          XmlName('volume'),
+          [],
+          [XmlText(volume.toString())],
+        ),
+      );
     }
 
     if (pan != null) {
-      children.add(XmlElement(XmlName('pan'), [], [XmlText(pan.toString())]));
+      children.add(
+        XmlElement(XmlName('pan'), [], [XmlText(pan.toString())]),
+      );
     }
 
     if (elevation != null) {
-      children.add(XmlElement(
-          XmlName('elevation'), [], [XmlText(elevation.toString())]));
+      children.add(
+        XmlElement(
+          XmlName('elevation'),
+          [],
+          [XmlText(elevation.toString())],
+        ),
+      );
     }
 
-    return XmlElement(XmlName('midi-instrument'),
-        [XmlAttribute(XmlName('id'), id)], children);
+    return XmlElement(
+      XmlName('midi-instrument'),
+      [XmlAttribute(XmlName('id'), id)],
+      children,
+    );
   }
 }
 
@@ -221,7 +351,6 @@ enum Midi {
   final int max;
 
   bool isValid(int value) {
-    // ArgumentError('Value must start with acc, medRenFla, medRenNatura, medRenShar, or kievanAccidental');
     return value >= min && value <= max;
   }
 

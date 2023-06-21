@@ -137,7 +137,7 @@ class Nmtoken {
 /// Values range from -180 to 180.
 class RotationDegrees {
   /// Return true if [value] is between -180 (inclusive) and 180 (inclusive).
-  static bool validate(double value) {
+  static bool isValid(double value) {
     return value >= -180 && value <= 180;
   }
 
@@ -147,7 +147,7 @@ class RotationDegrees {
       return null;
     }
     double? rotation = double.tryParse(rawRotation);
-    if (rotation == null || !validate(rotation)) {
+    if (rotation == null || !isValid(rotation)) {
       throw InvalidMusicXmlType(
         message: generateValidationError(
           CommonAttributes.rotation,
@@ -306,7 +306,7 @@ class Percent {
   static const _max = 100;
 
   /// Returns true if [value] is percent type.
-  static bool validate(double value) {
+  static bool isValid(double value) {
     return _min <= value && _max >= value;
   }
 

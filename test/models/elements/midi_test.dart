@@ -1,8 +1,5 @@
-import 'package:music_notation/src/models/data_types/accidental_value.dart';
 import 'package:music_notation/src/models/elements/midi.dart';
-import 'package:music_notation/src/models/elements/text/text.dart';
 import 'package:music_notation/src/models/exceptions.dart';
-import 'package:music_notation/src/models/generic.dart';
 import 'package:test/test.dart';
 import 'package:xml/xml.dart';
 
@@ -96,5 +93,388 @@ void main() {
       );
     });
   });
+  group('MidiInstrument', () {
+    // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/instrument-change-element/
+    test(
+        'should parse midi-instrument from <instrument-change> example correctly',
+        () {
+      String input = '''
+        <midi-instrument id="P1-I1">
+          <midi-channel>1</midi-channel>
+          <midi-program>1</midi-program>
+          <volume>80</volume>
+          <pan>0</pan>
+        </midi-instrument>
+      ''';
+
+      var midiInstrument = MidiInstrument.fromXml(
+        XmlDocument.parse(input).rootElement,
+      );
+
+      expect(midiInstrument.id, "P1-I1");
+      expect(midiInstrument.midiChannel, 1);
+      expect(midiInstrument.midiProgram, 1);
+      expect(midiInstrument.volume, 80);
+      expect(midiInstrument.pan, 0);
+    });
+    // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/midi-device-element/
+    test('should parse midi-instrument from <midi-device> example correctly',
+        () {
+      String input = '''
+        <midi-instrument id="P2-I2">
+            <midi-channel>2</midi-channel>
+            <midi-program>1</midi-program>
+            <volume>80</volume>
+            <pan>4</pan>
+        </midi-instrument>
+      ''';
+
+      var midiInstrument = MidiInstrument.fromXml(
+        XmlDocument.parse(input).rootElement,
+      );
+
+      expect(midiInstrument.id, "P2-I2");
+      expect(midiInstrument.midiChannel, 2);
+      expect(midiInstrument.midiProgram, 1);
+      expect(midiInstrument.volume, 80);
+      expect(midiInstrument.pan, 4);
+    });
+    // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/midi-unpitched-element/
+    test('should parse midi-instrument from <midi-unpitched> example correctly',
+        () {
+      String input = '''
+        <midi-instrument id="P1-X19">
+          <midi-channel>10</midi-channel>
+          <midi-program>2</midi-program>
+          <midi-unpitched>54</midi-unpitched>
+          <volume>80</volume>
+          <pan>0</pan>
+        </midi-instrument>
+      ''';
+
+      var midiInstrument = MidiInstrument.fromXml(
+        XmlDocument.parse(input).rootElement,
+      );
+
+      expect(midiInstrument.id, "P1-X19");
+      expect(midiInstrument.midiChannel, 10);
+      expect(midiInstrument.midiProgram, 2);
+      expect(midiInstrument.midiUnpitched, 54);
+      expect(midiInstrument.volume, 80);
+      expect(midiInstrument.pan, 0);
+    });
+    test('should parse midi-instrument correctly', () {
+      String input = '''
+        <midi-instrument id="P1-X4">
+          <midi-channel>10</midi-channel>
+          <midi-name>Tremolo Strings</midi-name>
+          <midi-bank>15489</midi-bank>
+          <midi-program>1</midi-program>
+          <midi-unpitched>39</midi-unpitched>
+          <volume>80</volume>
+          <pan>-70</pan>
+          <elevation>45</elevation>
+        </midi-instrument>
+      ''';
+
+      var midiInstrument = MidiInstrument.fromXml(
+        XmlDocument.parse(input).rootElement,
+      );
+
+      expect(midiInstrument.id, "P1-X4");
+      expect(midiInstrument.midiName, "Tremolo Strings");
+      expect(midiInstrument.midiBank, 15489);
+      expect(midiInstrument.midiProgram, 1);
+      expect(midiInstrument.midiUnpitched, 39);
+      expect(midiInstrument.volume, 80);
+      expect(midiInstrument.pan, -70);
+      expect(midiInstrument.elevation, 45);
+    });
+    test('should throw exception on wrong children order', () {
+      String input = '''
+        <midi-instrument id="P1-X4">
+          <elevation>45</elevation>
+          <pan>-70</pan>
+          <volume>80</volume>
+          <midi-unpitched>39</midi-unpitched>
+          <midi-program>1</midi-program>
+          <midi-bank>15489</midi-bank>
+          <midi-name>Tremolo Strings</midi-name>
+          <midi-channel>10</midi-channel>
+        </midi-instrument>
+      ''';
+
+      expect(
+        () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(isA<InvalidXmlSequence>()),
+      );
+    });
+    test('should throw exception on invalid midi-channel', () {
+      String input = '''
+        <midi-instrument id="P1-X4">
+          <midi-channel>foo</midi-channel>
+        </midi-instrument>
+      ''';
+
+      expect(
+        () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(isA<InvalidMusicXmlType>()),
+      );
+    });
+    test('should throw exception on empty midi-channel', () {
+      String input = '''
+        <midi-instrument id="P1-X4">
+          <midi-channel></midi-channel>
+        </midi-instrument>
+      ''';
+
+      expect(
+        () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(isA<InvalidMusicXmlType>()),
+      );
+    });
+    test('should throw exception on empty midi-name', () {
+      String input = '''
+        <midi-instrument id="P1-X4">
+          <midi-name></midi-name>
+        </midi-instrument>
+      ''';
+
+      expect(
+        () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(isA<InvalidXmlElementException>()),
+      );
+    });
+  });
+  test('should throw exception on invalid midi-bank', () {
+    String input = '''
+        <midi-instrument id="P1-X4">
+          <midi-bank>foo</midi-bank>
+        </midi-instrument>
+      ''';
+
+    expect(
+      () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+      throwsA(isA<InvalidMusicXmlType>()),
+    );
+  });
+  test('should throw exception on empty midi-bank', () {
+    String input = '''
+        <midi-instrument id="P1-X4">
+          <midi-bank></midi-bank>
+        </midi-instrument>
+      ''';
+
+    expect(
+      () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+      throwsA(isA<InvalidMusicXmlType>()),
+    );
+  });
+  test('should throw exception on invalid midi-program', () {
+    String input = '''
+        <midi-instrument id="P1-X4">
+          <midi-program>foo</midi-program>
+        </midi-instrument>
+      ''';
+
+    expect(
+      () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+      throwsA(isA<InvalidMusicXmlType>()),
+    );
+  });
+  test('should throw exception on empty midi-program', () {
+    String input = '''
+        <midi-instrument id="P1-X4">
+          <midi-program></midi-program>
+        </midi-instrument>
+      ''';
+
+    expect(
+      () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+      throwsA(isA<InvalidMusicXmlType>()),
+    );
+  });
+  // <midi-unpitched>
+  test('should throw exception on invalid midi-unpitched', () {
+    String input = '''
+        <midi-instrument id="P1-X4">
+          <midi-unpitched>foo</midi-unpitched>
+        </midi-instrument>
+      ''';
+
+    expect(
+      () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+      throwsA(isA<InvalidMusicXmlType>()),
+    );
+  });
+  test('should throw exception on empty midi-unpitched', () {
+    String input = '''
+        <midi-instrument id="P1-X4">
+          <midi-unpitched></midi-unpitched>
+        </midi-instrument>
+      ''';
+
+    expect(
+      () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+      throwsA(isA<InvalidMusicXmlType>()),
+    );
+  });
+  // <volume>
+  test('should throw exception on invalid volume', () {
+    String input = '''
+        <midi-instrument id="P1-X4">
+          <volume>foo</volume>
+        </midi-instrument>
+      ''';
+
+    expect(
+      () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+      throwsA(isA<InvalidMusicXmlType>()),
+    );
+  });
+  test('should throw exception on bigger than maximum volume', () {
+    String input = '''
+        <midi-instrument id="P1-X4">
+          <volume>101</volume>
+        </midi-instrument>
+      ''';
+
+    expect(
+      () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+      throwsA(isA<InvalidMusicXmlType>()),
+    );
+  });
+  test('should throw exception on empty volume', () {
+    String input = '''
+        <midi-instrument id="P1-X4">
+          <volume></volume>
+        </midi-instrument>
+      ''';
+
+    expect(
+      () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+      throwsA(isA<InvalidMusicXmlType>()),
+    );
+  });
+  // <pan>
+  test('should throw exception on invalid pan', () {
+    String input = '''
+        <midi-instrument id="P1-X4">
+          <pan>foo</pan>
+        </midi-instrument>
+      ''';
+
+    expect(
+      () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+      throwsA(isA<InvalidMusicXmlType>()),
+    );
+  });
+  test('should throw exception on bigger than maximum pan', () {
+    String input = '''
+        <midi-instrument id="P1-X4">
+          <pan>181</pan>
+        </midi-instrument>
+      ''';
+
+    expect(
+      () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+      throwsA(isA<InvalidMusicXmlType>()),
+    );
+  });
+  test('should throw exception on lower than minimum pan', () {
+    String input = '''
+        <midi-instrument id="P1-X4">
+          <pan>-181</pan>
+        </midi-instrument>
+      ''';
+
+    expect(
+      () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+      throwsA(isA<InvalidMusicXmlType>()),
+    );
+  });
+  test('should throw exception on empty pan', () {
+    String input = '''
+        <midi-instrument id="P1-X4">
+          <pan></pan>
+        </midi-instrument>
+      ''';
+
+    expect(
+      () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+      throwsA(isA<InvalidMusicXmlType>()),
+    );
+  });
+  // Elevation
+  test('should throw exception on invalid elevation', () {
+    String input = '''
+        <midi-instrument id="P1-X4">
+          <elevation>foo</elevation>
+        </midi-instrument>
+      ''';
+
+    expect(
+      () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+      throwsA(isA<InvalidMusicXmlType>()),
+    );
+  });
+  test('should throw exception on bigger than maximum elevation', () {
+    String input = '''
+        <midi-instrument id="P1-X4">
+          <elevation>181</elevation>
+        </midi-instrument>
+      ''';
+
+    expect(
+      () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+      throwsA(isA<InvalidMusicXmlType>()),
+    );
+  });
+  test('should throw exception on lower than minimum elevation', () {
+    String input = '''
+        <midi-instrument id="P1-X4">
+          <elevation>-181</elevation>
+        </midi-instrument>
+      ''';
+
+    expect(
+      () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+      throwsA(isA<InvalidMusicXmlType>()),
+    );
+  });
+  test('should throw exception on empty elevation', () {
+    String input = '''
+        <midi-instrument id="P1-X4">
+          <elevation></elevation>
+        </midi-instrument>
+      ''';
+
+    expect(
+      () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+      throwsA(isA<InvalidMusicXmlType>()),
+    );
+  });
+  // id
+  test('should throw exception on empty id', () {
+    String input = '''
+        <midi-instrument id="">
+        </midi-instrument>
+      ''';
+
+    expect(
+      () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+      throwsA(isA<XmlAttributeRequired>()),
+    );
+  });
+  test('should throw exception on missing id', () {
+    String input = '''
+        <midi-instrument>
+        </midi-instrument>
+      ''';
+
+    expect(
+      () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
+      throwsA(isA<XmlAttributeRequired>()),
+    );
   });
 }
