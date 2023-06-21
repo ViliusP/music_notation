@@ -2,7 +2,7 @@ import 'package:music_notation/src/models/data_types/left_right.dart';
 import 'package:music_notation/src/models/data_types/start_stop.dart';
 import 'package:music_notation/src/models/elements/fingering.dart';
 import 'package:music_notation/src/models/elements/fret.dart';
-import 'package:music_notation/src/models/elements/music_data/direction/image.dart';
+import 'package:music_notation/src/models/elements/image.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/elements/text/text.dart';
