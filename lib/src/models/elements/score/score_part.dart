@@ -11,7 +11,7 @@ import 'package:music_notation/src/models/elements/text/text.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/elements/score/identification.dart';
 import 'package:music_notation/src/models/elements/score/instruments.dart';
-import 'package:music_notation/src/models/midi.dart';
+import 'package:music_notation/src/models/elements/midi.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 

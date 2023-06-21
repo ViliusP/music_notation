@@ -24,39 +24,43 @@ class MidiDevice {
 
   factory MidiDevice.fromXml(XmlElement xmlElement) {
     String? portElement = xmlElement.getAttribute('port');
-
     int? maybePort = int.tryParse(xmlElement.getAttribute('port') ?? '');
 
     if (portElement != null &&
-        (maybePort == null || !Midi.midi16.validate(maybePort))) {
+        (maybePort == null || !Midi.midi16.isValid(maybePort))) {
       String message = Midi.midi16.generateValidationError("port", portElement);
-      throw InvalidXmlElementException(
+      throw InvalidMusicXmlType(
         message: message,
         xmlElement: xmlElement,
       );
     }
 
+    String? id = xmlElement.getAttribute('id');
+
+    if (id?.isEmpty == true) {
+      throw InvalidMusicXmlType(
+        message: "'id' attribute in 'midi-device' cannot be empty",
+        xmlElement: xmlElement,
+      );
+    }
+    String? content = xmlElement.firstChild?.value;
+
+    if (xmlElement.children.length != 1 || content == null) {
+      throw InvalidXmlElementException(
+        message: "'midi-device' must have only one text child",
+        xmlElement: xmlElement,
+      );
+    }
     return MidiDevice(
-      name: xmlElement.text,
+      name: content,
       port: maybePort,
-      id: xmlElement.getAttribute('id'),
+      id: id,
     );
   }
 
-  Map<String, dynamic> toXml() {
-    final Map<String, dynamic> midiDeviceMap = {
-      'text': name,
-    };
-
-    if (port != null) {
-      midiDeviceMap['port'] = port.toString();
-    }
-
-    if (id != null) {
-      midiDeviceMap['id'] = id;
-    }
-
-    return midiDeviceMap;
+  /// TODO: finish and test.
+  XmlElement toXml() {
+    throw UnimplementedError();
   }
 }
 
@@ -125,7 +129,7 @@ class MidiInstrument {
     int? maybeMidiChannel = int.tryParse(xmlElement.getAttribute('port') ?? '');
 
     if (midiChannelElement != null &&
-        (maybeMidiChannel == null || !Midi.midi16.validate(maybeMidiChannel))) {
+        (maybeMidiChannel == null || !Midi.midi16.isValid(maybeMidiChannel))) {
       String message = Midi.midi16.generateValidationError(
         "port",
         midiChannelElement,
@@ -216,7 +220,7 @@ enum Midi {
   final int min;
   final int max;
 
-  bool validate(int value) {
+  bool isValid(int value) {
     // ArgumentError('Value must start with acc, medRenFla, medRenNatura, medRenShar, or kievanAccidental');
     return value >= min && value <= max;
   }
