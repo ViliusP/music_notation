@@ -3,7 +3,7 @@ import 'package:music_notation/src/models/elements/score/score_part.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:xml/xml.dart';
 
-/// The part-list identifies the different musical parts in this document.
+/// Identifies the different musical parts in this document.
 ///
 /// Each part has an ID that is used later within the musical data.
 ///
