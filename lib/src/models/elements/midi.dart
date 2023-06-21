@@ -1,19 +1,19 @@
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:xml/xml.dart';
 
-/// The midi-device type corresponds to the DeviceName meta event in Standard MIDI Files.
+/// Corresponds to the DeviceName meta event in Standard MIDI Files.
+/// Unlike the DeviceName meta event, there can be multiple [MidiDevice] per MusicXML part.
 ///
-/// The optional port attribute is a number from 1 to 16 that can be used with the unofficial MIDI 1.0 port (or cable) meta event.
-///
-/// Unlike the DeviceName meta event, there can be multiple midi-device elements per MusicXML part.
-///
-/// The optional id attribute refers to the score-instrument assigned to this device.
-/// If missing, the device assignment affects all score-instrument elements in the score-part.
+/// More information at [The \<midi-device\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/midi-device/)
 class MidiDevice {
   final String name;
 
-  /// The midi-16 type is used to express MIDI 1.0 values that range from 1 to 16.
+  /// A number from 1 to 16 that can be used with the unofficial MIDI 1.0 port (or cable) meta event.
   final int? port;
+
+  /// Refers to the score instrument assigned to this device.
+  ///
+  /// If missing, the device assignment affects all score instrument elements in the score part.
   final String? id;
 
   MidiDevice({

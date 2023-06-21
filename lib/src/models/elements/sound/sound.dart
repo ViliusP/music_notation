@@ -7,7 +7,7 @@ import 'package:xml/xml.dart';
 import 'package:music_notation/src/models/elements/music_data/note/play.dart';
 import 'package:music_notation/src/models/elements/offset.dart';
 import 'package:music_notation/src/models/elements/sound/swing.dart';
-import 'package:music_notation/src/models/midi.dart';
+import 'package:music_notation/src/models/elements/midi.dart';
 
 /// The sound element contains general playback parameters.
 /// They can stand alone within a part/measure, or be a component element within a direction.
