@@ -9,7 +9,7 @@ void main() {
   group('FormattedText', () {
     // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/part-abbreviation-display-element/
     test(
-        'Should parse display-text from <part-abbreviation-display> example correctly',
+        'should parse display-text from <part-abbreviation-display> example correctly',
         () {
       String input = '''
         <display-text>Trp. in B</display-text>
@@ -29,7 +29,7 @@ void main() {
       expect(displayText.formatting.textRotation, null);
     });
 
-    test('Shoud correctly parse all attributes of display text', () {
+    test('should correctly parse all attributes of display text', () {
       String input = '''
         <display-text 
           enclosure="oval" 
@@ -56,7 +56,7 @@ void main() {
       expect(displayText.formatting.textRotation, 150);
     });
 
-    test('Should throw expcetion when content is empty', () {
+    test('should throw expcetion when content is empty', () {
       String input = '''
         <display-text></display-text>
       ''';
@@ -70,7 +70,7 @@ void main() {
   group('AccidentalText', () {
     // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/part-abbreviation-display-element/
     test(
-        'Should parse accidental-text from <part-abbreviation-display> example correctly',
+        'should parse accidental-text from <part-abbreviation-display> example correctly',
         () {
       String input = '''
         <accidental-text>flat</accidental-text>
@@ -90,7 +90,7 @@ void main() {
       expect(displayText.formatting.textRotation, null);
     });
 
-    test('Shoud correctly parse all attributes of display text', () {
+    test('shoud correctly parse all attributes of display text', () {
       String input = '''
         <accidental-text 
           enclosure="oval" 
@@ -117,7 +117,7 @@ void main() {
       expect(displayText.formatting.textRotation, 150);
     });
 
-    test('Should throw expcetion when content is empty', () {
+    test('should throw expcetion when content is empty', () {
       String input = '''
         <accidental-text></accidental-text>
       ''';
@@ -128,7 +128,7 @@ void main() {
       );
     });
 
-    test('Should throw expcetion when content is invalid', () {
+    test('should throw expcetion when content is invalid', () {
       String input = '''
         <accidental-text>foo-bar</accidental-text>
       ''';
@@ -138,5 +138,147 @@ void main() {
         throwsA(isA<InvalidMusicXmlType>()),
       );
     });
+  });
+  group('FormattedTextId', () {
+    test('should parse correctly', () {
+      String input = '''
+        <credit-words id="fooID" default-x="105" default-y="1353" font-size="12" valign="top">Score in C</credit-words>
+      ''';
+
+      var formattedTextId = FormattedTextId.fromXml(
+        XmlDocument.parse(input).rootElement,
+      );
+
+      expect(formattedTextId.id, "fooID");
+      expect(formattedTextId.value, "Score in C");
+      expect(formattedTextId.formatting.font.size?.getValue, 12);
+      expect(formattedTextId.formatting.position.defaultX, 105);
+      expect(formattedTextId.formatting.position.defaultY, 1353);
+      expect(
+        formattedTextId.formatting.verticalAlignment,
+        VerticalAlignment.top,
+      );
+    });
+  });
+  group('Font', () {
+    // Size
+    test('should parse font attributes with css size correctly', () {
+      String input = '''
+        <foo font-size="xx-small"/>
+      ''';
+
+      var font = Font.fromXml(
+        XmlDocument.parse(input).rootElement,
+      );
+
+      expect(font.size?.getValue, CssFontSize.xxSmall);
+    });
+    test('should parse font attributes with decimal size correctly', () {
+      String input = '''
+        <foo font-size="12"/>
+      ''';
+
+      var font = Font.fromXml(
+        XmlDocument.parse(input).rootElement,
+      );
+
+      expect(font.size?.getValue, 12);
+    });
+    test('should throw on parsing empty font size', () {
+      String input = '''
+        <foo font-size=""/>
+      ''';
+
+      expect(
+        () => Font.fromXml(
+          XmlDocument.parse(input).rootElement,
+        ),
+        throwsA(isA<InvalidMusicXmlType>()),
+      );
+    });
+    test('should throw on parsing invalid font size', () {
+      String input = '''
+        <foo font-size="bar"/>
+      ''';
+
+      expect(
+        () => Font.fromXml(
+          XmlDocument.parse(input).rootElement,
+        ),
+        throwsA(isA<InvalidMusicXmlType>()),
+      );
+    });
+    // Style
+    test('should parse font attributes with style correctly', () {
+      String input = '''
+        <foo font-style="italic"/>
+      ''';
+
+      var font = Font.fromXml(
+        XmlDocument.parse(input).rootElement,
+      );
+
+      expect(font.style, FontStyle.italic);
+    });
+    test('should throw on parsing empty font style', () {
+      String input = '''
+        <foo font-style=""/>
+      ''';
+
+      expect(
+        () => Font.fromXml(
+          XmlDocument.parse(input).rootElement,
+        ),
+        throwsA(isA<InvalidMusicXmlType>()),
+      );
+    });
+    test('should throw on parsing invalid font style', () {
+      String input = '''
+        <foo font-style="bar"/>
+      ''';
+
+      expect(
+        () => Font.fromXml(
+          XmlDocument.parse(input).rootElement,
+        ),
+        throwsA(isA<InvalidMusicXmlType>()),
+      );
+    });
+  });
+  // Weight
+  test('should parse font attributes with style correctly', () {
+    String input = '''
+        <foo font-weight="bold"/>
+      ''';
+
+    var font = Font.fromXml(
+      XmlDocument.parse(input).rootElement,
+    );
+
+    expect(font.weight, FontWeight.bold);
+  });
+  test('should throw on parsing empty font style', () {
+    String input = '''
+        <foo font-weight=""/>
+      ''';
+
+    expect(
+      () => Font.fromXml(
+        XmlDocument.parse(input).rootElement,
+      ),
+      throwsA(isA<InvalidMusicXmlType>()),
+    );
+  });
+  test('should throw on parsing invalid font style', () {
+    String input = '''
+        <foo font-weight="bar"/>
+      ''';
+
+    expect(
+      () => Font.fromXml(
+        XmlDocument.parse(input).rootElement,
+      ),
+      throwsA(isA<InvalidMusicXmlType>()),
+    );
   });
 }

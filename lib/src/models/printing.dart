@@ -4,8 +4,10 @@ import 'package:xml/xml.dart';
 import 'package:music_notation/src/models/elements/text/text.dart';
 
 /// The print-style-align attribute group adds the halign and valign attributes to the position, font, and color attributes.
-class PrintStyleAlign {
-  PrintStyle? printStyle;
+class PrintStyleAlign extends PrintStyle {
+  // ------------------------- //
+  // ------ Attributes ------- //
+  // ------------------------- //
 
   /// In cases where text extends over more than one line, horizontal alignment and justify values can be different. The most typical case is for credits, such as:
   ///
@@ -24,12 +26,12 @@ class PrintStyleAlign {
   VerticalAlignment? verticalAlignment;
 
   PrintStyleAlign({
-    required this.printStyle,
     required this.horizontalAlignment,
     required this.verticalAlignment,
+    required super.position,
+    required super.font,
+    required super.color,
   });
-
-  PrintStyleAlign.empty();
 
   factory PrintStyleAlign.fromXml(XmlElement xmlElement) {
     HorizontalAlignment? horizontalAlign;
@@ -45,9 +47,12 @@ class PrintStyleAlign {
       verticalAlignment = VerticalAlignment.fromString(valign);
     }
 
-    // TODO: check
+    final PrintStyle printStyle = PrintStyle.fromXml(xmlElement);
+
     return PrintStyleAlign(
-      printStyle: PrintStyle.fromXml(xmlElement),
+      position: printStyle.position,
+      font: printStyle.font,
+      color: printStyle.color,
       horizontalAlignment: horizontalAlign,
       verticalAlignment: verticalAlignment,
     );
@@ -57,6 +62,10 @@ class PrintStyleAlign {
 /// The print-style attribute group collects the most popular combination
 /// of printing attributes: position, font, and color.
 class PrintStyle {
+  // ------------------------- //
+  // ------ Attributes ------- //
+  // ------------------------- //
+
   final Position position;
   final Font font;
   final Color color;

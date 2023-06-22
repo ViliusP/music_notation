@@ -10,7 +10,7 @@ import 'package:music_notation/src/models/printing.dart';
 
 abstract class TextElementBase {}
 
-/// The [FormattedText] type represents a text element with [TextFormatting] attributes.
+/// Represents a text element with [TextFormatting] attributes.
 class FormattedText extends TextElementBase {
   // ------------------------- //
   // ------   Content   ------ //
@@ -48,7 +48,7 @@ class FormattedText extends TextElementBase {
   }
 }
 
-/// The [AccidentalText] type represents an element with an accidental value and [TextFormatting] attributes.
+/// Represents an element with an accidental value and [TextFormatting] attributes.
 class AccidentalText extends TextElementBase {
   // ------------------------- //
   // ------   Content   ------ //
@@ -82,10 +82,14 @@ class AccidentalText extends TextElementBase {
   }
 }
 
-/// The [TextFormatting] collects the common formatting attributes for text elements.
+/// The common formatting attributes for text elements.
 /// Default values may differ across the elements that use this group.
-class TextFormatting {
-  /// The justify attribute is used to indicate left, center, or right justification.
+class TextFormatting extends PrintStyleAlign {
+  // ------------------------- //
+  // ------ Attributes ------- //
+  // ------------------------- //
+
+  /// Indicates left, center, or right justification.
   ///
   /// The default value varies for different elements.
   ///
@@ -93,11 +97,8 @@ class TextFormatting {
   /// the justify attribute indicates horizontal alignment as well as justification.
   HorizontalAlignment? justify;
 
-  /// For definition, look at: [PrintStyleAlign].
-  PrintStyleAlign? printStyleAlign;
-
   /// For definition, look at: [TextDecoration].
-  TextDecoration? textDecoration;
+  TextDecoration textDecoration;
 
   /// Used to rotate text around the alignment point specified by the halign and valign attributes.
   ///
@@ -134,8 +135,7 @@ class TextFormatting {
   ///Indicates whether white space should be preserved by applications.
   XmlSpace? space;
 
-  /// The text-direction attribute is used to adjust and
-  /// override the Unicode bidirectional text algorithm,
+  /// Attribute that is used to adjust and override the Unicode bidirectional text algorithm,
   /// similar to the Directionality data category in the
   /// [W3C Internationalization Tag Set recommendation](https://www.w3.org/TR/2007/REC-its-20070403/#directionality).
   ///
@@ -152,8 +152,8 @@ class TextFormatting {
 
   TextFormatting({
     this.justify,
-    this.printStyleAlign,
-    this.textDecoration,
+    // this.printStyleAlign,
+    required this.textDecoration,
     this.textRotation,
     this.letterSpacing,
     this.lineHeight,
@@ -161,12 +161,23 @@ class TextFormatting {
     this.space,
     this.textDirection = TextDirection.ltr,
     this.enclosure,
+    required super.horizontalAlignment,
+    required super.verticalAlignment,
+    required super.position,
+    required super.font,
+    required super.color,
   });
 
   factory TextFormatting.fromXml(XmlElement xmlElement) {
+    PrintStyleAlign printStyleAlign = PrintStyleAlign.fromXml(xmlElement);
+
     return TextFormatting(
       justify: HorizontalAlignment.fromXml(xmlElement),
-      printStyleAlign: PrintStyleAlign.fromXml(xmlElement),
+      horizontalAlignment: printStyleAlign.horizontalAlignment,
+      verticalAlignment: printStyleAlign.verticalAlignment,
+      position: printStyleAlign.position,
+      font: printStyleAlign.font,
+      color: printStyleAlign.color,
       textDecoration: TextDecoration.fromXml(xmlElement),
       textRotation: RotationDegrees.fromXml(xmlElement),
       letterSpacing: NumberOrNormal.fromXml(
@@ -189,7 +200,7 @@ class TextFormatting {
   }
 }
 
-/// The text-direction type is used to adjust and override the Unicode bidirectional text algorithm, similar to the Directionality data category in the W3C Internationalization Tag Set recommendation.
+/// Type that is used to adjust and override the Unicode bidirectional text algorithm, similar to the Directionality data category in the W3C Internationalization Tag Set recommendation.
 /// Values:
 ///   - ltr (left-to-right embed);
 ///   - rtl (right-to-left embed);
@@ -234,7 +245,7 @@ enum TextDirection {
       "Attribute '$attributeName' is not a text-direction value: $value";
 }
 
-/// The number-of-lines type is used to specify the number of lines in text decoration attributes.
+/// Type that is used to specify the number of lines in text decoration attributes.
 enum NumberOfLines {
   none(0),
   one(1),
@@ -262,14 +273,22 @@ enum NumberOfLines {
   }
 }
 
-/// The text-decoration attribute group is based on the similar feature in XHTML and CSS.
+/// Group that is based on the similar feature in XHTML and CSS.
 ///
 /// It allows for text to be underlined, overlined, or struck-through.
-///
 /// It extends the CSS version by allow double or triple lines instead of just being on or off.
 class TextDecoration {
+  // ------------------------- //
+  // ------ Attributes ------- //
+  // ------------------------- //
+
+  /// Number of lines to use when underlining text.
   NumberOfLines? underline;
+
+  /// Number of lines to use when overlining text.
   NumberOfLines? overline;
+
+  /// Number of lines to use when striking through text.
   NumberOfLines? lineThrough;
 
   TextDecoration({
@@ -294,7 +313,7 @@ class TextDecoration {
   }
 }
 
-/// The left-center-right type is used to define horizontal alignment and text justification.
+/// Type that is used to define horizontal alignment and text justification.
 enum HorizontalAlignment {
   left,
   center,
@@ -334,13 +353,12 @@ enum HorizontalAlignment {
       "Attribute '$attributeName' is not a horizontal-alignment value: $value";
 }
 
-/// The enclosure-shape type describes the shape and
-/// presence/absence of an enclosure around text or symbols.
+/// Type that describes the shape and presence/absence of an enclosure around text or symbols.
 ///
-/// A bracket enclosure is similar to a rectangle
+/// A [bracket] enclosure is similar to a [rectangle]
 /// with the bottom line missing, as is common in jazz notation.
 ///
-/// An inverted-bracket enclosure is similar to a rectangle with the top line missing.
+/// An [invertedBracket] enclosure is similar to a [rectangle] with the top line missing.
 enum EnclosureShape {
   rectangle,
   square,
@@ -385,7 +403,7 @@ enum EnclosureShape {
       "Attribute '$attributeName' is not a enclosure-shape value: $value";
 }
 
-/// The valign type is used to indicate vertical alignment to the top, middle, bottom, or baseline of the text.
+/// Type that is used to indicate vertical alignment to the top, middle, bottom, or baseline of the text.
 ///
 /// If the text is on multiple lines, baseline alignment refers to the baseline of the lowest line of text.
 ///
@@ -405,28 +423,24 @@ enum VerticalAlignment {
   }
 }
 
-/// The font attribute group gathers together attributes for determining the font within a credit or direction.
+/// Group that gathers together attributes for determining the font within a credit or direction.
 ///
 /// They are based on the text styles for Cascading Style Sheets.
 ///
-/// The font-family is a comma-separated list of font names.The font-style can be normal or italic.
-///
-/// The font-size can be one of the CSS sizes or a numeric point size.
-///
-/// The font-weight can be normal or bold.
-///
 /// The default is application-dependent, but is a text font vs. a music font.
 class Font {
+  // ------------------------- //
+  // ------ Attributes ------- //
+  // ------------------------- //
+
   /// The font-family is a comma-separated list of font names.
   ///
-  /// These can be specific font styles such as Maestro or Opus, or one of several generic font styles: music, engraved, handwritten, text, serif, sans-serif, handwritten, cursive, fantasy, and monospace.
+  /// These can be specific font styles such as Maestro or Opus,
+  /// or one of several generic font styles: music, engraved, handwritten,
+  /// text, serif, sans-serif, handwritten, cursive, fantasy, and monospace.
   ///
   /// The music, engraved, and handwritten values refer to music fonts; the rest refer to text fonts.
-  ///
   /// The fantasy style refers to decorative text such as found in older German-style printing.
-  ///
-  // TODO: nullable or not?
-  // TOOD: Remove "font" word from properties.
   final String? family;
 
   /// Normal or italic style.
@@ -452,30 +466,90 @@ class Font {
         weight = null;
 
   factory Font.fromXml(XmlElement xmlElement) {
-    // TODO: fully parse
+    String? rawSize = xmlElement.getAttribute('font-size');
+    FontSize? fontSize;
+    if (rawSize != null) {
+      try {
+        fontSize = FontSize.fromString(rawSize);
+      } catch (e) {
+        throw InvalidMusicXmlType(
+          message: "Font size must be double or CssFontSize",
+          xmlElement: xmlElement,
+        );
+      }
+    }
+
+    String? rawFontStyle = xmlElement.getAttribute('font-style');
+    FontStyle? fontStyle = FontStyle.fromString(rawFontStyle ?? '');
+    if (rawFontStyle != null && fontStyle == null) {
+      throw InvalidMusicXmlType(
+        message: "Font style must be normal or italic",
+        xmlElement: xmlElement,
+      );
+    }
+
+    String? rawFontWeight = xmlElement.getAttribute('font-weight');
+    FontWeight? fontWeight = FontWeight.fromString(rawFontWeight ?? '');
+    if (rawFontWeight != null && fontWeight == null) {
+      throw InvalidMusicXmlType(
+        message: "Font weight must be normal or bold",
+        xmlElement: xmlElement,
+      );
+    }
     return Font(
+      // TODO validate if it comma-seperated-text.
       family: xmlElement.getAttribute('font-family'),
+      size: fontSize,
+      style: fontStyle,
+      weight: fontWeight,
     );
   }
 
-  toXml() {
-    // TODO
-  }
+  /// TODO: finish and test
+  toXml() {}
 }
 
-/// The font-style type represents a simplified version of the CSS font-style property.
+/// Type that represents a simplified version of the CSS font-style property.
 enum FontStyle {
   normal,
   italic;
+
+  /// Parses a string and returns the corresponding [FontStyle] value.
+  ///
+  /// Returns null if the string does not match any of the valid [FontStyle] values.
+  static FontStyle? fromString(String value) {
+    switch (value) {
+      case 'normal':
+        return FontStyle.normal;
+      case 'italic':
+        return FontStyle.italic;
+      default:
+        return null;
+    }
+  }
 }
 
-/// The font-weight type represents a simplified version of the CSS font-weight property.
+/// Type that represents a simplified version of the CSS font-weight property.
 enum FontWeight {
   normal,
   bold;
+
+  /// Parses a string and returns the corresponding [FontWeight] value.
+  ///
+  /// Returns null if the string does not match any of the valid [FontWeight] values.
+  static FontWeight? fromString(String value) {
+    switch (value) {
+      case 'normal':
+        return FontWeight.normal;
+      case 'bold':
+        return FontWeight.bold;
+      default:
+        return null;
+    }
+  }
 }
 
-/// The css-font-size type includes the CSS font sizes used as an alternative to a numeric point size.
+/// Type that includes the CSS font sizes used as an alternative to a numeric point size.
 enum CssFontSize {
   xxSmall,
   xSmall,
@@ -484,51 +558,68 @@ enum CssFontSize {
   large,
   xLarge,
   xxLarge;
+
+  /// Parses a string and returns the corresponding [CssFontSize] value.
+  ///
+  /// Returns null if the string does not match any of the valid [CssFontSize] values.
+  static CssFontSize? fromString(String value) {
+    switch (value) {
+      case 'xx-small':
+        return CssFontSize.xxSmall;
+      case 'x-small':
+        return CssFontSize.xSmall;
+      case 'small':
+        return CssFontSize.small;
+      case 'medium':
+        return CssFontSize.medium;
+      case 'large':
+        return CssFontSize.large;
+      case 'x-large':
+        return CssFontSize.xLarge;
+      case 'xx-large':
+        return CssFontSize.xxLarge;
+      default:
+        return null;
+    }
+  }
 }
 
-/// The font-size can be one of the CSS font sizes (xx-small, x-small, small, medium, large, x-large, xx-large) or a numeric point size.
+/// Type that can be one of the CSS font sizes (xx-small, x-small, small, medium, large, x-large, xx-large)
+/// or a numeric point size.
 class FontSize {
   final double? numericValue;
   final CssFontSize? cssFontValue;
 
   dynamic get getValue => numericValue ?? cssFontValue;
 
-  FontSize.fromDouble({this.numericValue}) : cssFontValue = null;
-  FontSize.fromEnum({this.cssFontValue}) : numericValue = null;
+  FontSize.fromDouble(this.numericValue) : cssFontValue = null;
+  FontSize.fromCssSize(this.cssFontValue) : numericValue = null;
 
-  factory FontSize.dynamic({
-    double? numericValue,
-    CssFontSize? cssFontValue,
-  }) {
-    if (numericValue == null && cssFontValue == null) {
-      // TOOD
-      throw "Bla";
+  factory FontSize.fromString(String value) {
+    double? maybeNumeric = double.tryParse(value);
+
+    if (maybeNumeric != null) {
+      return FontSize.fromDouble(maybeNumeric);
     }
-    if (numericValue != null && cssFontValue != null) {
-      // TODO
-      throw "Bla";
+
+    CssFontSize? maybeCssSize = CssFontSize.fromString(value);
+
+    if (maybeCssSize != null) {
+      return FontSize.fromCssSize(maybeCssSize);
     }
-    if (numericValue != null) {
-      return FontSize.fromEnum(cssFontValue: cssFontValue);
-    }
-    return FontSize.fromDouble(numericValue: numericValue);
+    throw ArgumentError("Provided argument must be double or CssFontSize");
   }
 }
-// <xs:simpleType name="font-size">
-// 	<xs:annotation>
-// 		<xs:documentation>The font-size can be one of the CSS font sizes (xx-small, x-small, small, medium, large, x-large, xx-large) or a numeric point size.</xs:documentation>
-// 	</xs:annotation>
-// 	<xs:union memberTypes="xs:decimal css-font-size"/>
-// </xs:simpleType>
 
-/// The color type indicates the color of an element.
+/// Indicates the color of an element.
 ///
-/// Color may be represented as hexadecimal RGB triples, as in HTML, or as hexadecimal ARGB tuples, with the A indicating alpha of transparency.
+/// Color may be represented as hexadecimal RGB triples, as in HTML,
+/// or as hexadecimal ARGB tuples, with the A indicating alpha of transparency.
 /// An alpha value of 00 is totally transparent; FF is totally opaque.
 /// If RGB is used, the A value is assumed to be FF.
 ///
 /// For instance, the RGB value "#800080" represents purple. An ARGB value of "#40800080" would be a transparent purple.
-
+///
 /// As in SVG 1.1, colors are defined in terms of the sRGB color space (IEC 61966).
 class Color {
   final String? value;
@@ -552,7 +643,7 @@ class Color {
   }
 }
 
-/// The lyric-font type specifies the default font for a particular name and number of lyric.
+/// Specifies the default font for a particular name and number of lyric.
 class LyricsFont {
   // type="xs:NMTOKEN"
   String? number;
@@ -596,7 +687,7 @@ class LyricsFont {
   }
 }
 
-/// The lyric-language type specifies the default language for a particular name and number of lyric.
+/// Specifies the default language for a particular name and number of lyric.
 class LyricLanguage {
   // type="xs:NMTOKEN"
   final String? number;
@@ -607,12 +698,18 @@ class LyricLanguage {
 
   factory LyricLanguage.fromXml(XmlElement element) {
     if (element.name.local != 'lyric-language') {
-      throw FormatException("Unexpected element name: ${element.name.local}");
+      throw InvalidXmlElementException(
+        message: "Unexpected element name: ${element.name.local}",
+        xmlElement: element,
+      );
     }
 
     final lang = element.getAttribute('xml:lang');
     if (lang == null) {
-      throw FormatException('Missing required attribute "xml:lang"');
+      throw XmlAttributeRequired(
+        message: 'Missing required attribute "xml:lang"',
+        xmlElement: element,
+      );
     }
 
     return LyricLanguage(
@@ -637,22 +734,27 @@ class LyricLanguage {
       'LyricLanguage(number: $number, name: $name, lang: $lang)';
 }
 
-/// The formatted-text-id type represents a text element with text-formatting and id attributes.
-class FormattedTextId {
-  final String content;
-  final TextFormatting textFormatting;
+/// Represents a text element with [formatting] and [id] attributes.
+class FormattedTextId extends FormattedText {
+  // ------------------------- //
+  // ------ Attributes ------- //
+  // ------------------------- //
+
+  /// Specifies an ID that is unique to the entire document.
   final String? id;
 
   FormattedTextId({
-    required this.content,
-    required this.textFormatting,
+    required super.value,
+    required super.formatting,
     required this.id,
   });
 
   factory FormattedTextId.fromXml(XmlElement xmlElement) {
+    FormattedText formattedText = FormattedText.fromXml(xmlElement);
+
     return FormattedTextId(
-      content: xmlElement.value ?? "",
-      textFormatting: TextFormatting.fromXml(xmlElement),
+      value: formattedText.value,
+      formatting: formattedText.formatting,
       id: xmlElement.getAttribute('id'),
     );
   }
@@ -660,7 +762,7 @@ class FormattedTextId {
   XmlElement toXml() {
     List<XmlAttribute> attributes = [];
 
-    attributes.addAll(textFormatting.toXml());
+    attributes.addAll(formatting.toXml());
 
     if (id != null) {
       attributes.add(XmlAttribute(XmlName('optional-unique-id'), id!));
@@ -669,29 +771,29 @@ class FormattedTextId {
     return XmlElement(
       XmlName('formatted-text-id'),
       attributes,
-      [XmlText(content)],
+      [XmlText(value)],
     );
   }
 }
 
-/// The formatted-symbol-id type represents a SMuFL musical symbol element with formatting and id attributes.
+/// Represents a SMuFL musical symbol element with [formatting] and [id] attributes.
 class FormattedSymbolId {
   /// Type="xs:NMTOKEN"
   /// TODO: validate
-  final String content;
-  final String symbolFormatting;
+  final String value;
+  final String formatting;
   final String id;
 
   FormattedSymbolId({
-    required this.content,
-    required this.symbolFormatting,
+    required this.value,
+    required this.formatting,
     required this.id,
   });
 
   factory FormattedSymbolId.fromXml(XmlElement xmlElement) {
     return FormattedSymbolId(
-      content: xmlElement.text,
-      symbolFormatting: xmlElement.getAttribute('symbol-formatting') ?? '',
+      value: xmlElement.text,
+      formatting: xmlElement.getAttribute('symbol-formatting') ?? '',
       id: xmlElement.getAttribute('optional-unique-id') ?? '',
     );
   }
@@ -700,10 +802,10 @@ class FormattedSymbolId {
     return XmlElement(
       XmlName('formatted-symbol-id'),
       [
-        XmlAttribute(XmlName('symbol-formatting'), symbolFormatting),
+        XmlAttribute(XmlName('symbol-formatting'), formatting),
         XmlAttribute(XmlName('id'), id),
       ],
-      [XmlText(content)],
+      [XmlText(value)],
     );
   }
 }

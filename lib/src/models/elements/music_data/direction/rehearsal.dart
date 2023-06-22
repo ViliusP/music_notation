@@ -11,8 +11,8 @@ import 'package:xml/xml.dart';
 /// Left justification is used if not specified.
 class Rehearsal extends FormattedTextId implements DirectionType {
   Rehearsal({
-    required super.content,
-    required super.textFormatting,
+    required super.value,
+    required super.formatting,
     required super.id,
   });
 
