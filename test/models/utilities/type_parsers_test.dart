@@ -4,19 +4,33 @@ import 'package:test/test.dart';
 void main() {
   group('MusicXMLAnyURI', () {
     test('should return true for valid MusicXML anyURI', () {
-      expect(MusicXMLAnyURI.isValid('http://www.example.com'), isTrue);
-      expect(MusicXMLAnyURI.isValid('https://www.example.com'), isTrue);
-      expect(MusicXMLAnyURI.isValid('ftp://example.com'), isTrue);
-      expect(MusicXMLAnyURI.isValid('mailto:test@example.com'), isTrue);
-      expect(MusicXMLAnyURI.isValid('p1.musicxml'), isTrue);
+      const validURIs = [
+        'http://www.example.com',
+        'https://www.example.com',
+        'ftp://example.com',
+        'mailto:test@example.com',
+        'p1.musicxml',
+        'opus/winterreise.musicxml',
+      ];
+
+      for (final uri in validURIs) {
+        expect(MusicXMLAnyURI.isValid(uri), isTrue, reason: 'Failed on $uri');
+      }
     });
 
     test('should return false for invalid MusicXML anyURI', () {
-      expect(MusicXMLAnyURI.isValid('hello world'), isFalse);
-      expect(MusicXMLAnyURI.isValid('12345'), isFalse);
-      expect(MusicXMLAnyURI.isValid('example.com'), isFalse);
-      expect(MusicXMLAnyURI.isValid('www.example.com'), isFalse);
-      expect(MusicXMLAnyURI.isValid('://www.example.com'), isFalse);
+      const invalidURIs = [
+        'hello world',
+        '12345',
+        'example.com',
+        'www.example.com',
+        '://www.example.com',
+        'mailto:test@example',
+      ];
+
+      for (final uri in invalidURIs) {
+        expect(MusicXMLAnyURI.isValid(uri), isFalse, reason: 'Failed on $uri');
+      }
     });
   });
 }
