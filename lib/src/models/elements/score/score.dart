@@ -45,14 +45,13 @@ class ScorePartwise {
         ..addAll(_xmlExpectedOrder),
     );
 
+    final Iterable<Part> parts = root.childElements
+        .where((e) => e.name.local == "part")
+        .map((e) => Part.fromXml(e));
+
     return ScorePartwise(
       scoreHeader: ScoreHeader.fromXml(root),
-      parts: [
-        Part(
-          id: "",
-          measures: [],
-        )
-      ], // TODO: parsing
+      parts: parts.toList(),
       version: root.getAttribute("version") ?? "1.0",
     );
   }

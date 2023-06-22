@@ -1,5 +1,5 @@
 import 'package:flutter/rendering.dart';
-import 'package:music_notation/src/models/score.dart';
+import 'package:music_notation/src/models/elements/score/score.dart';
 
 class ScorePartwisePainter extends CustomPainter {
   final ScorePartwise score;

@@ -1,10 +1,18 @@
 import 'package:music_notation/src/models/exceptions.dart';
+import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 
 class Part {
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
   final List<Measure> measures;
+
+  // ------------------------- //
+  // ------ Attributes ------- //
+  // ------------------------- //
 
   /// In either partwise or timewise format,
   /// the part element has an id attribute that is an IDREF back to a score-part in the part-list.
@@ -15,19 +23,29 @@ class Part {
     required this.id,
   });
 
+  // Field(s): quantifier
+  static const Map<String, XmlQuantifier> _xmlExpectedOrder = {
+    'measure': XmlQuantifier.oneOrMore,
+  };
+
   factory Part.fromXml(XmlElement xmlElement) {
+    validateSequence(xmlElement, _xmlExpectedOrder);
     String? id = xmlElement.getAttribute("id");
 
     if (id == null) {
-      throw XmlElementRequired("");
+      throw XmlAttributeRequired(
+        message: "'id' attribute is required for 'part' element",
+        xmlElement: xmlElement,
+      );
     }
 
+    final Iterable<Measure> measures = xmlElement
+        .findElements('measure')
+        .map((element) => Measure.fromXml(element));
+
     return Part(
-      measures: xmlElement
-          .findElements('measure')
-          .map((element) => Measure.fromXml(element))
-          .toList(),
       id: id,
+      measures: measures.toList(),
     );
   }
 
