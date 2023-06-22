@@ -1,10 +1,10 @@
+import 'package:music_notation/src/models/elements/music_data/layout.dart';
 import 'package:music_notation/src/models/elements/score/name_display.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/utilities/type_parsers.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/data_types/system_relation.dart';
-import 'package:music_notation/src/models/elements/score/defaults.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 
 /// Contains general printing parameters, including layout elements.

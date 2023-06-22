@@ -181,12 +181,13 @@ class LinkAttributes {
     );
   }
 
-  Map<String, String?> toXml() {
+  Map<String, String> toXml() {
     return {
       'xlink:href': href,
-      'xlink:type': type,
-      'xlink:role': role,
-      'xlink:title': title,
+      // TODO
+      // 'xlink:type': type,
+      // 'xlink:role': role,
+      // 'xlink:title': title,
       'xlink:show': show.toString(),
       'xlink:actuate': actuate.toString(),
     };
