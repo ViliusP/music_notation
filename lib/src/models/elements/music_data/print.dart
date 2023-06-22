@@ -4,10 +4,10 @@ import 'package:music_notation/src/models/utilities/type_parsers.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/data_types/system_relation.dart';
-import 'package:music_notation/src/models/defaults.dart';
+import 'package:music_notation/src/models/elements/score/defaults.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 
-/// The print type contains general printing parameters, including layout elements.
+/// Contains general printing parameters, including layout elements.
 ///
 /// The part-name-display and part-abbreviation-display elements
 /// may also be used here to change how a part name or abbreviation is displayed over the course of a piece.
@@ -60,7 +60,7 @@ class Print implements MusicDataElement {
   }
 }
 
-/// The print-attributes group is used by the print element.
+/// Group that is used by the print element.
 ///
 /// The new-system and new-page attributes indicate whether to force a system or page break,
 /// or to force the current music onto the same system or page as the preceding music.
@@ -151,7 +151,7 @@ class PrintAttributes {
   }
 }
 
-/// The measure-numbering type describes how frequently measure numbers are displayed on this part.
+/// Describes how frequently measure numbers are displayed on this part.
 ///
 /// The text attribute from the measure element is used for display,
 /// or the number attribute if the text attribute is not present.
@@ -225,7 +225,7 @@ class MeasureNumbering {
   }
 }
 
-/// The measure-numbering-value type describes how measure numbers are displayed on this part:
+/// Fescribes how measure numbers are displayed on this part:
 /// - no numbers;
 /// - numbers every measure;
 /// - numbers every system.
