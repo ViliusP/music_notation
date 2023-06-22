@@ -283,19 +283,24 @@ class TextDecoration {
   // ------------------------- //
 
   /// Number of lines to use when underlining text.
-  NumberOfLines? underline;
+  final NumberOfLines? underline;
 
   /// Number of lines to use when overlining text.
-  NumberOfLines? overline;
+  final NumberOfLines? overline;
 
   /// Number of lines to use when striking through text.
-  NumberOfLines? lineThrough;
+  final NumberOfLines? lineThrough;
 
   TextDecoration({
     this.underline,
     this.overline,
     this.lineThrough,
   });
+
+  const TextDecoration.empty()
+      : underline = null,
+        overline = null,
+        lineThrough = null;
 
   factory TextDecoration.fromXml(XmlElement xmlElement) {
     var underline =
@@ -778,10 +783,14 @@ class FormattedTextId extends FormattedText {
 
 /// Represents a SMuFL musical symbol element with [formatting] and [id] attributes.
 class FormattedSymbolId {
-  /// Type="xs:NMTOKEN"
-  /// TODO: validate
+  // smufl-glyph-name
   final String value;
-  final String formatting;
+
+  // ------------------------- //
+  // ------ Attributes ------- //
+  // ------------------------- //
+
+  final SymbolFormatting formatting;
   final String id;
 
   FormattedSymbolId({
@@ -793,7 +802,7 @@ class FormattedSymbolId {
   factory FormattedSymbolId.fromXml(XmlElement xmlElement) {
     return FormattedSymbolId(
       value: xmlElement.text,
-      formatting: xmlElement.getAttribute('symbol-formatting') ?? '',
+      formatting: SymbolFormatting.fromXml(xmlElement),
       id: xmlElement.getAttribute('optional-unique-id') ?? '',
     );
   }
@@ -802,10 +811,116 @@ class FormattedSymbolId {
     return XmlElement(
       XmlName('formatted-symbol-id'),
       [
-        XmlAttribute(XmlName('symbol-formatting'), formatting),
+        XmlAttribute(XmlName('symbol-formatting'), formatting.toXml()),
         XmlAttribute(XmlName('id'), id),
       ],
       [XmlText(value)],
+    );
+  }
+}
+
+/// attribute group collects the common formatting attributes for musical symbols.
+///
+/// Default values may differ across the elements that use this group.
+class SymbolFormatting extends PrintStyleAlign {
+  // ------------------------- //
+  // ------ Attributes ------- //
+  // ------------------------- //
+
+  /// Indicates left, center, or right justification.
+  ///
+  /// The default value varies for different elements.
+  ///
+  /// For elements where the justify attribute is present but the halign attribute is not,
+  /// the justify attribute indicates horizontal alignment as well as justification.
+  final HorizontalAlignment? justify;
+
+  /// For definition, look at: [TextDecoration].
+  final TextDecoration textDecoration;
+
+  /// Used to rotate text around the alignment point specified by the halign and valign attributes.
+  ///
+  /// Positive values are clockwise rotations, while negative values are counter-clockwise rotations.
+  double? textRotation;
+
+  /// The letter-spacing attribute specifies text tracking.
+  ///
+  /// Values are either "normal" or a number representing the number of ems to add between each letter.
+  ///
+  /// The number may be negative in order to subtract space.
+  ///
+  /// The default is normal, which allows flexibility of letter-spacing for purposes of text justification.
+  ///
+  /// Null value means normal.
+  double? letterSpacing;
+
+  /// The line-height attribute specifies text leading.
+  ///
+  /// Values are either "normal" or a number representing the percentage of the current font height to use for leading.
+  ///
+  /// The default is "normal".
+  ///
+  /// The exact normal value is implementation-dependent, but values between 100 and 120 are recommended.
+  ///
+  /// Null value means normal.
+  double? lineHeight;
+
+  /// Attribute that is used to adjust and override the Unicode bidirectional text algorithm,
+  /// similar to the Directionality data category in the
+  /// [W3C Internationalization Tag Set recommendation](https://www.w3.org/TR/2007/REC-its-20070403/#directionality).
+  ///
+  /// The default value is ltr. This attribute is typically used by applications
+  /// that store text in left-to-right visual order rather than logical order.
+  ///
+  /// Such applications can use the lro value to better communicate
+  /// with other applications that more fully support bidirectional text.
+  TextDirection? textDirection;
+
+  /// The enclosure attribute group is used to specify
+  /// the formatting of an enclosure around text or symbols.
+  EnclosureShape? enclosure;
+
+  SymbolFormatting({
+    this.justify,
+    this.textDecoration = const TextDecoration.empty(),
+    this.textRotation,
+    this.letterSpacing,
+    this.lineHeight,
+    this.textDirection,
+    this.enclosure,
+    required super.horizontalAlignment,
+    required super.verticalAlignment,
+    required super.position,
+    required super.font,
+    required super.color,
+  });
+
+  String toXml() {
+    throw UnimplementedError();
+  }
+
+  factory SymbolFormatting.fromXml(XmlElement xmlElement) {
+    PrintStyleAlign printStyleAlign = PrintStyleAlign.fromXml(xmlElement);
+
+    return SymbolFormatting(
+      justify: HorizontalAlignment.fromXml(xmlElement),
+      textRotation: RotationDegrees.fromXml(xmlElement),
+      textDecoration: TextDecoration.fromXml(xmlElement),
+      letterSpacing: NumberOrNormal.fromXml(
+        xmlElement,
+        CommonAttributes.letterSpacing,
+      ),
+      lineHeight: NumberOrNormal.fromXml(
+        xmlElement,
+        CommonAttributes.lineHeight,
+      ),
+      textDirection: TextDirection.fromXml(xmlElement),
+      enclosure: EnclosureShape.fromXml(xmlElement),
+      horizontalAlignment: printStyleAlign.horizontalAlignment,
+      verticalAlignment: printStyleAlign.verticalAlignment,
+      position: printStyleAlign.position,
+      font: printStyleAlign.font,
+      color: printStyleAlign.color,
     );
   }
 }
