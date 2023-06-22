@@ -1,9 +1,10 @@
 import 'package:music_notation/src/models/elements/score/credit.dart';
-import 'package:music_notation/src/models/defaults.dart';
+import 'package:music_notation/src/models/elements/score/defaults.dart';
 import 'package:music_notation/src/models/elements/link.dart';
 import 'package:music_notation/src/models/elements/score/identification.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
 import 'package:music_notation/src/models/elements/score/part_list.dart';
+import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 import 'package:xml/xml.dart';
 
@@ -76,6 +77,10 @@ class ScoreTimewise {
 /// score-wide defaults for layout and fonts,
 /// credits that appear on the first or following pages, and the part list.
 class ScoreHeader {
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
+
   final Work? work;
 
   /// Specifies the number of a movement.
@@ -175,46 +180,73 @@ class ScoreHeader {
 ///
 /// The work type also may indicate a link to the opus document that composes multiple scores into a collection.
 class Work {
-  /// The work-number element specifies the number of a work, such as its opus number.
-  final String? workNumber;
+  /// Specifies the number of a work, such as its opus number.
+  final String? number;
 
-  /// The work-title element specifies the title of a work, not including its opus or other work number.
-  final String? workTitle;
+  /// Specifies the title of a work, not including its opus or other work number.
+  final String? title;
   final LinkAttributes? opus;
 
   Work({
-    this.workNumber,
-    this.workTitle,
+    this.number,
+    this.title,
     this.opus,
   });
 
+  // Field(s): quantifier
+  static const Map<String, XmlQuantifier> _xmlExpectedOrder = {
+    'work-number': XmlQuantifier.optional,
+    'work-title': XmlQuantifier.optional,
+    'opus': XmlQuantifier.optional,
+  };
+
   factory Work.fromXml(XmlElement xmlElement) {
+    validateSequence(xmlElement, _xmlExpectedOrder);
+
+    XmlNode? workNumberNode = xmlElement.getElement('work-number')!.firstChild;
+    if (workNumberNode != null && workNumberNode.nodeType != XmlNodeType.TEXT) {
+      throw InvalidXmlElementException(
+        message: "'work-number' content must be string",
+        xmlElement: xmlElement,
+      );
+    }
+
+    XmlNode? workTitleNode = xmlElement.getElement('work-title')!.firstChild;
+    if (workTitleNode != null && workTitleNode.nodeType != XmlNodeType.TEXT) {
+      throw InvalidXmlElementException(
+        message: "'work-number' content must be string",
+        xmlElement: xmlElement,
+      );
+    }
+
+    XmlElement? opusElement = xmlElement.getElement('opus');
+
     return Work(
-      workNumber: xmlElement.getElement('work-number')?.text,
-      workTitle: xmlElement.getElement('work-title')?.text,
-      opus: LinkAttributes.fromXml(xmlElement.findElements('opus').first),
+      number: workNumberNode?.value,
+      title: workTitleNode?.value,
+      opus: opusElement != null ? LinkAttributes.fromXml(opusElement) : null,
     );
   }
 
   XmlElement toXml() {
     final builder = XmlBuilder();
     builder.element('work', nest: () {
-      if (workNumber != null) {
+      if (number != null) {
         builder.element(
           'work-number',
-          nest: workNumber,
+          nest: number,
         ); // TODO: check nest
       }
-      if (workTitle != null) {
+      if (title != null) {
         builder.element(
           'work-title',
-          nest: workTitle,
+          nest: title,
         ); // TODO: check nest
       }
       if (opus != null) {
         builder.element(
           'opus',
-          nest: opus!.toXml(),
+          attributes: opus!.toXml(),
         );
       }
     });

@@ -1,6 +1,8 @@
 import 'dart:io';
 
-import 'package:music_notation/music_notation.dart';
+import 'package:music_notation/src/models/elements/link.dart';
+import 'package:music_notation/src/models/elements/score/score.dart';
+import 'package:music_notation/src/models/exceptions.dart';
 import 'package:test/test.dart';
 import 'package:xml/xml.dart';
 
@@ -47,6 +49,94 @@ void main() {
       expect(scorePartwise.scoreHeader.defaults, isNotNull);
       expect(scorePartwise.scoreHeader.credits.length, 1);
       expect(scorePartwise.scoreHeader.partList, isNotNull);
+    });
+  });
+  group('Work', () {
+    // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/work-element/
+    test("should correctly parse <work> example", () {
+      String input = '''
+        <work>
+          <work-number>D. 911</work-number>
+          <work-title>Winterreise</work-title>
+          <opus xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="opus/winterreise.musicxml" xlink:show="new"/>
+        </work>
+      ''';
+
+      var work = Work.fromXml(
+        XmlDocument.parse(input).rootElement,
+      );
+
+      expect(work.number, "D. 911");
+      expect(work.title, "Winterreise");
+      expect(work.opus?.href, "opus/winterreise.musicxml");
+      expect(work.opus?.show, XLinkShow.new_);
+    });
+    // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/movement-number-and-movement-title-elements/
+    test(
+        "should correctly parse <movement-number> and <movement-title> example",
+        () {
+      String input = '''
+        <work>
+          <work-number>D. 911</work-number>
+          <work-title>Winterreise</work-title>
+        </work>
+      ''';
+
+      var work = Work.fromXml(
+        XmlDocument.parse(input).rootElement,
+      );
+
+      expect(work.number, "D. 911");
+      expect(work.title, "Winterreise");
+      expect(work.opus, isNull);
+    });
+    test("should throw if work-number has invalid content", () {
+      String input = '''
+        <work>
+          <work-number><foo/></work-number>
+          <work-title>Winterreise</work-title>
+          <opus xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="opus/winterreise.musicxml" xlink:show="new"/>
+        </work>
+      ''';
+
+      expect(
+        () => Work.fromXml(
+          XmlDocument.parse(input).rootElement,
+        ),
+        throwsA(isA<InvalidXmlElementException>()),
+      );
+    });
+    test("should throw if work-title has invalid content", () {
+      String input = '''
+        <work>
+          <work-number>991</work-number>
+          <work-title><foo/></work-title>
+          <opus xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="opus/winterreise.musicxml" xlink:show="new"/>
+        </work>
+      ''';
+
+      expect(
+        () => Work.fromXml(
+          XmlDocument.parse(input).rootElement,
+        ),
+        throwsA(isA<InvalidXmlElementException>()),
+      );
+    });
+    test("should throw if order of elements in out of order", () {
+      String input = '''
+        <work>
+          <work-number>991</work-number>
+          <opus xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="opus/winterreise.musicxml" xlink:show="new"/>
+          <work-title>foo</work-title>
+        </work>
+      ''';
+
+      expect(
+        () => Work.fromXml(
+          XmlDocument.parse(input).rootElement,
+        ),
+        throwsA(isA<InvalidXmlSequence>()),
+      );
     });
   });
 }

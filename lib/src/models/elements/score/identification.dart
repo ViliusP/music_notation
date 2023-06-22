@@ -16,6 +16,10 @@ import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart'
 ///
 /// For more details go to [The \<identification\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/identification/)
 class Identification {
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
+
   /// The creator element is borrowed from Dublin Core.
   /// It is used for the creators of the score.
   /// The type attribute is used to distinguish different creative contributions.
