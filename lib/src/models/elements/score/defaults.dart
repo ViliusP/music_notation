@@ -123,11 +123,11 @@ class Defaults {
       if (wordFont != null) {
         builder.element('word-font', nest: wordFont!.toXml());
       }
-      for (var lf in lyricFonts) {
-        builder.element('lyric-font', nest: lf.toXml());
+      for (var lyricFont in lyricFonts) {
+        builder.element('lyric-font', nest: lyricFont.toXml());
       }
-      for (var ll in lyricLanguages) {
-        builder.element('lyric-language', nest: ll.toXml());
+      for (var lyricLanguage in lyricLanguages) {
+        builder.element('lyric-language', nest: lyricLanguage.toXml());
       }
     });
     return builder.buildDocument().rootElement;
