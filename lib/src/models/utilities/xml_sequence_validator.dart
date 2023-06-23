@@ -13,7 +13,10 @@ enum XmlQuantifier {
   optional(0, 1),
 
   /// use="required"
-  required(1, 1);
+  required(1, 1),
+
+  // minOccurs="0" maxOccurs="2"
+  zeroToTwo(0, 2);
 
   const XmlQuantifier(this.minOccurences, this.maxOccurences);
 
@@ -118,6 +121,9 @@ String _generateElementPattern(String elementNames, XmlQuantifier quantifier) {
     case XmlQuantifier.required:
       segmentPattern = '($elementNames)';
       break;
+    case XmlQuantifier.zeroToTwo:
+      segmentPattern = '($elementNames){0,2}';
+      break;
   }
 
   return segmentPattern;
@@ -136,5 +142,7 @@ String _generateQuantifierPattern(XmlQuantifier quantifier) {
       return '?';
     case XmlQuantifier.required:
       return '';
+    case XmlQuantifier.zeroToTwo:
+      return '{0,2}';
   }
 }

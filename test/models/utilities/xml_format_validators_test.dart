@@ -543,5 +543,90 @@ void main() {
         returnsNormally,
       );
     });
+    test('should validate sequence with zeroToTwo #1', () {
+      String rawXml = '''
+        <root>
+          <e1></e1>
+          <e1></e1>
+          <e2></e2>
+        </root>
+      ''';
+
+      Map<dynamic, XmlQuantifier> expectedOrder = {
+        "e1": XmlQuantifier.zeroToTwo,
+        "e2": XmlQuantifier.required,
+        "e3": XmlQuantifier.optional,
+      };
+
+      var xmlElement = XmlDocument.parse(rawXml).rootElement;
+      expect(
+        () => validateSequence(xmlElement, expectedOrder),
+        returnsNormally,
+      );
+    });
+    test('should validate sequence with zeroToTwo #2', () {
+      String rawXml = '''
+        <root>
+          <e1></e1>
+          <e2></e2>
+          <e3></e3>
+        </root>
+      ''';
+
+      Map<dynamic, XmlQuantifier> expectedOrder = {
+        "e1": XmlQuantifier.zeroToTwo,
+        "e2": XmlQuantifier.required,
+        "e3": XmlQuantifier.optional,
+      };
+
+      var xmlElement = XmlDocument.parse(rawXml).rootElement;
+      expect(
+        () => validateSequence(xmlElement, expectedOrder),
+        returnsNormally,
+      );
+    });
+    test('should validate sequence with zeroToTwo #3', () {
+      String rawXml = '''
+        <root>
+          <e2></e2>
+          <e3></e3>
+        </root>
+      ''';
+
+      Map<dynamic, XmlQuantifier> expectedOrder = {
+        "e1": XmlQuantifier.zeroToTwo,
+        "e2": XmlQuantifier.required,
+        "e3": XmlQuantifier.optional,
+      };
+
+      var xmlElement = XmlDocument.parse(rawXml).rootElement;
+      expect(
+        () => validateSequence(xmlElement, expectedOrder),
+        returnsNormally,
+      );
+    });
+    test('should throw when sequence with zeroToTwo has three elements ', () {
+      String rawXml = '''
+        <root>
+          <e1></e1>
+          <e1></e1>
+          <e1></e1>
+          <e2></e2>
+          <e3></e3>
+        </root>
+      ''';
+
+      Map<dynamic, XmlQuantifier> expectedOrder = {
+        "e1": XmlQuantifier.zeroToTwo,
+        "e2": XmlQuantifier.required,
+        "e3": XmlQuantifier.optional,
+      };
+
+      var xmlElement = XmlDocument.parse(rawXml).rootElement;
+      expect(
+        () => validateSequence(xmlElement, expectedOrder),
+        throwsA(isA<InvalidXmlSequence>()),
+      );
+    });
   });
 }
