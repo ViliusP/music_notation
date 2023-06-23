@@ -4,6 +4,10 @@ import 'package:xml/xml.dart';
 /// Specifies the sequence of page, system, and staff layout elements
 /// that is common to both the defaults and print elements.
 class Layout {
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
+
   final PageLayout? page;
   final SystemLayout? system;
   final List<StaffLayout> staffs;
@@ -57,7 +61,8 @@ class Layout {
 
 /// Page layout can be defined both in score-wide defaults and in the print element.
 ///
-/// Page margins are specified either for both even and odd pages, or via separate odd and even page number values.
+/// Page margins are specified either for both even and odd pages,
+/// or via separate odd and even page number values.
 ///
 /// The type is not needed when used as part of a print element.
 /// If omitted when used in the defaults element, "both" is the default.
@@ -129,11 +134,14 @@ enum MarginType {
 ///
 /// If omitted when the page-margins type is used in the defaults element, "both" is the default value.
 class PageMargins {
-  AllMargins allMargins;
-  MarginType type;
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
 
   PageMargins({
-    required this.allMargins,
+    /// Specifies whether the margins apply to even pages, odd pages, or both.
+    /// This attribute is not needed when used as part of a <print> element.
+    /// The value is both if omitted when used in the <defaults> element.
     required this.type,
   });
 
@@ -240,12 +248,18 @@ class AllMargins {
 /// When used in the print element, the values apply to the current system only.
 /// This value is ignored for the first staff in a system.
 class StaffLayout {
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
+
+  /// Represents the vertical distance from the bottom line of the previous
+  /// staff in this system to the top line of the current staff.
   double? staffDistance;
 
-  /// The staff-number type indicates staff numbers within a multi-staff part.
+  /// Indicates staff numbers within a multi-staff part.
   /// Staves are numbered from top to bottom, with 1 being the top staff on a part.
   ///
-  /// Should be positive integer.
+  /// Must be positive integer.
   int? number;
 
   StaffLayout({
@@ -274,7 +288,7 @@ class StaffLayout {
   }
 }
 
-/// A system is a group of staves that are read and played simultaneously.
+/// Group of staves that are read and played simultaneously.
 ///
 /// System layout includes left and right margins and the vertical distance from the previous system.
 ///
@@ -283,19 +297,24 @@ class StaffLayout {
 /// The top system distance is measured from the page's top margin to the top line of the first system.
 /// It is ignored for all but the first system on a page.
 ///
-/// Sometimes the sum of measure widths in a system may not equal the system width specified by the layout elements due to roundoff or other errors.
+/// Sometimes the sum of measure widths in a system may not equal the system
+/// width specified by the layout elements due to roundoff or other errors.
 /// The behavior when reading MusicXML files in these cases is application-dependent.
-/// For instance, applications may find that the system layout data is more reliable than the sum of the measure widths, and adjust the measure widths accordingly.
+/// For instance, applications may find that the system layout data is more
+/// reliable than the sum of the measure widths, and adjust the measure widths accordingly.
 ///
-/// When used in the defaults element, the system-layout element defines a default appearance for all systems in the score.
-/// If no system-layout element is present in the defaults element, default system layout values are chosen by the application.
+/// When used in the defaults element, the [SystemLayout] element defines
+/// a default appearance for all systems in the score.
+/// If no [SystemLayout] element is present in the defaults element,
+/// default system layout values are chosen by the application.
 ///
-/// When used in the print element, the system-layout element affects the appearance of the current system only.
+/// When used in the print element, the [SystemLayout] element
+/// affects the appearance of the current system only.
 /// All other systems use the default values as determined by the defaults element.
 /// If any child elements are missing from the system-layout element in a print element,
 /// the values determined by the defaults element are used there as well.
-///
-/// This type of system-layout element need only be read from or written to the first visible part in the score.
+/// This type of system-layout element need only be read from or written
+/// to the first visible part in the score.
 class SystemLayout {
   // ------------------------- //
   // ------   Content   ------ //
@@ -303,35 +322,43 @@ class SystemLayout {
 
   /// System margins are relative to the page margins.
   /// Positive values indent and negative values reduce the margin size.
-  double leftMargin;
-  double rightMargin;
-  // SystemMargins? systemMargins; // Assuming SystemMargins class exists
-  double? systemDistance;
-  double? topSystemDistance;
-  SystemDividers? systemDividers; // Assuming SystemDividers class exists
+  HorizontalMargins? margins;
+
+  /// Distance that is measured from the bottom line of the previous system to
+  /// the top line of the current system.
+  ///
+  /// It is ignored for the first system on a page.
+  double? distance;
+
+  /// Distance that is measured from the page's top margin to the top line of the first system.
+  ///
+  /// It is ignored for all but the first system on a page.
+  double? topDistance;
+
+  /// Indicates the presence or absence of system dividers.
+  SystemDividers? dividers;
 
   SystemLayout({
-    this.leftMargin = 0, // TODO
-    this.rightMargin = 0, // TODO
-    this.systemDistance,
-    this.topSystemDistance,
-    this.systemDividers,
+    this.margins,
+    this.distance,
+    this.topDistance,
+    this.dividers,
   });
 
   factory SystemLayout.fromXml(XmlElement xmlElement) {
     return SystemLayout(
-      // systemMargins: xmlElement.getElement('system-margins') != null
-      //     ? SystemMargins.fromXml(xmlElement.getElement('system-margins')!)
-      //     : null,
-      systemDistance: xmlElement.getElement('system-distance') != null
+      margins: xmlElement.getElement('system-margins') != null
+          ? HorizontalMargins.fromXml(xmlElement.getElement('system-margins')!)
+          : null,
+      distance: xmlElement.getElement('system-distance') != null
           ? double.parse(xmlElement.getElement('system-distance')!.text)
           : null,
-      topSystemDistance: xmlElement.getElement('top-system-distance') != null
+      topDistance: xmlElement.getElement('top-system-distance') != null
           ? double.parse(xmlElement.getElement('top-system-distance')!.text)
           : null,
-      // systemDividers: xmlElement.getElement('system-dividers') != null
-      //     ? SystemDividers.fromXml(xmlElement.getElement('system-dividers')!)
-      //     : null,
+      dividers: xmlElement.getElement('system-dividers') != null
+          ? SystemDividers.fromXml(xmlElement.getElement('system-dividers')!)
+          : null,
     );
   }
 
@@ -341,14 +368,14 @@ class SystemLayout {
       // if (systemMargins != null) {
       //   builder.element('system-margins', nest: systemMargins!.toXml());
       // }
-      if (systemDistance != null) {
-        builder.element('system-distance', nest: systemDistance);
+      if (distance != null) {
+        builder.element('system-distance', nest: distance);
       }
-      if (topSystemDistance != null) {
-        builder.element('top-system-distance', nest: topSystemDistance);
+      if (topDistance != null) {
+        builder.element('top-system-distance', nest: topDistance);
       }
-      if (systemDividers != null) {
-        builder.element('system-dividers', nest: systemDividers!.toXml());
+      if (dividers != null) {
+        builder.element('system-dividers', nest: dividers!.toXml());
       }
     });
     return builder.buildDocument().rootElement;
@@ -365,29 +392,83 @@ class SystemLayout {
 ///
 /// When used in the print element, the system-dividers element affects the dividers that would appear between the current system and the previous system.
 class SystemDividers {
-  EmptyPrintObjectStyleAlign leftDivider;
-  EmptyPrintObjectStyleAlign rightDivider;
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
+
+  DividerPrintStyle left;
+  DividerPrintStyle right;
 
   SystemDividers({
-    required this.leftDivider,
-    required this.rightDivider,
+    required this.left,
+    required this.right,
   });
 
   factory SystemDividers.fromXml(XmlElement xmlElement) {
     return SystemDividers(
-      leftDivider: EmptyPrintObjectStyleAlign.fromXml(
-          xmlElement.getElement('left-divider')!),
-      rightDivider: EmptyPrintObjectStyleAlign.fromXml(
-          xmlElement.getElement('right-divider')!),
+      left: DividerPrintStyle.fromXml(
+        xmlElement.getElement('left-divider')!,
+      ),
+      right: DividerPrintStyle.fromXml(
+        xmlElement.getElement('right-divider')!,
+      ),
     );
   }
 
   XmlElement toXml() {
     var builder = XmlBuilder();
     builder.element('system-dividers', nest: () {
-      builder.element('left-divider', nest: leftDivider.toXml());
-      builder.element('right-divider', nest: rightDivider.toXml());
+      builder.element('left-divider', nest: left.toXml());
+      builder.element('right-divider', nest: right.toXml());
     });
+    return builder.buildDocument().rootElement;
+  }
+}
+
+/// The empty-print-style-align-object type represents an empty element with print-object and print-style-align attribute groups.
+class DividerPrintStyle extends PrintStyleAlign {
+  /// Specifies whether or not to print an object (e.g. a note or a rest).
+  ///
+  /// It is true (yes) by default.
+  bool printObject;
+
+  DividerPrintStyle({
+    this.printObject = true,
+    required super.horizontalAlignment,
+    required super.verticalAlignment,
+    required super.position,
+    required super.font,
+    required super.color,
+    });
+
+  factory DividerPrintStyle.fromXml(XmlElement xmlElement) {
+    bool? printObject = YesNo.toBool(xmlElement.innerText);
+
+    // Checks if provided value is "yes", "no" or nothing.
+    // If it is something different, it throws error;
+    if (xmlElement.innerText.isNotEmpty && printObject == null) {
+      // TODO: correct attribute
+      YesNo.generateValidationError(
+        "xmlElement.innerText",
+        xmlElement.innerText,
+      );
+    }
+
+    PrintStyleAlign printStyleAlign = PrintStyleAlign.fromXml(xmlElement);
+
+    return DividerPrintStyle(
+      printObject: printObject ?? true,
+      color: printStyleAlign.color,
+      font: printStyleAlign.font,
+      horizontalAlignment: printStyleAlign.horizontalAlignment,
+      position: printStyleAlign.position,
+      verticalAlignment: printStyleAlign.verticalAlignment,
+    );
+  }
+
+  XmlElement toXml() {
+    var builder = XmlBuilder();
+    builder.element('empty-print-object-style-align');
     return builder.buildDocument().rootElement;
   }
 }
