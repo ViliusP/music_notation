@@ -8,7 +8,18 @@ import 'package:xml/xml.dart';
 ///
 /// More information at [The \<midi-device\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/midi-device/)
 class MidiDevice {
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
+
+  /// In musicXML, it is content of midi-device element.
+  ///
+  /// Type of [string](https://www.w3.org/TR/xmlschema-2/#string). By definition, it can be empty.
   final String name;
+
+  // ------------------------- //
+  // ------ Attributes ------- //
+  // ------------------------- //
 
   /// A number from 1 to 16 that can be used with the unofficial MIDI 1.0 port (or cable) meta event.
   final int? port;
@@ -16,6 +27,8 @@ class MidiDevice {
   /// Refers to the score instrument assigned to this device.
   ///
   /// If missing, the device assignment affects all score instrument elements in the score part.
+  ///
+  /// Type of [IDREF](https://www.w3.org/TR/xmlschema-2/#IDREF). Cannot be empty.
   final String? id;
 
   MidiDevice({
@@ -27,7 +40,6 @@ class MidiDevice {
   factory MidiDevice.fromXml(XmlElement xmlElement) {
     String? portElement = xmlElement.getAttribute('port');
     int? maybePort = int.tryParse(xmlElement.getAttribute('port') ?? '');
-
     if (portElement != null &&
         (maybePort == null || !Midi.midi16.isValid(maybePort))) {
       String message = Midi.midi16.generateValidationError("port", portElement);
@@ -39,7 +51,6 @@ class MidiDevice {
     }
 
     String? id = xmlElement.getAttribute('id');
-
     if (id?.isEmpty == true) {
       throw MusicXmlFormatException(
         message: "'id' attribute in 'midi-device' cannot be empty",
@@ -47,9 +58,9 @@ class MidiDevice {
         source: id,
       );
     }
-    String? content = xmlElement.firstChild?.value;
 
-    if (xmlElement.children.length != 1 || content == null) {
+    String content = xmlElement.innerText;
+    if (xmlElement.childElements.isNotEmpty) {
       throw InvalidElementContentException(
         message: "'midi-device' must have only one text child",
         xmlElement: xmlElement,
@@ -72,6 +83,10 @@ class MidiDevice {
 /// The [MidiInstrument] can be a part of either the score instrument element
 /// at the start of a part, or the sound element within a part.
 class MidiInstrument {
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
+
   /// The midi-channel element specifies a MIDI 1.0 channel numbers ranging from 1 to 16.
   ///
   /// Type: midi-16.
@@ -112,6 +127,10 @@ class MidiInstrument {
   /// For elevation, 0 is level with the listener, 90 is directly above, and -90 is directly below.
   final double? elevation;
 
+  // ------------------------- //
+  // ------ Attributes ------- //
+  // ------------------------- //
+
   /// Refers to the score-instrument affected by the change
   final String id;
 
@@ -139,24 +158,48 @@ class MidiInstrument {
     'elevation': XmlQuantifier.optional,
   };
 
-  factory MidiInstrument.fromXml(XmlElement xmlElement) {
-    validateSequence(xmlElement, _xmlExpectedOrder);
-
-    XmlElement? midiChannelElement = xmlElement.getElement('midi-channel');
-    int? midiChannel = int.tryParse(
-      midiChannelElement?.firstChild?.value ?? '',
-    );
-    if (midiChannelElement != null &&
-        (midiChannel == null || !Midi.midi16.isValid(midiChannel))) {
-      throw MusicXmlFormatException(
-        message: "'midi-channel' content must be midi-16 data type",
+  static T? _parseMidiElements<T>({
+    required XmlElement xmlElement,
+    required String elementName,
+    required T? Function(String) parser,
+    required bool Function(T) isValid,
+    required String typeName,
+  }) {
+    XmlElement? element = xmlElement.getElement(elementName);
+    if (element?.childElements.isNotEmpty == true) {
+      throw InvalidElementContentException(
+        message: "'$elementName' content must be $typeName data type",
         xmlElement: xmlElement,
       );
     }
+    String? rawValue = element?.innerText;
+    T? value = parser(rawValue ?? "");
+    if (rawValue != null && (value == null || !isValid(value))) {
+      throw MusicXmlFormatException(
+        message: "'$elementName' content must be $typeName",
+        xmlElement: xmlElement,
+        source: rawValue,
+      );
+    }
+    return value;
+  }
 
+  factory MidiInstrument.fromXml(XmlElement xmlElement) {
+    validateSequence(xmlElement, _xmlExpectedOrder);
+
+    // midi-channel
+    int? midiChannel = _parseMidiElements<int>(
+      xmlElement: xmlElement,
+      elementName: 'midi-channel',
+      isValid: Midi.midi16.isValid,
+      parser: int.tryParse,
+      typeName: 'midi-16',
+    );
+
+    // midi-name
     XmlElement? midiNameElement = xmlElement.getElement('midi-name');
     String? midiName = midiNameElement?.innerText;
-    if (midiNameElement != null && midiName == null ||
+    if (midiName?.isEmpty == true &&
         midiNameElement?.childElements.isNotEmpty == true) {
       throw InvalidElementContentException(
         message: "'midi-name' must have text content",
@@ -164,82 +207,61 @@ class MidiInstrument {
       );
     }
 
-    XmlElement? midiBankElement = xmlElement.getElement('midi-bank');
-    int? midiBank = int.tryParse(
-      midiBankElement?.firstChild?.value ?? '',
+    // midi-bank
+    int? midiBank = _parseMidiElements<int>(
+      xmlElement: xmlElement,
+      elementName: 'midi-bank',
+      isValid: Midi.midi16384.isValid,
+      parser: int.tryParse,
+      typeName: 'midi-16384',
     );
-    if (midiBankElement != null &&
-        (midiBank == null || !Midi.midi16384.isValid(midiBank))) {
-      throw MusicXmlFormatException(
-        message: "'midi-bank' content must be midi-16384",
-        xmlElement: xmlElement,
-        source: midiBankElement.firstChild?.value,
-      );
-    }
 
-    XmlElement? midiProgramElement = xmlElement.getElement('midi-program');
-    int? midiProgram = int.tryParse(
-      midiProgramElement?.firstChild?.value ?? '',
+    // midi-program
+    int? midiProgram = _parseMidiElements<int>(
+      xmlElement: xmlElement,
+      elementName: 'midi-program',
+      isValid: Midi.midi128.isValid,
+      parser: int.tryParse,
+      typeName: 'midi-128',
     );
-    if (midiProgramElement != null &&
-        (midiProgram == null || !Midi.midi128.isValid(midiProgram))) {
-      throw MusicXmlFormatException(
-        message: "'midi-program' content must be midi-128",
-        xmlElement: xmlElement,
-        source: midiProgramElement.firstChild?.value,
-      );
-    }
 
-    XmlElement? midiUnpitchedElement = xmlElement.getElement('midi-unpitched');
-    int? midiUnpitched = int.tryParse(
-      midiUnpitchedElement?.firstChild?.value ?? '',
+    // midi-unpitched
+    int? midiUnpitched = _parseMidiElements<int>(
+      xmlElement: xmlElement,
+      elementName: 'midi-unpitched',
+      isValid: Midi.midi128.isValid,
+      parser: int.tryParse,
+      typeName: 'midi-128',
     );
-    if (midiUnpitchedElement != null &&
-        (midiUnpitched == null || !Midi.midi128.isValid(midiUnpitched))) {
-      throw MusicXmlFormatException(
-        message: "'midi-unpitched' content must be midi-128",
-        xmlElement: xmlElement,
-        source: midiUnpitchedElement.firstChild?.value,
-      );
-    }
 
-    XmlElement? volumeElement = xmlElement.getElement('volume');
-    double? volume = double.tryParse(
-      volumeElement?.firstChild?.value ?? '',
+    // volume
+    double? volume = _parseMidiElements<double>(
+      xmlElement: xmlElement,
+      elementName: 'volume',
+      isValid: Percent.isValid,
+      parser: double.tryParse,
+      typeName: 'percent',
     );
-    if (volumeElement != null && (volume == null || !Percent.isValid(volume))) {
-      throw MusicXmlFormatException(
-        message: "'volume' content must be percent (double between 1 and 100)",
-        xmlElement: xmlElement,
-        source: volumeElement.firstChild?.value,
-      );
-    }
 
-    XmlElement? panElement = xmlElement.getElement('pan');
-    double? pan = double.tryParse(
-      panElement?.firstChild?.value ?? '',
+    // pan
+    double? pan = _parseMidiElements<double>(
+      xmlElement: xmlElement,
+      elementName: 'pan',
+      isValid: RotationDegrees.isValid,
+      parser: double.tryParse,
+      typeName: 'rotation-degrees',
     );
-    if (panElement != null && (pan == null || !RotationDegrees.isValid(pan))) {
-      throw MusicXmlFormatException(
-        message: "'pan' content must be rotation-degrees",
-        xmlElement: xmlElement,
-        source: panElement.firstChild?.value,
-      );
-    }
 
-    XmlElement? elevationElement = xmlElement.getElement('elevation');
-    double? elevation = double.tryParse(
-      elevationElement?.firstChild?.value ?? '',
+    // elevation
+    double? elevation = _parseMidiElements<double>(
+      xmlElement: xmlElement,
+      elementName: 'elevation',
+      isValid: RotationDegrees.isValid,
+      parser: double.tryParse,
+      typeName: 'rotation-degrees',
     );
-    if (elevationElement != null &&
-        (elevation == null || !RotationDegrees.isValid(elevation))) {
-      throw MusicXmlFormatException(
-        message: "'elevation' content must be rotation-degrees",
-        xmlElement: xmlElement,
-        source: elevationElement.firstChild?.value,
-      );
-    }
 
+    // ID
     String? id = xmlElement.getAttribute("id");
 
     if (id == null || id.isEmpty) {
