@@ -124,17 +124,31 @@ class PageLayout {
     }
 
     double? height =
-        heightElement != null ? double.parse(heightElement.innerText) : null;
+        heightElement != null ? double.tryParse(heightElement.innerText) : null;
+    if (heightElement != null && height == null) {
+      throw InvalidMusicXmlType(
+        message: "'height' element must have 'double' type content",
+        xmlElement: xmlElement,
+      );
+    }
+
     double? width =
-        widthElement != null ? double.parse(widthElement.innerText) : null;
+        widthElement != null ? double.tryParse(widthElement.innerText) : null;
+    if (widthElement != null && width == null) {
+      throw InvalidMusicXmlType(
+        message: "'width' element must have 'double' type content",
+        xmlElement: xmlElement,
+      );
+    }
 
     if ((height == null) != (width == null)) {
       throw InvalidXmlElementException(
         message:
-            "Height and width elements should be both either null or non-null",
+            "'height' and 'width' elements should be both either null or non-null",
         xmlElement: xmlElement,
       );
     }
+
     return PageLayout(
       size: height == null && width == null
           ? null

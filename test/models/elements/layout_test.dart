@@ -83,10 +83,10 @@ void main() {
             <page-height>1760</page-height>
             <page-width>1360</page-width>
             <page-margins type="both">
-                <left-margin>80</left-margin>
-                <right-margin>80</right-margin>
-                <top-margin>80</top-margin>
-                <bottom-margin>80</bottom-margin>
+              <left-margin>80</left-margin>
+              <right-margin>80</right-margin>
+              <top-margin>80</top-margin>
+              <bottom-margin>80</bottom-margin>
             </page-margins>
           </page-layout>
         """;
@@ -99,6 +99,120 @@ void main() {
         expect(pageLayout.size?.width, 1360);
         expect(pageLayout.margins.length, 1);
         expect(pageLayout.margins[0].type, MarginType.both);
+      });
+
+      test("should throw on missing height and existing width", () {
+        String input = """
+          <page-layout>
+            <page-width>1360</page-width>
+            <page-margins type="both">
+              <left-margin>80</left-margin>
+              <right-margin>80</right-margin>
+              <top-margin>80</top-margin>
+              <bottom-margin>80</bottom-margin>
+            </page-margins>
+          </page-layout>
+        """;
+
+        expect(
+          () => PageLayout.fromXml(
+            XmlDocument.parse(input).rootElement,
+          ),
+          throwsA(isA<InvalidXmlSequence>()),
+        );
+      });
+      test("should throw on missing width and existing height", () {
+        String input = """
+          <page-layout>
+            <page-height>1760</page-height>
+            <page-margins type="both">
+              <left-margin>80</left-margin>
+              <right-margin>80</right-margin>
+              <top-margin>80</top-margin>
+              <bottom-margin>80</bottom-margin>
+            </page-margins>
+          </page-layout>
+        """;
+
+        expect(
+          () => PageLayout.fromXml(
+            XmlDocument.parse(input).rootElement,
+          ),
+          throwsA(isA<InvalidXmlSequence>()),
+        );
+      });
+      test("should throw on invalid height", () {
+        String input = """
+          <page-layout>
+            <page-height>foo</page-height>
+            <page-width>1360</page-width>
+            <page-margins type="both">
+              <left-margin>80</left-margin>
+              <right-margin>80</right-margin>
+              <top-margin>80</top-margin>
+              <bottom-margin>80</bottom-margin>
+            </page-margins>
+          </page-layout>
+        """;
+
+        expect(
+          () => PageLayout.fromXml(
+            XmlDocument.parse(input).rootElement,
+          ),
+          throwsA(isA<InvalidMusicXmlType>()),
+        );
+      });
+      test("should throw on invalid width", () {
+        String input = """
+          <page-layout>
+            <page-height>1</page-height>
+            <page-width>foo</page-width>
+            <page-margins type="both">
+              <left-margin>80</left-margin>
+              <right-margin>80</right-margin>
+              <top-margin>80</top-margin>
+              <bottom-margin>80</bottom-margin>
+            </page-margins>
+          </page-layout>
+        """;
+
+        expect(
+          () => PageLayout.fromXml(
+            XmlDocument.parse(input).rootElement,
+          ),
+          throwsA(isA<InvalidMusicXmlType>()),
+        );
+      });
+      test("should throw on three page margins", () {
+        String input = """
+          <page-layout>
+            <page-margins type="both">
+              <left-margin>80</left-margin>
+              <right-margin>80</right-margin>
+              <top-margin>80</top-margin>
+              <bottom-margin>80</bottom-margin>
+            </page-margins>
+            <page-margins type="both">
+              <left-margin>80</left-margin>
+              <right-margin>80</right-margin>
+              <top-margin>80</top-margin>
+              <bottom-margin>80</bottom-margin>
+            </page-margins>
+            <page-margins type="both">
+              <left-margin>80</left-margin>
+              <right-margin>80</right-margin>
+              <top-margin>80</top-margin>
+              <bottom-margin>80</bottom-margin>
+            </page-margins>            
+          </page-layout>
+        """;
+
+        expect(
+          () => PageLayout.fromXml(
+            XmlDocument.parse(input).rootElement,
+          ),
+          throwsA(isA<InvalidXmlSequence>()),
+        );
       });
     });
     group("system", () {});
