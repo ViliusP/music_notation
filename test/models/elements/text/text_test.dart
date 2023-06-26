@@ -117,7 +117,7 @@ void main() {
       expect(displayText.formatting.textRotation, 150);
     });
 
-    test('should throw expcetion when content is empty', () {
+    test('should throw exception when content is empty', () {
       String input = '''
         <accidental-text></accidental-text>
       ''';
@@ -128,7 +128,7 @@ void main() {
       );
     });
 
-    test('should throw expcetion when content is invalid', () {
+    test('should throw exception when content is not accidental value', () {
       String input = '''
         <accidental-text>foo-bar</accidental-text>
       ''';
@@ -136,6 +136,16 @@ void main() {
       expect(
         () => AccidentalText.fromXml(XmlDocument.parse(input).rootElement),
         throwsA(isA<MusicXmlFormatException>()),
+      );
+    });
+    test('should throw exception when content is invalid', () {
+      String input = '''
+        <accidental-text><foo></foo></accidental-text>
+      ''';
+
+      expect(
+        () => AccidentalText.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(isA<InvalidElementContentException>()),
       );
     });
   });
