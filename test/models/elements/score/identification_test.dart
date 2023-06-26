@@ -226,7 +226,7 @@ void main() {
       var rootElement = XmlDocument.parse(input).rootElement;
 
       expect(() => Supports.fromXml(rootElement),
-          throwsA(isA<InvalidMusicXmlType>()));
+          throwsA(isA<MusicXmlFormatException>()));
     });
 
     test(
@@ -238,7 +238,7 @@ void main() {
 
       expect(
         () => Supports.fromXml(rootElement),
-        throwsA(isA<InvalidMusicXmlType>()),
+        throwsA(isA<MusicXmlFormatException>()),
       );
     });
 
