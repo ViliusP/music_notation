@@ -278,7 +278,7 @@ class YesNo {
         attributeName,
         rawAttribute,
       );
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: message,
         xmlElement: xmlElement,
       );
