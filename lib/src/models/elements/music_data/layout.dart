@@ -108,7 +108,7 @@ class PageLayout {
     XmlElement? heightElement = xmlElement.getElement('page-height');
     if (heightElement != null &&
         heightElement.firstChild?.nodeType != XmlNodeType.TEXT) {
-      throw InvalidXmlElementException(
+      throw InvalidElementContentException(
         message: "'page-height' must have text content ",
         xmlElement: xmlElement,
       );
@@ -117,7 +117,7 @@ class PageLayout {
     XmlElement? widthElement = xmlElement.getElement('page-width');
     if (widthElement != null &&
         widthElement.firstChild?.nodeType != XmlNodeType.TEXT) {
-      throw InvalidXmlElementException(
+      throw InvalidElementContentException(
         message: "'page-width' must have text content ",
         xmlElement: xmlElement,
       );
@@ -126,7 +126,7 @@ class PageLayout {
     double? height =
         heightElement != null ? double.tryParse(heightElement.innerText) : null;
     if (heightElement != null && height == null) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: "'height' element must have 'double' type content",
         xmlElement: xmlElement,
       );
@@ -135,16 +135,8 @@ class PageLayout {
     double? width =
         widthElement != null ? double.tryParse(widthElement.innerText) : null;
     if (widthElement != null && width == null) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: "'width' element must have 'double' type content",
-        xmlElement: xmlElement,
-      );
-    }
-
-    if ((height == null) != (width == null)) {
-      throw InvalidXmlElementException(
-        message:
-            "'height' and 'width' elements should be both either null or non-null",
         xmlElement: xmlElement,
       );
     }
@@ -497,7 +489,17 @@ class SystemLayout {
     this.dividers,
   });
 
+  // Field(s): quantifier
+  static const Map<String, XmlQuantifier> _xmlExpectedOrder = {
+    'system-margins': XmlQuantifier.optional,
+    'system-distance': XmlQuantifier.optional,
+    'top-system-distance': XmlQuantifier.optional,
+    'system-dividers': XmlQuantifier.optional,
+  };
+
   factory SystemLayout.fromXml(XmlElement xmlElement) {
+    validateSequence(xmlElement, _xmlExpectedOrder);
+
     return SystemLayout(
       margins: xmlElement.getElement('system-margins') != null
           ? HorizontalMargins.fromXml(xmlElement.getElement('system-margins')!)
@@ -552,8 +554,23 @@ class SystemDividers {
   // ------   Content   ------ //
   // ------------------------- //
 
-  DividerPrintStyle left;
-  DividerPrintStyle right;
+  /// Indicates the presence or absence of a system divider
+  /// (also known as a system separation mark) displayed on the left side of the page.
+  ///
+  /// The default vertical position is half the system distance
+  /// value from the top of the system that is below the divider.
+  ///
+  /// The default horizontal position is the left system margin.
+  final DividerPrintStyle left;
+
+  /// Indicates the presence or absence of a system divider
+  /// (also known as a system separation mark) displayed on the right side of the page.
+  ///
+  /// The default vertical position is right the system distance
+  /// value from the top of the system that is below the divider.
+  ///
+  /// The default horizontal position is the right system margin.
+  final DividerPrintStyle right;
 
   SystemDividers({
     required this.left,
@@ -583,6 +600,10 @@ class SystemDividers {
 
 /// Represents an empty element with [printObject] and [PrintStyleAlign] attribute groups.
 class DividerPrintStyle extends PrintStyleAlign {
+  // ------------------------- //
+  // ------ Attributes ------- //
+  // ------------------------- //
+
   /// Specifies whether or not to print an object (e.g. a note or a rest).
   ///
   /// It is true (yes) by default.

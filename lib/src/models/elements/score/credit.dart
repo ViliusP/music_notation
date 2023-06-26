@@ -77,7 +77,7 @@ sealed class Credit {
         rethrow;
       }
     }
-    throw InvalidXmlElementException(
+    throw InvalidElementContentException(
       message:
           "Credit must have 'credit-image' or <credit-words> or <credit-symbol>.",
       xmlElement: xmlElement,
@@ -88,10 +88,11 @@ sealed class Credit {
     String? rawPage = xmlElement.getAttribute("page");
     int? page = int.tryParse(rawPage ?? "");
     if (rawPage != null && (page == null || page < 1)) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message:
             "'page' attribute in 'credit' element must be positive integer",
         xmlElement: xmlElement,
+        source: rawPage,
       );
     }
     page ??= 1;

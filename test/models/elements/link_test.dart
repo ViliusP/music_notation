@@ -52,7 +52,7 @@ void main() {
         () => Link.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidMusicXmlType>()),
+        throwsA(isA<MusicXmlFormatException>()),
       );
     });
     test('should throw on empty position', () {
@@ -64,7 +64,7 @@ void main() {
         () => Link.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidMusicXmlType>()),
+        throwsA(isA<MusicXmlFormatException>()),
       );
     });
     test('should throw on invalid position', () {
@@ -76,7 +76,7 @@ void main() {
         () => Link.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidMusicXmlType>()),
+        throwsA(isA<MusicXmlFormatException>()),
       );
     });
   });
@@ -90,7 +90,7 @@ void main() {
         () => LinkAttributes.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidMusicXmlType>()),
+        throwsA(isA<MusicXmlFormatException>()),
       );
     });
     test('should throw on wrong actuate', () {
@@ -102,7 +102,7 @@ void main() {
         () => LinkAttributes.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidMusicXmlType>()),
+        throwsA(isA<MusicXmlFormatException>()),
       );
     });
     test('should have show property XLinkShow.replace on default', () {

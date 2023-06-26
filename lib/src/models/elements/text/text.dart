@@ -230,12 +230,13 @@ enum TextDirection {
       rawValue ?? "",
     );
     if (rawValue != null && value == null) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: generateValidationError(
           CommonAttributes.justify,
           rawValue,
         ),
         xmlElement: xmlElement,
+        source: rawValue,
       );
     }
     return value;
@@ -336,12 +337,13 @@ enum HorizontalAlignment {
       rawJustify ?? "",
     );
     if (rawJustify != null && justify == null) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: generateValidationError(
           CommonAttributes.justify,
           rawJustify,
         ),
         xmlElement: xmlElement,
+        source: rawJustify,
       );
     }
     return justify;
@@ -393,12 +395,13 @@ enum EnclosureShape {
       rawValue ?? "",
     );
     if (rawValue != null && value == null) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: generateValidationError(
           CommonAttributes.enclosureShape,
           rawValue,
         ),
         xmlElement: xmlElement,
+        source: rawValue,
       );
     }
     return value;
@@ -477,9 +480,10 @@ class Font {
       try {
         fontSize = FontSize.fromString(rawSize);
       } catch (e) {
-        throw InvalidMusicXmlType(
+        throw MusicXmlFormatException(
           message: "Font size must be double or CssFontSize",
           xmlElement: xmlElement,
+          source: rawSize,
         );
       }
     }
@@ -487,18 +491,20 @@ class Font {
     String? rawFontStyle = xmlElement.getAttribute('font-style');
     FontStyle? fontStyle = FontStyle.fromString(rawFontStyle ?? '');
     if (rawFontStyle != null && fontStyle == null) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: "Font style must be normal or italic",
         xmlElement: xmlElement,
+        source: rawFontStyle,
       );
     }
 
     String? rawFontWeight = xmlElement.getAttribute('font-weight');
     FontWeight? fontWeight = FontWeight.fromString(rawFontWeight ?? '');
     if (rawFontWeight != null && fontWeight == null) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: "Font weight must be normal or bold",
         xmlElement: xmlElement,
+        source: rawFontWeight,
       );
     }
     return Font(

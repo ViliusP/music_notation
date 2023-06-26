@@ -83,7 +83,7 @@ enum AccidentalValue {
   static AccidentalValue fromXml(XmlElement xmlElement) {
     if (xmlElement.children.length != 1 ||
         xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
-      throw InvalidXmlElementException(
+      throw InvalidElementContentException(
         message:
             "${xmlElement.name} element must contain only one children - accidental-value",
         xmlElement: xmlElement,
@@ -93,7 +93,7 @@ enum AccidentalValue {
     String rawValue = xmlElement.children.first.value!;
     AccidentalValue? value = AccidentalValue.fromString(rawValue);
     if (value == null) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: generateValidationError(
           rawValue,
         ),

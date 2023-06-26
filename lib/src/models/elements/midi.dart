@@ -31,24 +31,26 @@ class MidiDevice {
     if (portElement != null &&
         (maybePort == null || !Midi.midi16.isValid(maybePort))) {
       String message = Midi.midi16.generateValidationError("port", portElement);
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: message,
         xmlElement: xmlElement,
+        source: portElement,
       );
     }
 
     String? id = xmlElement.getAttribute('id');
 
     if (id?.isEmpty == true) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: "'id' attribute in 'midi-device' cannot be empty",
         xmlElement: xmlElement,
+        source: id,
       );
     }
     String? content = xmlElement.firstChild?.value;
 
     if (xmlElement.children.length != 1 || content == null) {
-      throw InvalidXmlElementException(
+      throw InvalidElementContentException(
         message: "'midi-device' must have only one text child",
         xmlElement: xmlElement,
       );
@@ -146,7 +148,7 @@ class MidiInstrument {
     );
     if (midiChannelElement != null &&
         (midiChannel == null || !Midi.midi16.isValid(midiChannel))) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: "'midi-channel' content must be midi-16 data type",
         xmlElement: xmlElement,
       );
@@ -155,7 +157,7 @@ class MidiInstrument {
     XmlElement? midiNameElement = xmlElement.getElement('midi-name');
     String? midiName = midiNameElement?.firstChild?.value;
     if (midiNameElement != null && (midiName == null || midiName.isEmpty)) {
-      throw InvalidXmlElementException(
+      throw InvalidElementContentException(
         message: "'midi-name' must have non empty text content",
         xmlElement: xmlElement,
       );
@@ -167,9 +169,10 @@ class MidiInstrument {
     );
     if (midiBankElement != null &&
         (midiBank == null || !Midi.midi16384.isValid(midiBank))) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: "'midi-bank' content must be midi-16384",
         xmlElement: xmlElement,
+        source: midiBankElement.firstChild?.value,
       );
     }
 
@@ -179,9 +182,10 @@ class MidiInstrument {
     );
     if (midiProgramElement != null &&
         (midiProgram == null || !Midi.midi128.isValid(midiProgram))) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: "'midi-program' content must be midi-128",
         xmlElement: xmlElement,
+        source: midiProgramElement.firstChild?.value,
       );
     }
 
@@ -191,9 +195,10 @@ class MidiInstrument {
     );
     if (midiUnpitchedElement != null &&
         (midiUnpitched == null || !Midi.midi128.isValid(midiUnpitched))) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: "'midi-unpitched' content must be midi-128",
         xmlElement: xmlElement,
+        source: midiUnpitchedElement.firstChild?.value,
       );
     }
 
@@ -202,9 +207,10 @@ class MidiInstrument {
       volumeElement?.firstChild?.value ?? '',
     );
     if (volumeElement != null && (volume == null || !Percent.isValid(volume))) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: "'volume' content must be percent (double between 1 and 100)",
         xmlElement: xmlElement,
+        source: volumeElement.firstChild?.value,
       );
     }
 
@@ -213,9 +219,10 @@ class MidiInstrument {
       panElement?.firstChild?.value ?? '',
     );
     if (panElement != null && (pan == null || !RotationDegrees.isValid(pan))) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: "'pan' content must be rotation-degrees",
         xmlElement: xmlElement,
+        source: panElement.firstChild?.value,
       );
     }
 
@@ -225,9 +232,10 @@ class MidiInstrument {
     );
     if (elevationElement != null &&
         (elevation == null || !RotationDegrees.isValid(elevation))) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: "'elevation' content must be rotation-degrees",
         xmlElement: xmlElement,
+        source: elevationElement.firstChild?.value,
       );
     }
 

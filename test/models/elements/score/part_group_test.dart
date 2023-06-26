@@ -80,7 +80,7 @@ void main() {
       expect(
         // ignore: deprecated_member_use_from_same_package
         () => GroupName.fromXml(rootElement),
-        throwsA(isA<InvalidMusicXmlType>()),
+        throwsA(isA<MusicXmlFormatException>()),
       );
     });
     test('Should throw error when content is something other than text', () {
@@ -97,7 +97,7 @@ void main() {
       expect(
         // ignore: deprecated_member_use_from_same_package
         () => GroupName.fromXml(rootElement),
-        throwsA(isA<InvalidXmlElementException>()),
+        throwsA(isA<InvalidElementContentException>()),
       );
     });
   });
@@ -140,7 +140,7 @@ void main() {
         () => GroupSymbol.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidMusicXmlType>()),
+        throwsA(isA<MusicXmlFormatException>()),
       );
     });
   });
@@ -171,7 +171,7 @@ void main() {
         () => GroupBarline.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidMusicXmlType>()),
+        throwsA(isA<MusicXmlFormatException>()),
       );
     });
   });

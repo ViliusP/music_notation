@@ -410,7 +410,7 @@ void main() {
         () => PartLink.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidMusicXmlType>()),
+        throwsA(isA<MusicXmlFormatException>()),
       );
     });
   });

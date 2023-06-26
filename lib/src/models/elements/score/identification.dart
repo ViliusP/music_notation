@@ -146,9 +146,10 @@ sealed class Encoding {
       case Supports._xmlElementName:
         return Supports.fromXml(xmlElement);
       default:
-        throw InvalidMusicXmlType(
+        throw MusicXmlFormatException(
           message: "'${xmlElement.name}' cannot be Encoding",
           xmlElement: xmlElement,
+          source: xmlElement.name.local,
         );
     }
   }
@@ -168,7 +169,7 @@ class EncodingDate implements Encoding {
   factory EncodingDate.fromXml(XmlElement xmlElement) {
     if (xmlElement.children.length != 1 ||
         xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
-      throw InvalidXmlElementException(
+      throw InvalidElementContentException(
         message: "Group name element should contain only text",
         xmlElement: xmlElement,
       );
@@ -192,12 +193,14 @@ class Software implements Encoding {
   factory Software.fromXml(XmlElement xmlElement) {
     if (xmlElement.children.length != 1 ||
         xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
-      throw InvalidXmlElementException(
+      throw InvalidElementContentException(
         message: "Group name element should contain only text",
         xmlElement: xmlElement,
       );
     }
-    return Software(value: xmlElement.children.first.value!);
+    return Software(
+      value: xmlElement.children.first.value!,
+    );
   }
 }
 
@@ -231,12 +234,14 @@ class EncodingDescription implements Encoding {
   factory EncodingDescription.fromXml(XmlElement xmlElement) {
     if (xmlElement.children.length != 1 ||
         xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
-      throw InvalidXmlElementException(
+      throw InvalidElementContentException(
         message: "Group name element should contain only text",
         xmlElement: xmlElement,
       );
     }
-    return EncodingDescription(value: xmlElement.children.first.value!);
+    return EncodingDescription(
+      value: xmlElement.children.first.value!,
+    );
   }
 }
 
@@ -293,7 +298,7 @@ class Supports implements Encoding {
     var type = YesNo.toBool(typeAttribute);
 
     if (type == null) {
-      throw InvalidXmlElementException(
+      throw MusicXmlFormatException(
         message: "Invalid or missing 'type' attribute",
         xmlElement: xmlElement,
       );
@@ -309,7 +314,7 @@ class Supports implements Encoding {
     }
 
     if (!Nmtoken.validate(element)) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: "Attribute 'element' is not a valid NMTOKEN: $element",
         xmlElement: xmlElement,
       );
@@ -318,7 +323,7 @@ class Supports implements Encoding {
     var attribute = xmlElement.getAttribute('attribute');
 
     if (attribute != null && !Nmtoken.validate(attribute)) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: "Attribute 'attribute' is not a valid NMTOKEN: $attribute",
         xmlElement: xmlElement,
       );
@@ -352,7 +357,7 @@ class MiscellaneousField {
     // Content parsing:
     if (xmlElement.children.length != 1 ||
         xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
-      throw InvalidXmlElementException(
+      throw InvalidElementContentException(
         message: "'miscellaneous-field' element should contain only text",
         xmlElement: xmlElement,
       );

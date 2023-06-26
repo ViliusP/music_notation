@@ -95,11 +95,12 @@ enum XmlSpace {
     String? rawXmlSpace = xmlElement.getAttribute(CommonAttributes.xmlSpace);
     XmlSpace? xmlSpace = fromString(rawXmlSpace ?? "");
     if (rawXmlSpace != null && xmlSpace == null) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: generateValidationError(
           CommonAttributes.justify,
           rawXmlSpace,
         ),
+        source: rawXmlSpace,
         xmlElement: xmlElement,
       );
     }

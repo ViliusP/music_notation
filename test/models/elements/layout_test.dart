@@ -159,7 +159,7 @@ void main() {
           () => PageLayout.fromXml(
             XmlDocument.parse(input).rootElement,
           ),
-          throwsA(isA<InvalidMusicXmlType>()),
+          throwsA(isA<MusicXmlFormatException>()),
         );
       });
       test("should throw on invalid width", () {
@@ -180,7 +180,7 @@ void main() {
           () => PageLayout.fromXml(
             XmlDocument.parse(input).rootElement,
           ),
-          throwsA(isA<InvalidMusicXmlType>()),
+          throwsA(isA<MusicXmlFormatException>()),
         );
       });
       test("should throw on three page margins", () {

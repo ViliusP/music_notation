@@ -124,7 +124,7 @@ void main() {
 
       expect(
         () => AccidentalText.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidXmlElementException>()),
+        throwsA(isA<MusicXmlFormatException>()),
       );
     });
 
@@ -135,7 +135,7 @@ void main() {
 
       expect(
         () => AccidentalText.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidMusicXmlType>()),
+        throwsA(isA<MusicXmlFormatException>()),
       );
     });
   });
@@ -193,7 +193,7 @@ void main() {
         () => Font.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidMusicXmlType>()),
+        throwsA(isA<MusicXmlFormatException>()),
       );
     });
     test('should throw on parsing invalid font size', () {
@@ -205,7 +205,7 @@ void main() {
         () => Font.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidMusicXmlType>()),
+        throwsA(isA<MusicXmlFormatException>()),
       );
     });
     // Style
@@ -229,7 +229,7 @@ void main() {
         () => Font.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidMusicXmlType>()),
+        throwsA(isA<MusicXmlFormatException>()),
       );
     });
     test('should throw on parsing invalid font style', () {
@@ -241,7 +241,7 @@ void main() {
         () => Font.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidMusicXmlType>()),
+        throwsA(isA<MusicXmlFormatException>()),
       );
     });
   });
@@ -266,7 +266,7 @@ void main() {
       () => Font.fromXml(
         XmlDocument.parse(input).rootElement,
       ),
-      throwsA(isA<InvalidMusicXmlType>()),
+      throwsA(isA<MusicXmlFormatException>()),
     );
   });
   test('should throw on parsing invalid font style', () {
@@ -278,7 +278,7 @@ void main() {
       () => Font.fromXml(
         XmlDocument.parse(input).rootElement,
       ),
-      throwsA(isA<InvalidMusicXmlType>()),
+      throwsA(isA<MusicXmlFormatException>()),
     );
   });
 }

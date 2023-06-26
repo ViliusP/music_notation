@@ -22,9 +22,9 @@ enum GroupSymbolValue {
   static GroupSymbolValue fromXml(XmlElement xmlElement) {
     if (xmlElement.children.length != 1 ||
         xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
-      throw InvalidXmlElementException(
+      throw InvalidElementContentException(
         message:
-            "${xmlElement.name} element should contain only one children - accidental-value",
+            "'${xmlElement.name}' element should contain only one children - accidental-value",
         xmlElement: xmlElement,
       );
     }
@@ -32,10 +32,11 @@ enum GroupSymbolValue {
     String rawValue = xmlElement.children.first.value!;
     GroupSymbolValue? value = GroupSymbolValue.fromString(rawValue);
     if (value == null) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: generateValidationError(
           rawValue,
         ),
+        source: rawValue,
         xmlElement: xmlElement,
       );
     }
@@ -49,5 +50,5 @@ enum GroupSymbolValue {
   ///
   /// Returns a validation error message indicating that the value is not a valid group-symbol-value.
   static String generateValidationError(String value) =>
-      "Content is not a grup-symbol-value: $value";
+      "Content is not a group-symbol-value: $value";
 }

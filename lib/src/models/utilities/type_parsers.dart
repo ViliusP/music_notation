@@ -148,12 +148,13 @@ class RotationDegrees {
     }
     double? rotation = double.tryParse(rawRotation);
     if (rotation == null || !isValid(rotation)) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: generateValidationError(
           CommonAttributes.rotation,
           rawRotation,
         ),
         xmlElement: xmlElement,
+        source: rawRotation,
       );
     }
     return rotation;
@@ -178,12 +179,13 @@ class NumberOrNormal {
     }
     double? rotation = double.tryParse(rawNumberOrNormal);
     if (rotation == null) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: generateValidationError(
           attributeName,
           rawNumberOrNormal,
         ),
         xmlElement: xmlElement,
+        source: rawNumberOrNormal,
       );
     }
     return rotation;
@@ -207,7 +209,7 @@ class AccidentalSmuflGlyphName {
     return _pattern.hasMatch(value);
   }
 
-  /// generates an error message if the given SmuflGlyphName is invalid.
+  /// Generates an error message if the given SmuflGlyphName is invalid.
   static String generateValidationError(String attributeName, String value) =>
       "Attribute '$attributeName' is not a valid accidental smufl glyph name: $value";
 
@@ -220,9 +222,10 @@ class AccidentalSmuflGlyphName {
     if (smufl == null || validate(smufl)) {
       return smufl;
     }
-    throw InvalidMusicXmlType(
+    throw MusicXmlFormatException(
       message: "$smufl is not accidental smufl glyph",
       xmlElement: xmlElement,
+      source: smufl,
     );
   }
 }

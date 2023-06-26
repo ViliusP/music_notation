@@ -261,11 +261,12 @@ enum GroupBarlineValue {
     String rawValue = xmlElement.children.first.value!;
     GroupBarlineValue? value = GroupBarlineValue.fromString(rawValue);
     if (value == null) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: generateValidationError(
           rawValue,
         ),
         xmlElement: xmlElement,
+        source: rawValue,
       );
     }
     return value;

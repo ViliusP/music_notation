@@ -54,9 +54,10 @@ class Link implements MusicDataElement {
 
     if (rawElementPosition != null &&
         (elementPosition == null || elementPosition < 1)) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: "position in 'link' must be positive integer",
         xmlElement: xmlElement,
+        source: rawElementPosition,
       );
     }
 
@@ -145,9 +146,10 @@ class LinkAttributes {
     }
 
     if (!MusicXMLAnyURI.isValid(href)) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: "xlink:href is not type of anyURI",
         xmlElement: xmlElement,
+        source: href,
       );
     }
 
@@ -155,9 +157,10 @@ class LinkAttributes {
     XLinkShow? show = XLinkShow.parse(rawShow);
 
     if (show == null) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: "'xlink:show' attribute is a wrong type",
         xmlElement: xmlElement,
+        source: rawShow,
       );
     }
 
@@ -165,9 +168,10 @@ class LinkAttributes {
     XLinkActuate? actuate = XLinkActuate.parse(rawActuate);
 
     if (actuate == null) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: "'xlink:actuate' attribute is a wrong type",
         xmlElement: xmlElement,
+        source: rawActuate,
       );
     }
 

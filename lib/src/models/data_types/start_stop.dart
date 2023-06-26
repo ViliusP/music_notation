@@ -41,9 +41,10 @@ enum StartStop {
 
     StartStop? value = StartStop.fromString(rawValue);
     if (value == null) {
-      throw InvalidMusicXmlType(
+      throw MusicXmlFormatException(
         message: generateValidationError(rawValue),
         xmlElement: xmlElement,
+        source: rawValue,
       );
     }
     return value;

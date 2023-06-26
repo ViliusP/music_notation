@@ -28,18 +28,18 @@ abstract class MusicXmlException implements Exception {
 /// You can then use this exception in your parsing code as follows:
 /// ```dart
 /// if (xmlElement.isEmpty) {
-///   throw InvalidContentElementException(
+///   throw InvalidElementContentException(
 ///     message: 'The element "${xmlElement.name}" is unexpectedly empty.',
 ///     xmlElement: xmlElement,
 ///   );
 /// } else if (xmlElement.hasElement) {
-///   throw InvalidContentElementException(
+///   throw InvalidElementContentException(
 ///     message: 'The element "${xmlElement.name}" contains unexpected child elements.',
 ///     xmlElement: xmlElement,
 ///   );
 /// }
 /// ```
-class InvalidContentElementException implements MusicXmlException {
+class InvalidElementContentException implements MusicXmlException {
   /// A message that describes the error in detail.
   @override
   final String message;
@@ -48,7 +48,7 @@ class InvalidContentElementException implements MusicXmlException {
   @override
   final XmlElement xmlElement;
 
-  InvalidContentElementException({
+  InvalidElementContentException({
     required this.message,
     required this.xmlElement,
   });
@@ -215,6 +215,6 @@ class InvalidXmlSequence implements MusicXmlException {
   String toString() {
     String xml = xmlElement.toXmlString(pretty: true);
 
-    return 'InvalidMusicXmlType: $message\n$xml\n$sequence';
+    return 'InvalidXmlSequence: $message\n$xml\n$sequence';
   }
 }
