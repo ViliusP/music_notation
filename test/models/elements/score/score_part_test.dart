@@ -257,7 +257,7 @@ void main() {
         () => ScorePart.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidXmlSequence>()),
+        throwsA(isA<XmlSequenceException>()),
       );
     });
   });
@@ -274,7 +274,7 @@ void main() {
         () => PartLink.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidXmlSequence>()),
+        throwsA(isA<XmlSequenceException>()),
       );
     });
     // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/instrument-link-element/
@@ -429,7 +429,7 @@ void main() {
         () => Player.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidXmlSequence>()),
+        throwsA(isA<XmlSequenceException>()),
       );
     });
     test("Should throw on missing player names", () {
@@ -442,7 +442,7 @@ void main() {
         () => Player.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidXmlSequence>()),
+        throwsA(isA<XmlSequenceException>()),
       );
     });
     test("Should throw on empty ID", () {

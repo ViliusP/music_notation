@@ -54,7 +54,7 @@ void main() {
 
       expect(
         () => Identification.fromXml(rootElement),
-        throwsA(isA<InvalidXmlSequence>()),
+        throwsA(isA<XmlSequenceException>()),
       );
     });
   });

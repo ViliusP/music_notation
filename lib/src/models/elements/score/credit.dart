@@ -65,7 +65,7 @@ sealed class Credit {
     try {
       return TextCredit.fromXml(xmlElement);
     } catch (e) {
-      if (e.runtimeType != InvalidXmlSequence) {
+      if (e.runtimeType != XmlSequenceException) {
         rethrow;
       }
     }
@@ -73,7 +73,7 @@ sealed class Credit {
     try {
       return ImageCredit.fromXml(xmlElement);
     } catch (e) {
-      if (e.runtimeType != InvalidXmlSequence) {
+      if (e.runtimeType != XmlSequenceException) {
         rethrow;
       }
     }

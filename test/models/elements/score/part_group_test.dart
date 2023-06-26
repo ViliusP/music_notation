@@ -46,7 +46,7 @@ void main() {
 
       expect(
         () => PartList.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidXmlSequence>()),
+        throwsA(isA<XmlSequenceException>()),
       );
     });
   });

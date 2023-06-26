@@ -56,7 +56,7 @@ void main() {
 
       expect(
         () => validateSequence(xmlElement, expectedOrder),
-        throwsA(isA<InvalidXmlSequence>()),
+        throwsA(isA<XmlSequenceException>()),
       );
     });
     test('should validate empty with all optional expected', () {
@@ -159,7 +159,7 @@ void main() {
 
       expect(
         () => validateSequence(xmlElement, expectedOrder),
-        throwsA(isA<InvalidXmlSequence>()),
+        throwsA(isA<XmlSequenceException>()),
       );
     });
     test('should validate when oneOrMore, required and optional expected', () {
@@ -490,7 +490,7 @@ void main() {
       var xmlElement = XmlDocument.parse(rawXml).rootElement;
       expect(
         () => validateSequence(xmlElement, expectedOrder),
-        throwsA(isA<InvalidXmlSequence>()),
+        throwsA(isA<XmlSequenceException>()),
       );
     });
 
@@ -515,7 +515,7 @@ void main() {
       var xmlElement = XmlDocument.parse(rawXml).rootElement;
       expect(
         () => validateSequence(xmlElement, expectedOrder),
-        throwsA(isA<InvalidXmlSequence>()),
+        throwsA(isA<XmlSequenceException>()),
       );
     });
     test('should validate only direct children', () {
@@ -625,7 +625,7 @@ void main() {
       var xmlElement = XmlDocument.parse(rawXml).rootElement;
       expect(
         () => validateSequence(xmlElement, expectedOrder),
-        throwsA(isA<InvalidXmlSequence>()),
+        throwsA(isA<XmlSequenceException>()),
       );
     });
   });

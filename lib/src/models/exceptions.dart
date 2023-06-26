@@ -185,7 +185,7 @@ class MissingXmlAttribute implements MusicXmlException {
 /// Specific type of MusicXmlException.
 ///
 /// It is used when the sequence of XML elements in the document is incorrect.
-class InvalidXmlSequence implements MusicXmlException {
+class XmlSequenceException implements MusicXmlException {
   @override
   final String message;
 
@@ -197,7 +197,7 @@ class InvalidXmlSequence implements MusicXmlException {
   /// It's useful for debugging because you can compare it with the actual sequence in the XML document.
   final Map<dynamic, XmlQuantifier> sequence;
 
-  const InvalidXmlSequence({
+  const XmlSequenceException({
     required this.message,
     required this.xmlElement,
     required this.sequence,
@@ -207,6 +207,6 @@ class InvalidXmlSequence implements MusicXmlException {
   String toString() {
     String xml = xmlElement.toXmlString(pretty: true);
 
-    return 'InvalidXmlSequence: $message\n$xml\n$sequence';
+    return 'XmlSequenceException: $message\n$xml\n$sequence';
   }
 }

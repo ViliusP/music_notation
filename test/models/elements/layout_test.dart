@@ -118,7 +118,7 @@ void main() {
           () => PageLayout.fromXml(
             XmlDocument.parse(input).rootElement,
           ),
-          throwsA(isA<InvalidXmlSequence>()),
+          throwsA(isA<XmlSequenceException>()),
         );
       });
       test("should throw on missing width and existing height", () {
@@ -138,7 +138,7 @@ void main() {
           () => PageLayout.fromXml(
             XmlDocument.parse(input).rootElement,
           ),
-          throwsA(isA<InvalidXmlSequence>()),
+          throwsA(isA<XmlSequenceException>()),
         );
       });
       test("should throw on invalid height", () {
@@ -341,7 +341,7 @@ void main() {
 
       expect(
         () => PageMargins.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidXmlSequence>()),
+        throwsA(isA<XmlSequenceException>()),
       );
     });
     test("should throw if left margin is invalid", () {
@@ -356,7 +356,7 @@ void main() {
 
       expect(
         () => PageMargins.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidXmlElementException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
     test("should throw if left margin is empty", () {
@@ -371,7 +371,7 @@ void main() {
 
       expect(
         () => PageMargins.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidXmlElementException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
     test("should throw if right margin is missing", () {
@@ -385,7 +385,7 @@ void main() {
 
       expect(
         () => PageMargins.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidXmlSequence>()),
+        throwsA(isA<XmlSequenceException>()),
       );
     });
     test("should throw if right margin is invalid", () {
@@ -400,7 +400,7 @@ void main() {
 
       expect(
         () => PageMargins.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidXmlElementException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
     test("should throw if right margin is empty", () {
@@ -415,7 +415,7 @@ void main() {
 
       expect(
         () => PageMargins.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidXmlElementException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
     test("should throw if 'top margin' element is missing", () {
@@ -429,7 +429,7 @@ void main() {
 
       expect(
         () => PageMargins.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidXmlSequence>()),
+        throwsA(isA<XmlSequenceException>()),
       );
     });
     test("should throw if top margin is invalid", () {
@@ -444,7 +444,7 @@ void main() {
 
       expect(
         () => PageMargins.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidXmlElementException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
     test("should throw if top margin is empty", () {
@@ -459,7 +459,7 @@ void main() {
 
       expect(
         () => PageMargins.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidXmlElementException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
     test("should throw if bottom margin is missing", () {
@@ -473,7 +473,7 @@ void main() {
 
       expect(
         () => PageMargins.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidXmlSequence>()),
+        throwsA(isA<XmlSequenceException>()),
       );
     });
     test("should throw if bottom margin is invalid", () {
@@ -488,7 +488,7 @@ void main() {
 
       expect(
         () => PageMargins.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidXmlElementException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
     test("should throw if bottom margin is empty", () {
@@ -503,7 +503,7 @@ void main() {
 
       expect(
         () => PageMargins.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidXmlElementException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
   });

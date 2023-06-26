@@ -50,7 +50,7 @@ class PartList {
     );
 
     if (firstScorePartIndex == -1) {
-      throw InvalidXmlSequence(
+      throw XmlSequenceException(
         message: 'No "score-part" element found in "part-list"',
         xmlElement: xmlElement,
         sequence: {},

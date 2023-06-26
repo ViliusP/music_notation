@@ -31,7 +31,7 @@ enum XmlQuantifier {
 ///
 /// The [sequence] is a map representing the expected sequence of XML elements and their quantifiers.
 ///
-/// Throws an [InvalidXmlSequence] exception if the XML structure does not match the expected sequence.
+/// Throws an [XmlSequenceException] exception if the XML structure does not match the expected sequence.
 void validateSequence(
   XmlElement element,
   Map<dynamic, XmlQuantifier> sequence,
@@ -43,7 +43,7 @@ void validateSequence(
   final regex = RegExp(regexPattern);
 
   if (!regex.hasMatch(concatenatedNames)) {
-    throw InvalidXmlSequence(
+    throw XmlSequenceException(
       message:
           'Invalid sequence. The XML structure does not match the expected sequence.',
       xmlElement: element,
