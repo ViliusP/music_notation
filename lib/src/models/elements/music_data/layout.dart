@@ -1,5 +1,9 @@
-import 'package:music_notation/src/models/printing.dart';
+import 'package:music_notation/src/models/exceptions.dart';
+import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 import 'package:xml/xml.dart';
+
+import 'package:music_notation/src/models/printing.dart';
+import 'package:music_notation/src/models/utilities/type_parsers.dart';
 
 /// Specifies the sequence of page, system, and staff layout elements
 /// that is common to both the defaults and print elements.
@@ -79,27 +83,65 @@ class PageLayout {
   // ------   Content   ------ //
   // ------------------------- //
 
-  double? pageHeight;
-  double? pageWidth;
-  List<PageMargins> pageMargins;
+  /// Specifies the height and width in tenths.
+  ({double height, double width})? size;
+
+  List<PageMargins> margins;
 
   PageLayout({
-    this.pageHeight,
-    this.pageWidth,
-    this.pageMargins = const [],
+    this.size,
+    this.margins = const [],
   });
 
+  // Field(s): quantifier
+  static const Map<dynamic, XmlQuantifier> _xmlExpectedOrder = {
+    {
+      'page-height': XmlQuantifier.required,
+      'page-width': XmlQuantifier.required,
+    }: XmlQuantifier.optional,
+    'page-margins': XmlQuantifier.zeroToTwo,
+  };
+
   factory PageLayout.fromXml(XmlElement xmlElement) {
+    validateSequence(xmlElement, _xmlExpectedOrder);
+
+    XmlElement? heightElement = xmlElement.getElement('page-height');
+    if (heightElement != null &&
+        heightElement.firstChild?.nodeType != XmlNodeType.TEXT) {
+      throw InvalidXmlElementException(
+        message: "'page-height' must have text content ",
+        xmlElement: xmlElement,
+      );
+    }
+
+    XmlElement? widthElement = xmlElement.getElement('page-width');
+    if (widthElement != null &&
+        widthElement.firstChild?.nodeType != XmlNodeType.TEXT) {
+      throw InvalidXmlElementException(
+        message: "'page-width' must have text content ",
+        xmlElement: xmlElement,
+      );
+    }
+
+    double? height =
+        heightElement != null ? double.parse(heightElement.innerText) : null;
+    double? width =
+        widthElement != null ? double.parse(widthElement.innerText) : null;
+
+    if ((height == null) != (width == null)) {
+      throw InvalidXmlElementException(
+        message:
+            "Height and width elements should be both either null or non-null",
+        xmlElement: xmlElement,
+      );
+    }
     return PageLayout(
-      pageHeight: xmlElement.getElement('page-height') != null
-          ? double.parse(xmlElement.getElement('page-height')!.text)
-          : null,
-      pageWidth: xmlElement.getElement('page-width') != null
-          ? double.parse(xmlElement.getElement('page-width')!.text)
-          : null,
-      pageMargins: xmlElement
+      size: height == null && width == null
+          ? null
+          : (height: height!, width: width!),
+      margins: xmlElement
           .findElements('page-margins')
-          .map((element) => PageMargins.fromXml(element))
+          .map((element) => PageMargins.fromXml(element, false))
           .toList(),
     );
   }
@@ -107,13 +149,13 @@ class PageLayout {
   XmlElement toXml() {
     var builder = XmlBuilder();
     builder.element('page-layout', nest: () {
-      if (pageHeight != null) {
-        builder.element('page-height', nest: pageHeight.toString());
+      if (size?.height != null) {
+        builder.element('page-height', nest: size?.height.toString());
       }
-      if (pageWidth != null) {
-        builder.element('page-width', nest: pageWidth.toString());
+      if (size?.width != null) {
+        builder.element('page-width', nest: size?.width.toString());
       }
-      for (var pageMargin in pageMargins) {
+      for (var pageMargin in margins) {
         builder.element('page-margins', nest: pageMargin.toXml());
       }
     });
@@ -121,49 +163,13 @@ class PageLayout {
   }
 }
 
-/// The margin-type type specifies whether margins apply to even page, odd pages, or both.
+/// Specifies whether margins apply to even page, odd pages, or both.
 enum MarginType {
   odd,
   even,
-  both,
-}
+  both;
 
-/// Page margins are specified either for both even and odd pages, or via separate odd and even page number values.
-///
-/// The type attribute is not needed when used as part of a print element.
-///
-/// If omitted when the page-margins type is used in the defaults element, "both" is the default value.
-class PageMargins {
-  // ------------------------- //
-  // ------   Content   ------ //
-  // ------------------------- //
-
-  PageMargins({
-    /// Specifies whether the margins apply to even pages, odd pages, or both.
-    /// This attribute is not needed when used as part of a <print> element.
-    /// The value is both if omitted when used in the <defaults> element.
-    required this.type,
-  });
-
-  factory PageMargins.fromXml(XmlElement xmlElement) {
-    return PageMargins(
-      allMargins: AllMargins.fromXml(xmlElement),
-      type: _parseMarginType(xmlElement.getAttribute('type')),
-    );
-  }
-
-  XmlElement toXml() {
-    var builder = XmlBuilder();
-    builder.element('page-margins',
-        attributes: {
-          'type': _marginTypeToString(type),
-        },
-        nest: allMargins.toXml());
-    return builder.buildDocument().rootElement;
-  }
-
-  // TODO move to enum
-  static MarginType _parseMarginType(String? value) {
+  static MarginType fromString(String value) {
     switch (value) {
       case 'odd':
         return MarginType.odd;
@@ -174,54 +180,110 @@ class PageMargins {
         return MarginType.both;
     }
   }
+}
 
-  // TODO move to enum\
-  static String _marginTypeToString(MarginType value) {
-    switch (value) {
-      case MarginType.odd:
-        return 'odd';
-      case MarginType.even:
-        return 'even';
-      case MarginType.both:
-      default:
-        return 'both';
+class HorizontalMargins {
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
+
+  /// The left margin for the parent element in tenths.
+  double left;
+
+  /// The right margin for the parent element in tenths.
+  double right;
+
+  HorizontalMargins({
+    required this.left,
+    required this.right,
+  });
+
+  factory HorizontalMargins.fromXml(XmlElement xmlElement) {
+    double? left = double.tryParse(
+      xmlElement.getElement('left-margin')?.firstChild?.value ?? '',
+    );
+    if (left == null) {
+      throw InvalidXmlElementException(
+        message: "'left-margin' element content must be double",
+        xmlElement: xmlElement,
+      );
     }
+
+    double? right = double.tryParse(
+      xmlElement.getElement('right-margin')?.firstChild?.value ?? '',
+    );
+    if (right == null) {
+      throw InvalidXmlElementException(
+        message: "'right-margin' element content must be double",
+        xmlElement: xmlElement,
+      );
+    }
+
+    return HorizontalMargins(
+      left: left,
+      right: right,
+    );
   }
 }
 
-/// The all-margins group specifies both horizontal and vertical margins in tenths.
-class AllMargins {
-  /// Type: tenths/decimal.
+class Margins implements HorizontalMargins {
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
+
+  /// The left margin for the parent element in tenths.
+  @override
   double left;
 
-  /// Type: tenths/decimal.
+  /// The right margin for the parent element in tenths.
+  @override
   double right;
 
-  /// Type: tenths/decimal.
+  /// The top page margin in tenths.
   double top;
 
-  /// Type: tenths/decimal.
+  /// The bottom page margin in tenths.
   double bottom;
 
-  AllMargins({
+  Margins({
     required this.left,
     required this.right,
     required this.top,
     required this.bottom,
   });
 
-  factory AllMargins.fromXml(XmlElement xmlElement) {
-    // TODO:
-    // The left-right-margins group specifies horizontal margins in tenths.
-    // leftRightMargins: LeftRightMargins.fromXml(
-    //     xmlElement.findElements('left-right-margins').first),
-    return AllMargins(
-      left: double.parse(xmlElement.findElements('left-margin').first.text),
-      right: double.parse(xmlElement.findElements('right-margin').first.text),
-      top: double.parse(xmlElement.findElements('top-margin').first.text),
-      bottom: double.parse(xmlElement.findElements('bottom-margin').first.text),
+  factory Margins.fromXml(XmlElement xmlElement) {
+    HorizontalMargins horizontalMargins = HorizontalMargins.fromXml(xmlElement);
+    double? top = double.tryParse(
+      xmlElement.getElement('top-margin')?.firstChild?.value ?? '',
     );
+
+    if (top == null) {
+      throw InvalidXmlElementException(
+        message: "'top-margin' element content must be double",
+        xmlElement: xmlElement,
+      );
+    }
+
+    double? bottom = double.tryParse(
+      xmlElement.getElement('bottom-margin')?.firstChild?.value ?? '',
+    );
+
+    if (bottom == null) {
+      throw InvalidXmlElementException(
+        message: "'bottom-margin' element content must be double",
+        xmlElement: xmlElement,
+      );
+    }
+
+    return Margins(
+        left: horizontalMargins.left,
+        right: horizontalMargins.right,
+        top: top,
+        bottom: bottom);
   }
+
+  // fromXml(XmlElement xmlElement) {}
 
   XmlElement toXml() {
     var builder = XmlBuilder();
@@ -238,10 +300,86 @@ class AllMargins {
   }
 }
 
-/// Staff layout includes the vertical distance from the bottom line of the previous staff
+/// Page margins are specified either for both even and odd pages,
+/// or via separate odd and even page number values.
+///
+/// The type attribute is not needed when used as part of a print element.
+///
+/// If omitted when the page-margins type is used in the defaults element, "both" is the default value.
+class PageMargins {
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
+
+  final Margins margins;
+
+  /// Specifies whether the margins apply to even pages, odd pages, or both.
+  /// This attribute is not needed when used as part of a <print> element.
+  /// The value is both if omitted when used in the <defaults> element.
+  final MarginType? type;
+
+  final bool _isPrint;
+
+  PageMargins({
+    required this.margins,
+    required this.type,
+    required bool isPrint,
+  }) : _isPrint = isPrint;
+
+  // Field(s): quantifier
+  static const Map<String, XmlQuantifier> _xmlExpectedOrder = {
+    'left-margin': XmlQuantifier.required,
+    'right-margin': XmlQuantifier.required,
+    'top-margin': XmlQuantifier.required,
+    'bottom-margin': XmlQuantifier.required,
+  };
+
+  factory PageMargins.fromXml(XmlElement xmlElement, [bool isPrint = true]) {
+    validateSequence(xmlElement, _xmlExpectedOrder);
+
+    String? typeAttribute = xmlElement.getAttribute('type');
+
+    MarginType? type;
+
+    if (typeAttribute != null && !isPrint) {
+      type = MarginType.fromString(typeAttribute);
+    }
+    if (typeAttribute == null && !isPrint) {
+      type = MarginType.both;
+    }
+
+    return PageMargins(
+      margins: Margins.fromXml(xmlElement),
+      type: type,
+      isPrint: isPrint,
+    );
+  }
+
+  XmlElement toXml() {
+    var builder = XmlBuilder();
+
+    Map<String, String> attributes = {};
+
+    if (!_isPrint) {
+      attributes = {
+        'type': type?.name ?? MarginType.both.name,
+      };
+    }
+
+    builder.element(
+      'page-margins',
+      attributes: attributes,
+      nest: margins.toXml(),
+    );
+    return builder.buildDocument().rootElement;
+  }
+}
+
+/// Vertical distance from the bottom line of the previous staff
 /// in this system to the top line of the staff specified by the number attribute.
 ///
-/// The optional number attribute refers to staff numbers within the part, from top to bottom on the system.
+/// The optional number attribute refers to staff numbers within the part,
+/// from top to bottom on the system.
 /// A value of 1 is used if not present.
 ///
 /// When used in the defaults element, the values apply to all systems in all parts.
@@ -382,15 +520,19 @@ class SystemLayout {
   }
 }
 
-/// The system-dividers element indicates the presence or absence of system dividers (also known as system separation marks) between systems displayed on the same page.
+/// Indicates the presence or absence of
+/// system dividers (also known as system separation marks) between systems displayed on the same page.
 ///
-/// Dividers on the left and right side of the page are controlled by the left-divider and right-divider elements respectively.
+/// Dividers on the left and right side of the page are controlled
+/// by the left-divider and right-divider elements respectively.
 ///
-/// The default vertical position is half the system-distance value from the top of the system that is below the divider.
+/// The default vertical position is half the system-distance
+/// value from the top of the system that is below the divider.
 ///
 /// The default horizontal position is the left and right system margin, respectively.
 ///
-/// When used in the print element, the system-dividers element affects the dividers that would appear between the current system and the previous system.
+/// When used in the print element, the system-dividers element affects
+/// the dividers that would appear between the current system and the previous system.
 class SystemDividers {
   // ------------------------- //
   // ------   Content   ------ //
@@ -425,7 +567,7 @@ class SystemDividers {
   }
 }
 
-/// The empty-print-style-align-object type represents an empty element with print-object and print-style-align attribute groups.
+/// Represents an empty element with [printObject] and [PrintStyleAlign] attribute groups.
 class DividerPrintStyle extends PrintStyleAlign {
   /// Specifies whether or not to print an object (e.g. a note or a rest).
   ///
@@ -439,7 +581,7 @@ class DividerPrintStyle extends PrintStyleAlign {
     required super.position,
     required super.font,
     required super.color,
-    });
+  });
 
   factory DividerPrintStyle.fromXml(XmlElement xmlElement) {
     bool? printObject = YesNo.toBool(xmlElement.innerText);
