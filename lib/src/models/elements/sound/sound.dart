@@ -219,7 +219,10 @@ abstract class YesNoNumber {
     String? elementText = xmlElement.value;
 
     if (elementText == null || elementText.isEmpty) {
-      throw XmlElementRequired("message"); // TODO
+      throw XmlElementContentException(
+        message: "message",
+        xmlElement: xmlElement,
+      ); // TODO
     }
 
     // Check if the text can be parsed to a number.
@@ -231,7 +234,10 @@ abstract class YesNoNumber {
     bool? boolValue = YesNo.toBool(elementText);
 
     if (boolValue == null) {
-      throw XmlElementRequired("message"); // TODO
+      throw XmlElementContentException(
+        message: "message",
+        xmlElement: xmlElement,
+      ); // TODO
     }
     return YesNoNumberBool(boolValue);
   }

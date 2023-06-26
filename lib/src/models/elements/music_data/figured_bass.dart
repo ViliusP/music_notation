@@ -67,7 +67,10 @@ class FiguredBass implements MusicDataElement {
     List<Figure> figures = [];
 
     if (figures.isEmpty) {
-      throw XmlElementRequired("One or more figures is required");
+      throw XmlElementContentException(
+        message: "One or more figures is required",
+        xmlElement: xmlElement,
+      ); // TODO
     }
 
     return FiguredBass(

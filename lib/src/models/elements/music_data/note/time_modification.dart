@@ -45,7 +45,10 @@ class TimeModification {
     );
 
     if (actualNotes == null) {
-      throw XmlElementRequired("actual-notes value is missing");
+      throw XmlElementContentException(
+        message: "actual-notes value is missing",
+        xmlElement: xmlElement,
+      );
     }
 
     int? normalNotes = int.tryParse(
@@ -53,7 +56,10 @@ class TimeModification {
     );
 
     if (normalNotes == null) {
-      throw XmlElementRequired("normal-notes value is missing");
+      throw XmlElementContentException(
+        message: "normal-notes value is missing",
+        xmlElement: xmlElement,
+      );
     }
 
     NoteTypeValue? maybeNormalType = NoteTypeValue.fromString(

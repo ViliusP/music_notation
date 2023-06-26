@@ -131,7 +131,10 @@ class Harmony implements MusicDataElement {
     List<HarmonyChord> chords = [];
 
     if (chords.isEmpty) {
-      throw XmlElementRequired("One or more times");
+      throw XmlElementContentException(
+        message: "One or more times",
+        xmlElement: xmlElement,
+      );
     }
 
     bool? printObject = YesNo.toBool(

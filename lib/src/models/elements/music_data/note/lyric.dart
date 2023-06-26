@@ -117,7 +117,10 @@ class Lyric {
     }
 
     if (content == null) {
-      throw XmlElementRequired("Content is required for lyrics");
+      throw XmlElementContentException(
+        message: "Content is required for lyrics",
+        xmlElement: xmlElement,
+      );
     }
 
     return Lyric(

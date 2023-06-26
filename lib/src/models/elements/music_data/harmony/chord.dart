@@ -443,13 +443,19 @@ class Kind {
     String? rawValue = xmlElement.value;
 
     if (rawValue == null) {
-      throw XmlElementRequired("The <kind> element must have content");
+      throw XmlElementContentException(
+        message: "The <kind> element must have content",
+        xmlElement: xmlElement,
+      );
     }
 
     KindValue? value = KindValue.fromString(rawValue);
 
     if (value == null) {
-      throw XmlElementRequired("The <kind> element must have correct content");
+      throw XmlElementContentException(
+        message: "The <kind> element must have correct content",
+        xmlElement: xmlElement,
+      );
     }
 
     return Kind(

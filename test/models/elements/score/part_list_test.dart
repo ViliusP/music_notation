@@ -58,7 +58,7 @@ void main() {
 
       expect(
         () => PartList.fromXml(rootElement),
-        throwsA(isA<XmlElementRequired>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
   });
