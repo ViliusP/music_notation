@@ -430,22 +430,26 @@ class Grace {
 
   void validate() {
     if (stealTimePrevious != null && !Percent.isValid(stealTimePrevious!)) {
-      throw InvalidMusicXmlType(
-        message: Percent.generateValidationError(
-          "steal-time-previous",
-          stealTimePrevious!,
-        ),
-        xmlElement: null,
-      );
+      throw const FormatException();
+      // TODO
+      // throw MusicXmlFormatException(
+      //   message: Percent.generateValidationError(
+      //     "steal-time-previous",
+      //     stealTimePrevious!,
+      //   ),
+      //   xmlElement: null,
+      // );
     }
     if (stealTimePrevious != null && !Percent.isValid(stealTimeFollowing!)) {
-      throw InvalidMusicXmlType(
-        message: Percent.generateValidationError(
-          "steal-time-following",
-          stealTimeFollowing!,
-        ),
-        xmlElement: null,
-      );
+      throw const FormatException();
+      // TODO
+      // throw MusicXmlFormatException(
+      //   message: Percent.generateValidationError(
+      //     "steal-time-following",
+      //     stealTimeFollowing!,
+      //   ),
+      //   xmlElement: null,
+      // );
     }
   }
 

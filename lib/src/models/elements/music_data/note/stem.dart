@@ -27,10 +27,21 @@ class Stem {
   });
 
   factory Stem.fromXml(XmlElement xmlElement) {
-    StemValue? value = StemValue.fromString(xmlElement.innerText ?? "");
+    if (xmlElement.childElements.isNotEmpty) {
+      throw InvalidElementContentException(
+        message: "Stem value is missing",
+        xmlElement: xmlElement,
+      );
+    }
+
+    StemValue? value = StemValue.fromString(xmlElement.innerText);
 
     if (value == null) {
-      throw XmlElementRequired("Steam value is missing");
+      throw MusicXmlFormatException(
+        message: "${xmlElement.innerText} is not valid steam value",
+        xmlElement: xmlElement,
+        source: xmlElement.innerText,
+      );
     }
 
     return Stem(

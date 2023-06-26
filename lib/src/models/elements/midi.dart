@@ -367,13 +367,13 @@ class MidiInstrument {
 }
 
 enum Midi {
-  /// The midi-16 type is used to express MIDI 1.0 values that range from 1 to 16.
+  /// Expresses MIDI 1.0 values that range from 1 to 16.
   midi16(1, 16),
 
-  /// The midi-16384 type is used to express MIDI 1.0 values that range from 1 to 16,384.
+  /// Expresses MIDI 1.0 values that range from 1 to 16,384.
   midi16384(1, 16384),
 
-  /// The midi-128 type is used to express MIDI 1.0 values that range from 1 to 128.
+  /// Expresses MIDI 1.0 values that range from 1 to 128.
   midi128(1, 128);
 
   const Midi(this.min, this.max);

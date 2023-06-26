@@ -13,10 +13,12 @@ class BeamLevel {
     int parsedValue = int.parse(value);
 
     if (parsedValue < _min || parsedValue > _max) {
-      throw InvalidMusicXmlType(
-        message: "Provided value - $value is not beam-level type",
-        xmlElement: null,
-      );
+      throw const FormatException();
+      // TODO
+      // throw InvalidMusicXmlType(
+      //   message: "Provided value - $value is not beam-level type",
+      //   xmlElement: null,
+      // );
     }
 
     return parsedValue;
@@ -75,10 +77,12 @@ class NumberLevel {
     int parsedValue = int.parse(value);
 
     if (parsedValue < _min || parsedValue > _max) {
-      throw InvalidMusicXmlType(
-        message: "Provided value - $value is not beam-level type",
-        xmlElement: null,
-      );
+      throw const FormatException();
+      // TODO throw
+      // throw InvalidMusicXmlType(
+      //   message: "Provided value - $value is not beam-level type",
+      //   xmlElement: null,
+      // );
     }
 
     return parsedValue;
