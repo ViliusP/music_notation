@@ -14,17 +14,15 @@ class TypedText {
 
   factory TypedText.fromXml(XmlElement xmlElement) {
     // Content parsing:
-    if (xmlElement.children.length != 1 ||
-        xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
-      throw InvalidXmlElementException(
+    if (xmlElement.childElements.isNotEmpty) {
+      throw InvalidElementContentException(
         message: "Group name element should contain only text",
         xmlElement: xmlElement,
       );
     }
-    String content = xmlElement.children.first.value!;
 
     return TypedText(
-      value: content,
+      value: xmlElement.innerText,
       type: xmlElement.getAttribute('type'),
     );
   }

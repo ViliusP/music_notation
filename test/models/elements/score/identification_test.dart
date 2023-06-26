@@ -77,11 +77,9 @@ void main() {
         <encoding-date></encoding-date>
       ''';
 
-      var rootElement = XmlDocument.parse(input).rootElement;
-
       expect(
-        () => Encoding.fromXml(rootElement),
-        throwsA(isA<InvalidXmlElementException>()),
+        () => Encoding.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(isA<MusicXmlFormatException>()),
       );
     });
     test('should throw error on bad datetime', () {
@@ -89,23 +87,19 @@ void main() {
         <encoding-date>2019546454</encoding-date>
       ''';
 
-      var rootElement = XmlDocument.parse(input).rootElement;
-
       expect(
-        () => Encoding.fromXml(rootElement),
-        throwsA(isA<FormatException>()),
+        () => Encoding.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(isA<MusicXmlFormatException>()),
       );
     });
-    test('should throw error on bad datetime', () {
+    test('should throw exception on invalid encoding-date content', () {
       String input = '''
         <encoding-date><child>your child</child></encoding-date>
       ''';
 
-      var rootElement = XmlDocument.parse(input).rootElement;
-
       expect(
-        () => Encoding.fromXml(rootElement),
-        throwsA(isA<InvalidXmlElementException>()),
+        () => Encoding.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(isA<InvalidElementContentException>()),
       );
     });
     test('should parse encoder', () {
@@ -113,77 +107,74 @@ void main() {
         <encoder>Mark D. Lew</encoder>
       ''';
 
-      var rootElement = XmlDocument.parse(input).rootElement;
-      var encoder = Encoding.fromXml(rootElement);
+      var encoder = Encoding.fromXml(XmlDocument.parse(input).rootElement);
 
       expect(encoder, isA<Encoder>());
       expect((encoder as Encoder).value, equals("Mark D. Lew"));
     });
-    test('should throw on empty encoder', () {
+    test('should parse empty encoder', () {
       String input = '''
         <encoder></encoder>
       ''';
 
-      var rootElement = XmlDocument.parse(input).rootElement;
+      var encoder = Encoding.fromXml(XmlDocument.parse(input).rootElement);
 
-      expect(
-        () => Encoding.fromXml(rootElement),
-        throwsA(isA<InvalidXmlElementException>()),
-      );
+      expect(encoder, isA<Encoder>());
+      expect((encoder as Encoder).value, equals(""));
     });
     test('should parse software', () {
       String input = '''
         <software>MuseScore 3.2.3</software>
       ''';
 
-      var rootElement = XmlDocument.parse(input).rootElement;
-
-      var software = Encoding.fromXml(rootElement);
+      var software = Encoding.fromXml(XmlDocument.parse(input).rootElement);
 
       expect(software, isA<Software>());
       expect((software as Software).value, equals("MuseScore 3.2.3"));
     });
-    test('should throw on empty software', () {
+    test('should parse empty software', () {
       String input = '''
         <software></software>
       ''';
 
-      var rootElement = XmlDocument.parse(input).rootElement;
-
-      expect(
-        () => Encoding.fromXml(rootElement),
-        throwsA(isA<InvalidXmlElementException>()),
+      Encoding encoding = Encoding.fromXml(
+        XmlDocument.parse(input).rootElement,
       );
+
+      expect(encoding, isA<Software>());
+      expect((encoding as Software).value, equals(""));
     });
     test('should parse encoding description', () {
       String input = '''
         <encoding-description>MusicXML example</encoding-description>
       ''';
 
-      var rootElement = XmlDocument.parse(input).rootElement;
+      var encodingDescription = Encoding.fromXml(
+        XmlDocument.parse(input).rootElement,
+      );
 
-      var software = Encoding.fromXml(rootElement);
-
-      expect(software, isA<EncodingDescription>());
+      expect(encodingDescription, isA<EncodingDescription>());
       expect(
-        (software as EncodingDescription).value,
+        (encodingDescription as EncodingDescription).value,
         equals("MusicXML example"),
       );
     });
-    test('should throw on empty encoding-description', () {
+    test('should parse empty encoding-description', () {
       String input = '''
         <encoding-description></encoding-description>
       ''';
 
-      var rootElement = XmlDocument.parse(input).rootElement;
+      var encodingDescription = Encoding.fromXml(
+        XmlDocument.parse(input).rootElement,
+      );
 
+      expect(encodingDescription, isA<EncodingDescription>());
       expect(
-        () => Encoding.fromXml(rootElement),
-        throwsA(isA<InvalidXmlElementException>()),
+        (encodingDescription as EncodingDescription).value,
+        equals(""),
       );
     });
   });
-
   group('Support parsing', () {
     test('should parse element and type', () {
       String input = '<supports element="accidental" type="yes" />';

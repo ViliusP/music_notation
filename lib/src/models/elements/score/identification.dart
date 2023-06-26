@@ -167,17 +167,26 @@ class EncodingDate implements Encoding {
   });
 
   factory EncodingDate.fromXml(XmlElement xmlElement) {
-    if (xmlElement.children.length != 1 ||
-        xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
+    if (xmlElement.childElements.isNotEmpty) {
       throw InvalidElementContentException(
-        message: "Group name element should contain only text",
+        message: "'encoding-date' element should contain only text",
         xmlElement: xmlElement,
       );
     }
-    String content = xmlElement.children.first.value!;
-    return EncodingDate(
-      value: _dateFormat.parse(content),
-    );
+    String content = xmlElement.innerText;
+    try {
+      return EncodingDate(
+        value: _dateFormat.parse(content),
+      );
+    } on FormatException catch (e) {
+      throw MusicXmlFormatException(
+        message: "Bad encoding date format: ${e.message}",
+        xmlElement: xmlElement,
+        source: content,
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 }
 
@@ -191,15 +200,14 @@ class Software implements Encoding {
   });
 
   factory Software.fromXml(XmlElement xmlElement) {
-    if (xmlElement.children.length != 1 ||
-        xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
+    if (xmlElement.childElements.isNotEmpty) {
       throw InvalidElementContentException(
-        message: "Group name element should contain only text",
+        message: "'software' element should contain only text",
         xmlElement: xmlElement,
       );
     }
     return Software(
-      value: xmlElement.children.first.value!,
+      value: xmlElement.innerText,
     );
   }
 }
@@ -232,15 +240,14 @@ class EncodingDescription implements Encoding {
   });
 
   factory EncodingDescription.fromXml(XmlElement xmlElement) {
-    if (xmlElement.children.length != 1 ||
-        xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
+    if (xmlElement.childElements.isNotEmpty) {
       throw InvalidElementContentException(
         message: "Group name element should contain only text",
         xmlElement: xmlElement,
       );
     }
     return EncodingDescription(
-      value: xmlElement.children.first.value!,
+      value: xmlElement.innerText,
     );
   }
 }
