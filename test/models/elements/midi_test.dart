@@ -233,16 +233,31 @@ void main() {
         throwsA(isA<MusicXmlFormatException>()),
       );
     });
-    test('should throw exception on empty midi-name', () {
+    // midi-name
+    test('should parse empty midi-name', () {
       String input = '''
         <midi-instrument id="P1-X4">
           <midi-name></midi-name>
         </midi-instrument>
       ''';
 
+      var midiInstrument = MidiInstrument.fromXml(
+        XmlDocument.parse(input).rootElement,
+      );
+
+      expect(midiInstrument.midiName, "");
+    });
+
+    test('should throw on invalid midi-name', () {
+      String input = '''
+        <midi-instrument id="P1-X4">
+          <midi-name><foo/></midi-name>
+        </midi-instrument>
+      ''';
+
       expect(
         () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<MusicXmlFormatException>()),
+        throwsA(isA<InvalidElementContentException>()),
       );
     });
   });

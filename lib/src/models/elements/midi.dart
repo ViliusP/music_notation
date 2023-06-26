@@ -155,10 +155,11 @@ class MidiInstrument {
     }
 
     XmlElement? midiNameElement = xmlElement.getElement('midi-name');
-    String? midiName = midiNameElement?.firstChild?.value;
-    if (midiNameElement != null && (midiName == null || midiName.isEmpty)) {
+    String? midiName = midiNameElement?.innerText;
+    if (midiNameElement != null && midiName == null ||
+        midiNameElement?.childElements.isNotEmpty == true) {
       throw InvalidElementContentException(
-        message: "'midi-name' must have non empty text content",
+        message: "'midi-name' must have text content",
         xmlElement: xmlElement,
       );
     }
