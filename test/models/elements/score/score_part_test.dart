@@ -1,3 +1,4 @@
+import 'package:music_notation/src/models/elements/link.dart';
 import 'package:music_notation/src/models/elements/score/score_part.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:test/test.dart';
@@ -291,7 +292,7 @@ void main() {
 
       expect(partLink.linkAttributes.href, "p1.musicxml");
       expect(partLink.linkAttributes.title, "Clarinet 1");
-      expect(partLink.linkAttributes.show, "new");
+      expect(partLink.linkAttributes.show, XLinkShow.new_);
       expect(partLink.instrumentLinks[0], "P1-I1");
       expect(partLink.groupLinks[0], "parts");
     });
@@ -310,7 +311,7 @@ void main() {
 
       expect(partLink.linkAttributes.href, "p2.musicxml");
       expect(partLink.linkAttributes.title, "Clarinet 2");
-      expect(partLink.linkAttributes.show, "new");
+      expect(partLink.linkAttributes.show, XLinkShow.new_);
       expect(partLink.instrumentLinks[0], "P1-I2");
       expect(partLink.groupLinks[0], "parts");
     });
@@ -386,7 +387,7 @@ void main() {
 
       expect(partLink.linkAttributes.href, "p1.musicxml");
       expect(partLink.linkAttributes.title, "Trumpet in Bb");
-      expect(partLink.linkAttributes.show, "new");
+      expect(partLink.linkAttributes.show, XLinkShow.new_);
     });
 
     test('should throw if href attribute is missing', () {
