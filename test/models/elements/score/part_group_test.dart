@@ -92,11 +92,9 @@ void main() {
         </group-name>
       ''';
 
-      var rootElement = XmlDocument.parse(input).rootElement;
-
       expect(
         // ignore: deprecated_member_use_from_same_package
-        () => GroupName.fromXml(rootElement),
+        () => GroupName.fromXml(XmlDocument.parse(input).rootElement),
         throwsA(isA<InvalidElementContentException>()),
       );
     });

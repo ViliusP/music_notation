@@ -312,17 +312,15 @@ class GroupName {
 
   factory GroupName.fromXml(XmlElement xmlElement) {
     // Content parsing:
-    if (xmlElement.children.length != 1 ||
-        xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
-      throw InvalidXmlElementException(
+    if (xmlElement.childElements.isNotEmpty) {
+      throw InvalidElementContentException(
         message: "Group name element should contain only text",
         xmlElement: xmlElement,
       );
     }
-    String content = xmlElement.children.first.value!;
 
     return GroupName(
-      value: content,
+      value: xmlElement.innerText,
       printStyle: PrintStyle.fromXml(xmlElement),
       justify: HorizontalAlignment.fromXml(xmlElement),
     );
