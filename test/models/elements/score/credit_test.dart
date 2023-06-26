@@ -34,7 +34,7 @@ void main() {
       expect(imageCredit.value.position.defaultX, 572);
       expect(imageCredit.value.position.defaultY, 96);
     });
-    test('should throw on empty credit-type', () {
+    test('should parse empty credit-type', () {
       String input = '''
         <credit page="1">
           <credit-type></credit-type>
@@ -44,12 +44,12 @@ void main() {
 
       var rootElement = XmlDocument.parse(input).rootElement;
 
-      expect(
-        () => Credit.fromXml(rootElement),
-        throwsA(isA<InvalidXmlElementException>()),
-      );
+      Credit credit = Credit.fromXml(rootElement);
+
+      expect(credit, isA<ImageCredit>());
+      expect(credit.creditTypes[0], "");
     });
-    test('should throw on invalid credit-type', () {
+    test('should throw on invalid credit-type content', () {
       String input = '''
         <credit page="1">
           <credit-type><foo>bar</foo></credit-type>
@@ -61,7 +61,7 @@ void main() {
 
       expect(
         () => Credit.fromXml(rootElement),
-        throwsA(isA<InvalidXmlElementException>()),
+        throwsA(isA<InvalidElementContentException>()),
       );
     });
   });

@@ -279,12 +279,12 @@ class ImageCredit extends Credit {
       'credit-type',
     );
 
-    List<String> creditTypes = creditTypeElements.map((type) {
-      String? content = type.firstChild?.value;
-      if (content == null || content.isEmpty) {
-        throw InvalidXmlElementException(
-          message: "'credit-type' must have non-empty string content",
-          xmlElement: type,
+    List<String> creditTypes = creditTypeElements.map((child) {
+      String content = child.innerText;
+      if (child.childElements.isNotEmpty) {
+        throw InvalidElementContentException(
+          message: "'credit-type' must have string content",
+          xmlElement: child,
         );
       }
       return content;
