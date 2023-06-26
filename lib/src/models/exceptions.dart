@@ -84,7 +84,7 @@ class XmlElementContentException implements MusicXmlException {
 /// ```
 ///
 /// For invalid enumaration value like 'metal-value', 'right-left-middle', 'stick-location' and etc.,
-/// use [InvalidMusicXmlTypeException].
+/// use [MusicXmlTypeException].
 class MusicXmlFormatException extends FormatException
     implements MusicXmlException {
   /// The XmlElement which caused the exception to be thrown.
@@ -119,6 +119,9 @@ class MusicXmlFormatException extends FormatException
 ///   print('The XML element that caused the error was: ${e.xmlElement.toXmlString()}');
 /// }
 /// ```
+///
+/// For primitive type validation like numeral-value(int), decimal(double),
+/// fifths(integer) and etc. use [MusicXmlFormatException].
 class MusicXmlTypeException implements MusicXmlException {
   /// The message that explains why the exception was thrown.
   ///
