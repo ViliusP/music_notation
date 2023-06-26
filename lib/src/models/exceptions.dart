@@ -4,7 +4,7 @@ import 'package:xml/xml.dart';
 /// A base for all exceptions that are specific to MusicXML.
 ///
 /// Implements the built-in [Exception] class.
-abstract class MusicXmlException implements Exception {
+sealed class MusicXmlException implements Exception {
   /// A message that describes the error in detail.
   final String message;
 
