@@ -15,8 +15,8 @@ class TypedText {
   factory TypedText.fromXml(XmlElement xmlElement) {
     // Content parsing:
     if (xmlElement.childElements.isNotEmpty) {
-      throw InvalidElementContentException(
-        message: "Group name element should contain only text",
+      throw XmlElementContentException(
+        message: "'typed-text' element should contain only text",
         xmlElement: xmlElement,
       );
     }

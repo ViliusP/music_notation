@@ -44,11 +44,9 @@ void main() {
         </part-list>
       ''';
 
-      var rootElement = XmlDocument.parse(input).rootElement;
-
       expect(
-        () => PartList.fromXml(rootElement),
-        throwsA(isA<XmlElementRequired>()),
+        () => PartList.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(isA<InvalidXmlSequence>()),
       );
     });
   });
@@ -95,7 +93,7 @@ void main() {
       expect(
         // ignore: deprecated_member_use_from_same_package
         () => GroupName.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidElementContentException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
   });

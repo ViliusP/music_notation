@@ -99,7 +99,7 @@ void main() {
 
       expect(
         () => Encoding.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidElementContentException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
     test('should parse encoder', () {
@@ -238,7 +238,7 @@ void main() {
       var rootElement = XmlDocument.parse(input).rootElement;
 
       expect(() => Supports.fromXml(rootElement),
-          throwsA(isA<XmlAttributeRequired>()));
+          throwsA(isA<MissingXmlAttribute>()));
     });
 
     test('should parse throw exception because on missing type', () {
@@ -246,7 +246,7 @@ void main() {
       var rootElement = XmlDocument.parse(input).rootElement;
 
       expect(() => Supports.fromXml(rootElement),
-          throwsA(isA<XmlAttributeRequired>()));
+          throwsA(isA<MissingXmlAttribute>()));
     });
   });
 }

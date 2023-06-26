@@ -251,7 +251,7 @@ enum GroupBarlineValue {
   static GroupBarlineValue fromXml(XmlElement xmlElement) {
     if (xmlElement.children.length != 1 ||
         xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message:
             "${xmlElement.name} element should contain only one children - group-barline-value",
         xmlElement: xmlElement,
@@ -313,7 +313,7 @@ class GroupName {
   factory GroupName.fromXml(XmlElement xmlElement) {
     // Content parsing:
     if (xmlElement.childElements.isNotEmpty) {
-      throw InvalidElementContentException(
+      throw XmlElementContentException(
         message: "Group name element should contain only text",
         xmlElement: xmlElement,
       );

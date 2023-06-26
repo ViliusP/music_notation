@@ -33,7 +33,7 @@ class Part {
     String? id = xmlElement.getAttribute("id");
 
     if (id == null) {
-      throw XmlAttributeRequired(
+      throw MissingXmlAttribute(
         message: "'id' attribute is required for 'part' element",
         xmlElement: xmlElement,
       );

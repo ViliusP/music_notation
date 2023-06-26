@@ -97,7 +97,7 @@ class Identification {
 
     if (sourceContent?.value != null &&
         sourceContent?.nodeType != XmlNodeType.TEXT) {
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message: "'source' in 'identification' must to be text",
         xmlElement: xmlElement,
       );
@@ -168,7 +168,7 @@ class EncodingDate implements Encoding {
 
   factory EncodingDate.fromXml(XmlElement xmlElement) {
     if (xmlElement.childElements.isNotEmpty) {
-      throw InvalidElementContentException(
+      throw XmlElementContentException(
         message: "'encoding-date' element should contain only text",
         xmlElement: xmlElement,
       );
@@ -201,7 +201,7 @@ class Software implements Encoding {
 
   factory Software.fromXml(XmlElement xmlElement) {
     if (xmlElement.childElements.isNotEmpty) {
-      throw InvalidElementContentException(
+      throw XmlElementContentException(
         message: "'software' element should contain only text",
         xmlElement: xmlElement,
       );
@@ -241,7 +241,7 @@ class EncodingDescription implements Encoding {
 
   factory EncodingDescription.fromXml(XmlElement xmlElement) {
     if (xmlElement.childElements.isNotEmpty) {
-      throw InvalidElementContentException(
+      throw XmlElementContentException(
         message: "Group name element should contain only text",
         xmlElement: xmlElement,
       );
@@ -296,7 +296,7 @@ class Supports implements Encoding {
     var typeAttribute = xmlElement.getAttribute(CommonAttributes.type);
 
     if (typeAttribute == null) {
-      throw XmlAttributeRequired(
+      throw MissingXmlAttribute(
         message: "Missing '${CommonAttributes.type}' attribute",
         xmlElement: xmlElement,
       );
@@ -314,7 +314,7 @@ class Supports implements Encoding {
     var element = xmlElement.getAttribute('element');
 
     if (element == null) {
-      throw XmlAttributeRequired(
+      throw MissingXmlAttribute(
         message: "Invalid or missing 'element' attribute",
         xmlElement: xmlElement,
       );
@@ -364,7 +364,7 @@ class MiscellaneousField {
     // Content parsing:
     if (xmlElement.children.length != 1 ||
         xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
-      throw InvalidElementContentException(
+      throw XmlElementContentException(
         message: "'miscellaneous-field' element should contain only text",
         xmlElement: xmlElement,
       );
@@ -374,7 +374,7 @@ class MiscellaneousField {
     String? name = xmlElement.getAttribute("name");
 
     if (name == null) {
-      throw XmlAttributeRequired(
+      throw MissingXmlAttribute(
         message:
             "'name' attribute is required in 'miscellaneous-field' element",
         xmlElement: xmlElement,

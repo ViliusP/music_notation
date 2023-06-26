@@ -56,7 +56,10 @@ class Notehead {
     NoteheadValue? value = NoteheadValue.fromString(xmlElement.innerText);
 
     if (value == null) {
-      throw XmlElementRequired("Notehead value is missing");
+      throw XmlElementContentException(
+        message: "Notehead value is missing",
+        xmlElement: xmlElement,
+      );
     }
 
     String? parenthesesAttribute = xmlElement.getAttribute("parentheses");
@@ -69,7 +72,7 @@ class Notehead {
         parenthesesAttribute,
       );
 
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message: message,
         xmlElement: xmlElement,
       );
@@ -83,7 +86,7 @@ class Notehead {
         smuflAttribute,
       );
 
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message: message,
         xmlElement: xmlElement,
       );

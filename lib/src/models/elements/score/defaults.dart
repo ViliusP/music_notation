@@ -484,7 +484,7 @@ class Scaling {
     String? rawMillimeters = xmlElement.getElement('millimeters')?.innerText;
     double? millimeters = double.tryParse(rawMillimeters ?? "");
     if (millimeters == null) {
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message:
             "'scaling' element must have 'millimeters' element with decimal type value content",
         xmlElement: xmlElement,
@@ -494,7 +494,7 @@ class Scaling {
     String? rawTenths = xmlElement.getElement('tenths')?.innerText;
     double? tenths = double.tryParse(rawTenths ?? "");
     if (tenths == null) {
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message:
             "'scaling' element must have 'tenths' element with decimal type value content",
         xmlElement: xmlElement,
@@ -599,7 +599,7 @@ class LyricLanguage {
 
   factory LyricLanguage.fromXml(XmlElement element) {
     if (element.name.local != 'lyric-language') {
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message: "Unexpected element name: ${element.name.local}",
         xmlElement: element,
       );
@@ -607,7 +607,7 @@ class LyricLanguage {
 
     final lang = element.getAttribute('xml:lang');
     if (lang == null) {
-      throw XmlAttributeRequired(
+      throw MissingXmlAttribute(
         message: 'Missing required attribute "xml:lang"',
         xmlElement: element,
       );

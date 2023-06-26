@@ -26,14 +26,14 @@ enum StartStop {
   /// In musicXML, start_stop is attribute and always required.
   ///
   /// If the [StartStop] attribute does not exist,
-  /// it throws an [XmlAttributeRequired] exception.
+  /// it throws an [MissingXmlAttribute] exception.
   ///
   /// If it is not valid, it throws an [] exception.
   static StartStop fromXml(XmlElement xmlElement) {
     String? rawValue = xmlElement.getAttribute("type");
 
     if (rawValue == null) {
-      throw XmlAttributeRequired(
+      throw MissingXmlAttribute(
         message: "${xmlElement.name} element must contain type attribute",
         xmlElement: xmlElement,
       );

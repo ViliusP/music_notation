@@ -134,7 +134,7 @@ class ScorePart implements PartListElement {
 
           if (groupElement == null ||
               groupElement.nodeType != XmlNodeType.TEXT) {
-            throw InvalidXmlElementException(
+            throw XmlElementContentException(
               message: 'Group must have text inside',
               xmlElement: xmlElement,
             );
@@ -159,23 +159,16 @@ class ScorePart implements PartListElement {
     String? id = xmlElement.getAttribute("id");
 
     if (id == null || id.isEmpty) {
-      throw XmlAttributeRequired(
+      throw MissingXmlAttribute(
         message: "'score-part' element must to have 'id' attribute",
         xmlElement: xmlElement,
-      );
-    }
-
-    if (partName == null) {
-      throw XmlElementRequired(
-        "part-name is required in score-part element",
-        xmlElement,
       );
     }
 
     return ScorePart(
       identification: identification,
       partLinks: partLinks,
-      partName: partName,
+      partName: partName!,
       partNameDisplay: partNameDisplay,
       partAbbreviation: partAbbreviation,
       partAbbreviationDisplay: partAbbreviationDisplay,
@@ -244,7 +237,7 @@ class PartLink {
         instrumentLinkElements.map((element) {
           String? id = element.getAttribute("id");
           if (id == null || id.isEmpty) {
-            throw XmlAttributeRequired(
+            throw MissingXmlAttribute(
               message: "'instrument-link' must have ID",
               xmlElement: xmlElement,
             );
@@ -263,7 +256,7 @@ class PartLink {
 
           if (child?.nodeType != XmlNodeType.TEXT ||
               child?.value?.isEmpty == true) {
-            throw InvalidXmlElementException(
+            throw XmlElementContentException(
               message: "'group-link' content should be text",
               xmlElement: xmlElement,
             );
@@ -309,7 +302,7 @@ class Player {
     String? id = xmlElement.getAttribute("id");
 
     if (id == null || id.isEmpty) {
-      throw XmlAttributeRequired(
+      throw MissingXmlAttribute(
         message: "non-empty 'id' attribute is required for 'player' element",
         xmlElement: xmlElement,
       );
@@ -318,7 +311,7 @@ class Player {
     String? name = xmlElement.getElement('player-name')?.firstChild?.value;
 
     if (name == null || name.isEmpty) {
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message: "'player' element content must be non-empty text",
         xmlElement: xmlElement,
       );
@@ -366,7 +359,7 @@ class PartName {
     // Content parsing:
     if (xmlElement.children.length != 1 ||
         xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message: "Group name element should contain only text",
         xmlElement: xmlElement,
       );

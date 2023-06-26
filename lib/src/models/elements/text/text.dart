@@ -34,7 +34,7 @@ class FormattedText extends TextElementBase {
     // Content parsing:
     if (xmlElement.children.length != 1 ||
         xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message:
             "Formatted text element should contain only one children - text",
         xmlElement: xmlElement,

@@ -51,7 +51,7 @@ class ScoreInstrument {
     String? id = xmlElement.getAttribute('id');
 
     if (id == null) {
-      throw XmlAttributeRequired(
+      throw MissingXmlAttribute(
         message: "'id' attribute is required in 'score-instrument'",
         xmlElement: xmlElement,
       );
@@ -61,7 +61,7 @@ class ScoreInstrument {
         xmlElement.getElement('instrument-name')?.firstChild?.value;
 
     if (instrumentName == null) {
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message: "'instrument-name' must have text content",
         xmlElement: xmlElement,
       );
@@ -74,7 +74,7 @@ class ScoreInstrument {
 
     if (instrumentAbbreviationElement != null &&
         instrumentAbbreviation == null) {
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message: "'instrument-abbreviation' must should have text content",
         xmlElement: xmlElement,
       );
@@ -193,7 +193,7 @@ class Ensemble extends PerformanceType {
       size = int.tryParse(rawSize);
     }
     if (rawSize.isNotEmpty && (size ?? 0) < 1) {
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message: "Ensemble content must be positive number or empty",
         xmlElement: xmlElement,
       );
@@ -232,7 +232,7 @@ class VirtualInstrument {
         case 'virtual-library':
           virtualLibrary = child.firstChild?.value;
           if (virtualLibrary == null) {
-            throw InvalidXmlElementException(
+            throw XmlElementContentException(
               message: "'virtual-library' must have text in it's content",
               xmlElement: xmlElement,
             );
@@ -241,7 +241,7 @@ class VirtualInstrument {
         case 'virtual-name':
           virtualName = child.firstChild?.value;
           if (virtualName == null) {
-            throw InvalidXmlElementException(
+            throw XmlElementContentException(
               message: "'virtual-name' must have text in it's content",
               xmlElement: xmlElement,
             );

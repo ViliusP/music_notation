@@ -238,13 +238,13 @@ void main() {
         () => ScorePart.fromXml(
           XmlDocument.parse(input1).rootElement,
         ),
-        throwsA(isA<XmlAttributeRequired>()),
+        throwsA(isA<MissingXmlAttribute>()),
       );
       expect(
         () => ScorePart.fromXml(
           XmlDocument.parse(input2).rootElement,
         ),
-        throwsA(isA<XmlAttributeRequired>()),
+        throwsA(isA<MissingXmlAttribute>()),
       );
     });
     test('Should throw exception if "part-name" element is missing', () {
@@ -327,7 +327,7 @@ void main() {
         () => PartLink.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<XmlAttributeRequired>()),
+        throwsA(isA<MissingXmlAttribute>()),
       );
     });
     test('should throw on missing instrument-link id', () {
@@ -342,7 +342,7 @@ void main() {
         () => PartLink.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<XmlAttributeRequired>()),
+        throwsA(isA<MissingXmlAttribute>()),
       );
     });
     test('should throw on missing group-link content', () {
@@ -357,7 +357,7 @@ void main() {
         () => PartLink.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidXmlElementException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
     test('should throw on invalid group-link content', () {
@@ -372,7 +372,7 @@ void main() {
         () => PartLink.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidXmlElementException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
     // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/part-link-element/
@@ -399,7 +399,7 @@ void main() {
         () => PartLink.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<XmlAttributeRequired>()),
+        throwsA(isA<MissingXmlAttribute>()),
       );
     });
     test('should throw if href attribute is invalid', () {
@@ -456,7 +456,7 @@ void main() {
         () => Player.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<XmlAttributeRequired>()),
+        throwsA(isA<MissingXmlAttribute>()),
       );
     });
     test("Should throw on missing ID", () {
@@ -470,7 +470,7 @@ void main() {
         () => Player.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<XmlAttributeRequired>()),
+        throwsA(isA<MissingXmlAttribute>()),
       );
     });
     // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/part-link-element/

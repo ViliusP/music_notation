@@ -108,7 +108,7 @@ class PageLayout {
     XmlElement? heightElement = xmlElement.getElement('page-height');
     if (heightElement != null &&
         heightElement.firstChild?.nodeType != XmlNodeType.TEXT) {
-      throw InvalidElementContentException(
+      throw XmlElementContentException(
         message: "'page-height' must have text content ",
         xmlElement: xmlElement,
       );
@@ -117,7 +117,7 @@ class PageLayout {
     XmlElement? widthElement = xmlElement.getElement('page-width');
     if (widthElement != null &&
         widthElement.firstChild?.nodeType != XmlNodeType.TEXT) {
-      throw InvalidElementContentException(
+      throw XmlElementContentException(
         message: "'page-width' must have text content ",
         xmlElement: xmlElement,
       );
@@ -209,7 +209,7 @@ class HorizontalMargins {
       xmlElement.getElement('left-margin')?.firstChild?.value ?? '',
     );
     if (left == null) {
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message: "'left-margin' element content must be double",
         xmlElement: xmlElement,
       );
@@ -219,7 +219,7 @@ class HorizontalMargins {
       xmlElement.getElement('right-margin')?.firstChild?.value ?? '',
     );
     if (right == null) {
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message: "'right-margin' element content must be double",
         xmlElement: xmlElement,
       );
@@ -265,7 +265,7 @@ class Margins implements HorizontalMargins {
     );
 
     if (top == null) {
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message: "'top-margin' element content must be double",
         xmlElement: xmlElement,
       );
@@ -276,7 +276,7 @@ class Margins implements HorizontalMargins {
     );
 
     if (bottom == null) {
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message: "'bottom-margin' element content must be double",
         xmlElement: xmlElement,
       );

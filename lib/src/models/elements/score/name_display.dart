@@ -45,7 +45,7 @@ class NameDisplay {
         default:
           // This exception should not be thrown because
           // the validateSequence method should check if the sequence is correct.
-          throw InvalidElementContentException(
+          throw XmlElementContentException(
             message:
                 "Invalid element found inside 'name-display': ${childElement.name.local}",
             xmlElement: xmlElement,

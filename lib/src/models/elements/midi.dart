@@ -61,7 +61,7 @@ class MidiDevice {
 
     String content = xmlElement.innerText;
     if (xmlElement.childElements.isNotEmpty) {
-      throw InvalidElementContentException(
+      throw XmlElementContentException(
         message: "'midi-device' must have only one text child",
         xmlElement: xmlElement,
       );
@@ -167,7 +167,7 @@ class MidiInstrument {
   }) {
     XmlElement? element = xmlElement.getElement(elementName);
     if (element?.childElements.isNotEmpty == true) {
-      throw InvalidElementContentException(
+      throw XmlElementContentException(
         message: "'$elementName' content must be $typeName data type",
         xmlElement: xmlElement,
       );
@@ -201,7 +201,7 @@ class MidiInstrument {
     String? midiName = midiNameElement?.innerText;
     if (midiName?.isEmpty == true &&
         midiNameElement?.childElements.isNotEmpty == true) {
-      throw InvalidElementContentException(
+      throw XmlElementContentException(
         message: "'midi-name' must have text content",
         xmlElement: xmlElement,
       );
@@ -265,7 +265,7 @@ class MidiInstrument {
     String? id = xmlElement.getAttribute("id");
 
     if (id == null || id.isEmpty) {
-      throw XmlAttributeRequired(
+      throw MissingXmlAttribute(
         message: "non-empty 'id' attribute required for 'midi-device' element",
         xmlElement: xmlElement,
       );

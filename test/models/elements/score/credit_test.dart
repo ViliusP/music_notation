@@ -61,7 +61,7 @@ void main() {
 
       expect(
         () => Credit.fromXml(rootElement),
-        throwsA(isA<InvalidElementContentException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
   });

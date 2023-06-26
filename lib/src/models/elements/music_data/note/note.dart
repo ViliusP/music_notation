@@ -300,7 +300,7 @@ class Note implements MusicDataElement {
 
     int? staff = int.tryParse(rawStaff ?? "");
     if (rawStaff != null && (staff == null || staff < 1)) {
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message: "Staff value is non valid positiveInteger: $staff",
         xmlElement: xmlElement,
       );
@@ -330,7 +330,7 @@ class Note implements MusicDataElement {
 
     if (printLagerAttribute != null && printLager == null) {
       // TODO
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message: "",
         xmlElement: xmlElement,
       );

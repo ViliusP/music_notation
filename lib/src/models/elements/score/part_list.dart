@@ -50,7 +50,11 @@ class PartList {
     );
 
     if (firstScorePartIndex == -1) {
-      throw XmlElementRequired('No "score-part" element found in "part-list"');
+      throw InvalidXmlSequence(
+        message: 'No "score-part" element found in "part-list"',
+        xmlElement: xmlElement,
+        sequence: {},
+      );
     }
 
     final firstScorePart = children[firstScorePartIndex];
@@ -67,7 +71,7 @@ class PartList {
           additionalParts.add(PartGroup.fromXml(element));
           break;
         default:
-          throw InvalidXmlElementException(
+          throw XmlElementContentException(
             message: 'Wrong child in "part-list" element',
             xmlElement: xmlElement,
           );

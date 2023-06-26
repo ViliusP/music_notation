@@ -82,7 +82,7 @@ enum AccidentalValue {
   /// In musicXML, accidental-value is content and always required.
   static AccidentalValue fromXml(XmlElement xmlElement) {
     if (xmlElement.childElements.isNotEmpty) {
-      throw InvalidElementContentException(
+      throw XmlElementContentException(
         message:
             "${xmlElement.name} element must contain only one children - accidental-value",
         xmlElement: xmlElement,
@@ -92,7 +92,7 @@ enum AccidentalValue {
     String rawValue = xmlElement.innerText;
     AccidentalValue? value = AccidentalValue.fromString(rawValue);
     if (value == null) {
-      throw MusicXmlFormatException(
+      throw MusicXmlTypeException(
         message: generateValidationError(
           rawValue,
         ),

@@ -52,7 +52,7 @@ void main() {
         () => MidiDevice.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidElementContentException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
     test('should throw on invalid port', () {
@@ -242,7 +242,7 @@ void main() {
 
       expect(
         () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidElementContentException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
     // midi-name
@@ -269,7 +269,7 @@ void main() {
 
       expect(
         () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidElementContentException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
     // midi-bank
@@ -306,7 +306,7 @@ void main() {
 
       expect(
         () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidElementContentException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
     // midi-program
@@ -331,7 +331,7 @@ void main() {
 
       expect(
         () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidElementContentException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
     test('should throw exception on empty midi-program', () {
@@ -368,7 +368,7 @@ void main() {
 
       expect(
         () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidElementContentException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
     test('should throw exception on empty midi-unpitched', () {
@@ -417,7 +417,7 @@ void main() {
 
       expect(
         () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidElementContentException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
     test('should throw exception on empty volume', () {
@@ -466,7 +466,7 @@ void main() {
 
       expect(
         () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidElementContentException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
     test('should throw exception on lower than minimum pan', () {
@@ -527,7 +527,7 @@ void main() {
 
       expect(
         () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidElementContentException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
     test('should throw exception on lower than minimum elevation', () {
@@ -563,7 +563,7 @@ void main() {
 
       expect(
         () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<XmlAttributeRequired>()),
+        throwsA(isA<MissingXmlAttribute>()),
       );
     });
     test('should throw exception on missing id', () {
@@ -574,7 +574,7 @@ void main() {
 
       expect(
         () => MidiInstrument.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<XmlAttributeRequired>()),
+        throwsA(isA<MissingXmlAttribute>()),
       );
     });
   });

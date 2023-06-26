@@ -22,7 +22,7 @@ enum GroupSymbolValue {
   static GroupSymbolValue fromXml(XmlElement xmlElement) {
     if (xmlElement.children.length != 1 ||
         xmlElement.children.first.nodeType != XmlNodeType.TEXT) {
-      throw InvalidElementContentException(
+      throw XmlElementContentException(
         message:
             "'${xmlElement.name}' element should contain only one children - accidental-value",
         xmlElement: xmlElement,

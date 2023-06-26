@@ -139,7 +139,7 @@ class LinkAttributes {
     String? href = xmlElement.getAttribute('xlink:href');
 
     if (href == null || href.isEmpty) {
-      throw XmlAttributeRequired(
+      throw MissingXmlAttribute(
         message: "xlink:href is required for xml for ${xmlElement.name.local}",
         xmlElement: xmlElement,
       );

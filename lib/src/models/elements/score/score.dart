@@ -205,7 +205,7 @@ class Work {
 
     XmlNode? workNumberNode = xmlElement.getElement('work-number')!.firstChild;
     if (workNumberNode != null && workNumberNode.nodeType != XmlNodeType.TEXT) {
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message: "'work-number' content must be string",
         xmlElement: xmlElement,
       );
@@ -213,7 +213,7 @@ class Work {
 
     XmlNode? workTitleNode = xmlElement.getElement('work-title')!.firstChild;
     if (workTitleNode != null && workTitleNode.nodeType != XmlNodeType.TEXT) {
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message: "'work-number' content must be string",
         xmlElement: xmlElement,
       );

@@ -77,7 +77,7 @@ sealed class Credit {
         rethrow;
       }
     }
-    throw InvalidElementContentException(
+    throw XmlElementContentException(
       message:
           "Credit must have 'credit-image' or <credit-words> or <credit-symbol>.",
       xmlElement: xmlElement,
@@ -205,7 +205,7 @@ class TextCredit extends Credit {
     List<String> creditTypes = creditTypeElements.map((type) {
       String? content = type.firstChild?.value;
       if (content == null || content.isEmpty) {
-        throw InvalidXmlElementException(
+        throw XmlElementContentException(
           message: "'credit-type' must have non-empty string content",
           xmlElement: type,
         );
@@ -282,7 +282,7 @@ class ImageCredit extends Credit {
     List<String> creditTypes = creditTypeElements.map((child) {
       String content = child.innerText;
       if (child.childElements.isNotEmpty) {
-        throw InvalidElementContentException(
+        throw XmlElementContentException(
           message: "'credit-type' must have string content",
           xmlElement: child,
         );

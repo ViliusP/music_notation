@@ -28,18 +28,18 @@ abstract class MusicXmlException implements Exception {
 /// You can then use this exception in your parsing code as follows:
 /// ```dart
 /// if (xmlElement.isEmpty) {
-///   throw InvalidElementContentException(
+///   throw XmlElementContentException(
 ///     message: 'The element "${xmlElement.name}" is unexpectedly empty.',
 ///     xmlElement: xmlElement,
 ///   );
 /// } else if (xmlElement.hasElement) {
-///   throw InvalidElementContentException(
+///   throw XmlElementContentException(
 ///     message: 'The element "${xmlElement.name}" contains unexpected child elements.',
 ///     xmlElement: xmlElement,
 ///   );
 /// }
 /// ```
-class InvalidElementContentException implements MusicXmlException {
+class XmlElementContentException implements MusicXmlException {
   /// A message that describes the error in detail.
   @override
   final String message;
@@ -48,7 +48,7 @@ class InvalidElementContentException implements MusicXmlException {
   @override
   final XmlElement xmlElement;
 
-  InvalidElementContentException({
+  XmlElementContentException({
     required this.message,
     required this.xmlElement,
   });
@@ -56,30 +56,6 @@ class InvalidElementContentException implements MusicXmlException {
   @override
   String toString() {
     return 'InvalidContentElementException: $message';
-  }
-}
-
-/// Exception that is thrown when an invalid XmlElement is encountered
-/// while parsing the MusicXML data.
-@Deprecated(
-    "use InvalidContentElementException or InvalidFormatElementException")
-class InvalidXmlElementException implements Exception {
-  /// A message that describes the error in detail.
-  final String message;
-
-  /// The XmlElement which caused the exception to be thrown.
-  final XmlElement xmlElement;
-
-  /// Creates an instance of the InvalidXmlElementException with an
-  /// error [message] and the offending [xmlElement].
-  InvalidXmlElementException({
-    required this.message,
-    required this.xmlElement,
-  });
-
-  @override
-  String toString() {
-    return 'InvalidXmlElementException: $message';
   }
 }
 
@@ -143,7 +119,7 @@ class MusicXmlFormatException extends FormatException
 ///   print('The XML element that caused the error was: ${e.xmlElement.toXmlString()}');
 /// }
 /// ```
-class InvalidMusicXmlTypeException implements MusicXmlException {
+class MusicXmlTypeException implements MusicXmlException {
   /// The message that explains why the exception was thrown.
   ///
   /// This should ideally contain details about the invalid string
@@ -158,7 +134,7 @@ class InvalidMusicXmlTypeException implements MusicXmlException {
   @override
   final XmlElement xmlElement;
 
-  const InvalidMusicXmlTypeException({
+  const MusicXmlTypeException({
     required this.message,
     required this.xmlElement,
   });
@@ -180,13 +156,13 @@ class InvalidMusicXmlTypeException implements MusicXmlException {
 /// Example:
 /// ```dart
 /// if (!xmlElement.hasAttribute('requiredAttribute')) {
-///   throw XmlAttributeRequired(
+///   throw MissingXmlAttribute(
 ///     message: 'The attribute "requiredAttribute" is missing.',
 ///     xmlElement: xmlElement,
 ///   );
 /// }
 /// ```
-class XmlAttributeRequired implements MusicXmlException {
+class MissingXmlAttribute implements MusicXmlException {
   /// A message that describes the error in detail.
   @override
   final String message;
@@ -195,29 +171,14 @@ class XmlAttributeRequired implements MusicXmlException {
   @override
   final XmlElement xmlElement;
 
-  XmlAttributeRequired({
+  MissingXmlAttribute({
     required this.message,
     required this.xmlElement,
   });
 
   @override
   String toString() {
-    return 'XmlAttributeRequired: $message';
-  }
-}
-
-@Deprecated("Use InvalidXmlSequence instead")
-class XmlElementRequired implements Exception {
-  final String message;
-  final XmlElement? xmlElement;
-
-  XmlElementRequired(this.message, [this.xmlElement]);
-
-  @override
-  String toString() {
-    final String xml = xmlElement?.toXmlString(pretty: true) ?? "";
-
-    return 'XmlElementRequired: $message\n$xml';
+    return 'MissingXmlAttribute: $message';
   }
 }
 

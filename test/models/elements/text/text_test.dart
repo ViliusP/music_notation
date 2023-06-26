@@ -63,7 +63,7 @@ void main() {
 
       expect(
         () => FormattedText.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidXmlElementException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
   });
@@ -145,7 +145,7 @@ void main() {
 
       expect(
         () => AccidentalText.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<InvalidElementContentException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
   });

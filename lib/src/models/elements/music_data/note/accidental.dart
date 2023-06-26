@@ -48,16 +48,7 @@ class Accidental {
   });
 
   factory Accidental.fromXml(XmlElement xmlElement) {
-    AccidentalValue? value = AccidentalValue.fromString(
-      xmlElement.innerText,
-    );
-
-    if (value == null) {
-      throw InvalidXmlElementException(
-        message: "Bad Accidental value",
-        xmlElement: xmlElement,
-      );
-    }
+    AccidentalValue? value = AccidentalValue.fromXml(xmlElement);
 
     String? editorialAttribute = xmlElement.getAttribute("editorial");
     bool editorial = false;

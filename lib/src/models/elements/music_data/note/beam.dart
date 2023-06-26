@@ -50,8 +50,9 @@ class Beam {
     BeamValue? beamValue = BeamValue.fromString(xmlElement.innerText);
 
     if (beamValue == null) {
-      throw XmlElementRequired(
-        "Valid beam value is required: ${xmlElement.innerText}",
+      throw XmlElementContentException(
+        message: "Valid beam value is required: ${xmlElement.innerText}",
+        xmlElement: xmlElement,
       );
     }
 
@@ -64,7 +65,7 @@ class Beam {
         "repeater",
         repeaterAttribute,
       );
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message: message,
         xmlElement: xmlElement,
       );
@@ -75,7 +76,7 @@ class Beam {
     if (fanAttribute != null && fan == null) {
       final String message =
           "Bad fan attribute value was provided: $fanAttribute";
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message: message,
         xmlElement: xmlElement,
       );
@@ -86,7 +87,7 @@ class Beam {
     if (numberAttribute != null && number == null) {
       final String message =
           "Bad number attribute value was provided: $fanAttribute";
-      throw InvalidXmlElementException(
+      throw XmlElementContentException(
         message: message,
         xmlElement: xmlElement,
       );

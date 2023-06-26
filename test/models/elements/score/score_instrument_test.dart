@@ -172,7 +172,7 @@ void main() {
         () => Ensemble.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidXmlElementException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
   });
@@ -188,7 +188,7 @@ void main() {
         () => VirtualInstrument.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidXmlElementException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
     test('should throw on invalid virtual-name content', () {
@@ -202,7 +202,7 @@ void main() {
         () => VirtualInstrument.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidXmlElementException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
   });

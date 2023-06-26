@@ -103,7 +103,7 @@ void main() {
         () => Work.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidXmlElementException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
     test("should throw if work-title has invalid content", () {
@@ -119,7 +119,7 @@ void main() {
         () => Work.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<InvalidXmlElementException>()),
+        throwsA(isA<XmlElementContentException>()),
       );
     });
     test("should throw if order of elements in out of order", () {

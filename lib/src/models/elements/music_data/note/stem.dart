@@ -28,7 +28,7 @@ class Stem {
 
   factory Stem.fromXml(XmlElement xmlElement) {
     if (xmlElement.childElements.isNotEmpty) {
-      throw InvalidElementContentException(
+      throw XmlElementContentException(
         message: "Stem value is missing",
         xmlElement: xmlElement,
       );
