@@ -95,8 +95,7 @@ class Identification {
     }
     var sourceContent = xmlElement.getElement('source')?.firstChild;
 
-    if (sourceContent?.value != null &&
-        sourceContent?.nodeType != XmlNodeType.TEXT) {
+    if (sourceContent?.childElements.isNotEmpty == true) {
       throw XmlElementContentException(
         message: "'source' in 'identification' must to be text",
         xmlElement: xmlElement,
