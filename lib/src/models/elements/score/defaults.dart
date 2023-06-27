@@ -208,34 +208,19 @@ class Appearance {
 
 /// The line-width type indicates the width of a line type in tenths.
 ///
-/// The type attribute defines what type of line is being defined. Values include beam, bracket, dashes, enclosure, ending, extend, heavy barline, leger, light barline, octave shift, pedal, slur middle, slur tip, staff, stem, tie middle, tie tip, tuplet bracket, and wedge.
-///
-/// The text content is expressed in tenths.
+/// The type attribute defines what type of line is being defined.
+/// Values include beam, bracket, dashes, enclosure, ending, extend,
+/// heavy barline, leger, light barline, octave shift, pedal, slur middle,
+/// slur tip, staff, stem, tie middle, tie tip, tuplet bracket, and wedge.
 class LineWidth {
-  // enum LineWidthType {
-//   beam,
-//   bracket,
-//   dashes,
-//   enclosure,
-//   ending,
-//   extend,
-//   heavyBarline,
-//   leger,
-//   lightBarline,
-//   octaveShift,
-//   pedal,
-//   slurMiddle,
-//   slurTip,
-//   staff,
-//   stem,
-//   tieMiddle,
-//   tieTip,
-//   tupletBracket,
-//   wedge,
-// }
-
+  /// The type of line whose width is being defined.
   String type;
 
+  /// Converted type to enum. If [standardType] is null,
+  /// that means it is other application-specific type.
+  LineWidthType? get standardType => LineWidthType.fromString(type);
+
+  /// Width of a specific line type in tenths
   double value;
 
   LineWidth({
@@ -243,10 +228,35 @@ class LineWidth {
     required this.value,
   });
 
-  factory LineWidth.fromXml(XmlElement element) {
+  factory LineWidth.fromXml(XmlElement xmlElement) {
+    if (xmlElement.childElements.isNotEmpty) {
+      throw XmlElementContentException(
+        message: "'line-width' element must have tenths type content",
+        xmlElement: xmlElement,
+      );
+    }
+
+    double? value = double.tryParse(xmlElement.innerText);
+    if (value == null) {
+      throw MusicXmlFormatException(
+        message: "'line-width' value is not tenths type",
+        xmlElement: xmlElement,
+        source: xmlElement.innerText,
+      );
+    }
+
+    String? typeAttribute = xmlElement.getAttribute("type");
+
+    if (typeAttribute == null) {
+      throw MissingXmlAttribute(
+        message: "'type' attribute is required for 'line-width' element",
+        xmlElement: xmlElement,
+      );
+    }
+
     return LineWidth(
-      value: double.parse(element.text),
-      type: element.getAttribute("type") ?? "",
+      value: value,
+      type: typeAttribute,
     );
   }
 
@@ -261,6 +271,34 @@ class LineWidth {
     );
     // TODO make
     return builder.buildDocument().rootElement;
+  }
+}
+
+enum LineWidthType {
+  beam,
+  bracket,
+  dashes,
+  enclosure,
+  ending,
+  extend,
+  heavyBarline,
+  leger,
+  lightBarline,
+  octaveShift,
+  pedal,
+  slurMiddle,
+  slurTip,
+  staff,
+  stem,
+  tieMiddle,
+  tieTip,
+  tupletBracket,
+  wedge;
+
+  static LineWidthType? fromString(String value) {
+    return LineWidthType.values.firstWhereOrNull(
+      (v) => v.name == sentenceCaseToCamelCase(value),
+    );
   }
 }
 
