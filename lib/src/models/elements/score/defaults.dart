@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/elements/layout.dart';
 import 'package:music_notation/src/models/elements/text/text.dart';
 import 'package:music_notation/src/models/exceptions.dart';
@@ -728,17 +729,7 @@ class LyricsFont extends Font {
   });
 
   factory LyricsFont.fromXml(XmlElement element) {
-    // TODO check
-    if (element.name.local != 'lyric-font') {
-      throw FormatException("Unexpected element name: ${element.name.local}");
-    }
-
-    final lang = element.getAttribute('xml:lang');
-    if (lang == null) {
-      throw const FormatException('Missing required attribute "xml:lang"');
-    }
-
-    Font? font = Font.fromXml(element);
+    Font font = Font.fromXml(element);
 
     return LyricsFont(
       number: element.getAttribute('number'),
@@ -785,17 +776,10 @@ class LyricLanguage {
   });
 
   factory LyricLanguage.fromXml(XmlElement element) {
-    if (element.name.local != 'lyric-language') {
-      throw XmlElementContentException(
-        message: "Unexpected element name: ${element.name.local}",
-        xmlElement: element,
-      );
-    }
-
     final lang = element.getAttribute('xml:lang');
-    if (lang == null) {
+    if (lang == null || lang.isEmpty) {
       throw MissingXmlAttribute(
-        message: 'Missing required attribute "xml:lang"',
+        message: 'Missing or empty required attribute "xml:lang"',
         xmlElement: element,
       );
     }
