@@ -39,7 +39,7 @@ void main() {
         () => NameDisplay.fromXml(
           XmlDocument.parse(input).rootElement,
         ),
-        throwsA(isA<MusicXmlFormatException>()),
+        throwsA(isA<MusicXmlTypeException>()),
       );
     });
   });
