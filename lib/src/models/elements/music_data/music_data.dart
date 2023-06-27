@@ -11,22 +11,8 @@ import 'package:music_notation/src/models/elements/music_data/harmony/harmony.da
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/print.dart';
 import 'package:music_notation/src/models/elements/sound/sound.dart';
+import 'package:music_notation/src/models/exceptions.dart';
 import 'package:xml/xml.dart';
-
-/// The music-data group contains the basic musical data that is either associated with a part or a measure,
-/// depending on whether the partwise or timewise hierarchy is used.
-class MusicData {
-  List<MusicDataElement> data;
-  MusicData({
-    required this.data,
-  });
-
-  toXml() {}
-
-  factory MusicData.fromXml(XmlElement element) {
-    return MusicData(data: []);
-  }
-}
 
 abstract class MusicDataElement {
   factory MusicDataElement.fromXml(XmlElement xmlElement) {
@@ -60,7 +46,12 @@ abstract class MusicDataElement {
       case 'bookmark':
         return Bookmark.fromXml(xmlElement);
       default:
-        throw Exception('Unknown element: ${xmlElement.name.local}');
+        throw XmlElementContentException(
+          message: 'Unknown element: ${xmlElement.name.local}',
+          xmlElement: xmlElement,
+        );
     }
   }
+
+  XmlElement toXml();
 }

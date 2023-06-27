@@ -201,7 +201,15 @@ class Sound implements MusicDataElement {
   });
 
   static Sound fromXml(XmlElement xmlElement) {
-    return Sound(soundSequence: SoundSequence.fromXml(xmlElement));
+    return Sound(
+      soundSequence: SoundSequence.fromXml(xmlElement),
+    );
+  }
+
+  @override
+  XmlElement toXml() {
+    // TODO: implement toXml
+    throw UnimplementedError();
   }
 }
 

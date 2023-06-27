@@ -36,6 +36,12 @@ class Backup implements MusicDataElement {
       editorial: Editorial.fromXml(xmlElement),
     );
   }
+
+  @override
+  XmlElement toXml() {
+    // TODO: implement toXml
+    throw UnimplementedError();
+  }
 }
 
 

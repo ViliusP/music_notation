@@ -31,4 +31,10 @@ class Forward implements MusicDataElement {
       editorialVoice: EditorialVoice.fromXml(xmlElement),
     );
   }
+
+  @override
+  XmlElement toXml() {
+    // TODO: implement toXml
+    throw UnimplementedError();
+  }
 }

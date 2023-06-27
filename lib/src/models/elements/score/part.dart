@@ -4,6 +4,7 @@ import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 
+/// Top level of musical organization below the score partwise.
 class Part {
   // ------------------------- //
   // ------   Content   ------ //
@@ -14,8 +15,7 @@ class Part {
   // ------ Attributes ------- //
   // ------------------------- //
 
-  /// In either partwise or timewise format,
-  /// the part element has an id attribute that is an IDREF back to a score-part in the part-list.
+  /// An IDREF back to a score part within the part list.
   final String id;
 
   Part({
@@ -32,9 +32,9 @@ class Part {
     validateSequence(xmlElement, _xmlExpectedOrder);
     String? id = xmlElement.getAttribute("id");
 
-    if (id == null) {
+    if (id == null || id.isEmpty) {
       throw MissingXmlAttribute(
-        message: "'id' attribute is required for 'part' element",
+        message: "non-empty 'id' attribute is required for 'part' element",
         xmlElement: xmlElement,
       );
     }
@@ -49,6 +49,7 @@ class Part {
     );
   }
 
+  // TODO: implement and test.
   XmlElement toXml() {
     final builder = XmlBuilder();
     // builder.element('part', nest: () {
@@ -61,8 +62,9 @@ class Part {
   }
 }
 
+/// The basic musical data such as notes within a score partwise.
 class Measure {
-  final MusicData data;
+  final List<MusicDataElement> data;
   final MeasureAttributes attributes;
 
   Measure({
@@ -70,36 +72,51 @@ class Measure {
     required this.attributes,
   });
 
+  // Field(s): quantifier
+  static const Map<String, XmlQuantifier> _xmlExpectedOrder = {
+    'note|backup|forward|direction|attributes|harmony|figured-bass|print|sound|listening|barline|grouping|link|bookmark':
+        XmlQuantifier.zeroOrMore,
+  };
+
   factory Measure.fromXml(XmlElement xmlElement) {
-    XmlElement? musicDataElement = xmlElement.getElement('music-data');
+    validateSequence(xmlElement, _xmlExpectedOrder);
 
     return Measure(
-      data: musicDataElement == null
-          ? MusicData(data: [])
-          : MusicData.fromXml(musicDataElement),
+      data: xmlElement.childElements
+          .map((childElement) => MusicDataElement.fromXml(childElement))
+          .toList(),
       attributes: MeasureAttributes.fromXml(xmlElement),
     );
   }
 
   XmlElement toXml() {
     final builder = XmlBuilder();
-    builder.element('measure', nest: data.toXml());
+    for (var element in data) {
+      builder.element('measure', nest: element.toXml());
+    }
     // builder.attribute('measure-attributes', attributes.toXml());
     return builder.buildDocument().rootElement;
   }
 }
 
-/// The measure-attributes group is used by the measure element.
-/// Measures have a required number attribute (going from partwise to timewise, measures are grouped via the number).
+/// Group is used by the measure element.Measures have a required number attribute
+/// (going from partwise to timewise, measures are grouped via the number).
 ///
-/// The implicit attribute is set to "yes" for measures where the measure number should never appear, such as pickup measures and the last half of mid-measure repeats. The value is "no" if not specified.
+/// The implicit attribute is set to "yes" for measures where the measure number
+/// should never appear, such as pickup measures and the last half of mid-measure repeats.
+/// The value is "no" if not specified.
 ///
-/// The non-controlling attribute is intended for use in multimetric music like the Don Giovanni minuet. If set to "yes", the left barline in this measure does not coincide with the left barline of measures in other parts. The value is "no" if not specified.
+/// The non-controlling attribute is intended for use in multimetric music like
+/// the Don Giovanni minuet. If set to "yes", the left barline in this measure
+/// does not coincide with the left barline of measures in other parts.
+/// The value is "no" if not specified.
 ///
 /// In partwise files, the number attribute should be the same for
 /// measures in different parts that share the same left barline.
 /// While the number attribute is often numeric, it does not have to be.
-/// Non-numeric values are typically used together with the implicit or non-controlling attributes being set to "yes". For a pickup measure, the number attribute is typically set to "0" and the implicit attribute is typically set to "yes".
+/// Non-numeric values are typically used together with the implicit or
+/// non-controlling attributes being set to "yes". For a pickup measure, the number attribute
+/// is typically set to "0" and the implicit attribute is typically set to "yes".
 ///
 /// If measure numbers are not unique within a part, this can cause problems
 /// for conversions between partwise and timewise formats.
@@ -108,11 +125,11 @@ class Measure {
 /// This attribute is ignored for measures where the implicit attribute is set to "yes".
 /// Further details about measure numbering can be specified using the measure-numbering element.
 ///
-/// Measure width is specified in tenths.
-/// These are the global tenths specified in the scaling element, not local tenths as modified by the staff-size element.
+/// Measure width is specified in tenths. These are the global tenths specified in the scaling element,
+/// not local tenths as modified by the staff-size element.
 /// The width covers the entire measure from barline or system start to barline or system end.<
 class MeasureAttributes {
-  /// The attribute that identifies the measure.
+  /// Identifies the measure.
   ///
   /// Going from partwise to timewise, measures are grouped via this attribute.
   /// In partwise files, it should be the same for measures in different parts that share the same left barline.
@@ -181,17 +198,3 @@ class MeasureAttributes {
     return isMeasureTextValid && isImplicitValid;
   }
 }
-
-// <xs:element name="part" maxOccurs="unbounded">
-// 		<xs:complexType>
-// 			<xs:sequence>
-// 				<xs:element name="measure" maxOccurs="unbounded">
-// 					<xs:complexType>
-// 						<xs:group ref="music-data"/>
-// 						<xs:attributeGroup ref="measure-attributes"/>
-// 					</xs:complexType>
-// 				</xs:element>
-// 			</xs:sequence>
-// 			<xs:attributeGroup ref="part-attributes"/>
-// 		</xs:complexType>
-// 	</xs:element>

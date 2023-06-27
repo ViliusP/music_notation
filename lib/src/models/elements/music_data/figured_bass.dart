@@ -87,6 +87,12 @@ class FiguredBass implements MusicDataElement {
       id: xmlElement.getAttribute("id"),
     );
   }
+
+  @override
+  XmlElement toXml() {
+    // TODO: implement toXml
+    throw UnimplementedError();
+  }
 }
 
 /// The figure type represents a single figure within a figured-bass element.

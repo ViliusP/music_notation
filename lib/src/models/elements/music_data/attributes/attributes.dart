@@ -112,6 +112,12 @@ class Attributes implements MusicDataElement {
       editorial: Editorial.fromXml(xmlElement),
     );
   }
+
+  @override
+  XmlElement toXml() {
+    // TODO: implement toXml
+    throw UnimplementedError();
+  }
 }
 
 abstract class Transposition {

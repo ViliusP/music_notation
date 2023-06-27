@@ -75,6 +75,12 @@ class Direction implements MusicDataElement {
       system: SystemRelation.none,
     );
   }
+
+  @override
+  XmlElement toXml() {
+    // TODO: implement toXml
+    throw UnimplementedError();
+  }
 }
 
 /// Textual direction types may have more than 1 component due to multiple fonts.

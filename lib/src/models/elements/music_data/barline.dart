@@ -117,6 +117,12 @@ class Barline implements MusicDataElement {
       editorial: Editorial.fromXml(xmlElement),
     );
   }
+
+  @override
+  XmlElement toXml() {
+    // TODO: implement toXml
+    throw UnimplementedError();
+  }
 }
 
 /// The right-left-middle types is used to specify barline location.
