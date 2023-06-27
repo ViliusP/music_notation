@@ -5,7 +5,7 @@ void main() {
   group("Hyphen to camel", () {});
   group("Camel to hyphen", () {});
   group("Setence to camel", () {
-    List<(String input, String expectedOutput)> inputsOuputs = [
+    List<(String input, String expectedOutput)> inputsOutputs = [
       ("", ""),
       ('tuplet bracket', 'tupletBracket'),
       ('beam', 'beam'),
@@ -29,12 +29,54 @@ void main() {
       ('some custom type', 'someCustomType'),
       ('another custom type', 'anotherCustomType'),
     ];
-    for (var inputOuput in inputsOuputs) {
+    for (var inputOuput in inputsOutputs) {
       String input = inputOuput.$1;
       String expectedOutput = inputOuput.$2;
 
       test("should convert $input to $expectedOutput", () {
         String result = sentenceCaseToCamelCase(input);
+        expect(result, expectedOutput);
+      });
+    }
+  });
+  group("Camel to sentence case", () {
+    List<(String input, String expectedOutput)> inputsOutputs = [
+      ("", ""),
+      ('tupletBracket', 'tuplet bracket'),
+      ('beam', 'beam'),
+      ('lightBarline', 'light barline'),
+      ('heavyBarline', 'heavy barline'),
+      ('octaveShift', 'octave shift'),
+      ('slurMiddle', 'slur middle'),
+      ('slurTip', 'slur tip'),
+      ('tieMiddle', 'tie middle'),
+      ('tieTip', 'tie tip'),
+      ('staff', 'staff'),
+      ('stem', 'stem'),
+      ('wedge', 'wedge'),
+      ('ending', 'ending'),
+      ('extend', 'extend'),
+      ('pedal', 'pedal'),
+      ('dashes', 'dashes'),
+      ('enclosure', 'enclosure'),
+      ('leger', 'leger'),
+      ('bracket', 'bracket'),
+      ('someCustomType', 'some custom type'),
+      ('anotherCustomType', 'another custom type'),
+      ('evenMoreCustomType', 'even more custom type'),
+      (
+        'reallyLongCustomTypeWithLotsOfWords',
+        'really long custom type with lots of words',
+      ),
+      ('yetAnotherCustomType', 'yet another custom type'),
+    ];
+
+    for (var inputOuput in inputsOutputs) {
+      String input = inputOuput.$1;
+      String expectedOutput = inputOuput.$2;
+
+      test("should convert $input to $expectedOutput", () {
+        String result = camelCaseToSentenceCase(input);
         expect(result, expectedOutput);
       });
     }

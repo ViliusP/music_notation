@@ -32,6 +32,29 @@ String sentenceCaseToCamelCase(String input) {
       );
 }
 
+/// Converts a camelCase string to sentence case.
+///
+/// This function uses a regular expression to find each capital letter in
+/// the [input] that comes after a lowercase letter, and then replaces
+/// that capital letter with a space and the lowercase version of the letter.
+///
+/// Example:
+/// ```
+/// var input = 'camelCaseString';
+/// var output = camelCaseToSentenceCase(input);
+/// print(output); // prints: 'camel case string'
+/// ```
+///
+/// Note: This function does not capitalize the first letter of the output
+/// string. If the output string needs to start with a capital letter, additional
+/// processing is required.
+String camelCaseToSentenceCase(String input) {
+  return input.replaceAllMapped(
+    RegExp(r'(?<=[a-z])[A-Z]'),
+    (Match m) => ' ${m[0]!.toLowerCase()}',
+  );
+}
+
 Map inverseMap(Map f) {
   return f.map((k, v) => MapEntry(v, k));
 }
