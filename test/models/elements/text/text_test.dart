@@ -124,7 +124,7 @@ void main() {
 
       expect(
         () => AccidentalText.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<MusicXmlFormatException>()),
+        throwsA(isA<MusicXmlTypeException>()),
       );
     });
 
@@ -135,7 +135,7 @@ void main() {
 
       expect(
         () => AccidentalText.fromXml(XmlDocument.parse(input).rootElement),
-        throwsA(isA<MusicXmlFormatException>()),
+        throwsA(isA<MusicXmlTypeException>()),
       );
     });
     test('should throw exception when content is invalid', () {
