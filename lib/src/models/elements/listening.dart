@@ -28,6 +28,12 @@ class Listening implements MusicDataElement {
   factory Listening.fromXml(XmlElement xmlElement) {
     return Listening(interactions: []);
   }
+
+  @override
+  XmlElement toXml() {
+    // TODO: implement toXml
+    throw UnimplementedError();
+  }
 }
 
 /// The sync type specifies the style that a score following application
