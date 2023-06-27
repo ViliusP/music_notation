@@ -63,7 +63,7 @@ void main() {
       String input = inputOuput.$1;
       String expectedOutput = inputOuput.$2;
 
-      test("should convert $input to $expectedOutput", () {
+      test("should convert '$input' to '$expectedOutput'", () {
         String result = sentenceCaseToCamelCase(input);
         expect(result, expectedOutput);
       });
@@ -105,7 +105,7 @@ void main() {
       String input = inputOuput.$1;
       String expectedOutput = inputOuput.$2;
 
-      test("should convert $input to $expectedOutput", () {
+      test("should convert '$input' to '$expectedOutput'", () {
         String result = camelCaseToSentenceCase(input);
         expect(result, expectedOutput);
       });
