@@ -24,6 +24,14 @@ String camelCaseToHyphen(String input) {
   return hyphenSeparated;
 }
 
+String sentenceCaseToCamelCase(String input) {
+  return input.replaceAll(' ', '_').splitMapJoin(
+        RegExp(r'_([a-z])'),
+        onMatch: (m) => m.group(1)!.toUpperCase(),
+        onNonMatch: (n) => n,
+      );
+}
+
 Map inverseMap(Map f) {
   return f.map((k, v) => MapEntry(v, k));
 }
