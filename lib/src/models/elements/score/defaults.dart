@@ -149,17 +149,28 @@ class Appearance {
   List<NoteSize> noteSizes;
   List<Distance> distances;
   List<Glyph> glyphs;
-  List<OtherAppearance> otherAppearances;
+  List<OtherAppearance> other;
 
   Appearance({
     required this.lineWidths,
     required this.noteSizes,
     required this.distances,
     required this.glyphs,
-    required this.otherAppearances,
+    required this.other,
   });
 
+  // Field(s): quantifier
+  static const Map<String, XmlQuantifier> _xmlExpectedOrder = {
+    'line-width': XmlQuantifier.zeroOrMore,
+    'note-size': XmlQuantifier.zeroOrMore,
+    'distance': XmlQuantifier.zeroOrMore,
+    'glyph': XmlQuantifier.zeroOrMore,
+    'other-appearance': XmlQuantifier.zeroOrMore,
+  };
+
   factory Appearance.fromXml(XmlElement xmlElement) {
+    validateSequence(xmlElement, _xmlExpectedOrder);
+
     return Appearance(
       lineWidths: xmlElement
           .findElements('line-width')
@@ -177,7 +188,7 @@ class Appearance {
           .findElements('glyph')
           .map((element) => Glyph.fromXml(element))
           .toList(),
-      otherAppearances: xmlElement
+      other: xmlElement
           .findElements('other-appearance')
           .map((element) => OtherAppearance.fromXml(element))
           .toList(),
@@ -199,7 +210,7 @@ class Appearance {
       for (var glyph in glyphs) {
         builder.element('glyph', nest: glyph.toXml());
       }
-      for (var otherAppearance in otherAppearances) {
+      for (var otherAppearance in other) {
         builder.element('other-appearance', nest: otherAppearance.toXml());
       }
     });
@@ -410,53 +421,123 @@ class Distance {
     return builder.buildDocument().rootElement;
   }
 
-  // Create an instance of NoteSize from an XML node
-  static Distance fromXml(XmlElement node) {
+  /// Creates an instance of [Distance] from an [xmlElement].
+  ///
+  /// Throws [XmlElementContentException] if xmlElement content is invalid or empty.
+  ///
+  /// Throws [MissingXmlAttribute] if type attribute is missing or empty.
+  ///
+  /// Throws [MusicXmlFormatException] if value is invalid.
+  static Distance fromXml(XmlElement xmlElement) {
+    if (xmlElement.childElements.isNotEmpty) {
+      throw XmlElementContentException(
+        message: "'distance' element must have tenths type content",
+        xmlElement: xmlElement,
+      );
+    }
+
+    String rawValue = xmlElement.innerText;
+    double? value = double.tryParse(rawValue);
+    if (value == null) {
+      throw MusicXmlFormatException(
+        message: "'distance' element content must be tenths",
+        xmlElement: xmlElement,
+        source: rawValue,
+      );
+    }
+
+    String? typeAttribute = xmlElement.getAttribute("type");
+    if (typeAttribute == null || typeAttribute.isEmpty) {
+      throw MissingXmlAttribute(
+        message:
+            "non-empty 'type' attribute is required for 'distance' element",
+        xmlElement: xmlElement,
+      );
+    }
+
     return Distance(
-      value: double.parse(node.text),
-      type: "", // TODO
+      value: value,
+      type: typeAttribute,
     );
   }
 }
 
-/// Represents what SMuFL glyph should be used for different variations of symbols that are semantically identical.
+/// Represents what SMuFL glyph should be used for different variations of symbols
+///  that are semantically identical.
 ///
 /// The type attribute specifies what type of glyph is being defined.
 /// The element value specifies what SMuFL glyph to use, including recommended stylistic alternates.
 ///
-/// The SMuFL glyph name should match the type. For instance, a type of quarter-rest would use values restQuarter, restQuarterOld, or restQuarterZ.
+/// The SMuFL glyph name should match the type. For instance, a type of quarter-rest
+/// would use values restQuarter, restQuarterOld, or restQuarterZ.
 ///
 /// A type of g-clef-ottava-bassa would use values gClef8vb, gClef8vbOld, or gClef8vbCClef.
 ///
-/// A type of octave-shift-up-8 would use values ottava, ottavaBassa, ottavaBassaBa, ottavaBassaVb, or octaveBassa.
+/// A type of octave-shift-up-8 would use values ottava, ottavaBassa,
+/// ottavaBassaBa, ottavaBassaVb, or octaveBassa.
 class Glyph {
-  /// The smufl-glyph-name type is used for attributes that reference a specific Standard Music Font Layout (SMuFL) character.
+  /// Name for attributes that reference a specific Standard Music Font Layout (SMuFL) character.
   ///
   /// The value is a SMuFL canonical glyph name, not a code point.
   /// For instance, the value for a standard piano pedal mark would be keyboardPedalPed, not U+E650.
-  ///
-  /// Type="smufl-glyph-name"
   String name;
 
-  /// The glyph-type defines what type of glyph is being defined in a glyph element.
+  /// Defines what type of glyph is being defined in a glyph element.
   ///
-  /// Values include quarter-rest, g-clef-ottava-bassa, c-clef, f-clef, percussion-clef, octave-shift-up-8, octave-shift-down-8, octave-shift-continue-8, octave-shift-down-15, octave-shift-up-15, octave-shift-continue-15, octave-shift-down-22, octave-shift-up-22, and octave-shift-continue-22.
+  /// Values include quarter-rest, g-clef-ottava-bassa, c-clef, f-clef, percussion-clef,
+  /// octave-shift-up-8, octave-shift-down-8, octave-shift-continue-8,
+  /// octave-shift-down-15, octave-shift-up-15, octave-shift-continue-15,
+  /// octave-shift-down-22, octave-shift-up-22, and octave-shift-continue-22.
   ///
-  /// This is left as a string so that other application-specific types can be defined, but it is made a separate type so that it can be redefined more strictly.
+  /// This is left as a string so that other application-specific types can be defined,
+  /// but it is made a separate type so that it can be redefined more strictly.
   ///
-  /// A quarter-rest type specifies the glyph to use when a note has a rest element and a type value of quarter.
+  /// A quarter-rest type specifies the glyph to use when a note has a rest element
+  /// and a type value of quarter.
   ///
-  /// The c-clef, f-clef, and percussion-clef types specify the glyph to use when a clef sign element value is C, F, or percussion respectively.
+  /// The c-clef, f-clef, and percussion-clef types specify the glyph
+  /// to use when a clef sign element value is C, F, or percussion respectively.
   ///
-  /// The g-clef-ottava-bassa type specifies the glyph to use when a clef sign element value is G and the clef-octave-change element value is -1.
+  /// The g-clef-ottava-bassa type specifies the glyph to use when a
+  /// clef sign element value is G and the clef-octave-change element value is -1.
   ///
-  /// The octave-shift types specify the glyph to use when an octave-shift type attribute value is up, down, or continue and the octave-shift size attribute value is 8, 15, or 22.
+  /// The octave-shift types specify the glyph to use when an octave-shift
+  /// type attribute value is up, down, or continue and the octave-shift size
+  /// attribute value is 8, 15, or 22.
   String type;
 
   Glyph({
     required this.name,
     required this.type,
   });
+
+  /// Creates an instance of Glyph from an [xmlElement].
+  ///
+  /// Throws [XmlElementContentException] if xmlElement content is invalid or empty.
+  ///
+  /// Throws [MissingXmlAttribute] if type attribute is missing or empty.
+  factory Glyph.fromXml(XmlElement xmlElement) {
+    if (xmlElement.childElements.isNotEmpty || xmlElement.innerText.isEmpty) {
+      throw XmlElementContentException(
+        message:
+            "'glyph' element must have non-empty smufl-glyph-name type content",
+        xmlElement: xmlElement,
+      );
+    }
+
+    String? typeAttribute = xmlElement.getAttribute("type");
+    if (typeAttribute == null || typeAttribute.isEmpty) {
+      throw MissingXmlAttribute(
+        message: "non-empty 'type' attribute is required for 'glyph' element",
+        xmlElement: xmlElement,
+      );
+    }
+
+    return Glyph(
+      name: xmlElement.innerText,
+      type: typeAttribute,
+    );
+  }
 
   // Convert an instance of Distance to an XML node
   XmlNode toXml() {
@@ -466,42 +547,56 @@ class Glyph {
     // TODO
     return builder.buildDocument().rootElement;
   }
-
-  // Create an instance of NoteSize from an XML node
-  factory Glyph.fromXml(XmlElement node) {
-    return Glyph(
-      name: node.text,
-      type: "", // TODO
-    );
-  }
 }
 
-/// The other-appearance type is used to define any graphical settings not yet in the current version of the MusicXML format.
+/// Defines any graphical settings not yet in the current version of the MusicXML format.
 ///
 /// This allows extended representation, though without application interoperability.
 class OtherAppearance {
   final String value;
   final String type;
 
-  OtherAppearance({required this.value, required this.type});
+  OtherAppearance({
+    required this.value,
+    required this.type,
+  });
 
-  factory OtherAppearance.fromXml(XmlElement element) {
-    if (element.name.local != 'other-appearance') {
-      throw FormatException("Unexpected element name: ${element.name.local}");
+  /// Creates an instance of [OtherAppearance] from an [xmlElement].
+  ///
+  /// Throws [XmlElementContentException] if xmlElement content is invalid or empty.
+  ///
+  /// Throws [MissingXmlAttribute] if type attribute is missing or empty.
+  factory OtherAppearance.fromXml(XmlElement xmlElement) {
+    if (xmlElement.childElements.isNotEmpty || xmlElement.innerText.isEmpty) {
+      throw XmlElementContentException(
+        message:
+            "'other-appearance' element must have non-empty string type content",
+        xmlElement: xmlElement,
+      );
     }
 
-    final type = element.getAttribute('type');
-    if (type == null) {
-      throw const FormatException('Missing required attribute "type"');
+    final type = xmlElement.getAttribute('type');
+    if (type == null || type.isEmpty) {
+      throw MissingXmlAttribute(
+        message: 'Missing required attribute "type"',
+        xmlElement: xmlElement,
+      );
     }
 
-    return OtherAppearance(value: element.text, type: type);
+    return OtherAppearance(
+      value: xmlElement.innerText,
+      type: type,
+    );
   }
 
+  // TODO: test
   XmlElement toXml() {
     final builder = XmlBuilder();
-    builder.element('other-appearance',
-        attributes: {'type': type}, nest: value);
+    builder.element(
+      'other-appearance',
+      attributes: {'type': type},
+      nest: value,
+    );
     return builder.buildDocument().rootElement;
   }
 
@@ -509,9 +604,11 @@ class OtherAppearance {
   String toString() => 'OtherAppearance(value: $value, type: $type)';
 }
 
-/// Margins, page sizes, and distances are all measured in tenths to keep MusicXML data in a consistent coordinate system as much as possible.
+/// Margins, page sizes, and distances are all measured in tenths to
+/// keep MusicXML data in a consistent coordinate system as much as possible.
 ///
-/// The translation to absolute units is done with the scaling type, which specifies how many millimeters are equal to how many tenths.
+/// The translation to absolute units is done with the scaling type,
+/// which specifies how many millimeters are equal to how many tenths.
 ///
 /// For a staff height of 7 mm, millimeters would be set to 7 while tenths is set to 40.
 ///
