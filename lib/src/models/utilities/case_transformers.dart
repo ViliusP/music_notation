@@ -24,6 +24,20 @@ String camelCaseToHyphen(String input) {
   return hyphenSeparated;
 }
 
+/// Converts a string from sentence case to camel case.
+///
+/// This function takes a string [input] in sentence case (i.e., with words separated by spaces)
+/// and returns a string in camel case (i.e., with words capitalized except the first one and no spaces).
+///
+/// If the input string is already in camel case, the same string will be returned.
+/// If the input string is empty, an empty string will be returned.
+///
+/// Example:
+/// ```
+/// var input = 'this is a test';
+/// var output = sentenceCaseToCamelCase(input);
+/// print(output); // prints: 'thisIsATest'
+/// ```
 String sentenceCaseToCamelCase(String input) {
   return input.replaceAll(' ', '_').splitMapJoin(
         RegExp(r'_([a-z])'),
