@@ -1,5 +1,5 @@
+import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/direction/direction.dart';
-import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/printing.dart';
 
 /// The harp-pedals type is used to create harp pedal diagrams.

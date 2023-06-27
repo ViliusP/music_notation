@@ -67,6 +67,7 @@
 // 	</xs:complexType>
 
 import 'package:collection/collection.dart';
+import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/editorial.dart';
 import 'package:music_notation/src/models/elements/music_data/note/notations/notation.dart';
 import 'package:music_notation/src/models/elements/music_data/note/accidental.dart';
@@ -588,17 +589,6 @@ class Unpitched {
   /// 		<xs:maxInclusive value="9"/>
   /// 	</xs:restriction>
   int? displayOctave;
-}
-
-/// The step type represents a step of the diatonic scale, represented using the English letters A through G.
-enum Step {
-  A,
-  B,
-  C,
-  D,
-  E,
-  F,
-  G;
 }
 
 /// The rest element indicates notated rests or silences.

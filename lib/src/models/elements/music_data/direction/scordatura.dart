@@ -1,4 +1,4 @@
-import 'package:music_notation/src/models/elements/music_data/note/note.dart';
+import 'package:music_notation/src/models/data_types/step.dart';
 
 /// Scordatura string tunings are represented by a series of accord elements, similar to the staff-tuning elements.
 ///
