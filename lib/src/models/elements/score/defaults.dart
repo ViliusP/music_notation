@@ -481,23 +481,39 @@ class Scaling {
   factory Scaling.fromXml(XmlElement xmlElement) {
     validateSequence(xmlElement, _xmlExpectedOrder);
 
-    String? rawMillimeters = xmlElement.getElement('millimeters')?.innerText;
-    double? millimeters = double.tryParse(rawMillimeters ?? "");
-    if (millimeters == null) {
+    XmlElement? millimetersElement = xmlElement.getElement('millimeters');
+    if (millimetersElement == null ||
+        millimetersElement.childElements.isNotEmpty) {
       throw XmlElementContentException(
         message:
             "'scaling' element must have 'millimeters' element with decimal type value content",
         xmlElement: xmlElement,
       );
     }
-
-    String? rawTenths = xmlElement.getElement('tenths')?.innerText;
-    double? tenths = double.tryParse(rawTenths ?? "");
-    if (tenths == null) {
-      throw XmlElementContentException(
-        message:
-            "'scaling' element must have 'tenths' element with decimal type value content",
+    String? rawMillimeters = millimetersElement.innerText;
+    double? millimeters = double.tryParse(rawMillimeters);
+    if (millimeters == null) {
+      throw MusicXmlFormatException(
+        message: "$rawMillimeters is not 'millimeters' type",
         xmlElement: xmlElement,
+        source: rawMillimeters,
+      );
+    }
+
+    XmlElement? tenthsElement = xmlElement.getElement('tenths');
+    if (tenthsElement == null || tenthsElement.childElements.isNotEmpty) {
+      throw XmlElementContentException(
+        message: "'tenths' element must have tenths type content",
+        xmlElement: xmlElement,
+      );
+    }
+    String? rawTenths = tenthsElement.innerText;
+    double? tenths = double.tryParse(rawTenths);
+    if (tenths == null) {
+      throw MusicXmlFormatException(
+        message: "$rawTenths is not 'tenths' type",
+        xmlElement: xmlElement,
+        source: rawTenths,
       );
     }
 
