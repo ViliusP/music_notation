@@ -302,19 +302,24 @@ enum LineWidthType {
   }
 }
 
-/// The note-size type indicates the percentage of the regular note size to use for notes with a cue and large size as defined in the type element.
+/// Indicates the percentage of the regular note size to use for notes with a
+/// cue and large size as defined in the type element.
 ///
 /// The grace type is used for notes of cue size that that include a grace element.
 ///
-/// The cue type is used for all other notes with cue size, whether defined explicitly or implicitly via a cue element.
+/// The cue type is used for all other notes with cue size,
+/// whether defined explicitly or implicitly via a cue element.
 /// The large type is used for notes of large size. The text content represent the numeric percentage.
 ///
 /// A value of 100 would be identical to the size of a regular note as defined by the music font.
 class NoteSize {
-  final double size;
+  final double value;
   final NoteSizeType type;
 
-  NoteSize({required this.size, required this.type});
+  NoteSize({
+    required this.value,
+    required this.type,
+  });
 
   /// Converts an instance of NoteSize to an XML node
   XmlNode toXml() {
@@ -322,16 +327,47 @@ class NoteSize {
     builder.element(
       'note-size',
       attributes: {'type': type.name}, // Check type
-      nest: size.toString(),
+      nest: value.toString(),
     );
     return builder.buildDocument().rootElement;
   }
 
   // Create an instance of NoteSize from an XML node
-  static NoteSize fromXml(XmlElement node) {
+  static NoteSize fromXml(XmlElement xmlElement) {
+    if (xmlElement.childElements.isNotEmpty) {
+      throw XmlElementContentException(
+        message:
+            "'note-size' element must have non-negative-decimal type content",
+        xmlElement: xmlElement,
+      );
+    }
+
+    double? value = double.tryParse(xmlElement.innerText);
+    if (value == null || value < 0) {
+      throw MusicXmlFormatException(
+        message: "'note-size' value is not non-negative-decimal",
+        xmlElement: xmlElement,
+        source: xmlElement.innerText,
+      );
+    }
+
+    String? typeAttribute = xmlElement.getAttribute("type");
+    if (typeAttribute == null) {
+      throw MissingXmlAttribute(
+        message: "'type' attribute is required for 'line-width' element",
+        xmlElement: xmlElement,
+      );
+    }
+    NoteSizeType? type = NoteSizeType.fromString(typeAttribute);
+    if (type == null) {
+      throw MusicXmlTypeException(
+        message: "tpe attribute is not valid note size type",
+        xmlElement: xmlElement,
+      );
+    }
     return NoteSize(
-      size: double.parse(node.text),
-      type: NoteSizeType.fromString(node.getAttribute('type') ?? ''),
+      value: value,
+      type: type,
     );
   }
 }
@@ -342,10 +378,9 @@ enum NoteSizeType {
   graceCue,
   large;
 
-  static NoteSizeType fromString(String value) {
-    return NoteSizeType.values.firstWhere(
-      (e) => e.name == value,
-      orElse: () => throw ArgumentError('"$value" is not a valid NoteSizeType'),
+  static NoteSizeType? fromString(String value) {
+    return NoteSizeType.values.firstWhereOrNull(
+      (e) => e.name == hyphenToCamelCase(value),
     );
   }
 }
@@ -383,7 +418,7 @@ class Distance {
   }
 }
 
-/// The glyph element represents what SMuFL glyph should be used for different variations of symbols that are semantically identical.
+/// Represents what SMuFL glyph should be used for different variations of symbols that are semantically identical.
 ///
 /// The type attribute specifies what type of glyph is being defined.
 /// The element value specifies what SMuFL glyph to use, including recommended stylistic alternates.
@@ -456,7 +491,7 @@ class OtherAppearance {
 
     final type = element.getAttribute('type');
     if (type == null) {
-      throw FormatException('Missing required attribute "type"');
+      throw const FormatException('Missing required attribute "type"');
     }
 
     return OtherAppearance(value: element.text, type: type);
