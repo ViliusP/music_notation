@@ -1,4 +1,5 @@
 import 'package:music_notation/src/models/exceptions.dart';
+import 'package:music_notation/src/models/utilities/type_parsers.dart';
 import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 import 'package:xml/xml.dart';
 
@@ -30,8 +31,8 @@ class Part {
 
   factory Part.fromXml(XmlElement xmlElement) {
     validateSequence(xmlElement, _xmlExpectedOrder);
-    String? id = xmlElement.getAttribute("id");
 
+    String? id = xmlElement.getAttribute("id");
     if (id == null || id.isEmpty) {
       throw MissingXmlAttribute(
         message: "non-empty 'id' attribute is required for 'part' element",
@@ -99,53 +100,22 @@ class Measure {
   }
 }
 
-/// Group is used by the measure element.Measures have a required number attribute
-/// (going from partwise to timewise, measures are grouped via the number).
-///
-/// The implicit attribute is set to "yes" for measures where the measure number
-/// should never appear, such as pickup measures and the last half of mid-measure repeats.
-/// The value is "no" if not specified.
-///
-/// The non-controlling attribute is intended for use in multimetric music like
-/// the Don Giovanni minuet. If set to "yes", the left barline in this measure
-/// does not coincide with the left barline of measures in other parts.
-/// The value is "no" if not specified.
-///
-/// In partwise files, the number attribute should be the same for
-/// measures in different parts that share the same left barline.
-/// While the number attribute is often numeric, it does not have to be.
-/// Non-numeric values are typically used together with the implicit or
-/// non-controlling attributes being set to "yes". For a pickup measure, the number attribute
-/// is typically set to "0" and the implicit attribute is typically set to "yes".
-///
-/// If measure numbers are not unique within a part, this can cause problems
-/// for conversions between partwise and timewise formats.
-/// The text attribute allows specification of displayed measure numbers
-/// that are different than what is used in the number attribute.
-/// This attribute is ignored for measures where the implicit attribute is set to "yes".
-/// Further details about measure numbering can be specified using the measure-numbering element.
-///
-/// Measure width is specified in tenths. These are the global tenths specified in the scaling element,
-/// not local tenths as modified by the staff-size element.
-/// The width covers the entire measure from barline or system start to barline or system end.<
+/// Attributes for the measure element.
 class MeasureAttributes {
-  /// Identifies the measure.
+  /// Identifies the measure. Going from partwise to timewise, measures
+  /// are grouped via this attribute. In partwise files, it should be the
+  /// same for measures in different parts that share the same left barline.
   ///
-  /// Going from partwise to timewise, measures are grouped via this attribute.
-  /// In partwise files, it should be the same for measures in different parts that share the same left barline.
-  ///
-  /// While often numeric, it does not have to be.
-  /// Non-numeric values are typically used together with the implicit or
-  /// non-controlling attributes being set to "yes".
-  ///
-  /// For a pickup measure, the number attribute is typically set to "0"
+  /// While often numeric, it does not have to be. Non-numeric values are typically
+  /// used together with the implicit or non-controlling attributes being set
+  /// to "yes". For a pickup measure, the number attribute is typically set to "0"
   /// and the implicit attribute is typically set to "yes".
   String number;
 
   /// Specifies an ID that is unique to the entire document.
   String? id;
 
-  /// Set to "yes" for measures where the measure number should never appear,
+  /// Set to true for measures where the measure number should never appear,
   /// such as pickup measures and the last half of mid-measure repeats.
   ///
   /// The value is "no" if not specified.
@@ -166,6 +136,10 @@ class MeasureAttributes {
   /// The width covers the entire measure from barline or system start to barline or system end.
   double? width;
 
+  /// Specification of displayed measure numbers
+  /// that are different than what is used in the number attribute.
+  /// This attribute is ignored for measures where the implicit attribute is set to "yes".
+  /// Further details about measure numbering can be specified using the measure-numbering element
   String? text;
 
   MeasureAttributes({
@@ -178,23 +152,48 @@ class MeasureAttributes {
   });
 
   factory MeasureAttributes.fromXml(XmlElement xmlElement) {
-    return MeasureAttributes(
-      number: "number",
-    );
-  }
-
-  /// Checks if the measure text is valid.
-  bool _isValidMeasureText(String? measureText, String? implicit) {
-    // Check if measureText is not null and has at least one character.
-    bool isMeasureTextValid =
-        measureText != null && measureText.trim().isNotEmpty;
-
-    // Check if implicit is set to "yes" when measureText is empty.
-    bool isImplicitValid = true;
-    if (measureText == null || measureText.trim().isEmpty) {
-      isImplicitValid = implicit == 'yes';
+    String? number = xmlElement.getAttribute("number");
+    if (number == null || number.isEmpty) {
+      throw MissingXmlAttribute(
+        message: "'measure' must have non-empty 'number' attribute",
+        xmlElement: xmlElement,
+      );
     }
 
-    return isMeasureTextValid && isImplicitValid;
+    String? id = xmlElement.getAttribute("id");
+    if (id?.isEmpty == true) {
+      throw MissingXmlAttribute(
+        message: "'measure' element's id cannot be empty",
+        xmlElement: xmlElement,
+      );
+    }
+
+    String? text = xmlElement.getAttribute("text");
+    if (text?.trim().isEmpty == true) {
+      throw MusicXmlFormatException(
+        message: "'text' attribute in measure should be null or non-empty",
+        xmlElement: xmlElement,
+        source: text,
+      );
+    }
+
+    String? rawWidth = xmlElement.getAttribute("width");
+    double? width = double.tryParse(rawWidth ?? "");
+    if (rawWidth != null && width == null) {
+      throw MusicXmlFormatException(
+        message: "'width' attribute in measure cannot be parsed",
+        xmlElement: xmlElement,
+        source: text,
+      );
+    }
+
+    return MeasureAttributes(
+      number: number,
+      id: id,
+      implicit: YesNo.fromXml(xmlElement, 'implicit') ?? false,
+      nonControlling: YesNo.fromXml(xmlElement, 'non-controlling') ?? false,
+      text: text,
+      width: width,
+    );
   }
 }
