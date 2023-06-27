@@ -1,4 +1,5 @@
 import 'package:music_notation/src/models/exceptions.dart';
+import 'package:music_notation/src/models/utilities/common_attributes.dart';
 import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 import 'package:xml/xml.dart';
 
@@ -78,6 +79,9 @@ class Layout {
 /// All other pages use the default values as determined by the defaults element.
 /// If any child elements are missing from the page-layout element in a print element,
 /// the values determined by the defaults element are used there as well.
+///
+/// For more details go to
+/// [The \<page-layout\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/page-layout/).
 class PageLayout {
   // ------------------------- //
   // ------   Content   ------ //
@@ -170,20 +174,29 @@ class PageLayout {
 }
 
 /// Specifies whether margins apply to even page, odd pages, or both.
+///
+/// For more details go to
+/// [margin-type data type | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/data-types/margin-type/).
 enum MarginType {
+  /// Margins apply to odd pages only.
   odd,
+
+  /// Margins apply to even pages only.
   even,
+
+  /// Margins apply to both even and odd pages.
   both;
 
-  static MarginType fromString(String value) {
+  static MarginType? fromString(String value) {
     switch (value) {
       case 'odd':
         return MarginType.odd;
       case 'even':
         return MarginType.even;
       case 'both':
-      default:
         return MarginType.both;
+      default:
+        return null;
     }
   }
 }
@@ -205,23 +218,35 @@ class HorizontalMargins {
   });
 
   factory HorizontalMargins.fromXml(XmlElement xmlElement) {
-    double? left = double.tryParse(
-      xmlElement.getElement('left-margin')?.firstChild?.value ?? '',
-    );
-    if (left == null) {
+    XmlElement? leftMarginElement = xmlElement.getElement('left-margin');
+    if (leftMarginElement?.childElements.isNotEmpty == true) {
       throw XmlElementContentException(
         message: "'left-margin' element content must be double",
         xmlElement: xmlElement,
       );
     }
+    double? left = double.tryParse(leftMarginElement?.innerText ?? '');
+    if (left == null) {
+      throw MusicXmlFormatException(
+        message: "'left-margin' element content cannot be parsed to double",
+        xmlElement: xmlElement,
+        source: leftMarginElement?.innerText,
+      );
+    }
 
-    double? right = double.tryParse(
-      xmlElement.getElement('right-margin')?.firstChild?.value ?? '',
-    );
-    if (right == null) {
+    XmlElement? rightMarginElement = xmlElement.getElement('right-margin');
+    if (rightMarginElement?.childElements.isNotEmpty == true) {
       throw XmlElementContentException(
         message: "'right-margin' element content must be double",
         xmlElement: xmlElement,
+      );
+    }
+    double? right = double.tryParse(rightMarginElement?.innerText ?? '');
+    if (right == null) {
+      throw MusicXmlFormatException(
+        message: "'right-margin' element content cannot be parsed to double",
+        xmlElement: xmlElement,
+        source: rightMarginElement?.innerText,
       );
     }
 
@@ -260,36 +285,50 @@ class Margins implements HorizontalMargins {
 
   factory Margins.fromXml(XmlElement xmlElement) {
     HorizontalMargins horizontalMargins = HorizontalMargins.fromXml(xmlElement);
-    double? top = double.tryParse(
-      xmlElement.getElement('top-margin')?.firstChild?.value ?? '',
-    );
 
-    if (top == null) {
+    XmlElement? topMarginElement = xmlElement.getElement('top-margin');
+    if (topMarginElement?.childElements.isNotEmpty == true) {
       throw XmlElementContentException(
         message: "'top-margin' element content must be double",
         xmlElement: xmlElement,
       );
     }
+    double? top = double.tryParse(topMarginElement?.innerText ?? '');
+    if (top == null) {
+      throw MusicXmlFormatException(
+        message: "'top-margin' element content cannot be parsed to double",
+        xmlElement: xmlElement,
+        source: topMarginElement?.innerText,
+      );
+    }
 
-    double? bottom = double.tryParse(
-      xmlElement.getElement('bottom-margin')?.firstChild?.value ?? '',
+    final XmlElement? bottomMarginElement = xmlElement.getElement(
+      'bottom-margin',
     );
-
-    if (bottom == null) {
+    if (bottomMarginElement?.childElements.isNotEmpty == true) {
       throw XmlElementContentException(
         message: "'bottom-margin' element content must be double",
         xmlElement: xmlElement,
       );
     }
+    final double? bottom = double.tryParse(
+      bottomMarginElement?.innerText ?? '',
+    );
+    if (bottom == null) {
+      throw MusicXmlFormatException(
+        message: "'bottom-margin' element content cannot be parsed to double",
+        xmlElement: xmlElement,
+        source: bottomMarginElement?.innerText,
+      );
+    }
 
     return Margins(
-        left: horizontalMargins.left,
-        right: horizontalMargins.right,
-        top: top,
-        bottom: bottom);
+      left: horizontalMargins.left,
+      right: horizontalMargins.right,
+      top: top,
+      bottom: bottom,
+    );
   }
-
-  // fromXml(XmlElement xmlElement) {}
 
   XmlElement toXml() {
     var builder = XmlBuilder();
@@ -312,6 +351,9 @@ class Margins implements HorizontalMargins {
 /// The type attribute is not needed when used as part of a print element.
 ///
 /// If omitted when the page-margins type is used in the defaults element, "both" is the default value.
+///
+/// For more details go to
+/// [The \<page-margins\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/page-margins/).
 class PageMargins {
   // ------------------------- //
   // ------   Content   ------ //
@@ -349,6 +391,12 @@ class PageMargins {
 
     if (typeAttribute != null && !isPrint) {
       type = MarginType.fromString(typeAttribute);
+      if (type == null) {
+        throw MusicXmlTypeException(
+          message: "'type' is not valid margin-type: '$typeAttribute'",
+          xmlElement: xmlElement,
+        );
+      }
     }
     if (typeAttribute == null && !isPrint) {
       type = MarginType.both;
@@ -391,6 +439,9 @@ class PageMargins {
 /// When used in the defaults element, the values apply to all systems in all parts.
 /// When used in the print element, the values apply to the current system only.
 /// This value is ignored for the first staff in a system.
+///
+/// For more details go to
+/// [The \<staff-layout\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/staff-layout/).
 class StaffLayout {
   // ------------------------- //
   // ------   Content   ------ //
@@ -398,25 +449,55 @@ class StaffLayout {
 
   /// Represents the vertical distance from the bottom line of the previous
   /// staff in this system to the top line of the current staff.
-  double? staffDistance;
+  double? distance;
 
   /// Indicates staff numbers within a multi-staff part.
   /// Staves are numbered from top to bottom, with 1 being the top staff on a part.
   ///
-  /// Must be positive integer.
-  int? number;
+  /// Must be bigger than 1. Also, tt must not exceed the total number of staves
+  /// in the part it refers to. For example, if a part has two staves,
+  /// the staff-number can be either 1 or 2, but not 3.
+  int number;
 
   StaffLayout({
-    this.staffDistance,
-    this.number,
+    this.distance,
+    this.number = 1,
   });
 
   factory StaffLayout.fromXml(XmlElement xmlElement) {
+    XmlElement? staffDistanceElement = xmlElement.getElement('staff-distance');
+    if (staffDistanceElement?.childElements.isNotEmpty == true) {
+      throw XmlElementContentException(
+        message: "'staff-distance' element must have only tenths type content",
+        xmlElement: xmlElement,
+      );
+    }
+    double? staffDistance = double.tryParse(
+      staffDistanceElement?.innerText ?? "",
+    );
+    if (staffDistanceElement != null && staffDistance == null) {
+      throw MusicXmlFormatException(
+        message: "'staff-distance' must be type of tenths",
+        xmlElement: xmlElement,
+        source: staffDistanceElement.innerText,
+      );
+    }
+
+    String numberAttribute = xmlElement.getAttribute('number') ?? '1';
+    int? number = int.tryParse(numberAttribute);
+
+    if (number == null || number < 1) {
+      throw MusicXmlFormatException(
+        message:
+            "'number' attribute in 'staff-layout' must be type of 'staff-number'",
+        xmlElement: xmlElement,
+        source: numberAttribute,
+      );
+    }
+
     return StaffLayout(
-      staffDistance: xmlElement.getElement('staff-distance') != null
-          ? double.parse(xmlElement.getElement('staff-distance')!.text)
-          : null,
-      number: int.parse(xmlElement.getAttribute('number') ?? '0'),
+      distance: staffDistance,
+      number: number,
     );
   }
 
@@ -424,8 +505,8 @@ class StaffLayout {
     var builder = XmlBuilder();
     builder.element('staff-layout', attributes: {'number': '$number'},
         nest: () {
-      if (staffDistance != null) {
-        builder.element('staff-distance', nest: staffDistance);
+      if (distance != null) {
+        builder.element('staff-distance', nest: distance);
       }
     });
     return builder.buildDocument().rootElement;
@@ -459,6 +540,9 @@ class StaffLayout {
 /// the values determined by the defaults element are used there as well.
 /// This type of system-layout element need only be read from or written
 /// to the first visible part in the score.
+///
+/// For more details go to
+/// [The \<system-layout\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/system-layout/).
 class SystemLayout {
   // ------------------------- //
   // ------   Content   ------ //
@@ -500,18 +584,62 @@ class SystemLayout {
   factory SystemLayout.fromXml(XmlElement xmlElement) {
     validateSequence(xmlElement, _xmlExpectedOrder);
 
+    final XmlElement? systemMarginsElement = xmlElement.getElement(
+      'system-margins',
+    );
+
+    final XmlElement? systemDistanceElement = xmlElement.getElement(
+      'system-distance',
+    );
+    if (systemDistanceElement?.childElements.isNotEmpty == true) {
+      throw XmlElementContentException(
+        message: "'system-distance' must have tenths type content",
+        xmlElement: xmlElement,
+      );
+    }
+    final double? systemDistance = double.tryParse(
+      systemDistanceElement?.innerText ?? "",
+    );
+    if (systemDistanceElement != null && systemDistance == null) {
+      throw MusicXmlFormatException(
+        message: "'system-distance' must be tenths type",
+        xmlElement: xmlElement,
+        source: systemDistanceElement.innerText,
+      );
+    }
+
+    final XmlElement? topSystemDistanceElement = xmlElement.getElement(
+      'top-system-distance',
+    );
+    if (topSystemDistanceElement?.childElements.isNotEmpty == true) {
+      throw XmlElementContentException(
+        message: "'top-system-distance' must have tenths type content",
+        xmlElement: xmlElement,
+      );
+    }
+    final double? systemTopDistance = double.tryParse(
+      topSystemDistanceElement?.innerText ?? "",
+    );
+    if (topSystemDistanceElement != null && systemTopDistance == null) {
+      throw MusicXmlFormatException(
+        message: "'top-system-distance' must be tenths type",
+        xmlElement: xmlElement,
+        source: topSystemDistanceElement.innerText,
+      );
+    }
+
+    final XmlElement? systemDividersElement = xmlElement.getElement(
+      'system-dividers',
+    );
+
     return SystemLayout(
-      margins: xmlElement.getElement('system-margins') != null
-          ? HorizontalMargins.fromXml(xmlElement.getElement('system-margins')!)
+      margins: systemMarginsElement != null
+          ? HorizontalMargins.fromXml(systemMarginsElement)
           : null,
-      distance: xmlElement.getElement('system-distance') != null
-          ? double.parse(xmlElement.getElement('system-distance')!.text)
-          : null,
-      topDistance: xmlElement.getElement('top-system-distance') != null
-          ? double.parse(xmlElement.getElement('top-system-distance')!.text)
-          : null,
-      dividers: xmlElement.getElement('system-dividers') != null
-          ? SystemDividers.fromXml(xmlElement.getElement('system-dividers')!)
+      distance: systemDistance,
+      topDistance: systemTopDistance,
+      dividers: systemDividersElement != null
+          ? SystemDividers.fromXml(systemDividersElement)
           : null,
     );
   }
@@ -536,11 +664,11 @@ class SystemLayout {
   }
 }
 
-/// Indicates the presence or absence of
-/// system dividers (also known as system separation marks) between systems displayed on the same page.
+/// Indicates the presence or absence ofsystem dividers (also known as system separation marks)
+/// between systems displayed on the same page.
 ///
 /// Dividers on the left and right side of the page are controlled
-/// by the left-divider and right-divider elements respectively.
+/// by the [left] and [right] elements respectively.
 ///
 /// The default vertical position is half the system-distance
 /// value from the top of the system that is below the divider.
@@ -549,6 +677,9 @@ class SystemLayout {
 ///
 /// When used in the print element, the system-dividers element affects
 /// the dividers that would appear between the current system and the previous system.
+///
+/// For more details go to
+/// [The \<system-dividers\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/system-dividers/).
 class SystemDividers {
   // ------------------------- //
   // ------   Content   ------ //
@@ -577,7 +708,15 @@ class SystemDividers {
     required this.right,
   });
 
+  // Field(s): quantifier
+  static const Map<String, XmlQuantifier> _xmlExpectedOrder = {
+    'left-divider': XmlQuantifier.required,
+    'right-divider': XmlQuantifier.required,
+  };
+
   factory SystemDividers.fromXml(XmlElement xmlElement) {
+    validateSequence(xmlElement, _xmlExpectedOrder);
+
     return SystemDividers(
       left: DividerPrintStyle.fromXml(
         xmlElement.getElement('left-divider')!,
@@ -599,6 +738,9 @@ class SystemDividers {
 }
 
 /// Represents an empty element with [printObject] and [PrintStyleAlign] attribute groups.
+///
+/// For more details go to
+/// [The \<right-divider\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/right-divider/).
 class DividerPrintStyle extends PrintStyleAlign {
   // ------------------------- //
   // ------ Attributes ------- //
@@ -619,17 +761,7 @@ class DividerPrintStyle extends PrintStyleAlign {
   });
 
   factory DividerPrintStyle.fromXml(XmlElement xmlElement) {
-    bool? printObject = YesNo.toBool(xmlElement.innerText);
-
-    // Checks if provided value is "yes", "no" or nothing.
-    // If it is something different, it throws error;
-    if (xmlElement.innerText.isNotEmpty && printObject == null) {
-      // TODO: correct attribute
-      YesNo.generateValidationError(
-        "xmlElement.innerText",
-        xmlElement.innerText,
-      );
-    }
+    bool? printObject = YesNo.fromXml(xmlElement, CommonAttributes.printObject);
 
     PrintStyleAlign printStyleAlign = PrintStyleAlign.fromXml(xmlElement);
 

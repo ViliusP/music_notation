@@ -282,7 +282,7 @@ class YesNo {
         attributeName,
         rawAttribute,
       );
-      throw MusicXmlFormatException(
+      throw MusicXmlTypeException(
         message: message,
         xmlElement: xmlElement,
       );

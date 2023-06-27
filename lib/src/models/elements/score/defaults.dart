@@ -1,4 +1,4 @@
-import 'package:music_notation/src/models/elements/music_data/layout.dart';
+import 'package:music_notation/src/models/elements/layout.dart';
 import 'package:music_notation/src/models/elements/text/text.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
