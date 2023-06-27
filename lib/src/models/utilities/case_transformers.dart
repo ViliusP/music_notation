@@ -1,10 +1,32 @@
+/// Converts a hyphen-separated string to camel case.
+///
+/// This function takes a string [input] with words separated by hyphens
+/// and returns a string in camel case (i.e., with words capitalized except the first one and no hyphens).
+///
+/// If the input string does not contain any hyphen, the first character of the string will be converted to lower case.
+/// If the input string is empty, an empty string will be returned.
+///
+/// Example:
+/// ```
+/// var input = 'this-is-a-test';
+/// var output = hyphenToCamelCase(input);
+/// print(output); // prints: 'thisIsATest'
+/// ```
 String hyphenToCamelCase(String input) {
-  List<String> parts = input.split('-');
-  String camelCase = parts[0];
+  List<String> words = input.split('-');
+  String camelCase = "";
 
-  for (int i = 1; i < parts.length; i++) {
-    String part = parts[i];
-    camelCase += part[0].toUpperCase() + part.substring(1);
+  for (int i = 0; i < words.length; i++) {
+    String word = words[i];
+    if (word.isNotEmpty) {
+      if (i == 0) {
+        // The first word is all lowercase.
+        camelCase += word.toLowerCase();
+        continue;
+      }
+      // Subsequent words are capitalized.
+      camelCase += word[0].toUpperCase() + word.substring(1).toLowerCase();
+    }
   }
 
   return camelCase;

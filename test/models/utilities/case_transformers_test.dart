@@ -2,7 +2,37 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:music_notation/src/models/utilities/case_transformers.dart';
 
 void main() {
-  group("Hyphen to camel", () {});
+  group("Hyphen to camel", () {
+    List<(String input, String expectedOutput)> inputsOutputs = [
+      ('this-is-a-test', 'thisIsATest'),
+      ('hello-world', 'helloWorld'),
+      ('test', 'test'),
+      ('', ''),
+      ('music-xml-parser', 'musicXmlParser'),
+      ('dashed-string', 'dashedString'),
+      ('a-b-c-d', 'aBCD'),
+      (
+        'multiple-words-in-hyphen-separated-string',
+        'multipleWordsInHyphenSeparatedString'
+      ),
+      ('only-one-word', 'onlyOneWord'),
+      ('word', 'word'),
+      ('hyphen-at-end-', 'hyphenAtEnd'),
+      ('-hyphen-at-start', 'HyphenAtStart'),
+      ('two--hyphens', 'twoHyphens'),
+      ('--two-hyphens-at-start', 'TwoHyphensAtStart'),
+      ('two-hyphens-at-end--', 'twoHyphensAtEnd'),
+    ];
+    for (var inputOuput in inputsOutputs) {
+      String input = inputOuput.$1;
+      String expectedOutput = inputOuput.$2;
+
+      test("should convert '$input' to '$expectedOutput'", () {
+        String result = hyphenToCamelCase(input);
+        expect(result, expectedOutput);
+      });
+    }
+  });
   group("Camel to hyphen", () {});
   group("Setence to camel", () {
     List<(String input, String expectedOutput)> inputsOutputs = [
