@@ -47,7 +47,7 @@ abstract class MusicDataElement {
         return Bookmark.fromXml(xmlElement);
       default:
         throw XmlElementContentException(
-          message: 'Unknown element: ${xmlElement.name.local}',
+          message: 'Unknown MusicDataElement: ${xmlElement.name.local}',
           xmlElement: xmlElement,
         );
     }

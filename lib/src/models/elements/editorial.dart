@@ -15,16 +15,18 @@ class Footnote {
 
 /// The editorial group specifies editorial information for a musical element.
 class Editorial {
-  Footnote? footnote;
+  final Footnote? footnote;
 
-  Level? level;
+  final Level? level;
 
   Editorial({
     this.footnote,
     this.level,
   });
 
-  Editorial.empty();
+  const Editorial.empty()
+      : footnote = null,
+        level = null;
 
   static Editorial fromXml(XmlElement xmlElement) {
     return Editorial();

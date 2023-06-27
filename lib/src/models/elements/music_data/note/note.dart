@@ -88,7 +88,8 @@ import 'package:music_notation/src/models/elements/text/text.dart';
 
 /// Notes are the most common type of MusicXML data.
 ///
-/// The MusicXML format distinguishes between elements used for sound information and elements used for notation information (e.g., tie is used for sound, tied for notation).
+/// The MusicXML format distinguishes between elements used for sound information
+/// and elements used for notation information (e.g., tie is used for sound, tied for notation).
 /// Thus grace notes do not have a duration element.
 ///
 /// Cue notes have a duration element, as do forward elements, but no tie elements.

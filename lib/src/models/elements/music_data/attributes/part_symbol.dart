@@ -13,11 +13,15 @@ import 'package:music_notation/src/models/elements/text/text.dart';
 /// By default, the presence of a part-symbol element that does not extend across the entire part
 ///  also indicates a corresponding change in the common barlines within a part.
 class PartSymbol {
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
+
   GroupSymbolValue value;
 
-  int topStaff;
+  int? topStaff;
 
-  int bottomStaff;
+  int? bottomStaff;
 
   Position position;
 
@@ -25,9 +29,9 @@ class PartSymbol {
 
   PartSymbol({
     this.value = GroupSymbolValue.brace,
-    required this.topStaff,
-    required this.bottomStaff,
-    required this.position,
-    required this.color,
+    this.topStaff,
+    this.bottomStaff,
+    this.position = const Position.empty(),
+    this.color = const Color.empty(),
   });
 }
