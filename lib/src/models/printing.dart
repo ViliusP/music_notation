@@ -20,17 +20,24 @@ class PrintStyleAlign extends PrintStyle {
   /// If it is not present, its value is the same as for the justify attribute.
   ///
   /// For elements where a justify attribute is not allowed, the default is implementation-dependent.
-  HorizontalAlignment? horizontalAlignment;
+  final HorizontalAlignment? horizontalAlignment;
 
-  VerticalAlignment? verticalAlignment;
+  final VerticalAlignment? verticalAlignment;
 
   PrintStyleAlign({
-    required this.horizontalAlignment,
-    required this.verticalAlignment,
+    this.horizontalAlignment,
+    this.verticalAlignment,
     required super.position,
     required super.font,
     required super.color,
   });
+
+  const PrintStyleAlign.empty({
+    super.position = const Position.empty(),
+    super.color = const Color.empty(),
+    super.font = const Font.empty(),
+  })  : horizontalAlignment = null,
+        verticalAlignment = null;
 
   factory PrintStyleAlign.fromXml(XmlElement xmlElement) {
     HorizontalAlignment? horizontalAlign;
@@ -38,11 +45,13 @@ class PrintStyleAlign extends PrintStyle {
 
     var halign = xmlElement.getAttribute("halign");
     if (halign != null) {
+      // TODO: throw if it is null;
       horizontalAlign = HorizontalAlignment.fromString(halign);
     }
 
     var valign = xmlElement.getAttribute("valign");
     if (valign != null) {
+      // TODO: throw if it is null;
       verticalAlignment = VerticalAlignment.fromString(valign);
     }
 
@@ -58,7 +67,7 @@ class PrintStyleAlign extends PrintStyle {
   }
 }
 
-/// The print-style attribute group collects the most popular combination
+/// Attribute group that collects the most popular combination
 /// of printing attributes: position, font, and color.
 class PrintStyle {
   // ------------------------- //
