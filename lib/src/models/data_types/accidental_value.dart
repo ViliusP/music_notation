@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/utilities/case_transformers.dart';
+import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 import 'package:xml/xml.dart';
 
 /// The accidental-value type represents notated accidentals supported by MusicXML.
@@ -81,13 +82,7 @@ enum AccidentalValue {
   ///
   /// In musicXML, accidental-value is content and always required.
   static AccidentalValue fromXml(XmlElement xmlElement) {
-    if (xmlElement.childElements.isNotEmpty) {
-      throw XmlElementContentException(
-        message:
-            "${xmlElement.name} element must contain only one children - accidental-value",
-        xmlElement: xmlElement,
-      );
-    }
+    validateTextContent(xmlElement);
 
     String rawValue = xmlElement.innerText;
     AccidentalValue? value = AccidentalValue.fromString(rawValue);

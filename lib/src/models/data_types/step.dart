@@ -1,3 +1,5 @@
+import 'package:collection/collection.dart';
+
 /// The step type represents a step of the diatonic scale,
 /// represented using the English letters A through G.
 ///
@@ -10,4 +12,10 @@ enum Step {
   E,
   F,
   G;
+
+  static Step? fromString(String value) {
+    return values.firstWhereOrNull(
+      (element) => element.name == value,
+    );
+  }
 }

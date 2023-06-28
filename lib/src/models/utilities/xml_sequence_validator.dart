@@ -52,6 +52,29 @@ void validateSequence(
   }
 }
 
+/// Validates that the provided [element] only contains single text content.
+/// If the element contains  multiple children (e.g., nested elements),
+/// an [XmlElementContentException] is thrown.
+///
+/// If the provided [XmlElement] [element] is null, the method does nothing and returns.
+///
+/// Example usage:
+/// ```dart
+/// XmlElement element = parse('<element>Single text content</element>');
+/// validateTextContent(element); // Does nothing (valid content)
+///
+/// XmlElement elementWithMultipleChildren = parse('<element><child1 /><child2 /></element>');
+/// validateTextContent(elementWithMultipleChildren); // Throws XmlElementContentException
+/// ```
+void validateTextContent(XmlElement? element) {
+  if (element != null && element.childElements.isNotEmpty == true) {
+    throw XmlElementContentException(
+      message: "${element.localName} element must only single text content",
+      xmlElement: element,
+    );
+  }
+}
+
 /// Recursively concatenates the names of XML elements and nested elements.
 ///
 /// Returns a string containing the concatenated names.
