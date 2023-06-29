@@ -24,12 +24,12 @@
 // 	</xs:complexType>
 
 import 'package:music_notation/src/models/data_types/left_right.dart';
+import 'package:music_notation/src/models/data_types/placement.dart';
 import 'package:music_notation/src/models/data_types/system_relation.dart';
 import 'package:music_notation/src/models/elements/editorial.dart';
 import 'package:music_notation/src/models/elements/music_data/harmony/chord.dart';
 import 'package:music_notation/src/models/elements/music_data/harmony/frame.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
-import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/offset.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/printing.dart';

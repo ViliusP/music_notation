@@ -1,133 +1,54 @@
-// 	<xs:complexType name="note">
-// 		<xs:annotation>
-// 			<xs:documentation></xs:documentation>
-// 		</xs:annotation>
-// 		<xs:sequence>
-// 			<xs:choice>
-// 				<xs:sequence>
-// 					<xs:element name="grace" type="grace"/>
-// 					<xs:choice>
-// 						<xs:sequence>
-// 							<xs:group ref="full-note"/>
-// 							<xs:element name="tie" type="tie" minOccurs="0" maxOccurs="2"/>
-// 						</xs:sequence>
-// 						<xs:sequence>
-// 							<xs:element name="cue" type="empty"/>
-// 							<xs:group ref="full-note"/>
-// 						</xs:sequence>
-// 					</xs:choice>
-// 				</xs:sequence>
-// 				<xs:sequence>
-// 					<xs:element name="cue" type="empty">
-// 						<xs:annotation>
-// 							<xs:documentation>The cue element indicates the presence of a cue note. In MusicXML, a cue note is a silent note with no playback. Normal notes that play can be specified as cue size using the type element. A cue note that is specified as full size using the type element will still remain silent.</xs:documentation>
-// 						</xs:annotation>
-// 					</xs:element>
-// 					<xs:group ref="full-note"/>
-// 					<xs:group ref="duration"/>
-// 				</xs:sequence>
-// 				<xs:sequence>
-// 					<xs:group ref="full-note"/>
-// 					<xs:group ref="duration"/>
-// 					<xs:element name="tie" type="tie" minOccurs="0" maxOccurs="2"/>
-// 				</xs:sequence>
-// 			</xs:choice>
-// 			<xs:element name="instrument" type="instrument" minOccurs="0" maxOccurs="unbounded"/>
-// 			<xs:group ref="editorial-voice"/>
-// 			<xs:element name="type" type="note-type" minOccurs="0"/>
-// 			<xs:element name="dot" type="empty-placement" minOccurs="0" maxOccurs="unbounded">
-// 				<xs:annotation>
-// 					<xs:documentation>One dot element is used for each dot of prolongation. The placement attribute is used to specify whether the dot should appear above or below the staff line. It is ignored for notes that appear on a staff space.</xs:documentation>
-// 				</xs:annotation>
-// 			</xs:element>
-// 			<xs:element name="accidental" type="accidental" minOccurs="0"/>
-// 			<xs:element name="time-modification" type="time-modification" minOccurs="0"/>
-// 			<xs:element name="stem" type="stem" minOccurs="0"/>
-// 			<xs:element name="notehead" type="notehead" minOccurs="0"/>
-// 			<xs:element name="notehead-text" type="notehead-text" minOccurs="0"/>
-// 			<xs:group ref="staff" minOccurs="0"/>
-// 			<xs:element name="beam" type="beam" minOccurs="0" maxOccurs="8"/>
-// 			<xs:element name="notations" type="notations" minOccurs="0" maxOccurs="unbounded"/>
-// 			<xs:element name="lyric" type="lyric" minOccurs="0" maxOccurs="unbounded"/>
-// 			<xs:element name="play" type="play" minOccurs="0"/>
-// 			<xs:element name="listen" type="listen" minOccurs="0"/>
-// 		</xs:sequence>
-// 		<xs:attributeGroup ref="x-position"/>
-// 		<xs:attributeGroup ref="font"/>
-// 		<xs:attributeGroup ref="color"/>
-// 		<xs:attributeGroup ref="printout"/>
-// 		<xs:attribute name="print-leger" type="yes-no"/>
-// 		<xs:attribute name="dynamics" type="non-negative-decimal"/>
-// 		<xs:attribute name="end-dynamics" type="non-negative-decimal"/>
-// 		<xs:attribute name="attack" type="divisions"/>
-// 		<xs:attribute name="release" type="divisions"/>
-// 		<xs:attribute name="time-only" type="time-only"/>
-// 		<xs:attribute name="pizzicato" type="yes-no"/>
-// 		<xs:attributeGroup ref="optional-unique-id"/>
-// 	</xs:complexType>
-
 import 'package:collection/collection.dart';
+import 'package:xml/xml.dart';
+
+import 'package:music_notation/src/models/data_types/start_stop.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/editorial.dart';
-import 'package:music_notation/src/models/elements/music_data/note/notations/notation.dart';
+import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 import 'package:music_notation/src/models/elements/music_data/note/accidental.dart';
 import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/models/elements/music_data/note/listen.dart';
 import 'package:music_notation/src/models/elements/music_data/note/lyric.dart';
+import 'package:music_notation/src/models/elements/music_data/note/notations/notation.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/music_data/note/notehead.dart';
 import 'package:music_notation/src/models/elements/music_data/note/play.dart';
 import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
 import 'package:music_notation/src/models/elements/music_data/note/time_modification.dart';
-import 'package:music_notation/src/models/exceptions.dart';
-import 'package:music_notation/src/models/utilities/type_parsers.dart';
-import 'package:xml/xml.dart';
-
-import 'package:music_notation/src/models/elements/music_data/music_data.dart';
-import 'package:music_notation/src/models/printing.dart';
+import 'package:music_notation/src/models/elements/music_data/printout.dart';
 import 'package:music_notation/src/models/elements/text/text.dart';
+import 'package:music_notation/src/models/exceptions.dart';
+import 'package:music_notation/src/models/generic.dart';
+import 'package:music_notation/src/models/printing.dart';
+import 'package:music_notation/src/models/utilities/type_parsers.dart';
 
 /// Notes are the most common type of MusicXML data.
 ///
 /// The MusicXML format distinguishes between elements used for sound information
 /// and elements used for notation information (e.g., tie is used for sound, tied for notation).
 /// Thus grace notes do not have a duration element.
-///
 /// Cue notes have a duration element, as do forward elements, but no tie elements.
-/// Having these two types of information available can make interchange easier, as some programs handle one type of information more readily than the other.
-///
-/// The print-leger attribute is used to indicate whether leger lines are printed. Notes without leger lines are used to indicate indeterminate high and low notes.
-/// By default, it is set to yes.
-/// If print-object is set to no, print-leger is interpreted to also be set to no if not present.
-/// This attribute is ignored for rests.
-///
-/// The dynamics and end-dynamics attributes correspond to MIDI 1.0's Note On and Note Off velocities, respectively.
-/// They are expressed in terms of percentages of the default forte value (90 for MIDI 1.0).
-///
-/// The attack and release attributes are used to alter the starting and stopping time of the note from
-/// when it would otherwise occur based on the flow of durations - information that is specific to a performance.
-/// They are expressed in terms of divisions, either positive or negative.
-/// A note that starts a tie should not have a release attribute,
-/// and a note that stops a tie should not have an attack attribute.
-/// The attack and release attributes are independent of each other.
-/// The attack attribute only changes the starting time of a note,
-/// and the release attribute only changes the stopping time of a note.
-///
-/// If a note is played only particular times through a repeat, the time-only attribute shows which times to play the note.
-///
-/// The pizzicato attribute is used when just this note is sounded pizzicato, vs. the pizzicato element which changes overall playback between pizzicato and arco.
-class Note implements MusicDataElement {
+/// Having these two types of information available can make interchange easier,
+/// as some programs handle one type of information more readily than the other.
+class NoteBase implements MusicDataElement {
   // ------------------------- //
   // ------   Content   ------ //
   // ------------------------- //
 
-  final Grace? grace;
+  /// The chord element indicates that this note is an additional chord tone with the preceding note.
+  ///
+  /// The duration of a chord note does not move the musical position within a measure.
+  /// That is done by the duration of the first preceding note without a chord element.
+  /// Thus the duration of a chord note cannot be longer than the preceding note.
+  ///
+  /// In most cases the duration will be the same as the preceding note.
+  /// However it can be shorter in situations such as multiple stops for string instruments.
+  Empty? chord;
+
+  PitchUnpitchedRest pitchUnpitchedRest;
+
   final EditorialVoice editorialVoice;
 
-  // TODO:
-  // final FullNote? fullNote;
-  // final Cue? cue;
-  // final List<Instrument>? instruments;
   final NoteType? type;
 
   /// One dot element is used for each dot of prolongation.
@@ -144,7 +65,8 @@ class Note implements MusicDataElement {
 
   /// Staff assignment is only needed for music notated on multiple staves.
   ///
-  /// Used by both notes and directions. Staff values are numbers, with 1 referring to the top-most staff in a part.
+  /// Used by both notes and directions. Staff values are numbers,
+  /// with 1 referring to the top-most staff in a part.
   ///
   /// Positive integer.
   final int? staff;
@@ -164,7 +86,8 @@ class Note implements MusicDataElement {
   final Color? color;
   final Printout? printout;
 
-  /// Indicates whether leger lines are printed. Notes without leger lines are used to indicate indeterminate high and low notes.
+  /// Indicates whether leger lines are printed. Notes without leger lines
+  /// are used to indicate indeterminate high and low notes.
   ///
   /// It is yes if not present unless print-object is set to no.
   ///
@@ -183,7 +106,8 @@ class Note implements MusicDataElement {
   /// type of non-negative-decimal;
   final double? endDynamics;
 
-  /// Alters the starting time of the note from when it would otherwise occur based on the flow of durations - information that is specific to a performance.
+  /// Alters the starting time of the note from when it would otherwise occur
+  /// based on the flow of durations - information that is specific to a performance.
   ///
   /// It is expressed in terms of divisions, either positive or negative.
   /// A <note> that stops a tie should not have an attack attribute.
@@ -195,7 +119,8 @@ class Note implements MusicDataElement {
   /// Type of "divisions".
   final double? attack;
 
-  /// Alters the stopping time of the note from when it would otherwise occur based on the flow of durations - information that is specific to a performance.
+  /// Alters the stopping time of the note from when it would otherwise occur
+  /// based on the flow of durations - information that is specific to a performance.
   ///
   /// It is expressed in terms of divisions, either positive or negative.
   ///
@@ -209,18 +134,21 @@ class Note implements MusicDataElement {
   /// Shows which times to play the note during a repeated section.
   final double? timeOnly;
 
-  /// Used when just this note is sounded pizzicato, vs. the <pizzicato> element which changes overall playback between pizzicato and arco.
+  /// Used when just this note is sounded pizzicato, vs. the <pizzicato> element
+  /// which changes overall playback between pizzicato and arco.
   final bool? pizzicato;
 
   /// Specifies an ID that is unique to the entire document.
   final String? id;
 
-  Note({
-    this.grace,
+  NoteBase({
+    // this.grace,
     // this.fullNote,
     // this.cue,
     // this.instruments,
-    required this.editorialVoice,
+    this.chord,
+    required this.pitchUnpitchedRest,
+    this.editorialVoice = const EditorialVoice.empty(),
     this.type,
     this.dots,
     this.accidental,
@@ -248,14 +176,14 @@ class Note implements MusicDataElement {
     this.id,
   });
 
-  factory Note.fromXml(XmlElement xmlElement) {
-    XmlElement? maybeGraceElement =
-        xmlElement.findElements("grace").firstOrNull;
-    Grace? grace;
+  factory NoteBase.fromXml(XmlElement xmlElement) {
+    // XmlElement? maybeGraceElement =
+    //     xmlElement.findElements("grace").firstOrNull;
+    // Grace? grace;
 
-    if (maybeGraceElement != null) {
-      grace = Grace.fromXml(xmlElement);
-    }
+    // if (maybeGraceElement != null) {
+    //   grace = Grace.fromXml(xmlElement);
+    // }
 
     XmlElement? maybeTypeElement = xmlElement.findElements("type").firstOrNull;
     NoteType? type;
@@ -338,8 +266,8 @@ class Note implements MusicDataElement {
       );
     }
 
-    return Note(
-      grace: grace,
+    return NoteBase(
+      // grace: grace,
       editorialVoice: EditorialVoice.fromXml(xmlElement),
       type: type,
       accidental: accidental,
@@ -357,6 +285,7 @@ class Note implements MusicDataElement {
       color: Color.fromXml(xmlElement),
       printout: Printout.fromXml(xmlElement),
       printLeger: printLager,
+      pitchUnpitchedRest: Unpitched(),
     );
   }
 
@@ -367,7 +296,7 @@ class Note implements MusicDataElement {
   }
 }
 
-/// The grace type indicates the presence of a grace note.
+/// Indicates the presence of a grace note.
 ///
 /// The slash attribute for a grace note is yes for slashed grace notes.
 /// The steal-time-previous attribute indicates the percentage of time to steal from the previous note for the grace note.
@@ -481,57 +410,11 @@ class Grace {
   }
 }
 
-/// The full-note group is a sequence of the common note elements between cue/grace notes and regular (full) notes:
-/// pitch, chord, and rest information, but not duration (cue and grace notes do not have duration encoded).
+/// Represents pictograms for pitched percussion instruments.
 ///
-/// Unpitched elements are used for unpitched percussion, speaking voice, and other musical elements lacking determinate pitch.
-class FullNote {
-  /// The chord element indicates that this note is an additional chord tone with the preceding note.
-  ///
-  /// The duration of a chord note does not move the musical position within a measure.
-  /// That is done by the duration of the first preceding note without a chord element.
-  /// Thus the duration of a chord note cannot be longer than the preceding note.
-  ///
-  /// In most cases the duration will be the same as the preceding note.
-  /// However it can be shorter in situations such as multiple stops for string instruments.
-  ///
-  /// name="chord" type="empty" minOccurs="0">
-  bool chord;
-
-  Pitched pitch;
-  Unpitched unpitched;
-  Rest rest;
-
-  FullNote({
-    required this.chord,
-    required this.pitch,
-    required this.unpitched,
-    required this.rest,
-  });
-}
-
-// 	<xs:group name="full-note">
-// 		<xs:annotation>
-// 			<xs:documentation></xs:documentation>
-// 		</xs:annotation>
-// 		<xs:sequence>
-// 			<xs:element name="chord" type="empty" minOccurs="0">
-// 				<xs:annotation>
-// 					<xs:documentation></xs:documentation>
-// 				</xs:annotation>
-// 			</xs:element>
-// 			<xs:choice>
-// 				<xs:element name="pitch" type="pitch"/>
-// 				<xs:element name="unpitched" type="unpitched"/>
-// 				<xs:element name="rest" type="rest"/>
-// 			</xs:choice>
-// 		</xs:sequence>
-// 	</xs:group>
-
-/// The pitched-value type represents pictograms for pitched percussion instruments.
-///
-/// The smufl attribute is used to distinguish different SMuFL glyphs for a particular pictogram within the Tuned mallet percussion pictograms range.
-class Pitched {
+/// The smufl attribute is used to distinguish different SMuFL glyphs
+/// for a particular pictogram within the Tuned mallet percussion pictograms range.
+class Pitched extends PitchUnpitchedRest {
   /// type="smufl-pictogram-glyph-name"
   ///
   /// See more at [SmuflPictogramGlyphName].
@@ -545,9 +428,10 @@ class Pitched {
   });
 }
 
-/// The pitched-value type represents pictograms for pitched percussion instruments.
+/// Represents pictograms for pitched percussion instruments.
 ///
-/// The chimes and tubular chimes values distinguish the single-line and double-line versions of the pictogram.
+/// The chimes and tubular chimes values distinguish the single-line
+/// and double-line versions of the pictogram.
 enum PitchedValue {
   celesta,
   chimes,
@@ -562,7 +446,7 @@ enum PitchedValue {
   xylophone;
 }
 
-/// The unpitched type represents musical elements that are notated on the staff but lack definite pitch,
+/// Represents musical elements that are notated on the staff but lack definite pitch,
 /// such as unpitched percussion and speaking voice.
 ///
 /// If the child elements are not present, the note is placed on the middle line of the staff.
@@ -570,7 +454,7 @@ enum PitchedValue {
 /// This is generally used with a one-line staff.
 ///
 /// Notes in percussion clef should always use an unpitched element rather than a pitch element.
-class Unpitched {
+class Unpitched extends PitchUnpitchedRest {
   /// The display-step-octave group contains the sequence of elements used by both the rest and unpitched elements.
   /// This group is used to place rests and unpitched elements on the staff without implying that these elements have pitch.
   /// Positioning follows the current clef.
@@ -595,38 +479,23 @@ class Unpitched {
 /// Rest elements are usually empty, but placement on the staff can be specified using display-step and display-octave elements.
 ///
 /// If the measure attribute is set to yes, this indicates this is a complete measure rest.
-class Rest {
-  /// The display-step-octave group contains the sequence of elements used by both the rest and unpitched elements.
-  /// This group is used to place rests and unpitched elements on the staff without implying that these elements have pitch.
-  /// Positioning follows the current clef.
-  /// If percussion clef is used, the display-step and display-octave elements are interpreted as if in treble clef, with a G in octave 4 on line 2.
+class Rest extends PitchUnpitchedRest {
+  /// Elements used by both the rest and unpitched elements.
+  /// This group is used to place rests and unpitched elements on the staff
+  /// without implying that these elements have pitch. Positioning follows the current clef.
+  /// If percussion clef is used, the display-step and display-octave
+  /// elements are interpreted as if in treble clef, with a G in octave 4 on line 2.
   Step? displayStep;
 
   /// Octaves are represented by the numbers 0 to 9, where 4 indicates the octave started by middle C.
   ///
-  /// The display-step-octave group contains the sequence of elements used by both the rest and unpitched elements.
-  /// This group is used to place rests and unpitched elements on the staff without implying that these elements have pitch.
-  /// Positioning follows the current clef.
-  /// If percussion clef is used, the display-step and display-octave elements are interpreted as if in treble clef, with a G in octave 4 on line 2.
-  ///
-  /// 	<xs:restriction base="xs:integer">
-  /// 		<xs:minInclusive value="0"/>
-  /// 		<xs:maxInclusive value="9"/>
-  /// 	</xs:restriction>
+  /// Elements used by both the rest and unpitched elements. This group is used
+  /// to place rests and unpitched elements on the staff without implying
+  /// that these elements have pitch. Positioning follows the current clef.
+  /// If percussion clef is used, the display-step and display-octave elements
+  /// are interpreted as if in treble clef, with a G in octave 4 on line 2.
   int? displayOctave;
 
-  // TODO probably need other class for this:
-  // <xs:group name="display-step-octave">
-  // 	<xs:annotation>
-  // 		<xs:documentation>The display-step-octave group contains the sequence of elements used by both the rest and unpitched elements. This group is used to place rests and unpitched elements on the staff without implying that these elements have pitch. Positioning follows the current clef. If percussion clef is used, the display-step and display-octave elements are interpreted as if in treble clef, with a G in octave 4 on line 2.</xs:documentation>
-  // 	</xs:annotation>
-  // 	<xs:sequence>
-  // 		<xs:element name="display-step" type="step"/>
-  // 		<xs:element name="display-octave" type="octave"/>
-  // 	</xs:sequence>
-  // </xs:group>
-
-  /// type="yes-no"
   bool measure;
 
   Rest({
@@ -636,98 +505,89 @@ class Rest {
   });
 }
 
-// The editorial-voice group supports the common combination of editorial and voice information for a musical element.
-class EditorialVoice {
-  Footnote? footnote;
-  Level? level;
+// abstract class NoteType {}
 
-  /// A voice is a sequence of musical events (e.g. notes, chords, rests) that proceeds linearly in time.
-  ///
-  /// The voice element is used to distinguish between multiple voices in individual parts.
-  ///
-  /// It is defined within a group due to its multiple uses within the MusicXML schema.
-  String? voice;
+// class Pitch extends NoteType {
+//   // Pitch-specific properties and methods here.
+// }
 
-  EditorialVoice({
-    this.footnote,
-    this.level,
-    this.voice,
+abstract class GraceNote extends NoteBase {
+  Grace grace;
+
+  GraceNote({
+    required this.grace,
+    required super.pitchUnpitchedRest,
   });
-
-  factory EditorialVoice.fromXml(XmlElement xmlElement) {
-    return EditorialVoice();
-  }
 }
 
-/// The empty-placement type represents an empty element with print-style and placement attributes.
-class EmptyPlacement {
-  PrintStyle? printStyle;
+class GraceTieNote extends GraceNote {
+  List<Tie> ties;
 
-  /// The placement attribute indicates whether something is above or below another element, such as a note or a notation.
-  Placement? placement;
+  GraceTieNote({
+    this.ties = const [],
+    required super.grace,
+    required super.pitchUnpitchedRest,
+  });
 }
 
-/// The above-below type is used to indicate whether one element appears above or below another element.
-enum Placement {
-  /// This element appears above the reference element.
-  above,
+class GraceCueNote extends GraceNote {
+  Empty cue;
 
-  /// This element appears below the reference element.
-  below;
-
-  static Placement? fromString(String value) {
-    return Placement.values.firstWhereOrNull((v) => v.name == value);
-  }
-
-  @override
-  String toString() => name;
+  GraceCueNote({
+    required super.grace,
+    required this.cue,
+    required super.pitchUnpitchedRest,
+  });
 }
 
-/// The orientation attribute indicates whether slurs and ties are overhand (tips down) or underhand (tips up). This is distinct from the placement attribute used by any notation type.
-enum Orientation {
-  /// Tips of curved lines are overhand (tips down).
-  over,
+class CueNote extends NoteBase {
+  Empty cue;
 
-  /// Tips of curved lines are underhand (tips up).
-  under;
+  /// Positive number specified in division units. This is the intended duration vs. notated duration (for instance, differences in dotted notes in Baroque-era music). Differences in duration specific to an interpretation or performance should be represented using the note element's attack and release attributes.
+  /// The duration element moves the musical position when used in backup elements, forward elements, and note elements that do not contain a chord child element.
+  double duration;
 
-  static Orientation? fromString(String value) {
-    return Orientation.values.firstWhereOrNull((v) => v.name == value);
-  }
-
-  @override
-  String toString() => name;
+  CueNote({
+    required this.cue,
+    required this.duration,
+    required super.pitchUnpitchedRest,
+  });
 }
 
-/// The printout attribute group collects the different controls over printing an object (e.g. a note or rest) and its parts,
-/// including augmentation dots and lyrics.
-///
-/// This is especially useful for notes that overlap in different voices,
-/// or for chord sheets that contain lyrics and chords but no melody.
-///
-/// By default, all these attributes are set to yes.
-/// If print-object is set to no,
-/// the print-dot and print-lyric attributes are interpreted to also be set to no if they are not present.
-class Printout {
-  /// The print-object attribute specifies whether or not to print an object (e.g. a note or a rest).
-  ///
-  /// It is yes by default.
-  bool? printObject;
+class RegularNote extends NoteBase {
+  /// Positive number specified in division units. This is the intended duration vs. notated duration (for instance, differences in dotted notes in Baroque-era music). Differences in duration specific to an interpretation or performance should be represented using the note element's attack and release attributes.
+  /// The duration element moves the musical position when used in backup elements, forward elements, and note elements that do not contain a chord child element.
+  double duration;
 
-  bool? printDot;
+  List<Tie> ties;
 
-  /// The print-spacing attribute controls whether or not spacing is left for an invisible note or object.
-  ///
-  /// It is used only if no note, dot, or lyric is being printed.
-  ///
-  /// The value is yes (leave spacing) by default.
-  bool? printSpacing;
-
-  bool? printLyric;
-
-  Printout();
-
-  factory Printout.fromXml(XmlElement xmlElement) {
-    return Printout();
-  }
+  RegularNote({
+    required this.duration,
+    this.ties = const [],
+    required super.pitchUnpitchedRest,
+  });
 }
+
+//  NoteBase {}
+abstract class PitchUnpitchedRest {}
+
+class Tie {
+  /// Indicates if this is the start or stop of the tie.
+  StartStop type;
+
+  /// Indicates which particular times to apply this through a repeated section.
+  String? timeOnly;
+
+  Tie({
+    required this.type,
+    this.timeOnly,
+  });
+}
+
+// <xs:complexType name="tie">
+// 	<xs:annotation>
+// 		<xs:documentation>The tie element indicates that a tie begins or ends with this note. If the tie element applies only particular times through a repeat, the time-only attribute indicates which times to apply it. The tie element indicates sound; the tied element indicates notation.</xs:documentation>
+// 	</xs:annotation>
+// 	<xs:attribute name="type" type="start-stop" use="required"/>
+// 	<xs:attribute name="time-only" type="time-only"/>
+// </xs:complexType>

@@ -115,3 +115,27 @@ class LevelDisplay {
     );
   }
 }
+
+// The common combination of editorial and voice information for a musical element.
+class EditorialVoice extends Editorial {
+  /// A voice is a sequence of musical events (e.g. notes, chords, rests) that proceeds linearly in time.
+  ///
+  /// The voice element is used to distinguish between multiple voices in individual parts.
+  ///
+  /// It is defined within a group due to its multiple uses within the MusicXML schema.
+  final String? voice;
+
+  EditorialVoice({
+    super.footnote,
+    super.level,
+    this.voice,
+  });
+
+  const EditorialVoice.empty()
+      : voice = null,
+        super.empty();
+
+  factory EditorialVoice.fromXml(XmlElement xmlElement) {
+    return EditorialVoice();
+  }
+}

@@ -1,8 +1,9 @@
+import 'package:music_notation/src/models/data_types/placement.dart';
+import 'package:music_notation/src/models/elements/editorial.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/data_types/system_relation.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
-import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/offset.dart';
 
 /// A direction is a musical indication that is not necessarily attached to a specific note.

@@ -18,7 +18,7 @@ abstract class MusicDataElement {
   factory MusicDataElement.fromXml(XmlElement xmlElement) {
     switch (xmlElement.name.local) {
       case 'note':
-        return Note.fromXml(xmlElement);
+        return NoteBase.fromXml(xmlElement);
       case 'backup':
         return Backup.fromXml(xmlElement);
       case 'forward':

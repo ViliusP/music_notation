@@ -1,5 +1,6 @@
+import 'package:music_notation/src/models/data_types/placement.dart';
 import 'package:music_notation/src/models/elements/music_data/note/notations/notation.dart';
-import 'package:music_notation/src/models/elements/music_data/note/note.dart';
+import 'package:music_notation/src/models/elements/music_data/note/notations/orientation.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/elements/text/text.dart';
 

@@ -1,8 +1,8 @@
+import 'package:music_notation/src/models/data_types/placement.dart';
 import 'package:music_notation/src/models/elements/music_data/note/notations/notation.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/data_types/start_stop.dart';
-import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/printing.dart';
 
 /// Ornaments can be any of several types, followed optionally by accidentals.
@@ -213,29 +213,6 @@ class WavyLine implements Ornament {
     required this.number,
     required this.smufl,
     required this.name,
-  });
-}
-
-class EmptyPlacementOrnament extends EmptyPlacement implements Ornament {
-  @override
-  String name;
-
-  EmptyPlacementOrnament({
-    required this.name,
-    required super.printStyle,
-    required super.placement,
-  });
-}
-
-/// The empty-placement type represents an empty element with print-style and placement attributes.
-class EmptyPlacement {
-  PrintStyle printStyle;
-
-  Placement placement;
-
-  EmptyPlacement({
-    required this.printStyle,
-    required this.placement,
   });
 }
 

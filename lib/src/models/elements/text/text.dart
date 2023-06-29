@@ -643,8 +643,9 @@ class Color {
     String? colorValue = xmlElement.getAttribute('color');
     if (colorValue != null) {
       // Verify the color value format with a regex pattern
-      bool isValid =
-          RegExp(r'^#[\dA-F]{6}([\dA-F][\dA-F])?$').hasMatch(colorValue);
+      bool isValid = RegExp(r'^#[\dA-F]{6}([\dA-F][\dA-F])?$').hasMatch(
+        colorValue,
+      );
       if (!isValid) {
         /// TODO exception
         throw Exception("Invalid color value: $colorValue");

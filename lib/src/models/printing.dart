@@ -1,3 +1,4 @@
+import 'package:music_notation/src/models/data_types/placement.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/elements/text/text.dart';
@@ -96,6 +97,20 @@ class PrintStyle {
       : position = const Position.empty(),
         font = const Font.empty(),
         color = const Color.empty();
+}
+
+/// Represents an empty element with print-style and placement attributes.
+class EmptyPlacement extends PrintStyle {
+  /// The placement attribute indicates whether something is above
+  /// or below another element, such as a note or a notation.
+  Placement? placement;
+
+  EmptyPlacement({
+    this.placement,
+    required super.position,
+    required super.font,
+    required super.color,
+  });
 }
 
 /// For most elements, any program will compute a default x and y position. The position attributes let this be changed two ways.

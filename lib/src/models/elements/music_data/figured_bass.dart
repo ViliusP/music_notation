@@ -1,7 +1,8 @@
+import 'package:music_notation/src/models/data_types/placement.dart';
 import 'package:music_notation/src/models/elements/editorial.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 import 'package:music_notation/src/models/elements/music_data/note/lyric.dart';
-import 'package:music_notation/src/models/elements/music_data/note/note.dart';
+import 'package:music_notation/src/models/elements/music_data/printout.dart';
 import 'package:music_notation/src/models/elements/style_text.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/printing.dart';

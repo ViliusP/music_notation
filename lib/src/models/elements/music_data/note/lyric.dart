@@ -1,8 +1,8 @@
+import 'package:music_notation/src/models/data_types/placement.dart';
 import 'package:music_notation/src/models/elements/editorial.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:xml/xml.dart';
 
-import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/generic.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/elements/text/text.dart';
