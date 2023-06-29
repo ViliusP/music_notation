@@ -322,9 +322,9 @@ class NonTraditionalKey extends Key {
 
   /// The list of non-traditional key content objects.
   ///
-  /// Each [NonTraditionalKeyContent] object represents a unique alteration
+  /// Each [KeyPitch] object represents a unique alteration
   /// of step and alter, with an optional accidental.
-  List<NonTraditionalKeyContent> content;
+  List<KeyPitch> content;
 
   NonTraditionalKey({
     this.content = const [],
@@ -355,7 +355,7 @@ class NonTraditionalKey extends Key {
     validateSequence(xmlElement, _xmlExpectedOrder);
 
     List<KeyOctave> octaves = [];
-    List<NonTraditionalKeyContent> content = [];
+    List<KeyPitch> content = [];
 
     Step? step;
     double? alter;
@@ -365,7 +365,7 @@ class NonTraditionalKey extends Key {
       switch (childElement.name.local) {
         case 'key-step':
           if (index != 0) {
-            content.add(NonTraditionalKeyContent(
+            content.add(KeyPitch(
               step: step!,
               alter: alter!,
               accidental: accidental,
@@ -404,7 +404,7 @@ class NonTraditionalKey extends Key {
       }
     }
     // Adds the last one
-    content.add(NonTraditionalKeyContent(
+    content.add(KeyPitch(
       step: step!,
       alter: alter!,
       accidental: accidental,
@@ -421,7 +421,7 @@ class NonTraditionalKey extends Key {
   }
 }
 
-class NonTraditionalKeyContent {
+class KeyPitch {
   // ------------------------- //
   // ------   Content   ------ //
   // ------------------------- //
@@ -443,7 +443,7 @@ class NonTraditionalKeyContent {
   /// This is optional, and may be `null` if no accidental is specified.
   KeyAccidental? accidental;
 
-  NonTraditionalKeyContent({
+  KeyPitch({
     required this.step,
     required this.alter,
     this.accidental,
