@@ -30,7 +30,7 @@ import 'package:music_notation/src/models/utilities/type_parsers.dart';
 /// Cue notes have a duration element, as do forward elements, but no tie elements.
 /// Having these two types of information available can make interchange easier,
 /// as some programs handle one type of information more readily than the other.
-class NoteBase implements MusicDataElement {
+class Note implements MusicDataElement {
   // ------------------------- //
   // ------   Content   ------ //
   // ------------------------- //
@@ -141,7 +141,7 @@ class NoteBase implements MusicDataElement {
   /// Specifies an ID that is unique to the entire document.
   final String? id;
 
-  NoteBase({
+  Note({
     // this.grace,
     // this.fullNote,
     // this.cue,
@@ -176,7 +176,7 @@ class NoteBase implements MusicDataElement {
     this.id,
   });
 
-  factory NoteBase.fromXml(XmlElement xmlElement) {
+  factory Note.fromXml(XmlElement xmlElement) {
     // XmlElement? maybeGraceElement =
     //     xmlElement.findElements("grace").firstOrNull;
     // Grace? grace;
@@ -266,7 +266,7 @@ class NoteBase implements MusicDataElement {
       );
     }
 
-    return NoteBase(
+    return Note(
       // grace: grace,
       editorialVoice: EditorialVoice.fromXml(xmlElement),
       type: type,
@@ -289,6 +289,7 @@ class NoteBase implements MusicDataElement {
     );
   }
 
+  @override
   XmlElement toXml() {
     final builder = XmlBuilder();
     // Build your xml here, this will include calls to toXml() methods of properties like grace.toXml(), fullNote.toXml(), etc.
@@ -511,7 +512,7 @@ class Rest extends PitchUnpitchedRest {
 //   // Pitch-specific properties and methods here.
 // }
 
-abstract class GraceNote extends NoteBase {
+abstract class GraceNote extends Note {
   Grace grace;
 
   GraceNote({
@@ -540,7 +541,7 @@ class GraceCueNote extends GraceNote {
   });
 }
 
-class CueNote extends NoteBase {
+class CueNote extends Note {
   Empty cue;
 
   /// Positive number specified in division units. This is the intended duration vs. notated duration (for instance, differences in dotted notes in Baroque-era music). Differences in duration specific to an interpretation or performance should be represented using the note element's attack and release attributes.
@@ -554,7 +555,7 @@ class CueNote extends NoteBase {
   });
 }
 
-class RegularNote extends NoteBase {
+class RegularNote extends Note {
   /// Positive number specified in division units. This is the intended duration vs. notated duration (for instance, differences in dotted notes in Baroque-era music). Differences in duration specific to an interpretation or performance should be represented using the note element's attack and release attributes.
   /// The duration element moves the musical position when used in backup elements, forward elements, and note elements that do not contain a chord child element.
   double duration;
@@ -568,9 +569,11 @@ class RegularNote extends NoteBase {
   });
 }
 
-//  NoteBase {}
+//  Note {}
 abstract class PitchUnpitchedRest {}
 
+/// Indicates that a tie begins or ends with this note.
+/// The tie element indicates sound; the tied element indicates notation.
 class Tie {
   /// Indicates if this is the start or stop of the tie.
   StartStop type;
@@ -582,12 +585,11 @@ class Tie {
     required this.type,
     this.timeOnly,
   });
-}
 
-// <xs:complexType name="tie">
-// 	<xs:annotation>
-// 		<xs:documentation>The tie element indicates that a tie begins or ends with this note. If the tie element applies only particular times through a repeat, the time-only attribute indicates which times to apply it. The tie element indicates sound; the tied element indicates notation.</xs:documentation>
-// 	</xs:annotation>
-// 	<xs:attribute name="type" type="start-stop" use="required"/>
-// 	<xs:attribute name="time-only" type="time-only"/>
-// </xs:complexType>
+  factory Tie.fromXml(XmlElement xmlElement) {
+    return Tie(
+      type: StartStop.fromXml(xmlElement),
+      timeOnly: TimeOnly.fromXml(xmlElement),
+    );
+  }
+}

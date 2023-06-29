@@ -102,7 +102,8 @@ class NumberLevel {
       "Attribute '$attributeName' is not a percentage type: $value";
 }
 
-/// The time-only type is used to indicate that a particular playback- or listening-related element only applies particular times through a repeated section.
+/// Indicate that a particular playback- or listening-related element only
+/// applies particular times through a repeated section.
 ///
 /// The value is a comma-separated list of positive integers arranged in ascending order,
 /// indicating which times through the repeated section that the element applies.
@@ -113,8 +114,30 @@ class TimeOnly {
   ///
   /// Return true if valid.
   /// Otherwise - false.
-  static bool validate(String value) {
+  static bool isValid(String value) {
     return RegExp(_pattern).hasMatch(value);
+  }
+
+  /// Extracts the time-only value from the given [xmlElement] if it exists and is valid.
+  ///
+  /// In musicXML, time-only is always attribute of same name.
+  ///
+  /// If it is not valid, it throws an [MusicXmlFormatException] exception.
+  ///
+  /// If it does not exists, null is returned.
+  static String? fromXml(XmlElement xmlElement) {
+    String? timeOnly = xmlElement.getAttribute('time-only');
+    if (timeOnly == null) {
+      return null;
+    }
+    if (!isValid(timeOnly)) {
+      throw MusicXmlFormatException(
+        message: "Parsed time-only attribute is not valid",
+        xmlElement: xmlElement,
+        source: timeOnly,
+      );
+    }
+    return timeOnly;
   }
 
   static String generateValidationError(String attributeName, String value) =>

@@ -1,15 +1,19 @@
 import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/exceptions.dart';
+import 'package:music_notation/src/models/utilities/common_attributes.dart';
 import 'package:xml/xml.dart';
 
-/// The start-stop type is used for an attribute of musical elements that can either start or stop, such as tuplets.
+/// An attribute of musical elements that can either start or stop, such as tuplets.
 ///
-/// The values of start and stop refer to how an element appears in musical score order, not in MusicXML document order.
-/// An element with a stop attribute may precede the corresponding element with a start attribute within a MusicXML document.
-/// This is particularly common in multi-staff music.
-/// For example, the stopping point for a tuplet may appear in staff 1 before the starting point for the tuplet appears in staff 2 later in the document.
+/// The values of start and stop refer to how an element appears in musical score order,
+/// not in MusicXML document order. An element with a stop attribute may precede
+/// the corresponding element with a start attribute within a MusicXML document.
+/// This is particularly common in multi-staff music. For example, the stopping
+/// point for a tuplet may appear in staff 1 before the starting point for
+/// the tuplet appears in staff 2 later in the document.
 ///
-/// When multiple elements with the same tag are used within the same note, their order within the MusicXML document should match the musical score order.
+/// When multiple elements with the same tag are used within the same note,
+/// their order within the MusicXML document should match the musical score order.
 enum StartStop {
   /// Starting point of an element.
   start,
@@ -23,14 +27,13 @@ enum StartStop {
 
   /// Extracts the StartStop from the given [xmlElement] if it exists and is valid.
   ///
-  /// In musicXML, start_stop is attribute and always required.
+  /// In musicXML, start-stop is always required 'type' attribute.
   ///
-  /// If the [StartStop] attribute does not exist,
-  /// it throws an [MissingXmlAttribute] exception.
+  /// If the [StartStop] attribute does not exist, it throws an [MissingXmlAttribute] exception.
   ///
-  /// If it is not valid, it throws an [] exception.
+  /// If it is not valid, it throws an [MusicXmlTypeException] exception.
   static StartStop fromXml(XmlElement xmlElement) {
-    String? rawValue = xmlElement.getAttribute("type");
+    String? rawValue = xmlElement.getAttribute(CommonAttributes.type);
 
     if (rawValue == null) {
       throw MissingXmlAttribute(
@@ -41,10 +44,9 @@ enum StartStop {
 
     StartStop? value = StartStop.fromString(rawValue);
     if (value == null) {
-      throw MusicXmlFormatException(
+      throw MusicXmlTypeException(
         message: generateValidationError(rawValue),
         xmlElement: xmlElement,
-        source: rawValue,
       );
     }
     return value;
