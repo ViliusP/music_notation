@@ -130,53 +130,187 @@ sealed class Time {
   }
 }
 
+/// Represents the time element of a musical score in the form of beat notation.
+/// The [TimeBeat] class is a subclass of the [Time] class and adds information about the
+/// interchangeable dual time signatures in addition to the beat notation.
 class TimeBeat extends Time {
+  /// A list of time signatures for the beat notation.
   List<TimeSignature> timeSignatures;
 
+  /// Represents the second in a pair of interchangeable dual time signatures,
+  /// such as the 6/8 in 3/4 (6/8). It is optional and can be null.
   Interchangeable? interchangeable;
 
   TimeBeat({
     required this.timeSignatures,
     this.interchangeable,
-    required super.number,
-    required super.printStyleAlign,
-    required super.printObject,
+    super.number,
+    super.symbol,
+    super.separator,
+    super.printStyleAlign,
+    super.printObject,
+    super.id,
   });
+
+  // Field(s): quantifier
+  static const Map<dynamic, XmlQuantifier> _xmlExpectedOrder = {
+    {
+      'beats': XmlQuantifier.required,
+      'beat-type': XmlQuantifier.required,
+    }: XmlQuantifier.oneOrMore,
+    'interchangeable': XmlQuantifier.optional,
+  };
+
+  /// Creates an instance of the [TimeBeat] from an XML element.
+  /// It parses the XML element to extract the necessary information
+  /// for the creation of the [TimeBeat] object.
+  /// If the XML element does not provide valid values,
+  /// [XmlElementContentException] or [MusicXmlTypeException] will be thrown.
+  factory TimeBeat.fromXml(XmlElement xmlElement) {
+    validateSequence(xmlElement, _xmlExpectedOrder);
+
+    var childElements = xmlElement.childElements.toList();
+
+    Interchangeable? interchangeable;
+    List<TimeSignature> timeSignatures = [];
+
+    for (int i = 0; i < childElements.length ~/ 2 * 2; i += 2) {
+      XmlElement beatsElement = childElements[i];
+      validateTextContent(beatsElement);
+      XmlElement beatTypeElement = childElements[i + 1];
+      validateTextContent(beatTypeElement);
+
+      timeSignatures.add(
+        TimeSignature(
+          beats: beatsElement.innerText,
+          beatType: beatTypeElement.innerText,
+        ),
+      );
+
+      if (childElements.length % 2 != 0 &&
+          childElements[i + 2].name.local == "interchangeable") {
+        interchangeable = Interchangeable.fromXml(childElements[i + 2]);
+      }
+    }
+
+    bool? printObject = YesNo.fromXml(xmlElement, CommonAttributes.printObject);
+
+    return TimeBeat(
+      timeSignatures: timeSignatures,
+      interchangeable: interchangeable,
+      number: Time._numberFromXml(xmlElement),
+      symbol: Time._symbolFromXml(xmlElement),
+      separator: Time._seperatorFromXml(xmlElement),
+      printStyleAlign: PrintStyleAlign.fromXml(xmlElement),
+      printObject: printObject ?? true,
+      id: xmlElement.getAttribute("id"),
+    );
+  }
 }
 
-/// The interchangeable type is used to represent the second in a pair of interchangeable dual time signatures,
+/// Represent the second in a pair of interchangeable dual time signatures,
 /// such as the 6/8 in 3/4 (6/8).
 ///
 /// A separate symbol attribute value is available compared to the time element's symbol attribute,
 /// which applies to the first of the dual time signatures.
 class Interchangeable {
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
+
+  /// Represents the relationship between the beats and beat-type values
+  /// in dual time signatures.
   TimeRelation? timeRelation;
 
+  /// A list of time signatures for the second of the dual time signatures.
   List<TimeSignature> timeSignatures;
 
   // ------------------------- //
   // ------ Attributes ------- //
   // ------------------------- //
 
+  /// Indicates how to display the arrangement between the beats and
+  /// beat-type values in the second of the dual time signatures.
   TimeSymbol symbol;
 
+  /// Indicates how to display the second of the dual time signatures,
+  /// such as by using common and cut time symbols or a single number display.
   TimeSeparator timeSeparator;
 
   Interchangeable({
     this.timeRelation,
     required this.timeSignatures,
-    required this.symbol,
-    required this.timeSeparator,
+    this.symbol = TimeSymbol.normal,
+    this.timeSeparator = TimeSeparator.none,
   });
+
+  // Field(s): quantifier
+  static const Map<dynamic, XmlQuantifier> _xmlExpectedOrder = {
+    {
+      'beats': XmlQuantifier.required,
+      'beat-type': XmlQuantifier.required,
+    }: XmlQuantifier.oneOrMore,
+    // time-relation in example is below time signature group,
+    // but in website and musicxml.xsd above it.
+    'time-relation': XmlQuantifier.optional,
+  };
+
+  /// Creates an instance of the `Interchangeable` class from an XML element.
+  /// It parses the XML element to extract the necessary
+  /// information for the creation of the `Interchangeable` object.
+  /// If the XML element does not provide valid values,
+  /// [XmlElementContentException] or [MusicXmlTypeException] will be thrown.
+  factory Interchangeable.fromXml(XmlElement xmlElement) {
+    validateSequence(xmlElement, _xmlExpectedOrder);
+
+    var childElements = xmlElement.childElements.toList();
+
+    TimeRelation? timeRelation;
+    List<TimeSignature> timeSignatures = [];
+
+    for (int i = 0; i < childElements.length ~/ 2 * 2; i += 2) {
+      XmlElement beatsElement = childElements[i];
+      validateTextContent(beatsElement);
+      XmlElement beatTypeElement = childElements[i + 1];
+      validateTextContent(beatTypeElement);
+
+      timeSignatures.add(TimeSignature(
+        beats: beatsElement.innerText,
+        beatType: beatTypeElement.innerText,
+      ));
+
+      if (childElements.length % 2 != 0 &&
+          childElements[i + 2].name.local == "time-relation") {
+        validateTextContent(childElements[i + 2]);
+        timeRelation = TimeRelation.fromString(childElements[i + 2].innerText);
+        if (timeRelation == null) {
+          throw MusicXmlTypeException(
+            message:
+                "${childElements[i + 2].innerText} is not valid time-relation value",
+            xmlElement: xmlElement,
+          );
+        }
+      }
+    }
+
+    return Interchangeable(
+      timeSignatures: timeSignatures,
+      timeRelation: timeRelation,
+    );
+  }
 }
 
 /// Time signatures are represented by the beats element for the numerator and
 /// the beat-type element for the denominator.
 class TimeSignature {
-  /// The beats element indicates the number of beats, as found in the numerator of a time signature.
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
+
+  /// Indicates the number of beats, as found in the numerator of a time signature.
   String beats;
 
-  /// The beat-type element indicates the beat unit, as found in the denominator of a time signature.
+  /// Indicates the beat unit, as found in the denominator of a time signature.
   String beatType;
 
   TimeSignature({
@@ -185,6 +319,7 @@ class TimeSignature {
   });
 }
 
+/// Indicates the symbol used to represent the interchangeable aspect of dual time signatures.
 enum TimeRelation {
   parentheses,
   bracket,
@@ -192,6 +327,10 @@ enum TimeRelation {
   slash,
   space,
   hyphen;
+
+  static TimeRelation? fromString(String value) {
+    return values.firstWhereOrNull((v) => v.name == value);
+  }
 }
 
 /// Explicitly indicates that no time signature is present.The optional element
