@@ -1,4 +1,5 @@
 import 'package:music_notation/src/models/printing.dart';
+import 'package:xml/xml.dart';
 
 /// Directives are like directions, but can be grouped together with attributes for convenience.
 ///
@@ -25,7 +26,13 @@ class AttributeDirective {
 
   AttributeDirective({
     required this.value,
-    required this.printStyle,
-    this.lang,
+    this.printStyle = const PrintStyle.empty(),
+    this.lang = "it",
   });
+
+  factory AttributeDirective.fromXml(XmlElement xmlElement) {
+    return AttributeDirective(
+      value: "value",
+    );
+  }
 }

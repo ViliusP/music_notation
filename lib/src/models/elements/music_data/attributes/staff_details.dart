@@ -29,6 +29,7 @@
 import 'package:music_notation/src/models/elements/music_data/direction/scordatura.dart';
 import 'package:music_notation/src/models/elements/music_data/note/notations/notation.dart';
 import 'package:music_notation/src/models/elements/text/text.dart';
+import 'package:xml/xml.dart';
 
 /// The staff-details element is used to indicate different types of staves.
 ///
@@ -50,7 +51,7 @@ class StaffDetails {
   ///
   /// If the staff-lines element is present,
   /// the appearance of each line may be individually specified with a line-detail element.
-  int staffLines;
+  int? staffLines;
 
   /// See more at [LineDetail].
   List<LineDetail> lineDetails;
@@ -92,16 +93,20 @@ class StaffDetails {
 
   StaffDetails({
     this.staffType,
-    required this.staffLines,
-    required this.lineDetails,
-    required this.staffTunings,
+    this.staffLines,
+    this.lineDetails = const [],
+    this.staffTunings = const [],
     this.capo,
     this.staffSize,
-    required this.number,
-    required this.printObject,
-    required this.printSpacing,
-    required this.showFrets,
+    this.number = 1,
+    this.printObject = true,
+    this.printSpacing = true,
+    this.showFrets = ShowFrets.numbers,
   });
+
+  factory StaffDetails.fromXml(XmlElement xmlElement) {
+    return StaffDetails();
+  }
 }
 
 /// The show-frets type indicates whether to show tablature frets

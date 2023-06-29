@@ -2,6 +2,7 @@ import 'package:music_notation/src/models/data_types/start_stop.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/generic.dart';
 import 'package:music_notation/src/models/elements/text/text.dart';
+import 'package:xml/xml.dart';
 
 /// A measure-style indicates a special way to print partial to multiple measures within a part.
 ///
@@ -39,10 +40,14 @@ abstract class MeasureStyle {
 
   MeasureStyle({
     this.number,
-    required this.font,
-    required this.color,
+    this.font = const Font.empty(),
+    this.color = const Color.empty(),
     this.id,
   });
+
+  factory MeasureStyle.fromXml(XmlElement xmlElement) {
+    return MultipleRest(value: 1);
+  }
 }
 
 /// The text of the multiple-rest type indicates the number of measures in the multiple rest.
@@ -62,8 +67,8 @@ class MultipleRest extends MeasureStyle {
   MultipleRest({
     required this.value,
     this.useSymbols = false,
-    required super.font,
-    required super.color,
+    super.font,
+    super.color,
   });
 }
 

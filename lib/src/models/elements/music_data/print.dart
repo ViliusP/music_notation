@@ -231,7 +231,7 @@ class MeasureNumbering {
   }
 }
 
-/// Fescribes how measure numbers are displayed on this part:
+/// Describes how measure numbers are displayed on this part:
 /// - no numbers;
 /// - numbers every measure;
 /// - numbers every system.

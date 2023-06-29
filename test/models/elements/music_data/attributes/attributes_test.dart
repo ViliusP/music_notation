@@ -5,6 +5,7 @@ import 'package:xml/xml.dart';
 
 void main() {
   group("Attribute ", () {
+    // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/tutorial-hello-world/
     test("should parse 'Tutorial: Hello, World' example", () {
       String input = """
         <attributes>
@@ -32,7 +33,7 @@ void main() {
       expect(attributes.keys.length, 1);
       expect(attributes.times.length, 1);
       expect(attributes.staves, 1);
-      expect(attributes.partSymbol, null);
+      expect(attributes.partSymbol, isNull);
       expect(attributes.instruments, 1);
       expect(attributes.clefs.length, 1);
       expect(attributes.staffDetails.length, 0);

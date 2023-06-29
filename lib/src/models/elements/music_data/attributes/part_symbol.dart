@@ -1,6 +1,7 @@
 import 'package:music_notation/src/models/data_types/group_symbol_value.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/elements/text/text.dart';
+import 'package:xml/xml.dart';
 
 /// The part-symbol type indicates how a symbol for a multi-staff part is indicated in the score;
 /// brace is the default value.
@@ -34,4 +35,8 @@ class PartSymbol {
     this.position = const Position.empty(),
     this.color = const Color.empty(),
   });
+
+  factory PartSymbol.fromXml(XmlElement partSymbolElement) {
+    return PartSymbol();
+  }
 }

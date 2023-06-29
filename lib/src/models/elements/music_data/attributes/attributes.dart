@@ -140,6 +140,7 @@ class Attributes implements MusicDataElement {
     // -------------      time     -------------
     // -------------     staves    -------------
     // -------------  part-sybol   -------------
+    XmlElement? partSymbolElement = xmlElement.getElement('part-symbol');
     // -------------  instruments  -------------
     // -------------     clef      -------------
     // ------------- staff-details -------------
@@ -151,16 +152,48 @@ class Attributes implements MusicDataElement {
     return Attributes(
       editorial: Editorial.fromXml(xmlElement),
       divisions: _divisionsFromXml(xmlElement),
-      keys: xmlElement.findElements("key").map((e) => Key.fromXml(e)).toList(),
-      times: _timesFromXml(xmlElement),
+      keys: xmlElement
+          .findElements("key")
+          .map(
+            (e) => Key.fromXml(e),
+          )
+          .toList(),
+      times: xmlElement
+          .findElements("time")
+          .map(
+            (e) => Time.fromXml(e),
+          )
+          .toList(),
       staves: _stavesFromXml(xmlElement),
-      partSymbol: _partSymbolFromXml(xmlElement),
+      partSymbol: partSymbolElement != null
+          ? PartSymbol.fromXml(partSymbolElement)
+          : null,
       instruments: _instrumentsFromXml(xmlElement),
-      clefs: _clefsFromXml(xmlElement),
-      staffDetails: _staffDetailsFromXml(xmlElement),
+      clefs: xmlElement
+          .findElements("clef")
+          .map(
+            (e) => Clef.fromXml(e),
+          )
+          .toList(),
+      staffDetails: xmlElement
+          .findElements("staff-details")
+          .map(
+            (e) => StaffDetails.fromXml(e),
+          )
+          .toList(),
       tranpositions: _transpositionsFromXml(xmlElement),
-      directives: _directivesFromXml(xmlElement),
-      measureStyles: _measureStylesFromXml(xmlElement),
+      directives: xmlElement
+          .findElements("directive")
+          .map(
+            (e) => AttributeDirective.fromXml(e),
+          )
+          .toList(),
+      measureStyles: xmlElement
+          .findElements("directive")
+          .map(
+            (e) => MeasureStyle.fromXml(e),
+          )
+          .toList(),
     );
   }
 

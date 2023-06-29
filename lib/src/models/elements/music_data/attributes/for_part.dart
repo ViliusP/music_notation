@@ -2,8 +2,7 @@ import 'package:music_notation/src/models/elements/music_data/attributes/attribu
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/transpose.dart';
 
-/// The for-part type is used in a concert score to indicate the transposition
-/// for a transposed part created from that score.
+/// Indicates the transposition for a transposed part created from a concert score.
 ///
 /// It is only used in score files that contain a concert-score element in the defaults.
 ///
@@ -20,12 +19,35 @@ class ForPart extends Transposition {
   // ------   Content   ------ //
   // ------------------------- //
 
-  CleffContent partClef;
+  // TODO: check.
+
+  /// The sign element represents the clef symbol.
+  ClefSign sign;
+
+  /// Line numbers are counted from the bottom of the staff.
+  ///
+  /// They are only needed with the G, F, and C signs in order to position a pitch correctly on the staff.
+  ///
+  /// Standard values are 2 for the [ClefSign.G] (treble clef),
+  /// 4 for the [ClefSign.F] (bass clef), and 3 for the [ClefSign.C] (alto clef).
+  ///
+  /// Line values can be used to specify positions outside the staff,
+  /// such as a [ClefSign.C] positioned in the middle of a grand staff.
+  int? _line;
+  int? get line => _line ?? sign.defaultLineNumber;
+  set line(int? value) {
+    _line = value;
+  }
+
+  /// This is used for transposing clefs. A [ClefSign.G] for tenors would have a value of -1.
+  int? octaveChange;
 
   TransposeContent partTranspose;
 
   ForPart({
-    required this.partClef,
+    required this.sign,
+    int? line,
+    this.octaveChange,
     required this.partTranspose,
   });
 }
