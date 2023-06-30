@@ -4,74 +4,73 @@ import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/utilities/type_parsers.dart';
 import 'package:xml/xml.dart';
 
-/// The accidental type represents actual notated accidentals.
+/// Represents a notated accidental in MusicXML.
 ///
-/// Editorial and cautionary indications are indicated by attributes.
-///
-/// Values for these attributes are "no" if not present.
-///
-/// Specific graphic display such as parentheses, brackets, and size are controlled by the level-display attribute group.
+/// It has attributes determining whether it is cautionary or editorial,
+/// its level display, print style, and a SMuFL accidental glyph reference.
 class Accidental {
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
+
+  /// The value of the accidental as specified in the MusicXML document.
   AccidentalValue value;
 
-  /// If yes, indicates that this is a cautionary accidental.
-  /// The value is no if not present.
-  ///
-  /// type="yes-no".
+  // ------------------------- //
+  // ------ Attributes ------- //
+  // ------------------------- //
+
+  /// If `true`('yes' in xml), indicates that this is a cautionary accidental.
+  /// The value is `false`('no' in xml) if not present.
   bool cautionary;
 
-  /// If yes, indicates that this is an editorial accidental.
-  /// The value is no if not present.
+  /// If `true`, this accidental is a cautionary accidental.
   ///
-  /// type="yes-no".
+  /// Defaults to `false` if not specified in the XML.
   bool editorial;
 
+  /// Specifies the display level of the accidental.
+  ///
+  /// Uses [LevelDisplay.empty] as a default value.
   LevelDisplay levelDisplay;
 
+  /// Specifies the print style of the accidental.
+  ///
+  /// Uses [PrintStyle.empty] as a default value.
   PrintStyle printStyle;
 
-  /// References a specific Standard Music Font Layout (SMuFL) accidental glyph.
+  /// Specifies a specific Standard Music Font Layout (SMuFL) glyph for the accidental.
   ///
-  /// This is used both with the other accidental value and for disambiguating cases where a single MusicXML accidental value could be represented by multiple SMuFL glyphs.
-  ///
-  /// type="smufl-accidental-glyph-name"
+  /// Used for disambiguating cases where a single MusicXML accidental value
+  /// could be represented by multiple SMuFL glyphs.
   String? smufl;
 
+  /// Constructs a new [Accidental].
+  ///
+  /// All parameters except [value] are optional and have default values.
   Accidental({
     required this.value,
     this.cautionary = false,
-    required this.editorial,
-    required this.levelDisplay,
-    required this.printStyle,
-    required this.smufl,
+    this.editorial = false,
+    this.levelDisplay = const LevelDisplay.empty(),
+    this.printStyle = const PrintStyle.empty(),
+    this.smufl,
   });
 
+  /// Constructs a new [Accidental] instance from an [XmlElement].
+  ///
+  /// Uses 'yes', 'no', and `null` to determine the boolean value of the
+  /// [cautionary] and [editorial] attributes.
+  /// If the attribute value is not valid, it will throw a [MusicXmlTypeException].
   factory Accidental.fromXml(XmlElement xmlElement) {
-    AccidentalValue? value = AccidentalValue.fromXml(xmlElement);
-
-    String? editorialAttribute = xmlElement.getAttribute("editorial");
-    bool editorial = false;
-
-    if (editorialAttribute != null) {
-      editorial = YesNo.toBool(editorialAttribute) ?? false;
-    }
-
-    String? cautionaryAttribute = xmlElement.getAttribute("cautionary");
-    bool cautionary = false;
-
-    if (cautionaryAttribute != null) {
-      cautionary = YesNo.toBool(cautionaryAttribute) ?? false;
-    }
-
-    String? smufl = xmlElement.getAttribute("smufl");
-
     return Accidental(
-      value: value,
-      cautionary: cautionary,
-      editorial: editorial,
+      value: AccidentalValue.fromXml(xmlElement),
+      editorial: YesNo.fromXml(xmlElement, 'editorial') ?? false,
+      cautionary: YesNo.fromXml(xmlElement, 'cautionary') ?? false,
       levelDisplay: LevelDisplay.fromXml(xmlElement),
       printStyle: PrintStyle.fromXml(xmlElement),
-      smufl: smufl,
+      // It should be validated.
+      smufl: xmlElement.getAttribute("smufl"),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:music_notation/src/models/data_types/symbol_size.dart';
+import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/utilities/type_parsers.dart';
 import 'package:xml/xml.dart';
 import 'package:music_notation/src/models/elements/text/text.dart';
@@ -33,7 +34,7 @@ class Editorial {
   }
 }
 
-/// The level type is used to specify editorial information for different MusicXML elements.
+/// Specifies editorial information for different MusicXML elements.
 ///
 /// The content contains identifying and/or descriptive text about the editorial status of the parent element.
 ///
@@ -57,60 +58,61 @@ class Level {
   });
 }
 
-/// The level-display attribute group specifies three common ways to indicate editorial indications:
+/// Represents an editorial level in MusicXML.
 ///
-/// putting parentheses or square brackets around a symbol, or making the symbol a different size.
+/// It defines whether symbols are surrounded by parentheses, brackets,
+/// or are presented in a different size.
 ///
-/// If not specified, they are left to application defaults.
-///
-/// It is used by the level and accidental elements.
+/// If any attribute is not specified, it is left to application defaults.
 class LevelDisplay {
   /// Specifies whether or not parentheses are put around a symbol for an editorial indication.
   ///
   /// If not specified, it is left to application defaults.
-  bool? parentheses;
+  final bool? parentheses;
 
   /// Specifies whether or not brackets are put around a symbol for an editorial indication.
   ///
   /// If not specified, it is left to application defaults.
-  bool? bracket;
+  final bool? bracket;
 
   /// Specifies the symbol size to use for an editorial indication.
   ///
   /// If not specified, it is left to application defaults.
-  SymbolSize? size;
+  final SymbolSize? size;
 
+  /// Creates a new instance of [LevelDisplay].
+  ///
+  /// All parameters are optional and default to `null`.
   LevelDisplay({
     this.parentheses,
     this.bracket,
     this.size,
   });
 
+  /// Constructs an empty [LevelDisplay] object where all properties are `null`.
+  const LevelDisplay.empty()
+      : parentheses = null,
+        bracket = null,
+        size = null;
+
+  /// Constructs a new [LevelDisplay] instance from an [XmlElement].
+  ///
+  /// If the any of attributes in the [xmlElement] is not a valid,
+  /// it will throw a [MusicXmlTypeException].
   factory LevelDisplay.fromXml(XmlElement xmlElement) {
-    String? rawParentheses = xmlElement.getAttribute("parentheses");
-    bool? parentheses;
+    String? rawSymbolSize = xmlElement.getAttribute("size");
+    SymbolSize? size = SymbolSize.fromString(rawSymbolSize ?? "");
 
-    if (rawParentheses != null) {
-      parentheses = YesNo.toBool(rawParentheses);
-    }
-
-    String? rawBracket = xmlElement.getAttribute("bracket");
-    bool? bracket;
-
-    if (rawBracket != null) {
-      bracket = YesNo.toBool(rawBracket);
-    }
-
-    String? rawSimbolSize = xmlElement.getAttribute("symbol-size");
-    SymbolSize? size;
-
-    if (rawSimbolSize != null) {
-      size = SymbolSize.fromString(rawSimbolSize);
+    if (rawSymbolSize != null && size == null) {
+      throw MusicXmlTypeException(
+        message: "$rawSymbolSize is not valid simbol size",
+        xmlElement: xmlElement,
+      );
     }
 
     return LevelDisplay(
-      parentheses: parentheses,
-      bracket: bracket,
+      parentheses: YesNo.fromXml(xmlElement, "parentheses"),
+      bracket: YesNo.fromXml(xmlElement, "bracket"),
       size: size,
     );
   }
