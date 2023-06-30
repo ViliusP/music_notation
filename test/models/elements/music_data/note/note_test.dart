@@ -123,7 +123,134 @@ void main() {
 
     expect(note, isNotNull);
   });
+  group("Grace", () {
+    // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/grace-element/
+    test("should parse '<grace>' example", () {
+      String input = """
+          <grace slash="yes"/>
+        """;
 
+      var grace = Grace.fromXml(XmlDocument.parse(input).rootElement);
+
+      expect(grace.slash, isTrue);
+      expect(grace.makeTime, isNull);
+      expect(grace.stealTimeFollowing, isNull);
+      expect(grace.stealTimePrevious, isNull);
+    });
+    // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/grace-element-appoggiatura/
+    test("should parse '<grace> (Appoggiatura)' example", () {
+      String input = """
+          <grace slash="no" steal-time-following="33"/>
+        """;
+
+      var grace = Grace.fromXml(XmlDocument.parse(input).rootElement);
+
+      expect(grace.slash, isFalse);
+      expect(grace.makeTime, isNull);
+      expect(grace.stealTimeFollowing, 33);
+      expect(grace.stealTimePrevious, isNull);
+    });
+    test("parsing should throw on invalid slash attribute", () {
+      String input = """
+          <grace slash="foo"/>
+        """;
+
+      expect(
+        () => Grace.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(
+          isA<MusicXmlTypeException>(),
+        ),
+      );
+    });
+    test("parsing should throw on invalid make-time attribute", () {
+      String input = """
+          <grace make-time="foo"/>
+        """;
+
+      expect(
+        () => Grace.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(
+          isA<MusicXmlFormatException>(),
+        ),
+      );
+    });
+    test("parsing should throw on invalid steal-time-following attribute", () {
+      String input = """
+          <grace steal-time-following="foo"/>
+        """;
+
+      expect(
+        () => Grace.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(
+          isA<MusicXmlFormatException>(),
+        ),
+      );
+    });
+    test("parsing should throw on negative steal-time-following attribute", () {
+      String input = """
+          <grace steal-time-following="-1"/>
+        """;
+
+      expect(
+        () => Grace.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(
+          isA<MusicXmlFormatException>(),
+        ),
+      );
+    });
+    test(
+        "parsing should throw on bigger than 100 steal-time-following attribute",
+        () {
+      String input = """
+          <grace steal-time-following="101"/>
+        """;
+
+      expect(
+        () => Grace.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(
+          isA<MusicXmlFormatException>(),
+        ),
+      );
+    });
+    test("parsing should throw on invalid steal-time-previous attribute", () {
+      String input = """
+          <grace steal-time-previous="foo"/>
+        """;
+
+      expect(
+        () => Grace.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(
+          isA<MusicXmlFormatException>(),
+        ),
+      );
+    });
+    test("parsing should throw on negative steal-time-previous attribute", () {
+      String input = """
+          <grace steal-time-previous="-1"/>
+        """;
+
+      expect(
+        () => Grace.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(
+          isA<MusicXmlFormatException>(),
+        ),
+      );
+    });
+    test(
+        "parsing should throw on bigger than 100 steal-time-previous attribute",
+        () {
+      String input = """
+          <grace steal-time-previous="101"/>
+        """;
+
+      expect(
+        () => Grace.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(
+          isA<MusicXmlFormatException>(),
+        ),
+      );
+    });
+  });
   group("Tie", () {
     // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/humming-element/
     test("should parse '<humming>'>' example", () {

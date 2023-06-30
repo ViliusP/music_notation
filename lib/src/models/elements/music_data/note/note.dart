@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/data_types/start_stop.dart';
@@ -299,35 +300,23 @@ class Note implements MusicDataElement {
 
 /// Indicates the presence of a grace note.
 ///
-/// The slash attribute for a grace note is yes for slashed grace notes.
-/// The steal-time-previous attribute indicates the percentage of time to steal from the previous note for the grace note.
-///
-/// The steal-time-following attribute indicates the percentage of time to steal from the following note for the grace note, as for appoggiaturas.
-/// The make-time attribute indicates to make time, not steal time;
-/// the units are in real-time divisions for the grace note.
-///
-/// Content is always empty.
+/// In musicXML, content is always empty.
 class Grace {
-  /// The divisions type is used to express values in terms of the musical divisions defined by the divisions element.
-  ///
-  /// type="divisions"
+  /// The divisions type is used to express values in terms of the musical
+  /// divisions defined by the divisions element.
   double? makeTime;
 
   /// The value is yes for slashed grace notes and no if no slash is present.
   ///
   /// Defaults to true.
-  ///
-  /// type="yes-no"
   bool slash;
 
-  /// Indicates the percentage of time to steal from the following note for the grace note playback, as for appoggiaturas.
-  ///
-  /// type="percent"
+  /// Indicates the percentage of time to steal from the following note for
+  /// the grace note playback, as for appoggiaturas.
   double? stealTimePrevious;
 
-  /// The steal-time-previous attribute indicates the percentage of time to steal from the previous note for the grace note playback.
-  ///
-  /// type="percent"
+  /// The steal-time-previous attribute indicates the percentage of time to
+  /// steal from the previous note for the grace note playback.
   double? stealTimeFollowing;
 
   Grace({
@@ -338,51 +327,25 @@ class Grace {
   });
 
   factory Grace.fromXml(XmlElement xmlElement) {
-    final slashAttribute = xmlElement.getAttribute('slash');
     final makeTimeAttribute = xmlElement.getAttribute(
       'make-time',
     );
-    final stealTimePreviousAttribute = xmlElement.getAttribute(
-      'steal-time-previous',
-    );
-    final stealTimeFollowingAttribute = xmlElement.getAttribute(
-      'steal-time-following',
-    );
 
-    Grace grace = Grace(
-      makeTime: double.tryParse(makeTimeAttribute ?? ""),
-      stealTimePrevious: double.tryParse(stealTimePreviousAttribute ?? ""),
-      stealTimeFollowing: double.tryParse(stealTimeFollowingAttribute ?? ""),
-      slash: YesNo.toBool(slashAttribute ?? "yes") ?? true,
+    double? makeTime = double.tryParse(makeTimeAttribute ?? "");
+    if (makeTimeAttribute != null && makeTime == null) {
+      throw MusicXmlFormatException(
+        message: "'make-time' attribute in 'grace' is not valid division value",
+        xmlElement: xmlElement,
+        source: makeTimeAttribute,
     );
-
-    grace.validate();
-    return grace;
   }
 
-  void validate() {
-    if (stealTimePrevious != null && !Percent.isValid(stealTimePrevious!)) {
-      throw const FormatException();
-      // TODO
-      // throw MusicXmlFormatException(
-      //   message: Percent.generateValidationError(
-      //     "steal-time-previous",
-      //     stealTimePrevious!,
-      //   ),
-      //   xmlElement: null,
-      // );
-    }
-    if (stealTimePrevious != null && !Percent.isValid(stealTimeFollowing!)) {
-      throw const FormatException();
-      // TODO
-      // throw MusicXmlFormatException(
-      //   message: Percent.generateValidationError(
-      //     "steal-time-following",
-      //     stealTimeFollowing!,
-      //   ),
-      //   xmlElement: null,
-      // );
-    }
+    return Grace(
+      slash: YesNo.fromXml(xmlElement, 'slash') ?? true,
+      makeTime: makeTime,
+      stealTimePrevious: Percent.fromXml(xmlElement, 'steal-time-previous'),
+      stealTimeFollowing: Percent.fromXml(xmlElement, 'steal-time-following'),
+    );
   }
 
   XmlElement toXml() {
