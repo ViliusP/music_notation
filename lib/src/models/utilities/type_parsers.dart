@@ -1,5 +1,6 @@
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/utilities/common_attributes.dart';
+import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 import 'package:xml/xml.dart';
 
 class BeamLevel {
@@ -331,17 +332,59 @@ class YesNo {
   }
 }
 
+/// A utility class for working with percentages in the context of the MusicXML format.
+///
+/// This class provides functionality to validate, parse,
+/// and generate error messages for percentage-type values.
 class Percent {
   static const _min = 0;
   static const _max = 100;
 
-  /// Returns true if [value] is percent type.
+  Percent._(); // Prevents the instantiation of the class.
+
+  /// Checks whether the [value] is a valid percentage.
+  ///
+  /// A valid percentage lies between [_min] and [_max] inclusive.
   static bool isValid(double value) {
     return _min <= value && _max >= value;
   }
 
-  static String generateValidationError(String attributeName, double value) =>
+  /// Generates a validation error message indicating that the [attributeName]
+  /// is not a valid percentage type with the given [value].
+  static String _generateValidationError(String attributeName, String value) =>
       "Attribute '$attributeName' is not a percentage type: $value";
+
+  /// Attempts to parse a percentage value from the [xmlElement].
+  ///
+  /// If an [attributeName] is provided, it tries to parse the attribute value; otherwise,
+  /// it tries to parse the element's text content.
+  /// If parsing fails, it throws a [MusicXmlFormatException] with an appropriate error message.
+  ///
+  /// If [attributeName] is missing, it will also check if xmlElement has only text content.
+  /// If it has other xml element, it will throw [XmlElementContentException]
+  static double? fromXml(XmlElement xmlElement, [String? attributeName]) {
+    final rawValue = attributeName != null
+        ? xmlElement.getAttribute(attributeName)
+        : xmlElement.innerText;
+
+    if (attributeName == null) {
+      validateTextContent(xmlElement);
+    }
+
+    double? value = double.tryParse(rawValue ?? "");
+
+    if (rawValue != null && (value == null || !isValid(value))) {
+      final message = attributeName != null
+          ? _generateValidationError(attributeName, rawValue)
+          : "${xmlElement.name.local} must have valid percentage content";
+
+      throw MusicXmlFormatException(
+        message: message,
+        xmlElement: xmlElement,
+      );
+    }
+    return value;
+  }
 }
 
 /// Static methods for validating MusicXML anyURI type according to the MusicXML specification.
