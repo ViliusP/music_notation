@@ -203,3 +203,39 @@ enum BeaterValue implements PercussionValueFromXml {
   triangleBeaterPlain,
   wireBrush;
 }
+
+/// Represents pictograms for pitched percussion instruments.
+///
+/// The smufl attribute is used to distinguish different SMuFL glyphs
+/// for a particular pictogram within the Tuned mallet percussion pictograms range.
+class Pitched {
+  /// type="smufl-pictogram-glyph-name"
+  ///
+  /// See more at [SmuflPictogramGlyphName].
+  String smufl;
+
+  PitchedValue value;
+
+  Pitched({
+    required this.smufl,
+    required this.value,
+  });
+}
+
+/// Represents pictograms for pitched percussion instruments.
+///
+/// The chimes and tubular chimes values distinguish the single-line
+/// and double-line versions of the pictogram.
+enum PitchedValue {
+  celesta,
+  chimes,
+  glockenspiel,
+  lithophone,
+  mallet,
+  marimba,
+  steelDrums,
+  tubaphone,
+  tubularChimes,
+  vibraphone,
+  xylophone;
+}

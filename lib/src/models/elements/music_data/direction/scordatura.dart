@@ -1,4 +1,4 @@
-import 'package:music_notation/src/models/data_types/step.dart';
+import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 
 /// Scordatura string tunings are represented by a series of accord elements, similar to the staff-tuning elements.
 ///
@@ -35,24 +35,24 @@ class Accord {
 }
 
 /// The tuning group contains the sequence of elements common to the staff-tuning and accord elements.
-class Tuning {
-  /// The tuning-step element is represented like the step element,
-  /// with a different name to reflect its different function in string tuning.
-  Step step;
+class Tuning extends Pitch {
+  // /// The tuning-step element is represented like the step element,
+  // /// with a different name to reflect its different function in string tuning.
+  // Step step;
 
-  /// The tuning-alter element is represented like the alter element,
-  /// with a different name to reflect its different function in string tuning.
-  double alter;
+  // /// The tuning-alter element is represented like the alter element,
+  // /// with a different name to reflect its different function in string tuning.
+  // double alter;
 
-  /// The tuning-octave element is represented like the octave element,
-  /// with a different name to reflect its different function in string tuning.
-  ///
-  /// Octaves are represented by the numbers 0 to 9, where 4 indicates the octave started by middle C.
-  int octave;
+  // /// The tuning-octave element is represented like the octave element,
+  // /// with a different name to reflect its different function in string tuning.
+  // ///
+  // /// Octaves are represented by the numbers 0 to 9, where 4 indicates the octave started by middle C.
+  // int octave;
 
   Tuning({
-    required this.step,
-    required this.alter,
-    required this.octave,
+    required super.step,
+    super.alter,
+    required super.octave,
   });
 }
