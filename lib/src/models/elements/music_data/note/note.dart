@@ -565,12 +565,85 @@ class RegularNote extends Note {
   RegularNote({
     required this.duration,
     this.ties = const [],
-    required super.pitchUnpitchedRest,
+
+class Pitch {
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
+
+  /// The step (pitch class) of this non-traditional key content.
+  ///
+  /// The step is represented by an instance of the [Step] enum,
+  /// which includes values from A to G.
+  Step step;
+
+  /// The microtonal alteration of the step for this non-traditional key content.
+  ///
+  /// This is represented as a double, where 1.0 represents a one semitone sharp,
+  /// -1.0 represents a one semitone flat, 0.5 represents a quarter tone sharp, etc.
+  double? alter;
+
+  /// Octaves are represented by the numbers 0 to 9, where 4 indicates the octave started by middle C.
+  int octave;
+
+  Pitch({
+    required this.step,
+    this.alter,
+    required this.octave,
   });
+
+  factory Pitch.fromXml(XmlElement xmlElement) {
+    XmlElement? stepElement = xmlElement.getElement("step");
+    if (stepElement == null) {
+      throw XmlElementContentException(
+        message: "'step' element is required for 'pitch'",
+        xmlElement: xmlElement,
+      );
+    }
+    validateTextContent(stepElement);
+    Step? step = Step.fromString(stepElement.innerText);
+    if (step == null) {
+      throw MusicXmlTypeException(
+        message: '${stepElement.innerText} is not valid step',
+        xmlElement: xmlElement,
+      );
+    }
+
+    XmlElement? alterElement = xmlElement.getElement("alter");
+    validateTextContent(alterElement);
+    double? alter = double.tryParse(alterElement?.innerText ?? "");
+    if (alterElement != null && alter == null) {
+      throw MusicXmlFormatException(
+        message: '${alterElement.innerText} is not semitones',
+        xmlElement: xmlElement,
+        source: alterElement.innerText,
+      );
+    }
+
+    XmlElement? octaveElement = xmlElement.getElement("octave");
+    if (octaveElement == null) {
+      throw XmlElementContentException(
+        message: "'octave' element is required for 'pitch'",
+        xmlElement: xmlElement,
+      );
+    }
+    validateTextContent(octaveElement);
+    int? octave = int.tryParse(octaveElement.innerText);
+    if (octave == null || octave < 0 || octave > 9) {
+      throw MusicXmlFormatException(
+        message: '${octaveElement.innerText} is not valid octave',
+        xmlElement: xmlElement,
+        source: octaveElement.innerText,
+      );
 }
 
-//  Note {}
-abstract class PitchUnpitchedRest {}
+    return Pitch(
+      step: step,
+      alter: alter,
+      octave: octave,
+    );
+  }
+}
 
 /// Indicates that a tie begins or ends with this note.
 /// The tie element indicates sound; the tied element indicates notation.

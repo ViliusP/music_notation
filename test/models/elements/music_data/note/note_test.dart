@@ -187,5 +187,153 @@ void main() {
         throwsA(isA<MusicXmlFormatException>()),
       );
     });
+    group("pitch", () {
+      // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/accent-element/
+      test("should parse '<accent>' example", () {
+        String input = """
+          <pitch>
+            <step>A</step>
+            <octave>4</octave>
+          </pitch>
+        """;
+
+        var pitch = Pitch.fromXml(XmlDocument.parse(input).rootElement);
+
+        expect(pitch.step, Step.A);
+        expect(pitch.octave, 4);
+      });
+      // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/accidental-element/
+      test("should parse '<accidental>' example", () {
+        String input = """
+          <pitch>
+            <step>A</step>
+            <alter>1</alter>
+            <octave>4</octave>
+          </pitch>
+        """;
+
+        var pitch = Pitch.fromXml(XmlDocument.parse(input).rootElement);
+
+        expect(pitch.step, Step.A);
+        expect(pitch.alter, 1);
+        expect(pitch.octave, 4);
+      });
+      // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/alter-element-microtones/
+      test("should parse '<alter> (Microtones)' example", () {
+        String input = """
+          <pitch>
+            <step>B</step>
+            <alter>-0.5</alter>
+            <octave>4</octave>
+          </pitch>
+        """;
+
+        var pitch = Pitch.fromXml(XmlDocument.parse(input).rootElement);
+
+        expect(pitch.step, Step.B);
+        expect(pitch.alter, -0.5);
+        expect(pitch.octave, 4);
+      });
+      // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/pedal-element-symbols/
+      test("should parse '<pedal> (Symbols)' example", () {
+        String input = """
+          <pitch>
+            <step>B</step>
+            <alter>-1</alter>
+            <octave>2</octave>
+          </pitch>
+        """;
+
+        var pitch = Pitch.fromXml(XmlDocument.parse(input).rootElement);
+
+        expect(pitch.step, Step.B);
+        expect(pitch.alter, -1);
+        expect(pitch.octave, 2);
+      });
+      test("parsing should throw on step content", () {
+        String input = """
+          <pitch>
+            <step><foo></foo></step>
+            <alter>-1</alter>
+            <octave>2</octave>
+          </pitch>
+        """;
+
+        expect(
+          () => Pitch.fromXml(XmlDocument.parse(input).rootElement),
+          throwsA(isA<XmlElementContentException>()),
+        );
+      });
+      test("parsing should throw on alter content", () {
+        String input = """
+          <pitch>
+            <step>B</step>
+            <alter><foo></foo></alter>
+            <octave>2</octave>
+          </pitch>
+        """;
+
+        expect(
+          () => Pitch.fromXml(XmlDocument.parse(input).rootElement),
+          throwsA(isA<XmlElementContentException>()),
+        );
+      });
+      test("parsing should throw on octave content", () {
+        String input = """
+          <pitch>
+            <step>B</step>
+            <alter>-1</alter>
+            <octave><foo></foo></octave>
+          </pitch>
+        """;
+
+        expect(
+          () => Pitch.fromXml(XmlDocument.parse(input).rootElement),
+          throwsA(isA<XmlElementContentException>()),
+        );
+      });
+      test("parsing should throw on invalid step", () {
+        String input = """
+          <pitch>
+            <step>Z</step>
+            <alter>-1</alter>
+            <octave>2</octave>
+          </pitch>
+        """;
+
+        expect(
+          () => Pitch.fromXml(XmlDocument.parse(input).rootElement),
+          throwsA(isA<MusicXmlTypeException>()),
+        );
+      });
+      test("parsing should throw on invalid alter", () {
+        String input = """
+          <pitch>
+            <step>B</step>
+            <alter>Z</alter>
+            <octave>2</octave>
+          </pitch>
+        """;
+
+        expect(
+          () => Pitch.fromXml(XmlDocument.parse(input).rootElement),
+          throwsA(isA<MusicXmlFormatException>()),
+        );
+      });
+      test("parsing should throw on invalid octave", () {
+        String input = """
+          <pitch>
+            <step>B</step>
+            <alter>-1</alter>
+            <octave>fooo</octave>
+          </pitch>
+        """;
+
+        expect(
+          () => Pitch.fromXml(XmlDocument.parse(input).rootElement),
+          throwsA(isA<MusicXmlFormatException>()),
+        );
+      });
+    });
   });
 }
