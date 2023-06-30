@@ -1,30 +1,64 @@
 import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/data_types/symbol_size.dart';
+import 'package:music_notation/src/models/exceptions.dart';
+import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 import 'package:xml/xml.dart';
 
-/// Indicates the graphic note type. Values range from 1024th to maxima.
-/// The size attribute indicates full, cue, grace-cue, or large size.
+/// Represents a graphic note type as defined in the MusicXML spec,
+/// ranging from a 1024th note (shortest) to a maxima (longest).
 ///
-/// The default is full for regular notes, grace-cue for notes that
-/// contain both grace and cue elements, and cue for notes that contain
-/// either a cue or a grace element, but not both.
+/// An instance of [NoteType] has a required [value] which is the note type,
+/// and an optional [size] which provides size information of the note.
+///
+/// For more details, refer to [The <type> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/type/).
 class NoteType {
+  /// Graphic note type, from a 1024th (shortest) to maxima (longest).
   final NoteTypeValue value;
+
+  /// Indicates the note's size, which can be full, cue, grace-cue, or large.
+  ///
+  /// The default size is full for regular notes, grace-cue for notes containing both
+  /// grace and cue elements, and cue for notes containing either a cue or a grace
+  /// element, but not both.
   final SymbolSize size;
 
-  NoteType({
+  /// Creates an instance of [NoteType] with given [value] and [size].
+  const NoteType({
     required this.value,
+    // TODO change default.
     this.size = SymbolSize.full,
   });
 
+  /// Constructs an instance of [NoteType] from the given MusicXML data represented as [XmlElement].
+  ///
+  /// Throws a [MusicXmlTypeException] when the provided note-type value or size attribute
+  /// is not valid according to the MusicXML spec.
+  ///
+  /// If it has invalid content (other XML element), it throws a [XmlElementContentException].
   factory NoteType.fromXml(XmlElement xmlElement) {
+    validateTextContent(xmlElement);
+
+    String rawNoteTypeValue = xmlElement.innerText;
+    NoteTypeValue? noteTypeValue = NoteTypeValue.fromString(rawNoteTypeValue);
+
+    if (noteTypeValue == null) {
+      throw MusicXmlTypeException(
+        message: "'note-type' element has invalid note-type-value",
+        xmlElement: xmlElement,
+      );
+    }
     return NoteType(
-      value: NoteTypeValue.maxima,
+      value: noteTypeValue,
+      size: SymbolSize.fromXml(xmlElement) ?? SymbolSize.full,
     );
   }
 }
 
-/// Represents the graphic note type, from 1024th (shortest) to maxima (longest).
+/// Values of graphic note types as defined in MusicXML,
+/// ranging from 1024th (shortest) to maxima (longest).
+///
+/// For more details, please refer to:
+/// [note-type-value data type | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/data-types/note-type-value/).
 enum NoteTypeValue {
   n1024th,
   n512th,
@@ -58,8 +92,11 @@ enum NoteTypeValue {
     NoteTypeValue.maxima: "maxima",
   };
 
-  static NoteTypeValue? fromString(String str) {
-    return _map.entries.firstWhereOrNull((e) => e.value == str)?.key;
+  /// Constructs a [NoteTypeValue] from the given string [value].
+  ///
+  /// Returns `null` when the string does not match any defined note-type values.
+  static NoteTypeValue? fromString(String value) {
+    return _map.entries.firstWhereOrNull((e) => e.value == value)?.key;
   }
 
   @override
