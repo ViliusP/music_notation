@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 import 'package:xml/xml.dart';
 
@@ -44,20 +43,36 @@ class Note implements MusicDataElement {
   ///
   /// In most cases the duration will be the same as the preceding note.
   /// However it can be shorter in situations such as multiple stops for string instruments.
-  Empty? chord;
+  final Empty? chord;
 
-  PitchUnpitchedRest pitchUnpitchedRest;
+  /// The common note elements between cue/grace notes and regular (full) notes:
+  /// [Pitched] and [Rest] information, but not duration (cue and grace notes do not have duration encoded).
+  /// [Unpitched] elements are used for unpitched percussion, speaking voice,
+  /// and other musical elements lacking determinate pitch.
+  ///
+  /// It represents full-note choices of musicXML specification:
+  /// ```xml
+  /// <xs:choice>
+  ///	  <xs:element name="pitch" type="pitch"/>
+  ///	  <xs:element name="unpitched" type="unpitched"/>
+  ///	  <xs:element name="rest" type="rest"/>
+  ///	</xs:choice>
+  /// ```
+  final NoteForm form;
+
+  /// The <instrument> element distinguishes between <score-instrument> elements
+  /// in a <score-part>. If multiple <score-instrument> elements are specified
+  /// in a <score-part>, there should be an <instrument> element for each note
+  /// in the <part>. Notes that are shared between multiple <score-instrument>s
+  /// can have more than one <instrument> element.
+  final List<String> instrument;
 
   final EditorialVoice editorialVoice;
 
   final NoteType? type;
 
   /// One dot element is used for each dot of prolongation.
-  ///
-  /// The placement attribute is used to specify whether the dot should appear above or below the staff line.
-  ///
-  /// It is ignored for notes that appear on a staff space.
-  final List<EmptyPlacement>? dots;
+  final List<EmptyPlacement> dots;
   final Accidental? accidental;
   final TimeModification? timeModification;
   final Stem? stem;
@@ -72,9 +87,9 @@ class Note implements MusicDataElement {
   /// Positive integer.
   final int? staff;
 
-  final List<Beam>? beams;
-  final List<Notations>? notations;
-  final List<Lyric>? lyrics;
+  final List<Beam> beams;
+  final List<Notations> notations;
+  final List<Lyric> lyrics;
   final Play? play;
   final Listen? listen;
 
@@ -142,27 +157,26 @@ class Note implements MusicDataElement {
   /// Specifies an ID that is unique to the entire document.
   final String? id;
 
-  Note({
-    // this.grace,
-    // this.fullNote,
-    // this.cue,
-    // this.instruments,
+  Note._({
+    // --- Content ---
     this.chord,
-    required this.pitchUnpitchedRest,
+    required this.form,
+    this.instrument = const [],
     this.editorialVoice = const EditorialVoice.empty(),
     this.type,
-    this.dots,
+    this.dots = const [],
     this.accidental,
     this.timeModification,
     this.stem,
     this.notehead,
     this.noteheadText,
     this.staff,
-    this.beams,
-    this.notations,
-    this.lyrics,
+    this.beams = const [],
+    this.notations = const [],
+    this.lyrics = const [],
     this.play,
     this.listen,
+    // --- Attributes ---
     this.position,
     this.font,
     this.color,
@@ -177,117 +191,238 @@ class Note implements MusicDataElement {
     this.id,
   });
 
-  factory Note.fromXml(XmlElement xmlElement) {
-    // XmlElement? maybeGraceElement =
-    //     xmlElement.findElements("grace").firstOrNull;
-    // Grace? grace;
+  // Field(s): quantifier
+  static const Map<String, XmlQuantifier> _xmlExpectedOrder = {
+    'instrument': XmlQuantifier.zeroOrMore,
+    'footnote': XmlQuantifier.optional,
+    'level': XmlQuantifier.optional,
+    'voice': XmlQuantifier.optional,
+    'type': XmlQuantifier.optional,
+    'dot': XmlQuantifier.zeroOrMore,
+    'accidental': XmlQuantifier.optional,
+    'time-modification': XmlQuantifier.optional,
+    'stem': XmlQuantifier.optional,
+    'notehead': XmlQuantifier.optional,
+    'notehead-text': XmlQuantifier.optional,
+    'staff': XmlQuantifier.optional,
+    // Specifically (0 to 8 times). In future, this XmlQuantifier could be implemented.
+    'beam': XmlQuantifier.zeroOrMore,
+    'notations': XmlQuantifier.zeroOrMore,
+    'lyric': XmlQuantifier.zeroOrMore,
+    'play': XmlQuantifier.optional,
+    'listen': XmlQuantifier.optional,
+  };
 
-    // if (maybeGraceElement != null) {
-    //   grace = Grace.fromXml(xmlElement);
+  factory Note.fromXml(XmlElement xmlElement) {
+    var specifNoteType = GraceCueNote;
+    try {
+      validateSequence(
+        xmlElement,
+        {}
+          ..addAll(GraceCueNote._xmlExpectedOrder)
+          ..addAll(_xmlExpectedOrder),
+      );
+      specifNoteType = GraceCueNote;
+    } on XmlSequenceException catch (_) {
+    } catch (e) {
+      rethrow;
+    }
+    try {
+      validateSequence(
+        xmlElement,
+        {}
+          ..addAll(GraceTieNote._xmlExpectedOrder)
+          ..addAll(_xmlExpectedOrder),
+      );
+      specifNoteType = GraceTieNote;
+    } on XmlSequenceException catch (_) {
+    } catch (e) {
+      rethrow;
+    }
+    try {
+      validateSequence(
+        xmlElement,
+        {}
+          ..addAll(CueNote._xmlExpectedOrder)
+          ..addAll(_xmlExpectedOrder),
+      );
+      specifNoteType = CueNote;
+    } on XmlSequenceException catch (_) {
+    } catch (e) {
+      rethrow;
+    }
+    try {
+      validateSequence(
+        xmlElement,
+        {}
+          ..addAll(RegularNote._xmlExpectedOrder)
+          ..addAll(_xmlExpectedOrder),
+      );
+      specifNoteType = RegularNote;
+    } on XmlSequenceException catch (_) {
+    } catch (e) {
+      rethrow;
+    }
+
+    // ---- Type ----
+    XmlElement? typeElement = xmlElement.getElement("type");
+    NoteType? type = typeElement != null ? NoteType.fromXml(typeElement) : null;
+
+    // ---- Accidental ----
+    XmlElement? accidentalElement = xmlElement.getElement("accidental");
+    Accidental? accidental = accidentalElement != null
+        ? Accidental.fromXml(accidentalElement)
+        : null;
+
+    // --- Time-modification ----
+    XmlElement? timeModificationElement = xmlElement.getElement(
+      "time-modification",
+    );
+    TimeModification? timeModification = timeModificationElement != null
+        ? TimeModification.fromXml(timeModificationElement)
+        : null;
+
+    // XmlElement? maybeStemElement = xmlElement.findElements("stem").firstOrNull;
+    // Stem? stem;
+    // if (maybeStemElement != null) {
+    //   stem = Stem.fromXml(maybeStemElement);
     // }
 
-    XmlElement? maybeTypeElement = xmlElement.findElements("type").firstOrNull;
-    NoteType? type;
-    if (maybeTypeElement != null) {
-      type = NoteType.fromXml(maybeTypeElement);
-    }
+    // XmlElement? maybeNoteheadElement =
+    //     xmlElement.findElements("notehead").firstOrNull;
+    // Notehead? notehead;
+    // if (maybeNoteheadElement != null) {
+    //   notehead = Notehead.fromXml(maybeNoteheadElement);
+    // }
 
-    XmlElement? maybeAccidentalElement =
-        xmlElement.findElements("accidental").firstOrNull;
-    Accidental? accidental;
-    if (maybeAccidentalElement != null) {
-      accidental = Accidental.fromXml(maybeAccidentalElement);
-    }
+    // XmlElement? maybeNoteheadTextElement =
+    //     xmlElement.findElements("notehead-text").firstOrNull;
 
-    XmlElement? maybeTimeModificationElement =
-        xmlElement.findElements("time-modification").firstOrNull;
-    TimeModification? timeModification;
-    if (maybeTimeModificationElement != null) {
-      timeModification = TimeModification.fromXml(maybeTimeModificationElement);
-    }
+    // NoteheadText? noteheadText;
+    // if (maybeNoteheadTextElement != null) {
+    //   noteheadText = NoteheadText.fromXml(maybeNoteheadTextElement);
+    // }
 
-    XmlElement? maybeStemElement = xmlElement.findElements("stem").firstOrNull;
-    Stem? stem;
-    if (maybeStemElement != null) {
-      stem = Stem.fromXml(maybeStemElement);
-    }
+    // String? rawStaff = xmlElement.findElements("staff").firstOrNull?.innerText;
 
-    XmlElement? maybeNoteheadElement =
-        xmlElement.findElements("notehead").firstOrNull;
-    Notehead? notehead;
-    if (maybeNoteheadElement != null) {
-      notehead = Notehead.fromXml(maybeNoteheadElement);
-    }
+    // int? staff = int.tryParse(rawStaff ?? "");
+    // if (rawStaff != null && (staff == null || staff < 1)) {
+    //   throw XmlElementContentException(
+    //     message: "Staff value is non valid positiveInteger: $staff",
+    //     xmlElement: xmlElement,
+    //   );
+    // }
 
-    XmlElement? maybeNoteheadTextElement =
-        xmlElement.findElements("notehead-text").firstOrNull;
+    // Iterable<XmlElement> beamElements = xmlElement.findElements("beam");
+    // List<Beam> beams = beamElements.map((e) => Beam.fromXml(e)).toList();
 
-    NoteheadText? noteheadText;
-    if (maybeNoteheadTextElement != null) {
-      noteheadText = NoteheadText.fromXml(maybeNoteheadTextElement);
-    }
+    // Iterable<XmlElement> lyricsElements = xmlElement.findElements("lyrics");
+    // List<Lyric> lyrics = lyricsElements.map((e) => Lyric.fromXml(e)).toList();
 
-    String? rawStaff = xmlElement.findElements("staff").firstOrNull?.innerText;
+    // XmlElement? playElement = xmlElement.findElements("play").firstOrNull;
+    // Play? play;
+    // if (playElement != null) {
+    //   play = Play.fromXml(playElement);
+    // }
 
-    int? staff = int.tryParse(rawStaff ?? "");
-    if (rawStaff != null && (staff == null || staff < 1)) {
-      throw XmlElementContentException(
-        message: "Staff value is non valid positiveInteger: $staff",
-        xmlElement: xmlElement,
-      );
-    }
+    // XmlElement? listenElement = xmlElement.findElements("listen").firstOrNull;
+    // Listen? listen;
+    // if (listenElement != null) {
+    //   listen = Listen.fromXml(listenElement);
+    // }
 
-    Iterable<XmlElement> beamElements = xmlElement.findElements("beam");
-    List<Beam> beams = beamElements.map((e) => Beam.fromXml(e)).toList();
+    // String? printLagerAttribute = xmlElement.getAttribute("print-leger");
 
-    Iterable<XmlElement> lyricsElements = xmlElement.findElements("lyrics");
-    List<Lyric> lyrics = lyricsElements.map((e) => Lyric.fromXml(e)).toList();
+    // bool? printLager = YesNo.toBool(printLagerAttribute ?? "");
 
-    XmlElement? playElement = xmlElement.findElements("play").firstOrNull;
-    Play? play;
-    if (playElement != null) {
-      play = Play.fromXml(playElement);
-    }
+    // if (printLagerAttribute != null && printLager == null) {
+    //   // TODO
+    //   throw XmlElementContentException(
+    //     message: "",
+    //     xmlElement: xmlElement,
+    //   );
+    // }
 
-    XmlElement? listenElement = xmlElement.findElements("listen").firstOrNull;
-    Listen? listen;
-    if (listenElement != null) {
-      listen = Listen.fromXml(listenElement);
-    }
-
-    String? printLagerAttribute = xmlElement.getAttribute("print-leger");
-
-    bool? printLager = YesNo.toBool(printLagerAttribute ?? "");
-
-    if (printLagerAttribute != null && printLager == null) {
-      // TODO
-      throw XmlElementContentException(
-        message: "",
-        xmlElement: xmlElement,
-      );
-    }
-
-    return Note(
-      // grace: grace,
+    Note noteBase = Note._(
+      form: NoteForm._fromXml(xmlElement),
       editorialVoice: EditorialVoice.fromXml(xmlElement),
       type: type,
       accidental: accidental,
       timeModification: timeModification,
-      stem: stem,
-      notehead: notehead,
-      noteheadText: noteheadText,
-      staff: staff,
-      beams: beams,
-      lyrics: lyrics,
-      play: play,
-      listen: listen,
+      // stem: stem,
+      // notehead: notehead,
+      // noteheadText: noteheadText,
+      // staff: staff,
+      // beams: beams,
+      // lyrics: lyrics,
+      // play: play,
+      // listen: listen,
+      // --- Attributes ---
       position: Position.fromXml(xmlElement),
       font: Font.fromXml(xmlElement),
       color: Color.fromXml(xmlElement),
       printout: Printout.fromXml(xmlElement),
-      printLeger: printLager,
-      pitchUnpitchedRest: Unpitched(),
+      // printLeger: printLager,
     );
+
+    switch (specifNoteType) {
+      case GraceTieNote:
+        return GraceTieNote._fromNote(
+          grace: Grace.fromXml(xmlElement.getElement("grace")!),
+          note: noteBase,
+          ties: xmlElement
+              .findElements("tie")
+              .map((e) => Tie.fromXml(e))
+              .toList(),
+        );
+      case GraceCueNote:
+        return GraceCueNote._fromNote(
+          note: noteBase,
+          grace: Grace.fromXml(xmlElement.getElement("grace")!),
+        );
+
+      case CueNote:
+        final XmlElement durationElement = xmlElement.getElement("duration")!;
+        validateTextContent(durationElement);
+        double? duration = double.tryParse(durationElement.innerText);
+        if (duration == null || duration <= 0) {
+          throw MusicXmlFormatException(
+            message: "'duration' content is not validate positive divisions",
+            xmlElement: xmlElement,
+            source: durationElement.innerText,
+          );
+        }
+
+        return CueNote._fromNote(
+          note: noteBase,
+          duration: duration,
+        );
+      case RegularNote:
+        final XmlElement durationElement = xmlElement.getElement("duration")!;
+        validateTextContent(durationElement);
+        double? duration = double.tryParse(durationElement.innerText);
+        if (duration == null || duration <= 0) {
+          throw MusicXmlFormatException(
+            message: "'duration' content is not validate positive divisions",
+            xmlElement: xmlElement,
+            source: durationElement.innerText,
+          );
+        }
+
+        return RegularNote._fromNote(
+          note: noteBase,
+          duration: duration,
+          ties: xmlElement
+              .findElements("tie")
+              .map((e) => Tie.fromXml(e))
+              .toList(),
+        );
+      default:
+        throw XmlElementContentException(
+          message: "Specific note cannot be parsed from provided xml element",
+          xmlElement: xmlElement,
+        );
+    }
   }
 
   @override
@@ -337,8 +472,8 @@ class Grace {
         message: "'make-time' attribute in 'grace' is not valid division value",
         xmlElement: xmlElement,
         source: makeTimeAttribute,
-    );
-  }
+      );
+    }
 
     return Grace(
       slash: YesNo.fromXml(xmlElement, 'slash') ?? true,
@@ -374,40 +509,25 @@ class Grace {
   }
 }
 
-/// Represents pictograms for pitched percussion instruments.
-///
-/// The smufl attribute is used to distinguish different SMuFL glyphs
-/// for a particular pictogram within the Tuned mallet percussion pictograms range.
-class Pitched extends PitchUnpitchedRest {
-  /// type="smufl-pictogram-glyph-name"
-  ///
-  /// See more at [SmuflPictogramGlyphName].
-  String smufl;
-
-  PitchedValue value;
-
-  Pitched({
-    required this.smufl,
-    required this.value,
-  });
-}
-
-/// Represents pictograms for pitched percussion instruments.
-///
-/// The chimes and tubular chimes values distinguish the single-line
-/// and double-line versions of the pictogram.
-enum PitchedValue {
-  celesta,
-  chimes,
-  glockenspiel,
-  lithophone,
-  mallet,
-  marimba,
-  steelDrums,
-  tubaphone,
-  tubularChimes,
-  vibraphone,
-  xylophone;
+abstract class NoteForm {
+  factory NoteForm._fromXml(XmlElement xmlElement) {
+    XmlElement? pitchElement = xmlElement.getElement("pitch");
+    if (pitchElement != null) {
+      return Pitch.fromXml(pitchElement);
+    }
+    XmlElement? unpitchedElement = xmlElement.getElement("unpitched");
+    if (unpitchedElement != null) {
+      return Unpitched.fromXml(unpitchedElement);
+    }
+    XmlElement? restElement = xmlElement.getElement("rest");
+    if (restElement != null) {
+      return Unpitched.fromXml(restElement);
+    }
+    throw XmlElementContentException(
+      message: "Provided element is not pitch, unpitched or rest",
+      xmlElement: xmlElement,
+    );
+  }
 }
 
 /// Represents musical elements that are notated on the staff but lack definite pitch,
@@ -418,7 +538,7 @@ enum PitchedValue {
 /// This is generally used with a one-line staff.
 ///
 /// Notes in percussion clef should always use an unpitched element rather than a pitch element.
-class Unpitched extends PitchUnpitchedRest {
+class Unpitched implements NoteForm {
   /// The display-step-octave group contains the sequence of elements used by both the rest and unpitched elements.
   /// This group is used to place rests and unpitched elements on the staff without implying that these elements have pitch.
   /// Positioning follows the current clef.
@@ -437,13 +557,19 @@ class Unpitched extends PitchUnpitchedRest {
   /// 		<xs:maxInclusive value="9"/>
   /// 	</xs:restriction>
   int? displayOctave;
+
+  Unpitched();
+
+  factory Unpitched.fromXml(XmlElement xmlElement) {
+    return Unpitched();
+  }
 }
 
 /// The rest element indicates notated rests or silences.
 /// Rest elements are usually empty, but placement on the staff can be specified using display-step and display-octave elements.
 ///
 /// If the measure attribute is set to yes, this indicates this is a complete measure rest.
-class Rest extends PitchUnpitchedRest {
+class Rest implements NoteForm {
   /// Elements used by both the rest and unpitched elements.
   /// This group is used to place rests and unpitched elements on the staff
   /// without implying that these elements have pitch. Positioning follows the current clef.
@@ -465,71 +591,202 @@ class Rest extends PitchUnpitchedRest {
   Rest({
     this.displayStep,
     this.displayOctave,
-    required this.measure,
+    this.measure = false,
   });
+
+  factory Rest.fromXml(XmlElement xmlElement) {
+    return Rest();
+  }
 }
 
-// abstract class NoteType {}
-
-// class Pitch extends NoteType {
-//   // Pitch-specific properties and methods here.
-// }
-
-abstract class GraceNote extends Note {
+sealed class GraceNote extends Note {
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
   Grace grace;
 
   GraceNote({
     required this.grace,
-    required super.pitchUnpitchedRest,
-  });
+    required Note note,
+  }) : super._(form: note.form);
 }
 
 class GraceTieNote extends GraceNote {
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
   List<Tie> ties;
 
-  GraceTieNote({
-    this.ties = const [],
+  // GraceTieNote({
+  //   required super.grace,
+  //   this.ties = const [],
+  //   required super.note,
+  // });
+
+  GraceTieNote._fromNote({
     required super.grace,
-    required super.pitchUnpitchedRest,
+    this.ties = const [],
+    required super.note,
   });
+
+  // Field(s): quantifier
+  static const Map<String, XmlQuantifier> _xmlExpectedOrder = {
+    'grace': XmlQuantifier.required,
+    'chord': XmlQuantifier.optional,
+    'pitch|unpitched|rest': XmlQuantifier.required,
+    'tie': XmlQuantifier.zeroToTwo,
+  };
 }
 
 class GraceCueNote extends GraceNote {
-  Empty cue;
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
 
-  GraceCueNote({
+  // GraceCueNote({
+  //   required super.grace,
+  //   required super.note,
+  // });
+
+  GraceCueNote._fromNote({
     required super.grace,
-    required this.cue,
-    required super.pitchUnpitchedRest,
+    required super.note,
   });
+
+  static const Map<String, XmlQuantifier> _xmlExpectedOrder = {
+    'grace': XmlQuantifier.required,
+    'cue': XmlQuantifier.required,
+    'chord': XmlQuantifier.optional,
+    'pitch|unpitched|rest': XmlQuantifier.required,
+  };
 }
 
 class CueNote extends Note {
-  Empty cue;
-
-  /// Positive number specified in division units. This is the intended duration vs. notated duration (for instance, differences in dotted notes in Baroque-era music). Differences in duration specific to an interpretation or performance should be represented using the note element's attack and release attributes.
-  /// The duration element moves the musical position when used in backup elements, forward elements, and note elements that do not contain a chord child element.
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
+  /// Positive number specified in division units. This is the intended duration
+  /// vs. notated duration (for instance, differences in dotted notes in Baroque-era music).
+  /// Differences in duration specific to an interpretation or performance should
+  /// be represented using the note element's attack and release attributes.
+  /// The duration element moves the musical position when used in backup elements,
+  /// forward elements, and note elements that do not contain a chord child element.
   double duration;
 
-  CueNote({
-    required this.cue,
+  // CueNote({
+  //   required this.duration,
+  //   required super.form,
+  // }) : super._();
+
+  CueNote._fromNote({
     required this.duration,
-    required super.pitchUnpitchedRest,
-  });
+    required Note note,
+  }) : super._(
+          // --- Content ---
+          chord: note.chord,
+          form: note.form,
+          instrument: note.instrument,
+          editorialVoice: note.editorialVoice,
+          type: note.type,
+          dots: note.dots,
+          accidental: note.accidental,
+          timeModification: note.timeModification,
+          stem: note.stem,
+          notehead: note.notehead,
+          noteheadText: note.noteheadText,
+          staff: note.staff,
+          beams: note.beams,
+          notations: note.notations,
+          lyrics: note.lyrics,
+          play: note.play,
+          listen: note.listen,
+          // --- Attributes ---
+          position: note.position,
+          font: note.font,
+          color: note.color,
+          printout: note.printout,
+          printLeger: note.printLeger,
+          dynamics: note.dynamics,
+          endDynamics: note.endDynamics,
+          attack: note.attack,
+          release: note.release,
+          timeOnly: note.timeOnly,
+          pizzicato: note.pizzicato,
+          id: note.id,
+        );
+
+  static const Map<String, XmlQuantifier> _xmlExpectedOrder = {
+    'cue': XmlQuantifier.required,
+    'chord': XmlQuantifier.optional,
+    'pitch|unpitched|rest': XmlQuantifier.required,
+    'duration': XmlQuantifier.required,
+  };
 }
 
 class RegularNote extends Note {
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
+
   /// Positive number specified in division units. This is the intended duration vs. notated duration (for instance, differences in dotted notes in Baroque-era music). Differences in duration specific to an interpretation or performance should be represented using the note element's attack and release attributes.
   /// The duration element moves the musical position when used in backup elements, forward elements, and note elements that do not contain a chord child element.
   double duration;
 
   List<Tie> ties;
 
-  RegularNote({
+  // RegularNote({
+  //   required this.duration,
+  //   this.ties = const [],
+  //   required Note note,
+  // }) : super._(form: note.form);
+
+  RegularNote._fromNote({
     required this.duration,
     this.ties = const [],
+    required Note note,
+  }) : super._(
+          // --- Content ---
+          chord: note.chord,
+          form: note.form,
+          instrument: note.instrument,
+          editorialVoice: note.editorialVoice,
+          type: note.type,
+          dots: note.dots,
+          accidental: note.accidental,
+          timeModification: note.timeModification,
+          stem: note.stem,
+          notehead: note.notehead,
+          noteheadText: note.noteheadText,
+          staff: note.staff,
+          beams: note.beams,
+          notations: note.notations,
+          lyrics: note.lyrics,
+          play: note.play,
+          listen: note.listen,
+          // --- Attributes ---
+          position: note.position,
+          font: note.font,
+          color: note.color,
+          printout: note.printout,
+          printLeger: note.printLeger,
+          dynamics: note.dynamics,
+          endDynamics: note.endDynamics,
+          attack: note.attack,
+          release: note.release,
+          timeOnly: note.timeOnly,
+          pizzicato: note.pizzicato,
+          id: note.id,
+        );
 
-class Pitch {
+  static const Map<String, XmlQuantifier> _xmlExpectedOrder = {
+    'chord': XmlQuantifier.optional,
+    'pitch|unpitched|rest': XmlQuantifier.required,
+    'duration': XmlQuantifier.required,
+    'tie': XmlQuantifier.zeroToTwo,
+  };
+}
+
+class Pitch implements NoteForm {
   // ------------------------- //
   // ------   Content   ------ //
   // ------------------------- //
@@ -555,14 +812,16 @@ class Pitch {
     required this.octave,
   });
 
+  static const Map<String, XmlQuantifier> _xmlExpectedOrder = {
+    'step': XmlQuantifier.required,
+    'alter': XmlQuantifier.optional,
+    'octave': XmlQuantifier.required,
+  };
+
   factory Pitch.fromXml(XmlElement xmlElement) {
-    XmlElement? stepElement = xmlElement.getElement("step");
-    if (stepElement == null) {
-      throw XmlElementContentException(
-        message: "'step' element is required for 'pitch'",
-        xmlElement: xmlElement,
-      );
-    }
+    validateSequence(xmlElement, _xmlExpectedOrder);
+
+    XmlElement? stepElement = xmlElement.getElement("step")!;
     validateTextContent(stepElement);
     Step? step = Step.fromString(stepElement.innerText);
     if (step == null) {
@@ -583,13 +842,7 @@ class Pitch {
       );
     }
 
-    XmlElement? octaveElement = xmlElement.getElement("octave");
-    if (octaveElement == null) {
-      throw XmlElementContentException(
-        message: "'octave' element is required for 'pitch'",
-        xmlElement: xmlElement,
-      );
-    }
+    XmlElement? octaveElement = xmlElement.getElement("octave")!;
     validateTextContent(octaveElement);
     int? octave = int.tryParse(octaveElement.innerText);
     if (octave == null || octave < 0 || octave > 9) {
@@ -598,7 +851,7 @@ class Pitch {
         xmlElement: xmlElement,
         source: octaveElement.innerText,
       );
-}
+    }
 
     return Pitch(
       step: step,
