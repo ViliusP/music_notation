@@ -14,7 +14,7 @@ class MusicNotationCanvas extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       painter: ScorePartwisePainter(scorePartwise),
-      size: const Size(100, 100),
+      size: const Size(double.infinity, double.infinity),
     );
   }
 }

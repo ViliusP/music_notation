@@ -131,7 +131,7 @@ class MeasureAttributes {
 
   /// Measure width specified in tenths.
   /// These are the global tenths specified in the [Scaling] element,
-  /// not local tenths as modified by the <staff-size> element.
+  /// not local tenths as modified by the staff-size.
   ///
   /// The width covers the entire measure from barline or system start to barline or system end.
   double? width;
