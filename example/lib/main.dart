@@ -21,6 +21,7 @@ class MyApp extends StatelessWidget {
           seedColor: Colors.pink,
           brightness: Brightness.light,
         ),
+        useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
@@ -39,6 +40,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   XmlDocument? helloWorldXml;
   XmlDocument? octaveXml;
+  bool loading = false;
 
   @override
   void initState() {
@@ -65,71 +67,142 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: const Text("Music notation example"),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Column(
-              children: [
-                const Text(
-                  "Tutorial: Hello, World",
-                  style: TextStyle(fontSize: 36),
-                ),
-                const Padding(padding: EdgeInsets.symmetric(vertical: 32)),
-                SizedBox.fromSize(
-                  size: const Size.fromHeight(120),
-                  child: helloWorldXml != null
-                      ? MusicNotationCanvas(
-                          scorePartwise: ScorePartwise.fromXml(helloWorldXml!),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-              ],
-            ),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children:
-                    [ExampleScores.apresUnReve, ExampleScores.chopinPrelude]
-                        .map(
-                          (score) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4.0),
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                fixedSize: const Size(320, 80),
-                              ),
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => const ScorePage(),
-                                  ),
-                                );
-                              },
-                              child: Text(score.name),
-                            ),
-                          ),
-                        )
-                        .toList(),
+      body: Stack(
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Column(
+                children: [
+                  const Text(
+                    "Tutorial: Hello, World",
+                    style: TextStyle(fontSize: 36),
+                  ),
+                  const Padding(padding: EdgeInsets.symmetric(vertical: 32)),
+                  SizedBox.fromSize(
+                    size: const Size.fromHeight(120),
+                    child: helloWorldXml != null
+                        ? MusicNotationCanvas(
+                            scorePartwise:
+                                ScorePartwise.fromXml(helloWorldXml!),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ],
               ),
-            ),
-            Column(
-              children: [
-                const Text(
-                  "Scale",
-                  style: TextStyle(fontSize: 36),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ExampleScores.apresUnReve,
+                    ExampleScores.chopinPrelude
+                  ]
+                      .map(
+                        (score) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4.0),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              fixedSize: const Size(320, 80),
+                            ),
+                            onPressed: () => onPressed(score),
+                            child: Text(score.name),
+                          ),
+                        ),
+                      )
+                      .toList(),
                 ),
-                const Padding(padding: EdgeInsets.symmetric(vertical: 32)),
-                SizedBox.fromSize(
-                  size: const Size.fromHeight(120),
-                  child: octaveXml != null
-                      ? MusicNotationCanvas(
-                          scorePartwise: ScorePartwise.fromXml(octaveXml!),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-              ],
-            )
-          ],
+              ),
+              Column(
+                children: [
+                  const Text(
+                    "Scale",
+                    style: TextStyle(fontSize: 36),
+                  ),
+                  const Padding(padding: EdgeInsets.symmetric(vertical: 32)),
+                  SizedBox.fromSize(
+                    size: const Size.fromHeight(120),
+                    child: octaveXml != null
+                        ? MusicNotationCanvas(
+                            scorePartwise: ScorePartwise.fromXml(octaveXml!),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              )
+            ],
+          ),
+          loading
+              ? Opacity(
+                  opacity: loading ? 0.5 : 0,
+                  child: const ModalBarrier(
+                    dismissible: false,
+                    color: Colors.black,
+                  ),
+                )
+              : const SizedBox.shrink(),
+          loading
+              ? AnimatedOpacity(
+                  opacity: loading ? 1 : 0,
+                  duration: const Duration(milliseconds: 250),
+                  child: const Center(
+                    child: LoadingWidget(),
+                  ),
+                )
+              : const SizedBox.shrink(),
+        ],
+      ),
+    );
+  }
+
+  Future<void> onPressed(ExampleScores score) async {
+    setState(() {
+      loading = true;
+    });
+    XmlDocument? document = await score.read();
+    if (document == null) {
+      return;
+    }
+    try {
+      final ScorePartwise scorePartwise = ScorePartwise.fromXml(
+        document,
+      );
+
+      if (context.mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => ScorePage(scorePartwise: scorePartwise),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    } finally {
+      setState(() {
+        loading = false;
+      });
+    }
+  }
+}
+
+class LoadingWidget extends StatelessWidget {
+  const LoadingWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SizedBox(
+        height: 120,
+        width: 120,
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(
+            Theme.of(context).colorScheme.primary,
+          ),
+          backgroundColor: Colors.white,
+          strokeWidth: 8.0,
         ),
       ),
     );

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:music_notation/music_notation.dart';
 
 class ScorePage extends StatefulWidget {
-  const ScorePage({super.key});
+  final ScorePartwise scorePartwise;
+
+  const ScorePage({super.key, required this.scorePartwise});
 
   @override
   State<ScorePage> createState() => _ScorePageState();
