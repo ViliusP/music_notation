@@ -1,39 +1,78 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# MusicXML Parser and Notation Renderer for Flutter
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages).
+This library provides a parser for MusicXML files, and a custom renderer to display the parsed music notation in Flutter apps.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages).
--->
+## Before using
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+Before you can use this library, you need to ensure you have the following software installed on your system:
 
-## Features
+1. Dart: This library is written in Dart, so you need to have the Dart SDK installed. You can download it from [the Dart website](https://dart.dev/get-dart).
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+2. Flutter: Since this library includes a Flutter widget for rendering music notation, you need to have Flutter installed as well. You can download it from [the Flutter website](https://flutter.dev/docs/get-started/install).
 
-## Getting started
+### Familiarity with MusicXML
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+This library is designed for parsing and rendering MusicXML files. It assumes that you are familiar with the MusicXML format and how to use it to represent musical scores. If you're not already familiar with MusicXML, you may want to review the [MusicXML documentation](https://www.musicxml.com/for-developers/) before using this library.
+
+### Understanding of Flutter
+
+The renderer included in this library is a Flutter widget. Therefore, a basic understanding of how to use Flutter and how to build UIs with Flutter widgets is necessary. If you're new to Flutter, the [Flutter documentation](https://flutter.dev/docs) provides a wealth of resources to help you get started.
+
+### SMuFL Standard
+
+Our library uses the SMuFL (Standard Music Font Layout) standard for music symbols in the rendered output. For precise rendering, you should have a SMuFL compliant font installed in your system. A list of such fonts can be found [here](https://www.smufl.org/fonts/).
+
+
+
+## Installation
+
+To install the library, add the following to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  your_musicxml_library: ^0.1.0
+```
+
+Then run `flutter pub get`.
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+First, import the library:
 
 ```dart
-const like = 'sample';
+import 'package:your_musicxml_library/your_musicxml_library.dart';
 ```
 
-## Additional information
+You can then use the MusicXmlParser class to parse MusicXML data:
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+```dart
+var parser = MusicXmlParser();
+ScorePartwise score = parser.parse(xmlString);
+```
+
+To display the parsed music notation, you can use the MusicNotation widget:
+
+```dart
+MusicNotation(score: score)
+```
+
+## Future
+
+We understand that everyone believes they are the center of the universe, but let's face it, this package has its limitations. It may not fulfill all your extravagant demands or cater to every whim and fancy. Life is tough, and so is software development.
+
+Here are some features and improvements we are considering (but not guaranteed):
+
+- Support for additional XML validation rules and constraints (e.g. 'token' type validation);
+- Enhanced error handling and error reporting;
+- Improved documentation and examples;
+- Simple classes remake with upcoming [inline classes](https://github.com/dart-lang/language/blob/main/accepted/future-releases/inline-classes/feature-specification.md);
+
+## Contributing
+
+Contributions and feedback are always welcome. If you encounter any issues or have suggestions for improvements, feel free to open an issue or submit a pull request. However, please understand that the development and maintenance of this package depend on the availability and interests of the contributors.
+
+*We might pretend to care and even consider your suggestions. Just keep in mind that we're not here to cater to your every desire.*
+
+## License
+
+This project is licensed under the MIT License.

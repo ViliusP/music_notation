@@ -1,7 +1,7 @@
 library music_notation;
 
-/// A Calculator.
-class Calculator {
-  /// Returns [value] plus 1.
-  int addOne(int value) => value + 1;
-}
+export 'src/notation_painter/notation_painter.dart';
+export 'src/notation_painter/music_notation_canvas.dart'
+    show MusicNotationCanvas;
+
+export 'src/models/elements/score/score.dart' show ScorePartwise;
