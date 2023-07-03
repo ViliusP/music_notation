@@ -7,15 +7,3 @@ enum SystemRelation {
     throw UnimplementedError();
   }
 }
-
-enum SystemRelationNumber {
-  onlyTop,
-  onlyBottom,
-  alsoTop,
-  alsoBottom,
-  none;
-
-  static SystemRelationNumber fromString(String value) {
-    throw UnimplementedError();
-  }
-}

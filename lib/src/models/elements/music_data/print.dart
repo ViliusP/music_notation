@@ -1,14 +1,17 @@
+import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/elements/layout.dart';
 import 'package:music_notation/src/models/elements/score/name_display.dart';
+import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/printing.dart';
+import 'package:music_notation/src/models/utilities/case_transformers.dart';
 import 'package:music_notation/src/models/utilities/type_parsers.dart';
+import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 import 'package:xml/xml.dart';
 
-import 'package:music_notation/src/models/data_types/system_relation.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 
 /// General printing parameters, including layout elements.
-
+///
 /// For more details go to
 /// [The \<print\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/print/).
 class Print implements MusicDataElement {
@@ -49,13 +52,56 @@ class Print implements MusicDataElement {
     this.id,
   });
 
+  // Field(s): quantifier
+  static const Map<String, XmlQuantifier> _xmlExpectedOrder = {
+    'page-layout': XmlQuantifier.optional,
+    'system-layout': XmlQuantifier.optional,
+    'staff-layout': XmlQuantifier.zeroOrMore,
+    'measure-layout': XmlQuantifier.optional,
+    'measure-numbering': XmlQuantifier.optional,
+    'part-name-display': XmlQuantifier.optional,
+    'part-abbreviation-display': XmlQuantifier.optional,
+  };
+
   factory Print.fromXml(XmlElement xmlElement) {
+    validateSequence(xmlElement, _xmlExpectedOrder);
+
+    var measureNumberingElement = xmlElement.getElement("measure-numbering");
+    var partNameDisplayElement = xmlElement.getElement("part-name-display");
+
+    var measureLayoutElement = xmlElement.getElement("measure-layout");
+    var measureDistanceElement = measureLayoutElement?.getElement(
+      "measure-distance",
+    );
+    validateTextContent(measureDistanceElement);
+
+    var measureDistance = double.tryParse(
+      measureDistanceElement?.innerText ?? "",
+    );
+    if (measureDistanceElement != null && measureDistance == null) {
+      throw MusicXmlFormatException(
+        message: "'measure-distance' content is not valid double value",
+        xmlElement: xmlElement,
+        source: measureDistanceElement.innerText,
+      );
+    }
+
+    var partAbbreviationDisplayElement = xmlElement.getElement(
+      "part-abbreviation-display",
+    );
+
     return Print(
       layout: Layout.fromXml(xmlElement),
-      measureDistance: double.tryParse(
-        xmlElement.getAttribute("measure-distance") ?? "",
-      ),
-      measureNumbering: MeasureNumbering.fromXml(xmlElement),
+      measureDistance: measureDistance,
+      measureNumbering: measureNumberingElement != null
+          ? MeasureNumbering.fromXml(measureNumberingElement)
+          : null,
+      partNameDisplay: partNameDisplayElement != null
+          ? NameDisplay.fromXml(partNameDisplayElement)
+          : null,
+      partAbbreviationDisplay: partAbbreviationDisplayElement != null
+          ? NameDisplay.fromXml(partAbbreviationDisplayElement)
+          : null,
       attributes: PrintAttributes.fromXml(xmlElement),
     );
   }
@@ -68,30 +114,10 @@ class Print implements MusicDataElement {
 }
 
 /// Group that is used by the print element.
-///
-/// The new-system and new-page attributes indicate whether to force a system or page break,
-/// or to force the current music onto the same system or page as the preceding music.
-///
-/// Normally this is the first music data within a measure.
-/// If used in multi-part music, they should be placed in the same positions within each part,
-/// or the results are undefined.
-///
-/// The page-number attribute sets the number of a new page;
-/// it is ignored if new-page is not "yes". Version 2.0 adds a blank-page attribute.
-/// This is a positive integer value that specifies the number of blank pages to insert before the current measure.
-///
-/// It is ignored if new-page is not "yes". These blank pages have no music,
-/// but may have text or images specified by the credit element.
-/// This is used to allow a combination of pages that are all text, or all text and images, together with pages of music.
-///
-/// The staff-spacing attribute specifies spacing between multiple staves in tenths of staff space.
-/// This is deprecated as of Version 1.1; the staff-layout element should be used instead.
-/// If both are present, the staff-layout values take priority.
 class PrintAttributes {
   /// Specifies spacing between multiple staves in tenths of staff space.
   ///
   /// Deprecated as of Version 1.1; the staff-layout element should be used instead.
-  ///
   /// If both are present, the staff-layout values take priority.
   @Deprecated(
     "Deprecated as of Version 1.1; the staff-layout element should be used instead.",
@@ -135,22 +161,44 @@ class PrintAttributes {
   });
 
   factory PrintAttributes.fromXml(XmlElement xmlElement) {
+    var staffSpacingAttribute = xmlElement.getAttribute("staff-spacing");
+    var staffSpacing = double.tryParse(
+      staffSpacingAttribute ?? "",
+    );
+    if (staffSpacingAttribute != null && staffSpacing == null) {
+      throw MusicXmlFormatException(
+        message: "'staff-spacing' attribute is not valid double value",
+        xmlElement: xmlElement,
+        source: staffSpacingAttribute,
+      );
+    }
+
+    var blankPageAttribute = xmlElement.getAttribute("blank-page");
+    var blankPage = int.tryParse(blankPageAttribute ?? "");
+    if (blankPageAttribute != null && (blankPage == null || blankPage < 1)) {
+      throw MusicXmlFormatException(
+        message: "'blank-page' attribute is not valid positive int value",
+        xmlElement: xmlElement,
+        source: staffSpacingAttribute,
+      );
+    }
+
+    var pageNumberAttribute = xmlElement.getAttribute("page-number");
+    var pageNumber = int.tryParse(blankPageAttribute ?? "");
+    if (pageNumberAttribute != null && pageNumber == null) {
+      throw MusicXmlFormatException(
+        message: "'page-number' attribute is not valid int value",
+        xmlElement: xmlElement,
+        source: staffSpacingAttribute,
+      );
+    }
+
     return PrintAttributes(
-      staffSpacing: double.tryParse(
-        xmlElement.getAttribute("staff-spacing") ?? "",
-      ),
-      newSystem: YesNo.toBool(
-        xmlElement.getAttribute("new-system") ?? "",
-      ),
-      newPage: YesNo.toBool(
-        xmlElement.getAttribute("new-page") ?? "",
-      ),
-      blankPage: int.tryParse(
-        xmlElement.getAttribute("blank-page") ?? "",
-      ),
-      pageNumber: int.tryParse(
-        xmlElement.getAttribute("page-number") ?? "",
-      ),
+      staffSpacing: staffSpacing,
+      newSystem: YesNo.fromXml(xmlElement, "new-system"),
+      newPage: YesNo.fromXml(xmlElement, "new-page"),
+      blankPage: blankPage,
+      pageNumber: pageNumber,
     );
   }
 }
@@ -176,7 +224,7 @@ class MeasureNumbering {
   /// from top to bottom, with 1 being the top staff on a part. It indicates
   /// which staff is used as the reference point for vertical positioning.
   /// A value of 1 is assumed if not present.
-  double staff;
+  int staff;
 
   /// The [multipleRestAlways]  and [multipleRestRange] attributes describe
   /// how measure numbers are shown on multiple rests when the [value] is not set to none.
@@ -184,16 +232,15 @@ class MeasureNumbering {
   /// The [multipleRestAlways] attribute is set to yes when the measure number
   /// should always be shown, even if the multiple rest starts midway
   /// through a system when measure numbering is set to system level.
-  bool multipleRestAlways;
+  bool? multipleRestAlways;
 
   /// The [multipleRestAlways]  and [multipleRestRange] attributes describe
   /// how measure numbers are shown on multiple rests when the [value] is not set to none.
   ///
-  /// The [multipleRestAlways] attribute is set to yes
-  /// when measure numbers on multiple rests display the range of
-  /// numbers for the first and last measure,
+  /// The [multipleRestAlways] attribute is set to yes when measure numbers on
+  /// multiple rests display the range of numbers for the first and last measure,
   /// rather than just the number of the first measure.
-  bool multipleRestRange;
+  bool? multipleRestRange;
 
   PrintStyleAlign printStyleAlign;
 
@@ -201,15 +248,50 @@ class MeasureNumbering {
     required this.value,
     this.system,
     this.staff = 1,
-    this.multipleRestAlways = false,
-    this.multipleRestRange = false,
-    required this.printStyleAlign,
+    this.multipleRestAlways,
+    this.multipleRestRange,
+    this.printStyleAlign = const PrintStyleAlign.empty(),
   });
 
   factory MeasureNumbering.fromXml(XmlElement xmlElement) {
+    validateTextContent(xmlElement);
+
+    var measureNumbering = MeasureNumberingValue.fromString(
+      xmlElement.innerText,
+    );
+
+    if (measureNumbering == null) {
+      throw MusicXmlTypeException(
+        message: "Invalid measure numbering vlaue: ${xmlElement.innerText}",
+        xmlElement: xmlElement,
+      );
+    }
+
+    var staffAttribute = xmlElement.getAttribute("staff");
+    var staff = int.tryParse(staffAttribute ?? "");
+    if (staffAttribute != null && (staff == null || staff < 1)) {
+      throw MusicXmlFormatException(
+        message: "'staff' attribute is not valid positive int value",
+        xmlElement: xmlElement,
+        source: staffAttribute,
+      );
+    }
+
+    var systemAttribute = xmlElement.getAttribute("system");
+    var system = SystemRelationNumber.fromString(systemAttribute ?? "");
+    if (systemAttribute != null && system == null) {
+      throw MusicXmlTypeException(
+        message: "'system' attribute is not valid system-relation-number value",
+        xmlElement: xmlElement,
+      );
+    }
+
     return MeasureNumbering(
-      value: MeasureNumberingValue.fromString(xmlElement.value ?? "") ??
-          MeasureNumberingValue.measure,
+      value: measureNumbering,
+      system: system,
+      staff: staff ?? 1,
+      multipleRestAlways: YesNo.fromXml(xmlElement, 'multiple-rest-always'),
+      multipleRestRange: YesNo.fromXml(xmlElement, 'multiple-rest-range'),
       printStyleAlign: PrintStyleAlign.fromXml(xmlElement),
     );
   }
@@ -227,9 +309,9 @@ enum MeasureNumberingValue {
   measure,
   system;
 
-  static MeasureNumberingValue? fromString(String value) {
-    throw UnimplementedError();
-  }
+  static MeasureNumberingValue? fromString(String value) =>
+      values.firstWhereOrNull((e) => e.name == value);
+}
 
 /// Distinguishes measure numbers that are associated with a system rather
 /// than the particular part where the element appears.
