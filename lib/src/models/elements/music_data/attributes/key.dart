@@ -18,7 +18,7 @@ import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart'
 ///
 /// For more details go to
 /// [The \<key\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/key/).
-abstract class Key {
+sealed class Key {
   // ------------------------- //
   // ------   Content   ------ //
   // ------------------------- //
