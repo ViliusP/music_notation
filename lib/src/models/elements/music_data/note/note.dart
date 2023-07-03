@@ -30,6 +30,9 @@ import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart'
 /// Cue notes have a duration element, as do forward elements, but no tie elements.
 /// Having these two types of information available can make interchange easier,
 /// as some programs handle one type of information more readily than the other.
+///
+/// For more details go to
+/// [The \<note\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/note/).
 class Note implements MusicDataElement {
   // ------------------------- //
   // ------   Content   ------ //
@@ -301,15 +304,17 @@ class Note implements MusicDataElement {
     //   noteheadText = NoteheadText.fromXml(maybeNoteheadTextElement);
     // }
 
-    // String? rawStaff = xmlElement.findElements("staff").firstOrNull?.innerText;
-
-    // int? staff = int.tryParse(rawStaff ?? "");
-    // if (rawStaff != null && (staff == null || staff < 1)) {
-    //   throw XmlElementContentException(
-    //     message: "Staff value is non valid positiveInteger: $staff",
-    //     xmlElement: xmlElement,
-    //   );
-    // }
+    /// ---- Staff ----
+    var staffElement = xmlElement.getElement("staff");
+    validateTextContent(staffElement);
+    var staff = int.tryParse(staffElement?.innerText ?? "");
+    if (staffElement != null && (staff == null || staff < 1)) {
+      throw MusicXmlFormatException(
+        message: "'staff' content is not valid positive int",
+        xmlElement: xmlElement,
+        source: staffElement.innerText,
+      );
+    }
 
     // Iterable<XmlElement> beamElements = xmlElement.findElements("beam");
     // List<Beam> beams = beamElements.map((e) => Beam.fromXml(e)).toList();
@@ -350,7 +355,7 @@ class Note implements MusicDataElement {
       // stem: stem,
       // notehead: notehead,
       // noteheadText: noteheadText,
-      // staff: staff,
+      staff: staff,
       // beams: beams,
       // lyrics: lyrics,
       // play: play,
@@ -523,7 +528,7 @@ sealed class NoteForm {
     }
     XmlElement? restElement = xmlElement.getElement("rest");
     if (restElement != null) {
-      return Unpitched.fromXml(restElement);
+      return Rest.fromXml(restElement);
     }
     throw XmlElementContentException(
       message: "Provided element is not pitch, unpitched or rest",
@@ -578,12 +583,12 @@ class Unpitched implements NoteForm {
   factory Unpitched.fromXml(XmlElement xmlElement) {
     validateSequence(xmlElement, _xmlExpectedOrder);
 
-    XmlElement? stepElement = xmlElement.getElement("display-step")!;
+    XmlElement? stepElement = xmlElement.getElement("display-step");
     validateTextContent(stepElement);
-    Step? step = Step.fromString(stepElement.innerText);
+    Step? step = Step.fromString(stepElement?.innerText ?? "");
     if (step == null) {
       throw MusicXmlTypeException(
-        message: '${stepElement.innerText} is not valid step',
+        message: '${stepElement?.innerText} is not valid step',
         xmlElement: xmlElement,
       );
     }
@@ -606,41 +611,47 @@ class Unpitched implements NoteForm {
   }
 }
 
-/// The rest element indicates notated rests or silences.
-/// Rest elements are usually empty, but placement on the staff can be specified
-/// using [displayStep] and [displayOctave].
+/// Notated rests or silences. Rest elements are usually empty, but placement
+/// on the staff can be specified using [displayStep] and [displayOctave].
 ///
 /// If the measure attribute is set to yes, this indicates this is a complete measure rest.
+///
+/// For more details go to
+/// [The \<rest\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/rest/).
 class Rest implements NoteForm {
   // ------------------------- //
   // ------   Content   ------ //
   // ------------------------- //
 
-  /// Elements used by both the rest and unpitched elements.
-  /// Place of  unpitched elements on the staff without implying that these
-  /// elements have pitch. Positioning follows the current clef.
-  /// If percussion clef is used, the [displayStep] and [displayOctave]
-  /// elements are interpreted as if in treble clef, with a [Step.G] in octave 4 on line 2.
-  Step displayStep;
+  /// Specifies the line of the staff on which the rest should be displayed,
+  /// in terms of musical pitch steps (A, B, C, D, E, F, G).
+  /// For instance, a `displayStep` of `Step.B` would mean the rest should be displayed
+  /// on the line corresponding to the pitch B in the current clef.
+  Step? displayStep;
 
   @override
-  Step get step => displayStep;
+  Step? get step => displayStep;
 
-  /// Octaves are represented by the numbers 0 to 9, where 4 indicates the
-  /// octave started by middle C.
-  int displayOctave;
+  /// Specifies the octave of the rest for display purposes. Octaves are
+  /// represented by the numbers 0 to 9, where 4 indicates the octave started
+  /// by middle C. So, if `displayOctave` is 4, the rest should be displayed
+  /// in the same vertical position as a note in the middle C octave
+  /// would be in the current clef.
+  int? displayOctave;
 
   @override
-  int get octave => displayOctave;
+  int? get octave => displayOctave;
 
-  bool measure;
+  /// If true, indicates this is a complete measure rest
+  bool? measure;
 
   Rest({
-    required this.displayStep,
-    required this.displayOctave,
-    this.measure = false,
+    this.displayStep,
+    this.displayOctave,
+    this.measure,
   });
 
+  /// Defines the expected order of the XML elements
   static const Map<dynamic, XmlQuantifier> _xmlExpectedOrder = {
     {
       'display-step': XmlQuantifier.required,
@@ -648,24 +659,29 @@ class Rest implements NoteForm {
     }: XmlQuantifier.optional,
   };
 
-  // TODO: test and comment
+  /// Creates an instance of the [Rest] class from an [XmlElement].
+  ///
+  /// Throws [MusicXmlTypeException] if the provided step is not valid.
+  /// Throws [MusicXmlFormatException] if the provided octave is not valid.
+  /// Throws [XmlElementContentException] if contents of child elements is not text.
+  /// Throws [XmlSequenceException] if contents is in wrong order.
   factory Rest.fromXml(XmlElement xmlElement) {
     validateSequence(xmlElement, _xmlExpectedOrder);
 
-    XmlElement? stepElement = xmlElement.getElement("display-step")!;
+    XmlElement? stepElement = xmlElement.getElement("display-step");
     validateTextContent(stepElement);
-    Step? step = Step.fromString(stepElement.innerText);
-    if (step == null) {
+    Step? step = Step.fromString(stepElement?.innerText ?? "");
+    if (step == null && stepElement != null) {
       throw MusicXmlTypeException(
         message: '${stepElement.innerText} is not valid step',
         xmlElement: xmlElement,
       );
     }
 
-    XmlElement? octaveElement = xmlElement.getElement("display-octave")!;
+    XmlElement? octaveElement = xmlElement.getElement("display-octave");
     validateTextContent(octaveElement);
-    int? octave = int.tryParse(octaveElement.innerText);
-    if (octave == null || octave < 0 || octave > 9) {
+    int? octave = int.tryParse(octaveElement?.innerText ?? "");
+    if (octaveElement != null && (octave == null || octave < 0 || octave > 9)) {
       throw MusicXmlFormatException(
         message: '${octaveElement.innerText} is not valid octave',
         xmlElement: xmlElement,
@@ -676,6 +692,7 @@ class Rest implements NoteForm {
     return Rest(
       displayStep: step,
       displayOctave: octave,
+      measure: YesNo.fromXml(xmlElement, "measure"),
     );
   }
 }
