@@ -8,15 +8,13 @@ import 'package:music_notation/src/models/data_types/system_relation.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 
 /// General printing parameters, including layout elements.
-///
-/// The part name display and part abbreviation display elements  may also be
-/// used here to change how a part name or abbreviation is displayed over the course of a piece.
-///They take effect when the current measure or a succeeding measure starts a new system.
-///
-/// Layout group elements in a print element only apply to the current page, system, or staff.
-/// Music that follows continues to take the default values from the
-/// layout determined by the defaults element.
+
+/// For more details go to
+/// [The \<print\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/print/).
 class Print implements MusicDataElement {
+  /// Layout only apply to the current page, system, or staff. Music that
+  /// follows continues to take the default values from the layout determined
+  /// by the defaults.
   Layout layout;
 
   /// The horizontal distance from the previous measure.
@@ -28,12 +26,17 @@ class Print implements MusicDataElement {
 
   MeasureNumbering? measureNumbering;
 
+  /// Changes how a part name is displayed over the course of a piece. It take
+  /// effect when the current measure or a succeeding measure starts a new system.
   NameDisplay? partNameDisplay;
 
+  /// Changes how a abbreviation is displayed over the course of a piece. It take
+  /// effect when the current measure or a succeeding measure starts a new system.
   NameDisplay? partAbbreviationDisplay;
 
   PrintAttributes attributes;
 
+  /// Specifies an ID that is unique to the entire document.
   String? id;
 
   Print({
@@ -98,32 +101,29 @@ class PrintAttributes {
   /// Indicates whether to force a system break,
   /// or to force the current music onto the same system as the preceding music.
   ///
-  /// Normally this is the first music data within a measure.
-  ///
-  /// If used in multi-part music,
-  /// the attributes should be placed in the same positions within each part,
-  /// or the results are undefined.
+  /// Normally this is the first music data within a measure. If used in
+  /// multi-part music, the attributes should be placed in the same positions
+  /// within each part, or the results are undefined.
   bool? newSystem;
 
   /// Indicates whether to force a page break,
   /// or to force the current music onto the same page as the preceding music.
   ///
   /// Normally this is the first music data within a measure.
-  /// If used in multi-part music, the attributes should be placed in the same positions within each part,
-  /// or the results are undefined.
+  /// If used in multi-part music, the attributes should be placed in the same
+  /// positions within each part, or the results are undefined.
   bool? newPage;
 
   /// The number of blank pages to insert before the current measure.
   ///
-  /// It is ignored if new-page is not "yes".
+  /// It is ignored if [newPage] is not `true`(yes).
   ///
-  /// These blank pages have no music, but may have text or images specified by the credit element.
-  ///
-  /// This is used to allow a combination of pages that are all text, or all text and images,
-  /// together with pages of music.
+  /// These blank pages have no music, but may have text or images specified
+  /// by the credit element. This is used to allow a combination of pages that
+  /// are all text, or all text and images, together with pages of music.
   int? blankPage;
 
-  /// Sets the number of a new page. It is ignored if new-page is not "yes".
+  /// Sets the number of a new page. It is ignored if [newPage] is not `true`(yes).
   int? pageNumber;
 
   PrintAttributes({
@@ -219,6 +219,8 @@ class MeasureNumbering {
 /// - no numbers;
 /// - numbers every measure;
 /// - numbers every system.
+///
+/// For more details go to
 /// [measure-numbering-value | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/data-types/measure-numbering-value/).
 enum MeasureNumberingValue {
   none,
