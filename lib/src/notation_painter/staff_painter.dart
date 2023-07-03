@@ -142,7 +142,9 @@ class StaffPainter extends CustomPainter {
   }
 
   ({int count, LedgerPlacement placement})? ledgerLines(NoteForm form) {
-    int position = form.step.position(form.octave);
+    // TODO fix nullable
+
+    int position = (form.step ?? Step.G).position(form.octave ?? 4);
     // 29 - D in 4 octave.
     // 39 - G in 5 octave.
     if (position < 29) {
@@ -161,11 +163,12 @@ class StaffPainter extends CustomPainter {
   }
 
   double _calculateNoteOffsetY(NoteForm form) {
-    int octave = form.octave;
+    int octave = form.octave ?? 4;
 
     octave -= 4;
 
-    return form.step.calculateX(-5) - ((octave * 41) + octave);
+    // TODO fix nullable
+    return (form.step ?? Step.G).calculateX(-5) - ((octave * 41) + octave);
   }
 
   void _drawAttributes({
