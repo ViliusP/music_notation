@@ -1,4 +1,6 @@
+import 'package:example/score_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:music_notation/music_notation.dart';
 import 'package:xml/xml.dart';
 
@@ -34,254 +36,125 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-String musicXmlHelloWorld = """
-  <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-  <!DOCTYPE score-partwise PUBLIC
-      "-//Recordare//DTD MusicXML 4.0 Partwise//EN"
-      "http://www.musicxml.org/dtds/partwise.dtd">
-  <score-partwise version="4.0">
-    <part-list>
-      <score-part id="P1">
-        <part-name>Music</part-name>
-      </score-part>
-    </part-list>
-    <part id="P1">
-      <measure number="1">
-        <attributes>
-          <divisions>1</divisions>
-          <key>
-            <fifths>0</fifths>
-          </key>
-          <time>
-            <beats>4</beats>
-            <beat-type>4</beat-type>
-          </time>
-          <clef>
-            <sign>G</sign>
-            <line>2</line>
-          </clef>
-        </attributes>
-        <note>
-          <pitch>
-            <step>C</step>
-            <octave>4</octave>
-          </pitch>
-          <duration>4</duration>
-          <type>whole</type>
-        </note>
-      </measure>
-    </part>
-  </score-partwise>
-""";
-
-String octaveTest = """
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE score-partwise PUBLIC
-    "-//Recordare//DTD MusicXML 3.1 Partwise//EN"
-    "http://www.musicxml.org/dtds/partwise.dtd">
-<score-partwise version="3.1">
-  <part-list>
-    <score-part id="P1">
-      <part-name>Music</part-name>
-    </score-part>
-  </part-list>
-  <part id="P1">
-    <measure number="1">
-      <attributes>
-        <divisions>1</divisions>
-        <key>
-          <fifths>0</fifths>
-        </key>
-        <time>
-          <beats>4</beats>
-          <beat-type>4</beat-type>
-        </time>
-        <clef>
-          <sign>G</sign>
-          <line>2</line>
-        </clef>
-      </attributes>
-      <note>
-        <pitch>
-          <step>C</step>
-          <octave>4</octave>
-        </pitch>
-        <duration>1</duration>
-        <type>whole</type>
-        <stem>none</stem>
-      </note>
-      <note>
-        <pitch>
-          <step>D</step>
-          <octave>4</octave>
-        </pitch>
-        <duration>1</duration>
-        <type>whole</type>
-        <stem>none</stem>
-      </note>
-      <note>
-        <pitch>
-          <step>E</step>
-          <octave>4</octave>
-        </pitch>
-        <duration>1</duration>
-        <type>whole</type>
-        <stem>none</stem>
-      </note>
-      <note>
-        <pitch>
-          <step>F</step>
-          <octave>4</octave>
-        </pitch>
-        <duration>1</duration>
-        <type>whole</type>
-        <stem>none</stem>
-      </note>
-      <note>
-        <pitch>
-          <step>G</step>
-          <octave>4</octave>
-        </pitch>
-        <duration>1</duration>
-        <type>whole</type>
-        <stem>none</stem>
-      </note>
-      <note>
-        <pitch>
-          <step>A</step>
-          <octave>4</octave>
-        </pitch>
-        <duration>1</duration>
-        <type>whole</type>
-        <stem>none</stem>
-      </note>
-      <note>
-        <pitch>
-          <step>B</step>
-          <octave>4</octave>
-        </pitch>
-        <duration>1</duration>
-        <type>whole</type>
-        <stem>none</stem>
-      </note>
-      <note>
-        <pitch>
-          <step>C</step>
-          <octave>5</octave>
-        </pitch>
-        <duration>1</duration>
-        <type>whole</type>
-        <stem>none</stem>
-      </note>
-        <note>
-        <pitch>
-          <step>D</step>
-          <octave>5</octave>
-        </pitch>
-        <duration>1</duration>
-        <type>whole</type>
-        <stem>none</stem>
-      </note>
-      <note>
-        <pitch>
-          <step>E</step>
-          <octave>5</octave>
-        </pitch>
-        <duration>1</duration>
-        <type>whole</type>
-        <stem>none</stem>
-      </note>
-      <note>
-        <pitch>
-          <step>F</step>
-          <octave>5</octave>
-        </pitch>
-        <duration>1</duration>
-        <type>whole</type>
-        <stem>none</stem>
-      </note>
-      <note>
-        <pitch>
-          <step>G</step>
-          <octave>5</octave>
-        </pitch>
-        <duration>1</duration>
-        <type>whole</type>
-        <stem>none</stem>
-      </note>
-      <note>
-        <pitch>
-          <step>A</step>
-          <octave>5</octave>
-        </pitch>
-        <duration>1</duration>
-        <type>whole</type>
-        <stem>none</stem>
-      </note>
-      <note>
-        <pitch>
-          <step>B</step>
-          <octave>5</octave>
-        </pitch>
-        <duration>1</duration>
-        <type>whole</type>
-        <stem>none</stem>
-      </note>
-    </measure>
-  </part>
-</score-partwise>
-""";
-
 class _MyHomePageState extends State<MyHomePage> {
-  final XmlDocument musicXmldocument = XmlDocument.parse(musicXmlHelloWorld);
-  final XmlDocument octave = XmlDocument.parse(octaveTest);
+  XmlDocument? helloWorldXml;
+  XmlDocument? octaveXml;
+
+  @override
+  void initState() {
+    ExampleScores.helloWorld.read().then((value) {
+      if (value != null) {
+        setState(() {
+          helloWorldXml = value;
+        });
+      }
+    });
+    ExampleScores.scale.read().then((value) {
+      if (value != null) {
+        setState(() {
+          octaveXml = value;
+        });
+      }
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: const Text("Music notation example"),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Padding(padding: EdgeInsets.only(bottom: 8)),
-            Expanded(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.black.withOpacity(0.2),
-                    width: 1.0,
-                  ),
+            Column(
+              children: [
+                const Text(
+                  "Tutorial: Hello, World",
+                  style: TextStyle(fontSize: 36),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 40.0),
-                  child: MusicNotationCanvas(
-                    scorePartwise: ScorePartwise.fromXml(musicXmldocument),
-                  ),
+                const Padding(padding: EdgeInsets.symmetric(vertical: 32)),
+                SizedBox.fromSize(
+                  size: const Size.fromHeight(120),
+                  child: helloWorldXml != null
+                      ? MusicNotationCanvas(
+                          scorePartwise: ScorePartwise.fromXml(helloWorldXml!),
+                        )
+                      : const SizedBox.shrink(),
                 ),
-              ),
+              ],
             ),
             Expanded(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.black.withOpacity(0.2),
-                    width: 1.0,
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 40.0),
-                  child: MusicNotationCanvas(
-                    scorePartwise: ScorePartwise.fromXml(octave),
-                  ),
-                ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children:
+                    [ExampleScores.apresUnReve, ExampleScores.chopinPrelude]
+                        .map(
+                          (score) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                fixedSize: const Size(320, 80),
+                              ),
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => const ScorePage(),
+                                  ),
+                                );
+                              },
+                              child: Text(score.name),
+                            ),
+                          ),
+                        )
+                        .toList(),
               ),
+            ),
+            Column(
+              children: [
+                const Text(
+                  "Scale",
+                  style: TextStyle(fontSize: 36),
+                ),
+                const Padding(padding: EdgeInsets.symmetric(vertical: 32)),
+                SizedBox.fromSize(
+                  size: const Size.fromHeight(120),
+                  child: octaveXml != null
+                      ? MusicNotationCanvas(
+                          scorePartwise: ScorePartwise.fromXml(octaveXml!),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              ],
             )
           ],
         ),
       ),
     );
+  }
+}
+
+enum ExampleScores {
+  helloWorld("assets/scores/hello_world.xml", "Tutorial: Hello world"),
+  scale("assets/scores/scale.xml", "Scale"),
+  apresUnReve("assets/scores/après_un_rêve.xml", "Tutorial: Après un rêve"),
+  chopinPrelude("assets/scores/chopin_prelude.xml", "Tutorial: Chopin Prelude");
+
+  const ExampleScores(this.path, this.name);
+
+  final String path;
+  final String name;
+
+  Future<XmlDocument?> read() async {
+    try {
+      String xmlString = await rootBundle.loadString(path);
+      return XmlDocument.parse(xmlString);
+    } catch (e) {
+      // ignore: avoid_print
+      print("$name Error: $e");
+      return null;
+    }
   }
 }
