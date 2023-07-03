@@ -7,21 +7,19 @@ import 'package:xml/xml.dart';
 import 'package:music_notation/src/models/data_types/system_relation.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 
-/// Contains general printing parameters, including layout elements.
+/// General printing parameters, including layout elements.
 ///
-/// The part-name-display and part-abbreviation-display elements
-/// may also be used here to change how a part name or abbreviation is displayed over the course of a piece.
-///
-/// They take effect when the current measure or a succeeding measure starts a new system.
+/// The part name display and part abbreviation display elements  may also be
+/// used here to change how a part name or abbreviation is displayed over the course of a piece.
+///They take effect when the current measure or a succeeding measure starts a new system.
 ///
 /// Layout group elements in a print element only apply to the current page, system, or staff.
-///
-/// Music that follows continues to take the default values from the layout determined by the defaults element.
+/// Music that follows continues to take the default values from the
+/// layout determined by the defaults element.
 class Print implements MusicDataElement {
   Layout layout;
 
-  /// The measure-distance element specifies the horizontal distance from the previous measure.
-  ///
+  /// The horizontal distance from the previous measure.
   /// This value is only used for systems where there is horizontal whitespace
   /// in the middle of a system, as in systems with codas.
   ///
@@ -162,25 +160,11 @@ class PrintAttributes {
 /// The text attribute from the measure element is used for display,
 /// or the number attribute if the text attribute is not present.
 ///
-/// Measures with an implicit attribute set to "yes" never display a measure number,
-/// regardless of the measure-numbering setting.
+/// Measures with an implicit attribute set to true(yes) never display a measure number,
+/// regardless of the [MeasureNumbering] setting.
 ///
-/// The optional staff attribute refers to staff numbers within the part,
-/// from top to bottom on the system.
-///
-/// It indicates which staff is used as the reference point for vertical positioning.
-/// A value of 1 is assumed if not present.
-///
-/// The optional multiple-rest-always and multiple-rest-range attributes
-/// describe how measure numbers are shown on multiple rests
-/// when the measure-numbering value is not set to none.
-///
-/// The multiple-rest-always attribute is set to yes when the measure number
-/// should always be shown, even if the multiple rest starts midway
-/// through a system when measure numbering is set to system level.
-/// The multiple-rest-range attribute is set to yes
-/// when measure numbers on multiple rests display the range of numbers
-/// for the first and last measure, rather than just the number of the first measure.
+/// For more details go to
+/// [The \<measure-numbering\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/measure-numbering/).
 class MeasureNumbering {
   MeasureNumberingValue value;
 
@@ -188,17 +172,17 @@ class MeasureNumbering {
   /// than the particular part where the [MeasureNumbering] element appears.
   SystemRelationNumber? system;
 
-  /// The staff-number type indicates staff numbers within a multi-staff part.
-  ///
-  /// Staves are numbered from top to bottom, with 1 being the top staff on a part.
+  /// Indicates staff numbers within a multi-staff part. Staves are numbered
+  /// from top to bottom, with 1 being the top staff on a part. It indicates
+  /// which staff is used as the reference point for vertical positioning.
+  /// A value of 1 is assumed if not present.
   double staff;
 
   /// The [multipleRestAlways]  and [multipleRestRange] attributes describe
   /// how measure numbers are shown on multiple rests when the [value] is not set to none.
   ///
-  /// The [multipleRestAlways] attribute is set to yes
-  /// when the measure number should always be shown,
-  /// even if the multiple rest starts midway
+  /// The [multipleRestAlways] attribute is set to yes when the measure number
+  /// should always be shown, even if the multiple rest starts midway
   /// through a system when measure numbering is set to system level.
   bool multipleRestAlways;
 
@@ -235,6 +219,7 @@ class MeasureNumbering {
 /// - no numbers;
 /// - numbers every measure;
 /// - numbers every system.
+/// [measure-numbering-value | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/data-types/measure-numbering-value/).
 enum MeasureNumberingValue {
   none,
   measure,
@@ -243,4 +228,32 @@ enum MeasureNumberingValue {
   static MeasureNumberingValue? fromString(String value) {
     throw UnimplementedError();
   }
+
+/// Distinguishes measure numbers that are associated with a system rather
+/// than the particular part where the element appears.
+///
+/// For more details go to
+/// [system-relation-number data type | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/data-types/system-relation-number/).
+enum SystemRelationNumber {
+  /// The number should appear only on the top part of the current system.
+  onlyTop,
+
+  /// The number should appear only on the bottom part of the current system.
+  onlyBottom,
+
+  /// The number should appear on both the current part and the top part of
+  /// the current system. If these values appear in a score, when parts are
+  /// created the number should only appear once in this part, not twice.
+  alsoTop,
+
+  /// The number should appear on both the current part and the bottom part of
+  /// the current system. If these values appear in a score, when parts are
+  /// created the number should only appear once in this part, not twice.
+  alsoBottom,
+
+  /// The number is associated only with the current part, not with the system.
+  none;
+
+  static SystemRelationNumber? fromString(String value) =>
+      values.firstWhereOrNull((e) => e.name == hyphenToCamelCase(value));
 }

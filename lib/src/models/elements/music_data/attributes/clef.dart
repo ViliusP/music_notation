@@ -7,12 +7,12 @@ import 'package:music_notation/src/models/utilities/type_parsers.dart';
 import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 import 'package:xml/xml.dart';
 
-/// Clefs are represented by a combination of sign, line, and clef-octave-change elements.
+/// Clefs are represented by a combination of sign, line, and clef octave change.
 ///
 /// Sometimes clefs are added to the staff in non-standard line positions,
-/// either to indicate cue passages,
-/// or when there are multiple clefs present simultaneously on one staff.
-/// In this situation, the additional attribute is set to "yes" and the line value is ignored.
+/// either to indicate cue passages, or when there are multiple clefs present
+/// simultaneously on one staff. In this situation, the additional attribute
+/// is set to true(yes) and the line value is ignored.
 class Clef {
   // ------------------------- //
   // ------   Content   ------ //
@@ -54,7 +54,8 @@ class Clef {
   SymbolSize? size;
 
   /// Sometimes clefs are added to the staff in non-standard line positions,
-  /// either to indicate cue passages, or when there are multiple clefs present simultaneously on one staff.
+  /// either to indicate cue passages, or when there are multiple clefs present
+  /// simultaneously on one staff.
   ///
   /// In this situation, the additional attribute is set to "yes" and the line value is ignored.
   ///
@@ -62,7 +63,8 @@ class Clef {
   bool? afteBarline;
 
   /// Sometimes clefs are added to the staff in non-standard line positions,
-  /// either to indicate cue passages, or when there are multiple clefs present simultaneously on one staff.
+  /// either to indicate cue passages, or when there are multiple clefs present
+  /// simultaneously on one staff.
   ///
   /// In this situation, the additional attribute is set to "yes" and the line value is ignored.
   bool? additional;

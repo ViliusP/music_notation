@@ -46,9 +46,9 @@ class Note implements MusicDataElement {
   final Empty? chord;
 
   /// The common note elements between cue/grace notes and regular (full) notes:
-  /// [RegularNote] and [Rest] information, but not duration (cue and grace notes do not have duration encoded).
-  /// [Unpitched] elements are used for unpitched percussion, speaking voice,
-  /// and other musical elements lacking determinate pitch.
+  /// [RegularNote] and [Rest] information, but not duration (cue and grace
+  /// notes do not have duration encoded). [Unpitched] elements are used for
+  /// unpitched percussion, speaking voice, and other musical elements lacking determinate pitch.
   ///
   /// It represents full-note choices of musicXML specification:
   /// ```xml
@@ -60,11 +60,9 @@ class Note implements MusicDataElement {
   /// ```
   final NoteForm form;
 
-  /// The <instrument> element distinguishes between <score-instrument> elements
-  /// in a <score-part>. If multiple <score-instrument> elements are specified
-  /// in a <score-part>, there should be an <instrument> element for each note
-  /// in the <part>. Notes that are shared between multiple <score-instrument>s
-  /// can have more than one <instrument> element.
+  /// If multiple score instrument are specified in a score part, there should
+  /// be an instrument element for each note in the part. Notes that are shared
+  /// between multiple score-instruments can have more than one instrument element.
   final List<String> instrument;
 
   final EditorialVoice editorialVoice;
@@ -428,7 +426,8 @@ class Note implements MusicDataElement {
   @override
   XmlElement toXml() {
     final builder = XmlBuilder();
-    // Build your xml here, this will include calls to toXml() methods of properties like grace.toXml(), fullNote.toXml(), etc.
+    // Build your xml here, this will include calls to toXml() methods of
+    // properties like grace.toXml(), fullNote.toXml(), etc.
     return builder.buildDocument().rootElement;
   }
 }
@@ -540,10 +539,11 @@ sealed class NoteForm {
 /// This is generally used with a one-line staff.
 /// Notes in percussion clef should always use an unpitched element rather than a pitch element.
 class Unpitched implements NoteForm {
-  /// The display-step-octave group contains the sequence of elements used by both the rest and unpitched elements.
-  /// This group is used to place rests and unpitched elements on the staff without implying that these elements have pitch.
-  /// Positioning follows the current clef.
-  /// If percussion clef is used, the display-step and display-octave elements are interpreted as if in treble clef, with a G in octave 4 on line 2.
+  /// Yhe sequence of elements used by both the rest and unpitched elements.
+  /// This group is used to place rests and unpitched elements on the staff
+  /// without implying that these elements have pitch. Positioning follows the
+  /// current clef. If percussion clef is used, the [displayStep] and [displayOctave]
+  /// elements are interpreted as if in treble clef, with a G in octave 4 on line 2.
   Step displayStep;
 
   @override
@@ -551,11 +551,12 @@ class Unpitched implements NoteForm {
 
   /// Octaves are represented by the numbers 0 to 9, where 4 indicates the octave started by middle C.
   ///
-  /// The display-step-octave group contains the sequence of elements used by both the rest and unpitched elements.
-  /// This group is used to place rests and unpitched elements on the staff without implying that these elements have pitch.
-  /// Positioning follows the current clef.
-  /// If percussion clef is used, the display-step and display-octave elements are interpreted as if in treble clef, with a G in octave 4 on line 2.
-
+  /// The display-step-octave group contains the sequence of elements used by
+  /// both the rest and unpitched elements.This group is used to place rests
+  /// and unpitched elements on the staff without implying that these elements have pitch.
+  /// Positioning follows the current clef. If percussion clef is used,
+  /// the [displayStep] and [displayOctave] elements are interpreted as if in
+  /// treble clef, with a G in octave 4 on line 2.
   int displayOctave;
 
   @override
@@ -606,7 +607,8 @@ class Unpitched implements NoteForm {
 }
 
 /// The rest element indicates notated rests or silences.
-/// Rest elements are usually empty, but placement on the staff can be specified using display-step and display-octave elements.
+/// Rest elements are usually empty, but placement on the staff can be specified
+/// using [displayStep] and [displayOctave].
 ///
 /// If the measure attribute is set to yes, this indicates this is a complete measure rest.
 class Rest implements NoteForm {
