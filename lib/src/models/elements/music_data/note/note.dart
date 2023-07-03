@@ -1,4 +1,3 @@
-import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/data_types/start_stop.dart';
@@ -21,6 +20,7 @@ import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/generic.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/utilities/type_parsers.dart';
+import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 
 /// Notes are the most common type of MusicXML data.
 ///
@@ -46,7 +46,7 @@ class Note implements MusicDataElement {
   final Empty? chord;
 
   /// The common note elements between cue/grace notes and regular (full) notes:
-  /// [Pitched] and [Rest] information, but not duration (cue and grace notes do not have duration encoded).
+  /// [RegularNote] and [Rest] information, but not duration (cue and grace notes do not have duration encoded).
   /// [Unpitched] elements are used for unpitched percussion, speaking voice,
   /// and other musical elements lacking determinate pitch.
   ///
@@ -509,7 +509,10 @@ class Grace {
   }
 }
 
-abstract class NoteForm {
+sealed class NoteForm {
+  Step? get step;
+  int? get octave;
+
   factory NoteForm._fromXml(XmlElement xmlElement) {
     XmlElement? pitchElement = xmlElement.getElement("pitch");
     if (pitchElement != null) {
@@ -531,19 +534,20 @@ abstract class NoteForm {
 }
 
 /// Represents musical elements that are notated on the staff but lack definite pitch,
-/// such as unpitched percussion and speaking voice.
-///
-/// If the child elements are not present, the note is placed on the middle line of the staff.
+/// such as unpitched percussion and speaking voice. If the child elements are
+/// not present, the note is placed on the middle line of the staff.
 ///
 /// This is generally used with a one-line staff.
-///
 /// Notes in percussion clef should always use an unpitched element rather than a pitch element.
 class Unpitched implements NoteForm {
   /// The display-step-octave group contains the sequence of elements used by both the rest and unpitched elements.
   /// This group is used to place rests and unpitched elements on the staff without implying that these elements have pitch.
   /// Positioning follows the current clef.
   /// If percussion clef is used, the display-step and display-octave elements are interpreted as if in treble clef, with a G in octave 4 on line 2.
-  Step? displayStep;
+  Step displayStep;
+
+  @override
+  Step get step => displayStep;
 
   /// Octaves are represented by the numbers 0 to 9, where 4 indicates the octave started by middle C.
   ///
@@ -551,17 +555,53 @@ class Unpitched implements NoteForm {
   /// This group is used to place rests and unpitched elements on the staff without implying that these elements have pitch.
   /// Positioning follows the current clef.
   /// If percussion clef is used, the display-step and display-octave elements are interpreted as if in treble clef, with a G in octave 4 on line 2.
-  ///
-  /// 	<xs:restriction base="xs:integer">
-  /// 		<xs:minInclusive value="0"/>
-  /// 		<xs:maxInclusive value="9"/>
-  /// 	</xs:restriction>
-  int? displayOctave;
 
-  Unpitched();
+  int displayOctave;
 
+  @override
+  int get octave => displayOctave;
+
+  Unpitched({
+    required this.displayStep,
+    required this.displayOctave,
+  });
+
+  static const Map<dynamic, XmlQuantifier> _xmlExpectedOrder = {
+    {
+      'display-step': XmlQuantifier.required,
+      'display-octave': XmlQuantifier.required,
+    }: XmlQuantifier.optional,
+  };
+
+  // TODO: test and comment
   factory Unpitched.fromXml(XmlElement xmlElement) {
-    return Unpitched();
+    validateSequence(xmlElement, _xmlExpectedOrder);
+
+    XmlElement? stepElement = xmlElement.getElement("display-step")!;
+    validateTextContent(stepElement);
+    Step? step = Step.fromString(stepElement.innerText);
+    if (step == null) {
+      throw MusicXmlTypeException(
+        message: '${stepElement.innerText} is not valid step',
+        xmlElement: xmlElement,
+      );
+    }
+
+    XmlElement? octaveElement = xmlElement.getElement("display-octave")!;
+    validateTextContent(octaveElement);
+    int? octave = int.tryParse(octaveElement.innerText);
+    if (octave == null || octave < 0 || octave > 9) {
+      throw MusicXmlFormatException(
+        message: '${octaveElement.innerText} is not valid octave',
+        xmlElement: xmlElement,
+        source: octaveElement.innerText,
+      );
+    }
+
+    return Unpitched(
+      displayStep: step,
+      displayOctave: octave,
+    );
   }
 }
 
@@ -570,32 +610,71 @@ class Unpitched implements NoteForm {
 ///
 /// If the measure attribute is set to yes, this indicates this is a complete measure rest.
 class Rest implements NoteForm {
-  /// Elements used by both the rest and unpitched elements.
-  /// This group is used to place rests and unpitched elements on the staff
-  /// without implying that these elements have pitch. Positioning follows the current clef.
-  /// If percussion clef is used, the display-step and display-octave
-  /// elements are interpreted as if in treble clef, with a G in octave 4 on line 2.
-  Step? displayStep;
+  // ------------------------- //
+  // ------   Content   ------ //
+  // ------------------------- //
 
-  /// Octaves are represented by the numbers 0 to 9, where 4 indicates the octave started by middle C.
-  ///
-  /// Elements used by both the rest and unpitched elements. This group is used
-  /// to place rests and unpitched elements on the staff without implying
-  /// that these elements have pitch. Positioning follows the current clef.
-  /// If percussion clef is used, the display-step and display-octave elements
-  /// are interpreted as if in treble clef, with a G in octave 4 on line 2.
-  int? displayOctave;
+  /// Elements used by both the rest and unpitched elements.
+  /// Place of  unpitched elements on the staff without implying that these
+  /// elements have pitch. Positioning follows the current clef.
+  /// If percussion clef is used, the [displayStep] and [displayOctave]
+  /// elements are interpreted as if in treble clef, with a [Step.G] in octave 4 on line 2.
+  Step displayStep;
+
+  @override
+  Step get step => displayStep;
+
+  /// Octaves are represented by the numbers 0 to 9, where 4 indicates the
+  /// octave started by middle C.
+  int displayOctave;
+
+  @override
+  int get octave => displayOctave;
 
   bool measure;
 
   Rest({
-    this.displayStep,
-    this.displayOctave,
+    required this.displayStep,
+    required this.displayOctave,
     this.measure = false,
   });
 
+  static const Map<dynamic, XmlQuantifier> _xmlExpectedOrder = {
+    {
+      'display-step': XmlQuantifier.required,
+      'display-octave': XmlQuantifier.required,
+    }: XmlQuantifier.optional,
+  };
+
+  // TODO: test and comment
   factory Rest.fromXml(XmlElement xmlElement) {
-    return Rest();
+    validateSequence(xmlElement, _xmlExpectedOrder);
+
+    XmlElement? stepElement = xmlElement.getElement("display-step")!;
+    validateTextContent(stepElement);
+    Step? step = Step.fromString(stepElement.innerText);
+    if (step == null) {
+      throw MusicXmlTypeException(
+        message: '${stepElement.innerText} is not valid step',
+        xmlElement: xmlElement,
+      );
+    }
+
+    XmlElement? octaveElement = xmlElement.getElement("display-octave")!;
+    validateTextContent(octaveElement);
+    int? octave = int.tryParse(octaveElement.innerText);
+    if (octave == null || octave < 0 || octave > 9) {
+      throw MusicXmlFormatException(
+        message: '${octaveElement.innerText} is not valid octave',
+        xmlElement: xmlElement,
+        source: octaveElement.innerText,
+      );
+    }
+
+    return Rest(
+      displayStep: step,
+      displayOctave: octave,
+    );
   }
 }
 
@@ -728,8 +807,12 @@ class RegularNote extends Note {
   // ------   Content   ------ //
   // ------------------------- //
 
-  /// Positive number specified in division units. This is the intended duration vs. notated duration (for instance, differences in dotted notes in Baroque-era music). Differences in duration specific to an interpretation or performance should be represented using the note element's attack and release attributes.
-  /// The duration element moves the musical position when used in backup elements, forward elements, and note elements that do not contain a chord child element.
+  /// Positive number specified in division units. This is the intended duration
+  /// vs. notated duration (for instance, differences in dotted notes in Baroque-era music).
+  /// Differences in duration specific to an interpretation or performance should
+  /// be represented using the note element's attack and release attributes.
+  /// The duration element moves the musical position when used in backup elements,
+  /// forward elements, and note elements that do not contain a chord child element.
   double duration;
 
   List<Tie> ties;
@@ -795,6 +878,7 @@ class Pitch implements NoteForm {
   ///
   /// The step is represented by an instance of the [Step] enum,
   /// which includes values from A to G.
+  @override
   Step step;
 
   /// The microtonal alteration of the step for this non-traditional key content.
@@ -804,6 +888,7 @@ class Pitch implements NoteForm {
   double? alter;
 
   /// Octaves are represented by the numbers 0 to 9, where 4 indicates the octave started by middle C.
+  @override
   int octave;
 
   Pitch({
