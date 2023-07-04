@@ -145,6 +145,8 @@ Future generateCode({
   Map<String, String> codes = await smuflCodeGenerator.generateCode();
 
   createFolderIfNotExists(path);
+  createFolderIfNotExists("$path/classes");
+  clearFolder("$path/classes");
 
   for (var code in codes.entries) {
     final outputFilePath = '$path/${code.key}.dart';
