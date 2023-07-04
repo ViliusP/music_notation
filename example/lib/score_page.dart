@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:music_notation/music_notation.dart';
+import 'package:collection/collection.dart';
 
 class ScorePage extends StatefulWidget {
   final ScorePartwise scorePartwise;
@@ -13,8 +14,24 @@ class ScorePage extends StatefulWidget {
 class _ScorePageState extends State<ScorePage> {
   @override
   Widget build(BuildContext context) {
+    ScoreHeader scoreHeader = widget.scorePartwise.scoreHeader;
+    String? movementTitle = scoreHeader.movementTitle;
+    String? creator = scoreHeader.identification?.creators
+        ?.firstWhereOrNull((element) => element.type == "composer")
+        ?.value;
+
+    String title = "${creator ?? 'No creator'}: ${movementTitle ?? 'unnamed'}";
+
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: Text(title),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+        child: MusicNotationCanvas(
+          scorePartwise: widget.scorePartwise,
+        ),
+      ),
     );
   }
 }

@@ -37,6 +37,9 @@ dependencies:
   # A lightweight library for parsing, traversing, querying, transforming and building XML documents.
   xml: ^6.2.0
 
+  # Collections and utilities functions and classes related to collections.
+  collection: ^1.17.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
