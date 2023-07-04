@@ -1,4 +1,4 @@
-/// a named range of glyphs in the Standard Music Font Layout (SMuFL) metadata.
+/// A named range of glyphs in the Standard Music Font Layout (SMuFL) metadata.
 /// Each range is associated with a specific category of musical symbols.
 class GlyphRange {
   /// The name of the glyph range.

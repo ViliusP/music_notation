@@ -104,7 +104,7 @@ void createFolderIfNotExists(String path) {
 }
 
 Future generateCode({
-  required String destination,
+  required String path,
 }) async {
   Map<String, GlyphName> glyphNames = {};
   Map<String, List<String>> classes = {};
@@ -132,10 +132,7 @@ Future generateCode({
             (e) => MapEntry(e.key, GlyphRange.fromJson(e.key, e.value)),
           ),
         );
-
         break;
-
-      default:
     }
   }
 
@@ -145,26 +142,35 @@ Future generateCode({
     glyphRange: glyphRange,
   );
 
-  // final document = XmlDocument.parse(content);
+  Map<String, String> codes = await smuflCodeGenerator.generateCode();
 
-  // XsdToDart generator = XsdToDart(document: document);
+  createFolderIfNotExists(path);
 
-  // final codes = await generator.generateCode();
+  for (var code in codes.entries) {
+    final outputFilePath = '$path/${code.key}.dart';
 
-  // final folders = codes.keys.map((k) => k.split("/").first).toSet();
+    File(outputFilePath).writeAsStringSync(code.value);
 
-  // for (var folder in folders) {
-  //   final String path = "$destination/$folder";
-  //   createFolderIfNotExists(path);
-  // }
+    print('Class was generated successfully at:$outputFilePath');
 
-  // for (var codeEntry in codes.entries) {
-  //   final outputFilePath = '$destination/${codeEntry.key}.dart';
+    formatDartCodeSync(outputFilePath);
+  }
+}
 
-  //   File(outputFilePath).writeAsStringSync(codeEntry.value);
+void formatDartCodeSync(String path) {
+  final result = Process.runSync('dart', ['format', path]);
 
-  //   print('Class was generated successfully at:$outputFilePath');
-  // }
+  final stdout = result.stdout;
+  final stderr = result.stderr;
+
+  print('Standard output:\n$stdout');
+  print('');
+
+  if (result.exitCode != 0) {
+    throw Exception(
+      'Exit code: ${result.exitCode}.\nFailed to format Dart code:\n$stderr',
+    );
+  }
 }
 
 main(List<String> arguments) async {
@@ -193,7 +199,7 @@ main(List<String> arguments) async {
     await recordDate(Metadata.localFolder);
   }
 
-  await generateCode(destination: '../lib/src/smufl');
+  await generateCode(path: '../lib/src/smufl');
 
   exit(0);
 }

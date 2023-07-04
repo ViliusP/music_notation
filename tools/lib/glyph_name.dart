@@ -43,4 +43,27 @@ class GlyphName {
       description: json['description'],
     );
   }
+
+  /// Converts the [GlyphName] object to a JSON representation.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// final GlyphName glyphName = GlyphName(
+  ///   value: 'accidentalSharp',
+  ///   codepoint: 'U+E262',
+  ///   alternateCodepoint: 'U+266F',
+  ///   description: 'Sharp',
+  /// );
+  ///
+  /// final Map<String, dynamic> json = glyphName.toJson();
+  /// print(json); // Outputs: {value: accidentalSharp, codepoint: U+E262, alternateCodepoint: U+266F, description: Sharp}
+  /// ```
+  Map<String, dynamic> toJson() {
+    return {
+      'value': value,
+      'codepoint': codepoint,
+      'alternateCodepoint': alternateCodepoint,
+      'description': description,
+    };
+  }
 }

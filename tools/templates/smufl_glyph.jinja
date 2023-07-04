@@ -1,0 +1,32 @@
+/// SMuFL (Standard Music Font Layout) glyphs.
+///
+/// This enum contains a list of glyphs used in music notation as defined
+/// by the SMuFL specification.
+/// 
+/// The glyphs that originally had a number in front now have the character 'g' added in front.
+enum SmuflGlyph {
+  {% for glyph in glyphs %}
+  /// {{ glyph.description }}.
+  {% if glyph.value[0] in '0123456789' %}
+    {% set enumName = "g" + glyph.value %}
+  {% else %}
+    {% set enumName = glyph.value %}
+  {% endif %}
+  {{ enumName }}("{{ glyph.codepoint }}", {{ glyph.alternateCodepoint is none and 'null' or '"' + glyph.alternateCodepoint + '"' }}, "{{ glyph.description|replace('"', '\"') }}"){% if not loop.last %},
+
+  {% endif %}
+  {% if loop.last %};
+  {% endif %}
+  {% endfor %}
+
+  const SmuflGlyph(this.codepoint, this.alternateCodepoint, this.description);
+
+  /// The Unicode codepoint value for the glyph.
+  final String codepoint;
+
+  /// An optional alternate Unicode codepoint value for the glyph.
+  final String? alternateCodepoint;
+
+  /// A description of the glyph.
+  final String description;
+}
