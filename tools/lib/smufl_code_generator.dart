@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cli/glyph_name.dart';
@@ -32,9 +33,9 @@ class SmuflCodeGenerator {
       {"glyphs": glyphName.values.map((e) => e.toJson())},
     );
 
-    // codes["hello"] = env.getTemplate("hello.jinja").render({
-    //   "title": "Jinja and Flask",
-    // });
+    codes["ranges"] = env.getTemplate("smufl_ranges.jinja").render(
+      {"ranges": glyphRange.values.map((e) => e.toJson())},
+    );
 
     return codes;
   }
