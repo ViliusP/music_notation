@@ -6,50 +6,20 @@ import 'dart:async';
 import 'package:cli/xsd_to_dart.dart';
 import 'package:xml/xml.dart';
 
-const schemaFiles = [
-  "timepart.xsl",
-  "xml.xsd",
-  "xlink.xsd",
-  "to31.xsl",
-  // "sounds.dtd",
-  "to11.xsl",
-  "to20.xsl",
-  "to10.xsl",
-  // "timewise.dtd",
-  // "score.mod",
-  "to30.xsl",
-  "sounds.xml",
-  "sounds.xsd",
-  // "direction.mod",
-  "musicxml.xsd",
-  "opus.xsd",
-  // "partwise.dtd",
-  "catalog.xml",
-  // "barline.mod",
-  // "container.dtd",
-  "container.xsd",
-  "parttime.xsl",
-  // "note.mod",
-  // "link.mod",
-  // "midixml.dtd",
-  // "common.mod",
-  "midixml.xsl",
-  // "opus.dtd",
-  // "layout.mod",
-  "isolat1.ent",
-  // "attributes.mod",
-  // "identity.mod",
-  "isolat2.ent",
+const metadataFiles = [
+  "ranges.json",
+  "glyphnames.json",
+  "classes.json",
 ];
 
-const repo = "https://raw.githubusercontent.com/w3c/musicxml/gh-pages/schema/";
+const repo = "https://raw.githubusercontent.com/w3c/smufl/gh-pages/metadata/";
 const metaFilename = "meta.txt";
 
-Future recordDate() async {
+Future recordDate(String folder) async {
   String formattedDate = DateTime.now().toIso8601String();
 
   String filePath =
-      '../tools/raw_schemas/$metaFilename'; // Replace with your desired file path
+      '$folder/$metaFilename'; // Replace with your desired file path
 
   File file = File(filePath);
   await file.writeAsString("Downloaded at\n", mode: FileMode.writeOnly);
@@ -148,32 +118,34 @@ Future generateCode({
 }
 
 main(List<String> arguments) async {
-  const schemaFolder = '../tools/raw_schemas';
+  const schemaFolder = '../tools/metadata';
 
   // Check if the folder contains all the required files
-  bool hasAllFiles =
-      checkFolderForOnlyFiles(schemaFolder, [...schemaFiles, metaFilename]);
+  bool hasAllFiles = checkFolderForOnlyFiles(
+    schemaFolder,
+    [...metadataFiles, metaFilename],
+  );
 
   if (arguments.contains("force-read") || !hasAllFiles) {
     print("Clearing existing files");
 
     clearFolder(schemaFolder);
 
-    print('Downloading latest MusicXML specifications');
+    print('Downloading latest SMuFL metadata');
 
-    for (var file in schemaFiles) {
-      print('${schemaFiles.indexOf(file)} of ${schemaFiles.length}');
+    for (var file in metadataFiles) {
+      print('${metadataFiles.indexOf(file)} of ${metadataFiles.length}');
       print('Downloading: $file');
       await download(repo + file, '$schemaFolder/$file');
     }
 
-    await recordDate();
+    await recordDate(schemaFolder);
   }
 
-  await generateCode(
-    destination: '../lib/models',
-    filePath: "$schemaFolder/musicxml.xsd",
-  );
+  // await generateCode(
+  //   destination: '../lib/models',
+  //   filePath: "$schemaFolder/musicxml.xsd",
+  // );
 
   exit(0);
 }
