@@ -2,7 +2,7 @@
 
 part of "../glyph_class.dart";
 
-class Tf_pedals extends GlyphClass {
+class TfPedals extends GlyphClass {
   @override
   List<SmuflGlyph> get values => [
         SmuflGlyph.keyboardPedalPed,

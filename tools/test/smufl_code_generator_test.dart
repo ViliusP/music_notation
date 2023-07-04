@@ -21,4 +21,22 @@ void main() {
       });
     }
   });
+  group('normalizeClassName ', () {
+    var testCases = [
+      ("tf_chordSymbolAccidentals", "tfChordSymbolAccidentals"),
+      ("tf_chordSymbols", "tfChordSymbols"),
+      ("tf_pedals", "tfPedals"),
+      ("octaves", "octaves"),
+      ("combiningStaffPositions", "combiningStaffPositions"),
+      ("clefs", "clefs"),
+    ];
+    for (var (input, expected) in testCases) {
+      test('should convert "$input" to "$expected"', () {
+        expect(
+          SmuflCodeGenerator.normalizeClassName(input),
+          expected,
+        );
+      });
+    }
+  });
 }

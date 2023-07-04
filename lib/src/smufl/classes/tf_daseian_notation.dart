@@ -2,7 +2,7 @@
 
 part of "../glyph_class.dart";
 
-class Tf_daseianNotation extends GlyphClass {
+class TfDaseianNotation extends GlyphClass {
   @override
   List<SmuflGlyph> get values => [
         SmuflGlyph.daseianGraves1,

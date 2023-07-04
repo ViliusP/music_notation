@@ -2,7 +2,7 @@
 
 part of "../glyph_class.dart";
 
-class Tf_chordSymbolAccidentals extends GlyphClass {
+class TfChordSymbolAccidentals extends GlyphClass {
   @override
   List<SmuflGlyph> get values => [
         SmuflGlyph.csymAccidentalFlat,

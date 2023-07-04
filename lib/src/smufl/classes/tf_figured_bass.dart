@@ -2,7 +2,7 @@
 
 part of "../glyph_class.dart";
 
-class Tf_figuredBass extends GlyphClass {
+class TfFiguredBass extends GlyphClass {
   @override
   List<SmuflGlyph> get values => [
         SmuflGlyph.figbass0,

@@ -2,7 +2,7 @@
 
 part of "../glyph_class.dart";
 
-class Tf_zeroWidth extends GlyphClass {
+class TfZeroWidth extends GlyphClass {
   @override
   List<SmuflGlyph> get values => [
         SmuflGlyph.staff1Line,

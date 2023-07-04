@@ -9,7 +9,7 @@ part './classes/{{ className|toUnderscoreCase }}.dart';
 /// Group of glyph classes.
 sealed class GlyphClasses {
   {% for className in classes %}
-  static const {{ className }} = {{ className|capitalizeFirst }};
+  static const {{ className|normalizeClassName }} = {{ className|normalizeClassName|capitalizeFirst }};
   {% endfor %}
 }
 

@@ -2,7 +2,7 @@
 
 part of "../glyph_class.dart";
 
-class Tf_pictograms extends GlyphClass {
+class TfPictograms extends GlyphClass {
   @override
   List<SmuflGlyph> get values => [
         SmuflGlyph.pictGlsp,

@@ -2,7 +2,7 @@
 
 part of "../glyph_class.dart";
 
-class {{ name|capitalizeFirst}} extends GlyphClass {
+class {{ name|normalizeClassName|capitalizeFirst }} extends GlyphClass {
   @override
   List<SmuflGlyph> get values => [
     {% for glyph in glyphs %}

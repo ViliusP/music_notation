@@ -2,7 +2,7 @@
 
 part of "../glyph_class.dart";
 
-class Tf_ornaments extends GlyphClass {
+class TfOrnaments extends GlyphClass {
   @override
   List<SmuflGlyph> get values => [
         SmuflGlyph.graceNoteAcciaccaturaStemUp,

@@ -2,7 +2,7 @@
 
 part of "../glyph_class.dart";
 
-class Tf_hairpins extends GlyphClass {
+class TfHairpins extends GlyphClass {
   @override
   List<SmuflGlyph> get values => [
         SmuflGlyph.dynamicCrescendoHairpin,

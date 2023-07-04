@@ -26,8 +26,8 @@ class SmuflCodeGenerator {
       trimBlocks: true,
     );
     env.filters['capitalizeFirst'] = _capitalizeFirstFilter;
-    env.filters['underscoreToCamel'] = _underscoreToCamelFilter;
     env.filters['toUnderscoreCase'] = toUnderscoreCase;
+    env.filters['normalizeClassName'] = normalizeClassName;
 
     Map<String, String> codes = {};
 
@@ -63,22 +63,6 @@ class SmuflCodeGenerator {
       return value;
     }
     return value[0].toUpperCase() + value.substring(1);
-  }
-
-  String _underscoreToCamelFilter(String value) {
-    if (value.isEmpty) {
-      return value;
-    }
-
-    var parts = value.split('_');
-    var camelCase = parts[0].toLowerCase();
-
-    for (var i = 1; i < parts.length; i++) {
-      camelCase += parts[i].substring(0, 1).toUpperCase() +
-          parts[i].substring(1).toLowerCase();
-    }
-
-    return camelCase;
   }
 
   static String toUnderscoreCase(String value) {
@@ -129,5 +113,20 @@ class SmuflCodeGenerator {
     }
 
     return result.toString().toLowerCase();
+  }
+
+  static String normalizeClassName(String value) {
+    var parts = value.split('_');
+    var normalized = '';
+
+    for (var i = 0; i < parts.length; i++) {
+      var word = parts[i];
+      if (i > 0) {
+        word = word[0].toUpperCase() + word.substring(1);
+      }
+      normalized += word;
+    }
+
+    return normalized;
   }
 }

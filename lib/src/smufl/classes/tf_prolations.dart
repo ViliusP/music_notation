@@ -2,7 +2,7 @@
 
 part of "../glyph_class.dart";
 
-class Tf_prolations extends GlyphClass {
+class TfProlations extends GlyphClass {
   @override
   List<SmuflGlyph> get values => [
         SmuflGlyph.mensuralProportionMinor,

@@ -2,7 +2,7 @@
 
 part of "../glyph_class.dart";
 
-class Tf_metronomeMarks extends GlyphClass {
+class TfMetronomeMarks extends GlyphClass {
   @override
   List<SmuflGlyph> get values => [
         SmuflGlyph.metNoteDoubleWhole,

@@ -2,7 +2,7 @@
 
 part of "../glyph_class.dart";
 
-class Tf_chordSymbols extends GlyphClass {
+class TfChordSymbols extends GlyphClass {
   @override
   List<SmuflGlyph> get values => [
         SmuflGlyph.csymDiminished,
