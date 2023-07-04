@@ -204,12 +204,12 @@ class StaffPainter extends CustomPainter {
           if (signature != null) {
             drawSmuflSymbol(
               context.canvas,
-              Offset(context.x, -5),
+              Offset(context.x, (-staffHeight / 2) - 5),
               integerToSmufl(int.parse(signature.beats)),
             );
             drawSmuflSymbol(
               context.canvas,
-              Offset(context.x, (-staffHeight / 2) - 5),
+              Offset(context.x, -5),
               integerToSmufl(int.parse(signature.beatType)),
             );
 
