@@ -1,20 +1,33 @@
 // ignore_for_file: avoid_print
 
+import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
 
-import 'package:cli/xsd_to_dart.dart';
-import 'package:xml/xml.dart';
+import 'package:cli/glyph_name.dart';
+import 'package:cli/glyph_range.dart';
+import 'package:cli/smufl_code_generator.dart';
 
-const metadataFiles = [
-  "ranges.json",
-  "glyphnames.json",
-  "classes.json",
-];
+enum Metadata {
+  range("ranges.json"),
+  glyphNames("glyphnames.json"),
+  classes("classes.json");
 
-const repo = "https://raw.githubusercontent.com/w3c/smufl/gh-pages/metadata/";
+  const Metadata(this.fileName);
+
+  final String fileName;
+  String get downloadLink => "$repo$fileName";
+  String get filePath => "$localFolder/$fileName";
+
+  static const repo =
+      "https://raw.githubusercontent.com/w3c/smufl/gh-pages/metadata/";
+
+  static const localFolder = "../tools/metadata";
+}
+
 const metaFilename = "meta.txt";
 
+/// Record current date in a provided [folder], in [metaFilename].
 Future recordDate(String folder) async {
   String formattedDate = DateTime.now().toIso8601String();
 
@@ -29,6 +42,8 @@ Future recordDate(String folder) async {
   print('Current date has been written to the $filePath: $formattedDate');
 }
 
+/// Download a file from a given [link].
+/// After downloading it, it is saved in [name] file.
 Future download(String link, String name) {
   return (HttpClient()
       .getUrl(Uri.parse(link))
@@ -64,8 +79,6 @@ bool checkFolderForOnlyFiles(String folderPath, List<String> files) {
 }
 
 /// Clears every file from provided [folderPath].
-///
-/// Returns nothing.
 void clearFolder(String folderPath) {
   Directory directory = Directory(folderPath);
 
@@ -78,74 +91,109 @@ void clearFolder(String folderPath) {
   }
 }
 
-void createFolderIfNotExists(String folderPath) {
-  var directory = Directory(folderPath);
+/// Creates a directory in [path] if it doesn't exist.
+void createFolderIfNotExists(String path) {
+  var directory = Directory(path);
 
   if (!directory.existsSync()) {
     directory.createSync(recursive: true);
-    print('Folder created: $folderPath');
+    print('Folder created: $path');
   } else {
-    print('Folder already exists: $folderPath');
+    print('Folder already exists: $path');
   }
 }
 
 Future generateCode({
   required String destination,
-  required String filePath,
 }) async {
-  final content = File(filePath).readAsStringSync();
+  Map<String, GlyphName> glyphNames = {};
+  Map<String, List<String>> classes = {};
+  Map<String, GlyphRange> glyphRange = {};
 
-  final document = XmlDocument.parse(content);
+  for (var metadata in Metadata.values) {
+    final content = File(metadata.filePath).readAsStringSync();
+    final Map<String, dynamic> json = jsonDecode(content);
 
-  XsdToDart generator = XsdToDart(document: document);
+    switch (metadata) {
+      case Metadata.glyphNames:
+        glyphNames.addEntries(
+          json.entries.map(
+            (e) => MapEntry(e.key, GlyphName.fromJson(e.key, e.value)),
+          ),
+        );
+        break;
+      case Metadata.classes:
+        json.forEach((key, value) {
+          classes[key] = List<String>.from(value);
+        });
+      case Metadata.range:
+        glyphRange.addEntries(
+          json.entries.map(
+            (e) => MapEntry(e.key, GlyphRange.fromJson(e.key, e.value)),
+          ),
+        );
 
-  final codes = await generator.generateCode();
+        break;
 
-  final folders = codes.keys.map((k) => k.split("/").first).toSet();
-
-  for (var folder in folders) {
-    final String path = "$destination/$folder";
-    createFolderIfNotExists(path);
+      default:
+    }
   }
 
-  for (var codeEntry in codes.entries) {
-    final outputFilePath = '$destination/${codeEntry.key}.dart';
+  var smuflCodeGenerator = SmuflCodeGenerator(
+    glyphName: glyphNames,
+    classes: classes,
+    glyphRange: glyphRange,
+  );
 
-    File(outputFilePath).writeAsStringSync(codeEntry.value);
+  // final document = XmlDocument.parse(content);
 
-    print('Class was generated successfully at:$outputFilePath');
-  }
+  // XsdToDart generator = XsdToDart(document: document);
+
+  // final codes = await generator.generateCode();
+
+  // final folders = codes.keys.map((k) => k.split("/").first).toSet();
+
+  // for (var folder in folders) {
+  //   final String path = "$destination/$folder";
+  //   createFolderIfNotExists(path);
+  // }
+
+  // for (var codeEntry in codes.entries) {
+  //   final outputFilePath = '$destination/${codeEntry.key}.dart';
+
+  //   File(outputFilePath).writeAsStringSync(codeEntry.value);
+
+  //   print('Class was generated successfully at:$outputFilePath');
+  // }
 }
 
 main(List<String> arguments) async {
-  const schemaFolder = '../tools/metadata';
-
   // Check if the folder contains all the required files
   bool hasAllFiles = checkFolderForOnlyFiles(
-    schemaFolder,
-    [...metadataFiles, metaFilename],
+    Metadata.localFolder,
+    [...Metadata.values.map((e) => e.fileName), metaFilename],
   );
 
   if (arguments.contains("force-read") || !hasAllFiles) {
     print("Clearing existing files");
 
-    clearFolder(schemaFolder);
+    clearFolder(Metadata.localFolder);
 
     print('Downloading latest SMuFL metadata');
 
-    for (var file in metadataFiles) {
-      print('${metadataFiles.indexOf(file)} of ${metadataFiles.length}');
-      print('Downloading: $file');
-      await download(repo + file, '$schemaFolder/$file');
+    for (var metadata in Metadata.values) {
+      print('${metadata.index} of ${Metadata.values.length}');
+      print('Downloading: ${metadata.fileName}');
+      await download(
+        metadata.downloadLink,
+        metadata.filePath,
+      );
     }
 
-    await recordDate(schemaFolder);
+    await recordDate(Metadata.localFolder);
   }
 
-  // await generateCode(
-  //   destination: '../lib/models',
-  //   filePath: "$schemaFolder/musicxml.xsd",
-  // );
+  await generateCode(destination: '../lib/src/smufl');
 
   exit(0);
 }
