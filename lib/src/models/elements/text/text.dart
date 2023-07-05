@@ -200,22 +200,27 @@ class TextFormatting extends PrintStyleAlign {
   }
 }
 
-/// Type that is used to adjust and override the Unicode bidirectional text algorithm, similar to the Directionality data category in the W3C Internationalization Tag Set recommendation.
-/// Values:
-///   - ltr (left-to-right embed);
-///   - rtl (right-to-left embed);
-///   - lro (left-to-right bidi-override);
-///   - rlo (right-to-left bidi-override).
+/// Type that is used to adjust and override the Unicode bidirectional text
+/// algorithm, similar to the Directionality data category in the W3C
+/// Internationalization Tag Set recommendation.
 ///
 /// The default value is ltr.
 ///
-/// This type is typically used by applications that store text in left-to-right visual order rather than logical order.
-///
-/// Such applications can use the lro value to better communicate with other applications that more fully support bidirectional text.
+/// This type is typically used by applications that store text in left-to-right
+/// visual order rather than logical order. Such applications can use the lro
+/// value to better communicate with other applications that more fully support\
+/// bidirectional text.
 enum TextDirection {
+  /// left-to-right embed.
   ltr,
+
+  /// right-to-left embed.
   rtl,
+
+  /// left-to-right bidi-override
   lro,
+
+  /// right-to-left bidi-override
   rlo;
 
   static TextDirection? fromString(String value) {
@@ -342,8 +347,8 @@ class TextDecoration {
         overline = NumberOfLines.none,
         lineThrough = NumberOfLines.none;
 
-  /// Builds the [TextDecoration] class instance from the provided [XmlElement].
-  /// It will throw a [MusicXmlTypeException] if invalid content is provided.
+  /// Builds the [TextDecoration] class instance from the provided [XmlElement]
+  /// attributes. It will throw a [MusicXmlTypeException] if invalid content is provided.
   factory TextDecoration.fromXml(XmlElement xmlElement) {
     return TextDecoration(
       underline: NumberOfLines.fromXml(
