@@ -236,35 +236,78 @@ class Extend implements LyricContent {
 /// The SMuFL attribute is ignored if the elision glyph is already specified by
 /// the text content. If neither text content nor a smufl attribute are present,
 /// the elision glyph is application-specific.
+///
+/// For more details go to
+/// [The \<elision\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/elision/).
 class Elision {
   // ------------------------- //
   // ------   Content   ------ //
   // ------------------------- //
-  String value;
+
+  /// The symbol used to display the elision, such as a no-break space,
+  /// underscore, or undertie.
+  final String? value;
 
   // ------------------------- //
   // ------ Attributes ------- //
   // ------------------------- //
 
-  /// Font includes:
+  /// Specifies the font. This includes:
   /// - A comma-separated list of font names;
   /// - One of the CSS sizes or a numeric point size.
   /// - Normal or italic style.
   /// - Normal or bold weight.
-  Font font;
+  final Font font;
 
-  /// Indicates the color of an element.
-  Color color;
+  /// Indicates the color of an element. If not specified, the color is
+  /// determined by the application.
+  final Color color;
 
-  /// Specifies the elision symbol to use if the element text content is empty.
-  /// It is ignored otherwise.
+  /// Specifies the SMuFL canonical glyph name that starts with "lyrics" to use
+  /// as the elision symbol if the element text content is empty. It is ignored
+  /// if the elision glyph is already specified by the text content. If neither
+  /// text content nor a smufl attribute are present, the elision glyph is application-specific.
+  final String? smufl;
+
+  static const _smuflLyricsGlyphNameRegex = r'^lyrics.*$';
 
   Elision({
-    required this.value,
-    required this.font,
-    required this.color,
-    required this.smufl,
+    this.value,
+    this.font = const Font.empty(),
+    this.color = const Color.empty(),
+    this.smufl,
   });
+
+  /// Constructs an instance of [Elision] from the provided XML element.
+  ///
+  /// It validates the content and the attributes of the element and raises a
+  /// [MusicXmlFormatException] if any of the validations fail.
+  ///
+  /// If [xmlElement] contains multiple children it throws [XmlElementContentException].
+  factory Elision.fromXml(XmlElement xmlElement) {
+    validateTextContent(xmlElement);
+
+    var content = xmlElement.innerText;
+
+    var smuflAttribute = xmlElement.getAttribute(CommonAttributes.smufl);
+
+    if (smuflAttribute != null &&
+        !RegExp(_smuflLyricsGlyphNameRegex).hasMatch(smuflAttribute)) {
+      throw MusicXmlFormatException(
+        message:
+            "'smufl' attribute in 'elision' is not smufl lyrics glyph name",
+        xmlElement: xmlElement,
+        source: smuflAttribute,
+      );
+    }
+
+    return Elision(
+      value: content.isEmpty ? null : content,
+      font: Font.fromXml(xmlElement),
+      color: Color.fromXml(xmlElement),
+      smufl: smuflAttribute,
+    );
+  }
 }
 
 /// Lyric hyphenation is indicated by the syllabic type.
