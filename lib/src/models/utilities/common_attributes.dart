@@ -1,17 +1,67 @@
 class CommonAttributes {
-  static const String printObject = "print-object";
+  static const printObject = "print-object";
 
   /// Used by these elements:
   /// - supports.
   /// - assess;
-  static const String type = "type";
+  static const type = "type";
 
-  static const String justify = "justify";
-  static const String rotation = "rotation";
-  static const String letterSpacing = "letter-spacing";
-  static const String lineHeight = "line-height";
-  static const String xmlSpace = "xml:space";
-  static const String textDirection = "dir";
-  static const String enclosureShape = "enclosure";
-  static const String smufl = "smufl";
+  static const justify = "justify";
+  static const rotation = "rotation";
+  static const letterSpacing = "letter-spacing";
+  static const lineHeight = "line-height";
+  static const xmlSpace = "xml:space";
+
+  /// Used by:
+  /// - accidental-text;
+  /// - credit-symbol;
+  /// - credit-words;
+  /// - display-text;
+  /// - footnote;
+  /// - rehearsal;
+  /// - symbol;
+  /// - text;
+  /// - words.
+  static const textDirection = "dir";
+  static const enclosureShape = "enclosure";
+  static const smufl = "smufl";
+
+  /// Used by:
+  /// - accidental-text;
+  /// - credit-symbol;
+  /// - credit-words;
+  /// - display-text;
+  /// - dynamics;
+  /// - footnote;
+  /// - rehearsal;
+  /// - symbol;
+  /// - text;
+  /// - words.
+  static const underline = "underline";
+
+  /// Used by:
+  /// - accidental-text;
+  /// - credit-symbol;
+  /// - credit-words;
+  /// - display-text;
+  /// - dynamics;
+  /// - footnote;
+  /// - rehearsal;
+  /// - symbol;
+  /// - text;
+  /// - words.
+  static const overline = "overline";
+
+  /// Used by:
+  /// - accidental-text;
+  /// - credit-symbol;
+  /// - credit-words;
+  /// - display-text;
+  /// - dynamics;
+  /// - footnote;
+  /// - rehearsal;
+  /// - symbol;
+  /// - text;
+  /// - words.
+  static const lineThrough = "line-through";
 }

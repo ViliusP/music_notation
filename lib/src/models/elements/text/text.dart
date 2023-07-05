@@ -1,12 +1,12 @@
 import 'package:collection/collection.dart';
+import 'package:xml/xml.dart';
+
 import 'package:music_notation/src/models/data_types/accidental_value.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/generic.dart';
+import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/utilities/common_attributes.dart';
 import 'package:music_notation/src/models/utilities/type_parsers.dart';
-import 'package:xml/xml.dart';
-
-import 'package:music_notation/src/models/printing.dart';
 
 abstract class TextElementBase {}
 
@@ -246,7 +246,9 @@ enum TextDirection {
       "Attribute '$attributeName' is not a text-direction value: $value";
 }
 
-/// Type that is used to specify the number of lines in text decoration attributes.
+/// Represents the number of lines used for text decoration in MusicXML.
+///
+/// It allows for up to three lines of text decoration, or none at all.
 enum NumberOfLines {
   none(0),
   one(1),
@@ -257,64 +259,117 @@ enum NumberOfLines {
 
   final int value;
 
-  static NumberOfLines fromInt(int value) {
+  /// Converts provided string value to [NumberOfLines].
+  /// Returns `null` if the value is not a valid representation of [NumberOfLines].
+  static NumberOfLines? fromString(String value) {
     switch (value) {
-      case 0:
+      case "0":
         return NumberOfLines.none;
-      case 1:
+      case "1":
         return NumberOfLines.one;
-      case 2:
+      case "2":
         return NumberOfLines.two;
-      case 3:
+      case "3":
         return NumberOfLines.three;
       default:
-        // TODO: better exception
-        throw "Invalid number of lines: $value";
+        return null;
     }
+  }
+
+  /// Constructs a [NumberOfLines] from a [XmlElement] and an [attribute].
+  /// If the attribute is not a valid representation of [NumberOfLines],
+  /// a [MusicXmlTypeException] is thrown.
+  static NumberOfLines fromXml(XmlElement xmlElement, String attribute) {
+    var rawNumberOfLines = xmlElement.getAttribute(attribute);
+    if (rawNumberOfLines == null) {
+      return NumberOfLines.none;
+    }
+
+    var numberOfLines = NumberOfLines.fromString(rawNumberOfLines);
+    if (numberOfLines == null) {
+      throw MusicXmlTypeException(
+        message: "$attribute attribute is not valid number of lines",
+        xmlElement: xmlElement,
+      );
+    }
+    return numberOfLines;
   }
 }
 
-/// Group that is based on the similar feature in XHTML and CSS.
+/// The number of lines in text decoration attributes.
 ///
-/// It allows for text to be underlined, overlined, or struck-through.
-/// It extends the CSS version by allow double or triple lines instead of just being on or off.
+/// A TextDecoration element is used to decorate text by underlining, overlining,
+/// or striking through. It can use single, double, or triple lines, extending
+/// the capabilities of similar features found in XHTML and CSS.
+///
+/// Example:
+///
+/// ```dart
+/// TextDecoration(
+///   underline: NumberOfLines.two,
+///   overline: NumberOfLines.none,
+///   lineThrough: NumberOfLines.one,
+/// );
+/// ```
 class TextDecoration {
   // ------------------------- //
   // ------ Attributes ------- //
   // ------------------------- //
 
-  /// Number of lines to use when underlining text.
-  final NumberOfLines? underline;
+  /// The number of lines to use when underlining text.
+  /// This is represented by a [NumberOfLines] instance.
+  /// Defaults to [NumberOfLines.none] if not specified.
+  final NumberOfLines underline;
 
-  /// Number of lines to use when overlining text.
-  final NumberOfLines? overline;
+  /// The number of lines to use when overlining text.
+  /// This is represented by a [NumberOfLines] instance.
+  /// Defaults to [NumberOfLines.none] if not specified.
+  final NumberOfLines overline;
 
-  /// Number of lines to use when striking through text.
-  final NumberOfLines? lineThrough;
+  /// The number of lines to use when striking through text.
+  /// This is represented by a [NumberOfLines] instance.
+  /// Defaults to [NumberOfLines.none] if not specified.
+  final NumberOfLines lineThrough;
 
-  TextDecoration({
-    this.underline,
-    this.overline,
-    this.lineThrough,
+  const TextDecoration({
+    this.underline = NumberOfLines.none,
+    this.overline = NumberOfLines.none,
+    this.lineThrough = NumberOfLines.none,
   });
 
   const TextDecoration.empty()
-      : underline = null,
-        overline = null,
-        lineThrough = null;
+      : underline = NumberOfLines.none,
+        overline = NumberOfLines.none,
+        lineThrough = NumberOfLines.none;
 
+  /// Builds the [TextDecoration] class instance from the provided [XmlElement].
+  /// It will throw a [MusicXmlTypeException] if invalid content is provided.
   factory TextDecoration.fromXml(XmlElement xmlElement) {
-    var underline =
-        int.tryParse(xmlElement.getAttribute('underline') ?? "0") ?? 0;
-    var overline =
-        int.tryParse(xmlElement.getAttribute('overline') ?? "0") ?? 0;
-    var lineThrough =
-        int.tryParse(xmlElement.getAttribute('line-through') ?? "0") ?? 0;
-
     return TextDecoration(
-      underline: NumberOfLines.fromInt(underline),
-      overline: NumberOfLines.fromInt(overline),
-      lineThrough: NumberOfLines.fromInt(lineThrough),
+      underline: NumberOfLines.fromXml(
+        xmlElement,
+        CommonAttributes.underline,
+      ),
+      overline: NumberOfLines.fromXml(
+        xmlElement,
+        CommonAttributes.overline,
+      ),
+      lineThrough: NumberOfLines.fromXml(
+        xmlElement,
+        CommonAttributes.lineThrough,
+      ),
+    );
+  }
+
+  TextDecoration copyWith({
+    NumberOfLines? underline,
+    NumberOfLines? overline,
+    NumberOfLines? lineThrough,
+  }) {
+    return TextDecoration(
+      underline: underline ?? this.underline,
+      overline: overline ?? this.overline,
+      lineThrough: lineThrough ?? this.lineThrough,
     );
   }
 }
