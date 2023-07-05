@@ -89,54 +89,49 @@ class TextFormatting extends PrintStyleAlign {
   // ------ Attributes ------- //
   // ------------------------- //
 
-  /// Indicates left, center, or right justification.
+  /// Indicates left, center, or right justification. The default value varies
+  /// for different elements.
   ///
-  /// The default value varies for different elements.
-  ///
-  /// For elements where the justify attribute is present but the halign attribute is not,
-  /// the justify attribute indicates horizontal alignment as well as justification.
+  /// For elements where the justify attribute is present but the halign
+  /// attribute is not, the justify attribute indicates horizontal alignment
+  /// as well as justification.
   HorizontalAlignment? justify;
 
   /// For definition, look at: [TextDecoration].
   TextDecoration textDecoration;
 
-  /// Used to rotate text around the alignment point specified by the halign and valign attributes.
-  ///
-  /// Positive values are clockwise rotations, while negative values are counter-clockwise rotations.
+  /// Used to rotate text around the alignment point specified by the halign
+  /// and valign attributes. Positive values are clockwise rotations, while
+  /// negative values are counter-clockwise rotations.
   double? textRotation;
 
   /// The letter-spacing attribute specifies text tracking.
   ///
-  /// Values are either "normal" or a number representing the number of ems to add between each letter.
+  /// Values are either "normal" or a number representing the number of ems to
+  /// add between each letter. The number may be negative in order to subtract space.
   ///
-  /// The number may be negative in order to subtract space.
-  ///
-  /// The default is normal, which allows flexibility of letter-spacing for purposes of text justification.
-  ///
-  /// Null value means normal.
+  /// The default is normal (`null`), which allows flexibility of letter-spacing for
+  /// purposes of text justification.
   double? letterSpacing;
 
   /// The line-height attribute specifies text leading.
   ///
-  /// Values are either "normal" or a number representing the percentage of the current font height to use for leading.
+  /// Values are either "normal" or a number representing the percentage of the
+  /// current font height to use for leading. The default is "normal"(`null`).
   ///
-  /// The default is "normal".
-  ///
-  /// The exact normal value is implementation-dependent, but values between 100 and 120 are recommended.
-  ///
-  /// Null value means normal.
+  /// The exact normal value is implementation-dependent, but values between
+  /// 100 and 120 are recommended.
   double? lineHeight;
 
-  /// Specifies the language used in the element content.
-  ///
-  /// It is Italian ("it") if not specified.
+  /// Specifies the language used in the element content. It is Italian ("it")
+  /// if not specified.
   String? lang;
 
   ///Indicates whether white space should be preserved by applications.
   XmlSpace? space;
 
-  /// Attribute that is used to adjust and override the Unicode bidirectional text algorithm,
-  /// similar to the Directionality data category in the
+  /// Attribute that is used to adjust and override the Unicode bidirectional
+  /// text algorithm, similar to the Directionality data category in the
   /// [W3C Internationalization Tag Set recommendation](https://www.w3.org/TR/2007/REC-its-20070403/#directionality).
   ///
   /// The default value is ltr. This attribute is typically used by applications
@@ -200,35 +195,55 @@ class TextFormatting extends PrintStyleAlign {
   }
 }
 
-/// Type that is used to adjust and override the Unicode bidirectional text
+/// Enum representation for the `TextDirection` type used in MusicXML.
+///
+/// This type is used to adjust and override the Unicode bidirectional text
 /// algorithm, similar to the Directionality data category in the W3C
 /// Internationalization Tag Set recommendation.
 ///
-/// The default value is ltr.
+/// The default value is [TextDirection.ltr]. This type is typically used by
+/// applications that store text in left-to-right visual order rather than
+/// logical order. Such applications can use the [TextDirection.lro] value to better
+/// communicate with other applications that more fully support bidirectional text.
 ///
-/// This type is typically used by applications that store text in left-to-right
-/// visual order rather than logical order. Such applications can use the lro
-/// value to better communicate with other applications that more fully support\
-/// bidirectional text.
+/// For more details go to
+/// [text-direction data type | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/data-types/text-direction/).
 enum TextDirection {
-  /// left-to-right embed.
+  /// Represents left-to-right text embedding. This is the default.
   ltr,
 
-  /// right-to-left embed.
+  /// Represents right-to-left text embedding.
   rtl,
 
-  /// left-to-right bidi-override
+  /// Represents left-to-right override. This is used to force left-to-right display in bidirectional text.
   lro,
 
-  /// right-to-left bidi-override
+  /// Represents right-to-left override. This is used to force right-to-left display in bidirectional text.
   rlo;
 
+  /// Converts a string representation of text direction to an instance of this enum.
+  ///
+  /// Returns null if the provided string doesn't match any known text direction.
+  ///
+  /// Example:
+  ///
+  /// ```dart
+  /// var direction = TextDirection.fromString("ltr"); // returns TextDirection.ltr
+  /// ```
   static TextDirection? fromString(String value) {
     return TextDirection.values.firstWhereOrNull(
       (element) => element.name == value,
     );
   }
 
+  /// Extracts the text direction value from a provided [XmlElement].
+  ///
+  /// The method reads the `dir` attribute from the provided [XmlElement],
+  /// and converts it to a [TextDirection] instance. If the conversion is
+  /// successful, it returns this instance.
+  ///
+  /// If the attribute is present but doesn't match any known text direction,
+  /// the method throws a [MusicXmlFormatException] with a detailed error message.
   static TextDirection? fromXml(XmlElement xmlElement) {
     String? rawValue = xmlElement.getAttribute(CommonAttributes.textDirection);
     TextDirection? value = fromString(
@@ -247,13 +262,20 @@ enum TextDirection {
     return value;
   }
 
-  static String generateValidationError(String attributeName, String value) =>
-      "Attribute '$attributeName' is not a text-direction value: $value";
+  /// Generates a validation error message for invalid text direction values.
+  ///
+  /// The error message includes [attribute] name causing the error and its
+  /// invalid [value].
+  static String generateValidationError(String attribute, String value) =>
+      "Attribute '$attribute' is not a text-direction value: $value";
 }
 
 /// Represents the number of lines used for text decoration in MusicXML.
 ///
 /// It allows for up to three lines of text decoration, or none at all.
+///
+/// For more details go to
+/// [number-of-lines data type | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/data-types/number-of-lines/).
 enum NumberOfLines {
   none(0),
   one(1),

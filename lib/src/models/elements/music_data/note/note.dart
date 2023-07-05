@@ -541,27 +541,23 @@ sealed class NoteForm {
 /// such as unpitched percussion and speaking voice. If the child elements are
 /// not present, the note is placed on the middle line of the staff.
 ///
-/// This is generally used with a one-line staff.
-/// Notes in percussion clef should always use an unpitched element rather than a pitch element.
+/// This is generally used with a one-line staff. Notes in percussion clef
+/// should always use an unpitched element rather than a pitch element.
 class Unpitched implements NoteForm {
-  /// Yhe sequence of elements used by both the rest and unpitched elements.
-  /// This group is used to place rests and unpitched elements on the staff
-  /// without implying that these elements have pitch. Positioning follows the
-  /// current clef. If percussion clef is used, the [displayStep] and [displayOctave]
-  /// elements are interpreted as if in treble clef, with a G in octave 4 on line 2.
+  /// Specifies the line of the staff on which the rest should be displayed,
+  /// in terms of musical pitch steps (A, B, C, D, E, F, G).
+  /// For instance, a `displayStep` of `Step.B` would mean the rest should be displayed
+  /// on the line corresponding to the pitch B in the current clef.
   Step displayStep;
 
   @override
   Step get step => displayStep;
 
-  /// Octaves are represented by the numbers 0 to 9, where 4 indicates the octave started by middle C.
-  ///
-  /// The display-step-octave group contains the sequence of elements used by
-  /// both the rest and unpitched elements.This group is used to place rests
-  /// and unpitched elements on the staff without implying that these elements have pitch.
-  /// Positioning follows the current clef. If percussion clef is used,
-  /// the [displayStep] and [displayOctave] elements are interpreted as if in
-  /// treble clef, with a G in octave 4 on line 2.
+  /// Specifies the octave of the rest for display purposes. Octaves are
+  /// represented by the numbers 0 to 9, where 4 indicates the octave started
+  /// by middle C. So, if `displayOctave` is 4, the rest should be displayed
+  /// in the same vertical position as a note in the middle C octave
+  /// would be in the current clef.
   int displayOctave;
 
   @override

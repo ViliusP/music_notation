@@ -161,14 +161,36 @@ class Nmtoken {
       "Attribute '$attributeName' is not a valid NMTOKEN: $value";
 }
 
-/// The rotation-degrees type specifies rotation, pan, and elevation values in degrees.
-/// Values range from -180 to 180.
+/// Represents the rotation, pan, and elevation values in degrees
+/// as specified in MusicXML. These values typically range from `-180` to `180` degrees.
+///
+/// The class also provides functionality for validating and parsing these rotation values.
+///
+/// For more details go to
+/// [rotation-degrees data type | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/data-types/rotation-degrees/).
 class RotationDegrees {
-  /// Return true if [value] is between -180 (inclusive) and 180 (inclusive).
+  /// Checks if a rotation value is within the valid range.
+  ///
+  /// Returns `true` if the provided [value] lies within the range of -180 to 180 (inclusive), `false` otherwise.
+  ///
+  /// Example:
+  ///
+  /// ```dart
+  /// bool isValid = RotationDegrees.isValid(-90); // returns true
+  /// ```
   static bool isValid(double value) {
     return value >= -180 && value <= 180;
   }
 
+  /// Parses a rotation value from a given [XmlElement].
+  ///
+  /// The method reads the `rotation` attribute from the provided [XmlElement],
+  /// attempts to parse it into a `double`, and validates the parsed value.
+  /// If the parsing is successful and the parsed value is a valid rotation
+  /// degree, it returns this value.
+  ///
+  /// If the parsing fails or the parsed value is not within the valid range,
+  /// the method throws a [MusicXmlFormatException] with a detailed error message.
   static double? fromXml(XmlElement xmlElement) {
     String? rawRotation = xmlElement.getAttribute(CommonAttributes.rotation);
     if (rawRotation == null) {
@@ -188,8 +210,12 @@ class RotationDegrees {
     return rotation;
   }
 
-  static String generateValidationError(String attributeName, String value) =>
-      "Attribute '$attributeName' is not valid rotation degree: $value";
+  /// Generates a validation error message for invalid rotation values.
+  ///
+  /// The error message includes the name of the [attribute] causing the error
+  /// and its invalid [value].
+  static String generateValidationError(String attribute, String value) =>
+      "Attribute '$attribute' is not valid rotation degree: $value";
 }
 
 /// The [NumberOrNormal] values can be either a decimal number or the string "normal".
@@ -197,6 +223,9 @@ class RotationDegrees {
 /// This is used by the line-height and letter-spacing attributes.
 ///
 /// The "normal" value is represented as null.
+///
+/// For more details go to
+/// [number-or-normal data type | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/data-types/number-or-normal/).
 class NumberOrNormal {
   static double? fromXml(XmlElement xmlElement, String attributeName) {
     String? rawNumberOrNormal = xmlElement.getAttribute(

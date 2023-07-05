@@ -142,10 +142,10 @@ class _LyricContentNames {
 
 abstract class LyricContent {}
 
-/// The laughing element represents a laughing voice.
+/// Represents a laughing voice
 class EmptyLaughing extends LyricContent {}
 
-/// The humming element represents a humming voice.
+/// Represents a humming voice.
 class EmptyHumming extends LyricContent {}
 
 class LyricSequence extends LyricContent {
@@ -192,19 +192,31 @@ class ElisionSyllabicText {
   });
 }
 
-/// The extend type represents lyric word extension / melisma lines as well as figured bass extensions.
+/// Represents an Extend element in MusicXML.
 ///
-/// The optional type and position attributes are added in Version 3.0 to provide better formatting control.
-class Extend extends LyricContent {
+/// An Extend element is used to indicate a word extension or melisma in lyrics,
+/// or an extension of a figured bass notation.
+///
+/// The word extensions or melisma lines in lyrics occur when a single syllable
+/// of a word in a lyric extends, or is sung across, more than one note. Similarly,
+/// figured bass extensions occur when the same number is implied over several changes of harmony.
+///
+/// For more details go to
+/// [The \<extend\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/extend/)
+class Extend implements LyricContent {
   // ------------------------- //
   // ------ Attributes ------- //
   // ------------------------- //
-  Position position;
-  Color color;
+  /// The position of this. It can be used to explicitly control element's
+  /// vertical and horizontal positions.
+  final Position position;
+
+  /// The color for visual highlights or analysis purposes.
+  final Color color;
 
   Extend({
-    required this.position,
-    required this.color,
+    this.position = const Position.empty(),
+    this.color = const Color.empty(),
   });
 
   factory Extend.fromXml(XmlElement xmlElement) {
@@ -215,17 +227,15 @@ class Extend extends LyricContent {
   }
 }
 
-/// The elision type represents an elision between lyric syllables.
+/// An elision between lyric syllables. The text content specifies the symbol
+/// used to display the elision. Common values are a no-break space (Unicode 00A0),
+/// an underscore (Unicode 005F), or an undertie (Unicode 203F).
 ///
-/// The text content specifies the symbol used to display the elision.
-///
-/// Common values are a no-break space (Unicode 00A0), an underscore (Unicode 005F), or an undertie (Unicode 203F).
-///
-/// If the text content is empty, the smufl attribute is used to specify the symbol to use. Its value is a SMuFL canonical glyph name that starts with lyrics.
-///
-/// The SMuFL attribute is ignored if the elision glyph is already specified by the text content.
-///
-/// If neither text content nor a smufl attribute are present, the elision glyph is application-specific.
+/// If the text content is empty, the smufl attribute is used to specify the
+/// symbol to use. Its value is a SMuFL canonical glyph name that starts with lyrics.
+/// The SMuFL attribute is ignored if the elision glyph is already specified by
+/// the text content. If neither text content nor a smufl attribute are present,
+/// the elision glyph is application-specific.
 class Elision {
   // ------------------------- //
   // ------   Content   ------ //
@@ -246,8 +256,8 @@ class Elision {
   /// Indicates the color of an element.
   Color color;
 
-  /// smufl-lyrics-glyph-name
-  String smufl;
+  /// Specifies the elision symbol to use if the element text content is empty.
+  /// It is ignored otherwise.
 
   Elision({
     required this.value,
@@ -258,19 +268,25 @@ class Elision {
 }
 
 /// Lyric hyphenation is indicated by the syllabic type.
-///
-/// The single, begin, end, and middle values represent single-syllable words, word-beginning syllables, word-ending syllables, and mid-word syllables, respectively.
 enum Syllabic {
+  /// Single-syllable words.
   single,
+
+  /// Word-beginning syllables.
   begin,
+
+  /// Word-ending syllables.
   end,
+
+  /// Mid-word syllables
   middle;
 }
 
-/// The text-element-data type represents a syllable or portion of a syllable for lyric text underlay.
+/// A syllable or portion of a syllable for lyric text underlay.
 ///
 /// A hyphen in the string content should only be used for an actual hyphenated word.
-/// Language names for text elements come from ISO 639, with optional country subcodes from ISO 3166.
+/// Language names for text elements come from ISO 639, with optional country
+/// subcodes from ISO 3166.
 class TextElementData {
   // ------------------------- //
   // ------   Content   ------ //

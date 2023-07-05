@@ -12,11 +12,17 @@ import 'package:music_notation/src/models/elements/offset.dart';
 /// the end of a wedge followed by dynamics, etc.
 ///
 /// For applications where a specific direction is indeed attached to a specific note,
-/// the direction element can be associated with the first note element that follows it in score order that is not in a different voice.
+/// the direction element can be associated with the first note element that
+/// follows it in score order that is not in a different voice.
 ///
-/// By default, a series of direction-type elements and a series of child elements of a direction-type within a single direction element follow one another in sequence visually.
+/// By default, a series of direction-type elements and a series of child elements
+/// of a direction-type within a single direction element follow one another in sequence visually.
 ///
-/// For a series of direction-type children, non-positional formatting attributes are carried over from the previous element by default.
+/// For a series of direction-type children, non-positional formatting attributes
+/// are carried over from the previous element by default.
+///
+/// For more details go to
+/// [The \<direction\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/direction/).
 class Direction implements MusicDataElement {
   // ------------------------- //
   // ------   Content   ------ //
@@ -85,8 +91,8 @@ class Direction implements MusicDataElement {
 }
 
 /// Textual direction types may have more than 1 component due to multiple fonts.
-///
 /// The dynamics element may also be used in the notations element.
 ///
-/// Attribute groups related to print suggestions apply to the individual direction-type, not to the overall direction.
+/// Attribute groups related to print suggestions apply to the individual
+/// direction-type, not to the overall direction.
 abstract class DirectionType {}
