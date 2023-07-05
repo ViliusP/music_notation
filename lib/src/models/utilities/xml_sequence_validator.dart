@@ -75,6 +75,34 @@ void validateTextContent(XmlElement? element) {
   }
 }
 
+/// Validates that the provided [element] is empty.
+/// If the element contains  multiple children (e.g., nested elements),
+/// an [XmlElementContentException] is thrown.
+///
+/// If the provided [XmlElement] [element] is null, the method does nothing and returns.
+///
+/// Example usage:
+/// ```dart
+/// XmlElement emptyElement = parse('<element></element>');
+/// validateEmptyContent(emptyElement); // Does nothing
+///
+/// XmlElement elementWithText = parse('<element>Single text content</element>');
+/// validateEmptyContent(elementWithText); // Throws XmlElementContentException
+///
+/// XmlElement elementWithMultipleChildren = parse('<element><child1 /><child2 /></element>');
+/// validateEmptyContent(elementWithMultipleChildren); // Throws XmlElementContentException
+/// ```
+void validateEmptyContent(XmlElement? element) {
+  if (element != null &&
+      element.childElements.isNotEmpty == true &&
+      element.innerText.isNotEmpty) {
+    throw XmlElementContentException(
+      message: "${element.localName} element must be empty",
+      xmlElement: element,
+    );
+  }
+}
+
 /// Recursively concatenates the names of XML elements and nested elements.
 ///
 /// Returns a string containing the concatenated names.
