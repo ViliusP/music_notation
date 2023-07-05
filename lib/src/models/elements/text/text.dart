@@ -635,21 +635,21 @@ class FontSize {
 class Color {
   final String? value;
 
+  static const _colorRegex = r'^#[\dA-F]{6}([\dA-F][\dA-F])?$';
+
   Color({this.value});
 
   const Color.empty() : value = null;
 
   factory Color.fromXml(XmlElement xmlElement) {
     String? colorValue = xmlElement.getAttribute('color');
-    if (colorValue != null) {
-      // Verify the color value format with a regex pattern
-      bool isValid = RegExp(r'^#[\dA-F]{6}([\dA-F][\dA-F])?$').hasMatch(
-        colorValue,
+    // Verify the color value format with a regex pattern
+    if (colorValue != null && !RegExp(_colorRegex).hasMatch(colorValue)) {
+      throw MusicXmlFormatException(
+        message: "Invalid color value: $colorValue",
+        xmlElement: xmlElement,
+        source: colorValue,
       );
-      if (!isValid) {
-        /// TODO exception
-        throw Exception("Invalid color value: $colorValue");
-      }
     }
     return Color(value: colorValue);
   }
