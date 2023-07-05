@@ -282,7 +282,7 @@ enum Syllabic {
   middle;
 }
 
-/// A syllable or portion of a syllable for lyric text underlay.
+/// Represents a syllable or portion of a syllable for lyric text underlay in MusicXML.
 ///
 /// A hyphen in the string content should only be used for an actual hyphenated word.
 /// Language names for text elements come from ISO 639, with optional country
@@ -292,13 +292,14 @@ class TextElementData {
   // ------   Content   ------ //
   // ------------------------- //
 
+  /// The syllable or portion of a syllable represented by this object.
   String value;
 
   // ------------------------- //
   // ------ Attributes ------- //
   // ------------------------- //
 
-  /// Font includes:
+  /// Specifies the font. This includes:
   /// - A comma-separated list of font names;
   /// - One of the CSS sizes or a numeric point size.
   /// - Normal or italic style.
@@ -308,39 +309,71 @@ class TextElementData {
   /// Indicates the color of an element.
   Color color;
 
+  /// Specifies the decoration (like underline, overline, strike-through).
   TextDecoration decoration;
 
-  /// The rotation attribute is used to rotate text around the alignment point specified by the halign and valign attributes.
+  /// Specifies the rotation of the text element around the alignment point.
   ///
-  /// Positive values are clockwise rotations, while negative values are counter-clockwise rotations.
-  ///
-  /// type of "text-rotation" -> "rotation-degrees".
-  ///
-  /// Minimum -180.
-  /// Maximum 180.
-  double? textRotation;
+  /// Positive values are clockwise rotations, while negative values are
+  /// counter-clockwise rotations. The value should be between `-180` and `180` degrees.
+  double? rotation;
 
-  /// Specifies text tracking. Values are either normal,
-  /// which allows flexibility of letter-spacing for purposes of text justification
-  /// or a number representing the number of ems to add between each letter.
+  /// Specifies the tracking (spacing between letters) of the text element.
   ///
-  /// The number may be negative in order to subtract space. The value is normal if not specified.
+  /// Values are either normal, which allows flexibility of letter-spacing f
+  /// or purposes of text justification, or a number representing the number of
+  /// ems to add between each letter.
   ///
-  /// Null means "normal".
+  /// The number may be negative in order to subtract space. If not specified,
+  /// the value is considered normal.
   double? letterSpacing;
 
+  /// The language, according to ISO 639 with optional country subcodes from ISO 3166.
   String? lang;
 
+  /// The direction of the text, overriding the Unicode bidirectional text algorithm.
   TextDirection? direction;
 
   TextElementData({
     required this.value,
-    required this.font,
-    required this.color,
-    required this.decoration,
-    this.textRotation,
+    this.font = const Font.empty(),
+    this.color = const Color.empty(),
+    this.decoration = const TextDecoration.empty(),
+    this.rotation,
     this.letterSpacing,
     this.lang,
     this.direction,
   });
+
+  /// Creates a [TextElementData] instance from an [XmlElement].
+  ///
+  /// Validates the content of the [XmlElement], and if it's not empty,
+  /// assigns it to [value] and extracts all other properties from the attributes of [XmlElement].
+  ///
+  /// Throws [XmlElementContentException] if the content of the [XmlElement] is empty.
+  factory TextElementData.fromXml(XmlElement xmlElement) {
+    validateTextContent(xmlElement);
+
+    var content = xmlElement.innerText;
+    if (content.isEmpty) {
+      throw XmlElementContentException(
+        message: "'text' element content cannot be empty",
+        xmlElement: xmlElement,
+      );
+    }
+
+    return TextElementData(
+      value: content,
+      font: Font.fromXml(xmlElement),
+      color: Color.fromXml(xmlElement),
+      decoration: TextDecoration.fromXml(xmlElement),
+      rotation: RotationDegrees.fromXml(xmlElement),
+      letterSpacing: NumberOrNormal.fromXml(
+        xmlElement,
+        CommonAttributes.letterSpacing,
+      ),
+      lang: xmlElement.getAttribute("xml:lang"),
+      direction: TextDirection.fromXml(xmlElement),
+    );
+  }
 }
