@@ -211,14 +211,14 @@ class Position {
 
   factory Position.fromXml(XmlElement xmlElement) {
     return Position(
-      defaultX: _positionElementFromXml(xmlElement, 'default-x'),
-      defaultY: _positionElementFromXml(xmlElement, 'default-y'),
-      relativeX: _positionElementFromXml(xmlElement, 'relative-x'),
-      relativeY: _positionElementFromXml(xmlElement, 'relative-y'),
+      defaultX: _positionAttributeFromXml(xmlElement, 'default-x'),
+      defaultY: _positionAttributeFromXml(xmlElement, 'default-y'),
+      relativeX: _positionAttributeFromXml(xmlElement, 'relative-x'),
+      relativeY: _positionAttributeFromXml(xmlElement, 'relative-y'),
     );
   }
 
-  static double? _positionElementFromXml(
+  static double? _positionAttributeFromXml(
     XmlElement xmlElement,
     String attribute,
   ) {

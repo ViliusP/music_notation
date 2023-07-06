@@ -76,6 +76,9 @@ class BeamLevel {
 ///
 /// The [NumberLevel] class handles values from 1 (default) to 16 as per the
 /// MusicXML specification.
+///
+/// For more details go to
+/// [wedge-type data type | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/data-types/wedge-type/).
 class NumberLevel {
   static const int _min = 1;
   static const int _max = 16;
