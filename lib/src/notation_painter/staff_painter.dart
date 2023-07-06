@@ -79,25 +79,27 @@ class StaffPainter extends CustomPainter {
   }) {
     switch (note) {
       case RegularNote _:
-        double offsetY = _calculateNoteOffsetY(note.form);
-        drawSmuflSymbol(
-          context.canvas,
-          Offset(context.x, offsetY),
-          NoteHeadSmufl.getSmuflSymbol(note.type!.value),
-        );
-        var additionalLines = ledgerLines(note.form);
-        if (additionalLines != null) {
-          _paintLedgerLines(
-            canvas: context.canvas,
-            count: additionalLines.count,
-            placement: additionalLines.placement,
-            positionX: context.x,
+        if (note.type != null) {
+          double offsetY = _calculateNoteOffsetY(note.form);
+          drawSmuflSymbol(
+            context.canvas,
+            Offset(context.x, offsetY),
+            NoteHeadSmufl.getSmuflSymbol(note.type!.value),
           );
+          var additionalLines = ledgerLines(note.form);
+          if (additionalLines != null) {
+            _paintLedgerLines(
+              canvas: context.canvas,
+              count: additionalLines.count,
+              placement: additionalLines.placement,
+              positionX: context.x,
+            );
+          }
+          context.x += 40;
         }
-        context.x += 40;
-
         break;
       default:
+        break;
     }
   }
 

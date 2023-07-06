@@ -266,28 +266,25 @@ class Note implements MusicDataElement {
     }
 
     // ---- Type ----
-    XmlElement? typeElement = xmlElement.getElement("type");
-    NoteType? type = typeElement != null ? NoteType.fromXml(typeElement) : null;
+    var typeElement = xmlElement.getElement("type");
+    var type = typeElement != null ? NoteType.fromXml(typeElement) : null;
 
     // ---- Accidental ----
-    XmlElement? accidentalElement = xmlElement.getElement("accidental");
-    Accidental? accidental = accidentalElement != null
+    var accidentalElement = xmlElement.getElement("accidental");
+    var accidental = accidentalElement != null
         ? Accidental.fromXml(accidentalElement)
         : null;
 
-    // --- Time-modification ----
-    XmlElement? timeModificationElement = xmlElement.getElement(
+    // ---- Time-modification ----
+    var timeModificationElement = xmlElement.getElement(
       "time-modification",
     );
-    TimeModification? timeModification = timeModificationElement != null
+    var timeModification = timeModificationElement != null
         ? TimeModification.fromXml(timeModificationElement)
         : null;
-
-    // XmlElement? maybeStemElement = xmlElement.findElements("stem").firstOrNull;
-    // Stem? stem;
-    // if (maybeStemElement != null) {
-    //   stem = Stem.fromXml(maybeStemElement);
-    // }
+    // ---- Stem ----
+    var maybeStemElement = xmlElement.getElement("stem");
+    var stem = maybeStemElement != null ? Stem.fromXml(maybeStemElement) : null;
 
     // XmlElement? maybeNoteheadElement =
     //     xmlElement.findElements("notehead").firstOrNull;
@@ -319,8 +316,9 @@ class Note implements MusicDataElement {
     // Iterable<XmlElement> beamElements = xmlElement.findElements("beam");
     // List<Beam> beams = beamElements.map((e) => Beam.fromXml(e)).toList();
 
-    // Iterable<XmlElement> lyricsElements = xmlElement.findElements("lyrics");
-    // List<Lyric> lyrics = lyricsElements.map((e) => Lyric.fromXml(e)).toList();
+    // ---- lyrics ----
+    var lyricsElements = xmlElement.findElements("lyrics");
+    var lyrics = lyricsElements.map((e) => Lyric.fromXml(e)).toList();
 
     // XmlElement? playElement = xmlElement.findElements("play").firstOrNull;
     // Play? play;
@@ -347,17 +345,18 @@ class Note implements MusicDataElement {
     // }
 
     Note noteBase = Note._(
+      // --- Content ---
       form: NoteForm._fromXml(xmlElement),
       editorialVoice: EditorialVoice.fromXml(xmlElement),
       type: type,
       accidental: accidental,
       timeModification: timeModification,
-      // stem: stem,
+      stem: stem,
       // notehead: notehead,
       // noteheadText: noteheadText,
       staff: staff,
       // beams: beams,
-      // lyrics: lyrics,
+      lyrics: lyrics,
       // play: play,
       // listen: listen,
       // --- Attributes ---
