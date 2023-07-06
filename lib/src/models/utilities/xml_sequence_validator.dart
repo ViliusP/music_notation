@@ -94,8 +94,8 @@ void validateTextContent(XmlElement? element) {
 /// ```
 void validateEmptyContent(XmlElement? element) {
   if (element != null &&
-      element.childElements.isNotEmpty == true &&
-      element.innerText.isNotEmpty) {
+      (element.childElements.isNotEmpty == true ||
+          element.innerText.isNotEmpty)) {
     throw XmlElementContentException(
       message: "${element.localName} element must be empty",
       xmlElement: element,

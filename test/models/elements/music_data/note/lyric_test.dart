@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:music_notation/src/models/data_types/start_stop.dart';
 import 'package:music_notation/src/models/elements/music_data/note/lyric.dart';
 import 'package:music_notation/src/models/elements/text/text.dart';
+import 'package:music_notation/src/models/exceptions.dart';
 import 'package:xml/xml.dart';
 
 void main() {
@@ -73,5 +75,42 @@ void main() {
         throwsA(isA<XmlElementContentException>()),
       );
   });
+  });
+  group("Extend", () {
+    test("should parse from '<assess> and <player>' example", () {
+      String input = '''
+        <extend type="start"/>
+      ''';
+
+      var extend = Extend.fromXml(XmlDocument.parse(input).rootElement);
+      expect(extend.type, StartStopContinue.start);
+
+      // Attributes
+      expect(extend.color.value, isNull);
+      expect(extend.position.defaultX, isNull);
+      expect(extend.position.defaultY, isNull);
+      expect(extend.position.relativeX, isNull);
+      expect(extend.position.relativeY, isNull);
+    });
+    test("parsing should should throw on text content", () {
+      String input = '''
+        <extend type="start">foo</extend>
+      ''';
+
+      expect(
+        () => Extend.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(isA<XmlElementContentException>()),
+      );
+    });
+    test("parsing should should throw on invalid content", () {
+      String input = '''
+        <extend type="start"><foo/></extend>
+      ''';
+
+      expect(
+        () => Extend.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(isA<XmlElementContentException>()),
+      );
+    });
   });
 }

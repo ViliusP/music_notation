@@ -214,15 +214,27 @@ class Extend implements LyricContent {
   /// The color for visual highlights or analysis purposes.
   final Color color;
 
-  Extend({
+  /// Indicates if this is the start, stop, or continuation of the extension.
+  /// Before Version 3.0 this attribute was not available, and an [Extend] was
+  /// always treated as the start of the extension.
+  final StartStopContinue? type;
+
+  const Extend({
     this.position = const Position.empty(),
     this.color = const Color.empty(),
+    this.type,
   });
 
+  /// Factory constructor to build the [Extend] instance from the provided [XmlElement].
+  ///
+  /// The XmlElement must be validated for empty content before passing to this constructor.
+  /// It will throw a [XmlElementContentException] if invalid content is provided.
   factory Extend.fromXml(XmlElement xmlElement) {
+    validateEmptyContent(xmlElement);
     return Extend(
-      color: Color(),
-      position: Position(),
+      color: Color.fromXml(xmlElement),
+      position: Position.fromXml(xmlElement),
+      type: StartStopContinue.fromXml(xmlElement, false),
     );
   }
 }
