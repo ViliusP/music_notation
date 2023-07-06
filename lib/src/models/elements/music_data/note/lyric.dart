@@ -1,77 +1,79 @@
+import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/data_types/placement.dart';
+import 'package:music_notation/src/models/data_types/start_stop.dart';
 import 'package:music_notation/src/models/elements/editorial.dart';
 import 'package:music_notation/src/models/exceptions.dart';
+import 'package:music_notation/src/models/utilities/common_attributes.dart';
+import 'package:music_notation/src/models/utilities/type_parsers.dart';
+import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/generic.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/elements/text/text.dart';
 
-/// The lyric type represents text underlays for lyrics.
+/// The text underlays for lyrics in MusicXML.
 ///
-/// Two text elements that are not separated by an elision element are part of the same syllable,
-/// but may have different text formatting.
+/// Lyrics are matched with notes in the order they are provided, regardless
+/// of the lyric number. Lyrics can contain text, elision and syllabic elements.
 ///
-/// The MusicXML XSD is more strict than the DTD in enforcing this
-/// by disallowing a second syllabic element unless preceded by an elision element.
+/// If not otherwise specified:
+/// - The justify value is center.
+/// - The placement value is below.
+/// - The valign value is baseline.
+/// - The halign value matches the justify value.
 ///
-/// The lyric number indicates multiple lines, though a name can be used as well.
-/// Common name examples are verse and chorus.
-///
-/// Justification is center by default; placement is below by default.
-/// Vertical alignment is to the baseline of the text and horizontal alignment matches justification.
-///
-/// The print-object attribute can override a note's print-lyric attribute in cases where only some lyrics on a note are printed,
-/// as when lyrics for later verses are printed in a block of text rather than with each note.
-///
-/// The time-only attribute precisely specifies which lyrics are to be sung which time through a repeated section.
+/// For more details go to
+/// [The \<lyric\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/lyric/).
 class Lyric {
   // ------------------------- //
   // ------   Content   ------ //
   // ------------------------- //
+  /// Contains the main content of the lyric, which may include text, syllabic
+  /// information, and lyric extender lines.
   LyricContent content;
 
-  Editorial? editorial;
+  /// Provides editorial and related information.
+  Editorial editorial;
 
-  /// The end-line element comes from RP-017 for Standard MIDI File Lyric meta-events.
-  ///
-  /// It facilitates lyric display for Karaoke and similar applications.
+  /// Indicates the end of a line of lyrics, which is used in Karaoke and other
+  /// applications. This field originates from RP-017 for Standard MIDI File
+  /// Lyric meta-events.
   Empty? endLine;
 
-  /// The end-paragraph element comes from RP-017 for Standard MIDI File Lyric meta-events.
-  ///
-  /// It facilitates lyric display for Karaoke and similar applications.
+  /// Indicates the end of a paragraph of lyrics, which is used in Karaoke and
+  /// other applications. This field originates from RP-017 for Standard MIDI
+  /// File Lyric meta-events.
   Empty? endParagraph;
 
   // ------------------------- //
   // ------ Attributes ------- //
   // ------------------------- //
 
-  /// Specifies the lyric line when multiple lines are present.
+  /// Specifies the lyric line number when multiple lines are present.
   String? number;
 
-  /// Indicates the name of the lyric type. Common examples are verse and chorus.
+  /// Indicates the type of the lyric (e.g., verse or chorus).
   String? name;
 
-  /// Indicates left, center, or right justification.
-  ///
-  /// The default value varies for different elements.
-  ///
-  /// For elements where the justify attribute is present but the halign attribute is not,
-  /// the justify attribute indicates horizontal alignment as well as justification.
+  /// Specifies the horizontal alignment of the lyric text.
+  /// This can be left, center, or right.
   HorizontalAlignment? justify;
 
+  /// The positioning attributes of the lyric.
   Position position;
 
-  /// Indicates whether something is above or below another element, such as a note or a notation.
-  Placement placement;
+  /// Specifies whether the lyric appears above or below the music staff.
+  Placement? placement;
 
   /// Indicates the color of an element.
   Color color;
 
-  bool printObject = false;
+  /// Indicates whether the lyric should be printed. This can override a note's
+  /// `print lyric` attribute in cases where only some lyrics on a note are printed.
+  bool printObject;
 
-  /// Specifies which lyrics are to be sung which times through a repeated section.
+  /// Specifies which lyrics should be sung during repeated sections.
   String? timeOnly;
 
   /// Specifies an ID that is unique to the entire document.
@@ -79,41 +81,65 @@ class Lyric {
 
   Lyric({
     required this.content,
-    this.editorial,
+    this.editorial = const Editorial.empty(),
     this.endLine,
     this.endParagraph,
     this.number,
     this.name,
     this.justify,
-    required this.position,
-    required this.placement,
-    required this.color,
+    this.position = const Position.empty(),
+    this.placement,
+    this.color = const Color.empty(),
     this.printObject = false,
     this.timeOnly,
     this.id,
   });
 
-  factory Lyric.fromXml(XmlElement xmlElement) {
-    const String n = "";
+  // Field(s): quantifier
+  static const Map<String, XmlQuantifier> _baseXmlExpectedOrder = {
+    'end-line': XmlQuantifier.optional,
+    'end-paragraph': XmlQuantifier.optional,
+    'footnote': XmlQuantifier.optional,
+    'level': XmlQuantifier.optional,
+  };
 
+  /// Reads the [xmlElement] and constructs a [Lyric] instance
+  /// with the appropriate content and attributes.
+  ///
+  /// The method will throw an [XmlElementContentException] or
+  /// [XmlSequenceException] if the XML element does not have the expected
+  /// structure or content for a lyric.
+  factory Lyric.fromXml(XmlElement xmlElement) {
     LyricContent? content;
 
-    switch (n) {
-      case _LyricContentNames.extend:
-        content = Extend.fromXml(xmlElement);
-        break;
-      case _LyricContentNames.laughing:
-        content = EmptyLaughing();
-        break;
-      case _LyricContentNames.humming:
-        content = EmptyHumming();
-        break;
-      case _LyricContentNames.syllabic:
-      case _LyricContentNames.text:
-        content = LyricSequence.fromXml(xmlElement);
-        break;
-      default:
-        break;
+    var extendElement = xmlElement.getElement("extend");
+    var textElement = xmlElement.getElement("text");
+
+    if (textElement != null) {
+      content = TextLyric.fromXml(xmlElement);
+    }
+    if (extendElement != null && textElement == null) {
+      validateSequence(
+        xmlElement,
+        {"extend": XmlQuantifier.required}..addAll(_baseXmlExpectedOrder),
+      );
+      content = Extend.fromXml(xmlElement);
+    }
+
+    if (xmlElement.getElement("laughing") != null) {
+      validateSequence(
+        xmlElement,
+        {"laughing": XmlQuantifier.required}..addAll(_baseXmlExpectedOrder),
+      );
+      content = Laughing();
+    }
+
+    if (xmlElement.getElement("humming") != null) {
+      validateSequence(
+        xmlElement,
+        {"humming": XmlQuantifier.required}..addAll(_baseXmlExpectedOrder),
+      );
+      content = Humming();
     }
 
     if (content == null) {
@@ -123,73 +149,119 @@ class Lyric {
       );
     }
 
+    var endLineElement = xmlElement.getElement("end-line");
+    validateEmptyContent(endLineElement);
+    var endParagraph = xmlElement.getElement("end-paragraph");
+    validateEmptyContent(endParagraph);
+
+    bool? printObject = YesNo.fromXml(
+      xmlElement,
+      CommonAttributes.printObject,
+    );
+
     return Lyric(
-      color: const Color.empty(),
-      placement: Placement.above,
-      position: Position(),
+      // -- Content --
       content: content,
+      editorial: Editorial.fromXml(xmlElement),
+      endLine: endLineElement != null ? const Empty() : null,
+      endParagraph: endParagraph != null ? const Empty() : null,
+      // -- Attributes --
+      color: Color.fromXml(xmlElement),
+      position: Position.fromXml(xmlElement),
+      id: xmlElement.getAttribute("id"),
+      justify: HorizontalAlignment.fromXml(xmlElement),
+      name: xmlElement.getAttribute("name"),
+      number: xmlElement.getAttribute("number"),
+      placement: Placement.fromXml(xmlElement),
+      printObject: printObject ?? true,
+      timeOnly: TimeOnly.fromXml(xmlElement),
     );
   }
 }
 
-class _LyricContentNames {
-  static const extend = "extend";
-  static const laughing = "laughing";
-  static const humming = "humming";
-  static const syllabic = "syllabic";
-  static const text = "text";
-}
+/// Represents the different types of content that a lyric can have.
+sealed class LyricContent {}
 
-abstract class LyricContent {}
+/// A laughing voice. This may be used for special notation in vocal music.
+class Laughing implements LyricContent {}
 
-/// Represents a laughing voice
-class EmptyLaughing extends LyricContent {}
+/// A humming voice. This may be used for special notation in vocal music.
+class Humming implements LyricContent {}
 
-/// Represents a humming voice.
-class EmptyHumming extends LyricContent {}
+/// A section of lyric text. A single lyric can have multiple text sections.
+sealed class LyricText {}
 
-class LyricSequence extends LyricContent {
+class TextLyric implements LyricContent {
   // ------------------------- //
   // ------   Content   ------ //
   // ------------------------- //
-  Syllabic? syllabic;
-  TextElementData text;
 
-  List<ElisionSyllabicText>? elisionSyllabicTextList;
+  /// The parts of the lyric text, which can include syllables and elision characters.
+  List<LyricText> textParts;
 
+  /// An extender line for the lyric, which indicates the duration of a syllable or word.
   Extend? extend;
 
-  LyricSequence({
-    required this.syllabic,
-    required this.text,
+  TextLyric({
+    required this.textParts,
+    this.extend,
   });
+  // Field(s): quantifier
 
-  factory LyricSequence.fromXml(XmlElement xmlElement) {
-    return LyricSequence(
-      syllabic: Syllabic.begin,
-      text: TextElementData(
-        value: "",
-        color: Color(),
-        decoration: TextDecoration(),
-        font: Font(),
-      ),
+  static const Map<dynamic, XmlQuantifier> _xmlExpectedOrder = {
+    'syllabic': XmlQuantifier.optional,
+    'text': XmlQuantifier.required,
+    {
+      {
+        "elision": XmlQuantifier.required,
+        "syllabic": XmlQuantifier.optional,
+      }: XmlQuantifier.optional,
+      'text': XmlQuantifier.required
+    }: XmlQuantifier.zeroOrMore,
+    'extend': XmlQuantifier.optional,
+  };
+
+  /// Constructs a [TextLyric] instance from an [xmlElement].
+  ///
+  /// This method reads the XML element and constructs a TextLyric instance
+  /// with the appropriate text parts and extend attribute.
+  ///
+  /// The method will throw an [XmlSequenceException] if the XML element
+  /// does not have the expected structure or content for a text lyric.
+  factory TextLyric.fromXml(XmlElement xmlElement) {
+    validateSequence(
+      xmlElement,
+      {}
+        ..addAll(_xmlExpectedOrder)
+        ..addAll(Lyric._baseXmlExpectedOrder),
+    );
+    bool needToBreak = false;
+    List<LyricText> textParts = [];
+    for (var childElement in xmlElement.childElements) {
+      switch (childElement.name.local) {
+        case "syllabic":
+          textParts.add(Syllabic.fromXml(childElement));
+          break;
+        case "text":
+          textParts.add(TextElementData.fromXml(childElement));
+          break;
+        case "elision":
+          textParts.add(Elision.fromXml(childElement));
+          break;
+        default:
+          needToBreak = true;
+          break;
+      }
+      if (needToBreak) break;
+    }
+
+    var extendElement = xmlElement.getElement("extend");
+
+    return TextLyric(
+      textParts: textParts,
+      extend: extendElement != null ? Extend.fromXml(extendElement) : null,
     );
   }
-}
-
-class ElisionSyllabicText {
-  // ------------------------- //
-  // ------   Content   ------ //
-  // ------------------------- //
-  Elision elision;
-  Syllabic? syllabic;
-  TextElementData text;
-
-  ElisionSyllabicText({
-    required this.elision,
-    this.syllabic,
-    required this.text,
-  });
 }
 
 /// Represents an Extend element in MusicXML.
@@ -251,7 +323,7 @@ class Extend implements LyricContent {
 ///
 /// For more details go to
 /// [The \<elision\> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/elision/).
-class Elision {
+class Elision implements LyricText {
   // ------------------------- //
   // ------   Content   ------ //
   // ------------------------- //
@@ -322,8 +394,14 @@ class Elision {
   }
 }
 
-/// Lyric hyphenation is indicated by the syllabic type.
-enum Syllabic {
+/// Syllabic types in lyrics.
+///
+/// In music notation, lyrics often span multiple notes, especially in melismatic singing.
+/// The [Syllabic] enum is used to describe the role of each syllable within a word.
+///
+/// For more details go to
+/// [syllabic data type | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/data-types/syllabic/).
+enum Syllabic implements LyricText {
   /// Single-syllable words.
   single,
 
@@ -335,6 +413,45 @@ enum Syllabic {
 
   /// Mid-word syllables
   middle;
+
+  /// Converts a [String] to its corresponding [Syllabic] enum.
+  ///
+  /// If the [value] does not match any [Syllabic] values, `null` is returned.
+  ///
+  /// Example:
+  /// ```dart
+  /// var syllabic = Syllabic.fromString("begin");
+  /// print(syllabic);  // Prints: Syllabic.begin
+  /// ```
+  static Syllabic? fromString(String value) => values.firstWhereOrNull(
+        (element) => element.name == value,
+      );
+
+  /// Parses an [XmlElement] to extract a [Syllabic] value.
+  ///
+  /// If the `syllabic` element content is not text, throws a [XmlElementContentException].
+  ///
+  /// If the `syllabic` element content is not valid, throws a [MusicXmlTypeException].
+  ///
+  /// Example:
+  /// ```dart
+  /// var xmlElement = XmlElement(XmlName("syllabic"), [], [XmlText("end")]);
+  /// var syllabic = Syllabic.fromXml(xmlElement);
+  /// print(syllabic);  // Prints: Syllabic.end
+  /// ```
+  static Syllabic fromXml(XmlElement xmlElement) {
+    validateTextContent(xmlElement);
+
+    var syllabic = fromString(xmlElement.innerText);
+
+    if (syllabic == null) {
+      throw MusicXmlTypeException(
+        message: "'syllabic' element content is not valid syllabic",
+        xmlElement: xmlElement,
+      );
+    }
+    return syllabic;
+  }
 }
 
 /// Represents a syllable or portion of a syllable for lyric text underlay in MusicXML.
@@ -342,7 +459,7 @@ enum Syllabic {
 /// A hyphen in the string content should only be used for an actual hyphenated word.
 /// Language names for text elements come from ISO 639, with optional country
 /// subcodes from ISO 3166.
-class TextElementData {
+class TextElementData implements LyricText {
   // ------------------------- //
   // ------   Content   ------ //
   // ------------------------- //
