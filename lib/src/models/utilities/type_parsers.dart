@@ -427,6 +427,74 @@ class Percent {
   }
 }
 
+/// The [Decimal] class provides a utility method for extracting and converting decimal values
+/// from XML elements in the context of a MusicXML document.
+class Decimal {
+  /// Returns a [double] from an XML element or its attribute.
+  ///
+  /// [xmlElement] is the XML element to parse the decimal from.
+  ///
+  /// [attributeName] is the optional attribute of the XML element to parse the
+  /// decimal from. If [attributeName] is not provided, the method will try to
+  /// parse the decimal from the text content of the XML element.
+  ///
+  /// [required] is a boolean flag that indicates whether the decimal value must
+  /// be present in the XML element. If [required] is true and the decimal value
+  /// is not found, the method throws a [MissingXmlAttribute] exception.
+  ///
+  /// The method returns the parsed decimal value as a [double]. If the decimal
+  /// value is not found and [required] is false, the method returns null.
+  /// If the decimal value is found but is not a valid decimal, the method throws
+  /// a [MusicXmlFormatException].
+  ///
+  /// Example usage:
+  /// ```dart
+  /// var xmlElement = parse("<note duration='1.5'/>");
+  /// var duration = Decimal.fromXml(xmlElement, "duration", true);
+  /// print(duration);  // 1.5
+  /// ```
+  static double? fromXml(
+    XmlElement xmlElement,
+    String? attributeName,
+    bool required,
+  ) {
+    var elementName = xmlElement.name.local;
+
+    final rawValue = attributeName != null
+        ? xmlElement.getAttribute(attributeName)
+        : xmlElement.innerText;
+    if (rawValue == null && !required) {
+      return null;
+    }
+
+    if (attributeName == null) {
+      validateTextContent(xmlElement);
+    }
+
+    if (rawValue == null && required && attributeName != null) {
+      throw MissingXmlAttribute(
+        message: "'$attributeName' attribute in '$elementName' is required",
+        xmlElement: xmlElement,
+      );
+    }
+
+    double? value = double.tryParse(rawValue ?? "");
+
+    if (rawValue != null && value == null) {
+      final message = attributeName != null
+          ? "'$attributeName' attribute in '$elementName' is not valid decimal content"
+          : "'$elementName' must have valid decimal content";
+
+      throw MusicXmlFormatException(
+        message: message,
+        xmlElement: xmlElement,
+        source: rawValue,
+      );
+    }
+    return value;
+  }
+}
+
 /// Static methods for validating MusicXML anyURI type according to the MusicXML specification.
 ///
 /// The MusicXML anyURI type represents a Uniform Resource Identifier (URI) used in MusicXML documents,
