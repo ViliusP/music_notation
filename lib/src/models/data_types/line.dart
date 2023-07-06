@@ -42,6 +42,9 @@ class DashedFormatting {
 
 /// [LineType] is an enum that distinguishes between solid, dashed, dotted,
 /// and wavy lines in a MusicXML document.
+///
+/// For more details go to
+/// [line-type data type | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/data-types/line-type/).
 enum LineType {
   solid,
   dashed,
