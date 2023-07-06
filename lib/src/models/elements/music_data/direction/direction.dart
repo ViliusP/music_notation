@@ -3,6 +3,7 @@ import 'package:music_notation/src/models/elements/editorial.dart';
 import 'package:music_notation/src/models/elements/listening.dart';
 import 'package:music_notation/src/models/elements/music_data/direction/segno.dart';
 import 'package:music_notation/src/models/elements/sound/sound.dart';
+import 'package:music_notation/src/models/elements/text/text.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/utilities/type_parsers.dart';
 import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
@@ -145,8 +146,21 @@ class Direction implements MusicDataElement {
 ///
 /// Attribute groups related to print suggestions apply to the individual
 /// direction-type, not to the overall direction.
+// TODO: make it sealed
 abstract class DirectionType {
   factory DirectionType.fromXml(XmlElement e) {
     return Segno();
   }
+}
+
+class DirectionSymbols implements DirectionType {
+  final List<FormattedSymbolId> values;
+
+  const DirectionSymbols({required this.values});
+}
+
+class DirectionWords implements DirectionType {
+  final List<FormattedTextId> values;
+
+  const DirectionWords({required this.values});
 }

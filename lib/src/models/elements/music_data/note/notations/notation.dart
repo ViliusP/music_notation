@@ -34,31 +34,6 @@ class Notations {
   }
 }
 
-/// Attribute group.
-///
-/// The dashed-formatting entity represents the length of dashes and spaces in a dashed line.
-/// Both the dash-length and space-length attributes are represented in tenths.
-///
-/// These attributes are ignored if the corresponding line-type attribute is not dashed.
-class DashedFormatting {
-  /// The length of dashes in a dashed line. Ignored if the corresponding line-type attribute is not dashed.
-  int? dashLength;
-
-  /// The length of spaces in a dashed line. Ignored if the corresponding line-type attribute is not dashed.
-  int? spaceLength;
-
-  DashedFormatting({
-    this.dashLength,
-    this.spaceLength,
-  });
-
-  DashedFormatting.empty();
-
-  factory DashedFormatting.fromXml(XmlElement xmlElement) {
-    return DashedFormatting();
-  }
-}
-
 /// The bezier attribute group is used to indicate the curvature of slurs and ties,
 /// representing the control points for a cubic bezier curve.
 /// For ties, the bezier attribute group is used with the tied element.
@@ -135,14 +110,6 @@ class Bezier {
     required this.offset,
     required this.offset2,
   });
-}
-
-/// The line-type type distinguishes between solid, dashed, dotted, and wavy lines.
-enum LineType {
-  solid,
-  dashed,
-  dotted,
-  wavy;
 }
 
 /// Technical indications give performance information for individual instruments.

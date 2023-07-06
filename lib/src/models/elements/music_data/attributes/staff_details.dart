@@ -26,8 +26,8 @@
 // 	<xs:attributeGroup ref="print-spacing"/>
 // </xs:complexType>
 
+import 'package:music_notation/src/models/data_types/line.dart';
 import 'package:music_notation/src/models/elements/music_data/direction/scordatura.dart';
-import 'package:music_notation/src/models/elements/music_data/note/notations/notation.dart';
 import 'package:music_notation/src/models/elements/text/text.dart';
 import 'package:xml/xml.dart';
 

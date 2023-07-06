@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:music_notation/src/models/data_types/line.dart';
 import 'package:music_notation/src/models/elements/music_data/direction/wedge.dart';
-import 'package:music_notation/src/models/elements/music_data/note/notations/notation.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:xml/xml.dart';
 
