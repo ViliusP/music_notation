@@ -118,6 +118,7 @@ class Wedge {
       dashedFormatting: DashedFormatting.fromXml(xmlElement),
       position: Position.fromXml(xmlElement),
       id: xmlElement.getAttribute("id"),
+      lineType: LineType.fromXml(xmlElement) ?? LineType.solid,
       niente: niente ?? false,
       number: NumberLevel.fromXml(xmlElement),
       spread: spread,
