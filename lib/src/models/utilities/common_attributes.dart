@@ -23,6 +23,7 @@ class CommonAttributes {
   /// - text;
   /// - words.
   static const textDirection = "dir";
+
   static const enclosureShape = "enclosure";
   static const smufl = "smufl";
 
@@ -64,4 +65,6 @@ class CommonAttributes {
   /// - text;
   /// - words.
   static const lineThrough = "line-through";
+
+  static const placement = "placement";
 }
