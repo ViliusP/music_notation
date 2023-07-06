@@ -18,7 +18,7 @@ class Segno implements DirectionType {
   String? smufl;
 
   Segno({
-    required this.printStyleAlign,
+    this.printStyleAlign = const PrintStyleAlign.empty(),
     this.id,
     this.smufl,
   });

@@ -1,3 +1,5 @@
+import 'package:xml/xml.dart';
+
 /// An offset is represented in terms of divisions,
 /// and indicates where the direction will appear relative to the current musical location.
 ///
@@ -29,6 +31,11 @@ class Offset {
 
   Offset({
     required this.value,
-    required this.sound,
+    this.sound = false,
   });
+
+  // TODO: implement
+  factory Offset.fromXml(XmlElement xmlElement) {
+    return Offset(value: 0, sound: false);
+  }
 }

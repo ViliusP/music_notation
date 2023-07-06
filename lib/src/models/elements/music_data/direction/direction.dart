@@ -1,5 +1,11 @@
 import 'package:music_notation/src/models/data_types/placement.dart';
 import 'package:music_notation/src/models/elements/editorial.dart';
+import 'package:music_notation/src/models/elements/listening.dart';
+import 'package:music_notation/src/models/elements/music_data/direction/segno.dart';
+import 'package:music_notation/src/models/elements/sound/sound.dart';
+import 'package:music_notation/src/models/exceptions.dart';
+import 'package:music_notation/src/models/utilities/type_parsers.dart';
+import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/data_types/system_relation.dart';
@@ -39,6 +45,10 @@ class Direction implements MusicDataElement {
   /// Staff values are numbers, with 1 referring to the top-most staff in a part.
   int? staff;
 
+  Sound? sound;
+
+  Listening? listening;
+
   // ------------------------- //
   // ------ Attributes ------- //
   // ------------------------- //
@@ -52,7 +62,7 @@ class Direction implements MusicDataElement {
   /// the direction is aligned with the left-hand side of the first music notational element in the measure.
   ///
   /// If a default-x, justify, or halign attribute is present, it overrides this attribute.
-  bool directive;
+  bool? directive;
 
   /// Specifies an ID that is unique to the entire document.
   String? id;
@@ -61,25 +71,65 @@ class Direction implements MusicDataElement {
   Placement? placement;
 
   /// Distinguishes elements that are associated with a system rather than the particular part where the element appears.
-  SystemRelation system;
+  SystemRelation? system;
 
   Direction({
+    // -- content --
     required this.types,
     this.offset,
-    required this.editorialVoice,
+    this.editorialVoice = const EditorialVoice.empty(),
     this.staff,
-    required this.directive,
+    this.sound,
+    this.listening,
+    // -- attributes --
+    this.directive,
     this.id,
     this.placement,
-    required this.system,
+    this.system,
   });
 
+  static const Map<String, XmlQuantifier> _xmlExpectedOrder = {
+    'direction-type': XmlQuantifier.optional,
+    'offset': XmlQuantifier.optional,
+    'footnote': XmlQuantifier.optional,
+    'level': XmlQuantifier.optional,
+    'voice': XmlQuantifier.optional,
+    'staff': XmlQuantifier.optional,
+    'sound': XmlQuantifier.optional,
+    'listening': XmlQuantifier.optional,
+  };
+
   factory Direction.fromXml(XmlElement xmlElement) {
+    validateSequence(xmlElement, _xmlExpectedOrder);
+
+    var soundElement = xmlElement.getElement("sound");
+    var offsetElement = xmlElement.getElement("offset");
+
+    var staffElement = xmlElement.getElement("staff");
+    validateTextContent(staffElement);
+    var staff = int.tryParse(staffElement?.innerText ?? "");
+    if (staffElement != null && (staff == null || staff < 1)) {
+      throw MusicXmlFormatException(
+        message: "'staff' content is not valid positive int",
+        xmlElement: xmlElement,
+        source: staffElement.innerText,
+      );
+    }
+
     return Direction(
-      types: [],
-      directive: false,
-      editorialVoice: EditorialVoice(),
-      system: SystemRelation.none,
+      types: xmlElement
+          .findElements('direction-tye')
+          .map((e) => DirectionType.fromXml(e))
+          .toList(),
+      offset: offsetElement != null ? Offset.fromXml(offsetElement) : null,
+      editorialVoice: EditorialVoice.fromXml(xmlElement),
+      staff: staff,
+      sound: soundElement != null ? Sound.fromXml(xmlElement) : null,
+      listening: Listening.fromXml(xmlElement),
+      directive: YesNo.fromXml(xmlElement, "directive"),
+      id: xmlElement.getAttribute("id"),
+      placement: Placement.fromXml(xmlElement),
+      system: SystemRelation.fromXml(xmlElement),
     );
   }
 
@@ -95,4 +145,8 @@ class Direction implements MusicDataElement {
 ///
 /// Attribute groups related to print suggestions apply to the individual
 /// direction-type, not to the overall direction.
-abstract class DirectionType {}
+abstract class DirectionType {
+  factory DirectionType.fromXml(XmlElement e) {
+    return Segno();
+  }
+}

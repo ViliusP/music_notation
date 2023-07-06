@@ -1,3 +1,7 @@
+import 'package:collection/collection.dart';
+import 'package:music_notation/src/models/utilities/case_transformers.dart';
+import 'package:xml/xml.dart';
+
 /// Distinguishes elements that are associated with a system rather than the
 /// particular part where the element appears.
 ///
@@ -15,7 +19,12 @@ enum SystemRelation {
   /// The element is associated only with the current part, not with the system.
   none;
 
-  static SystemRelation fromString(String value) {
-    throw UnimplementedError();
+  static SystemRelation? fromString(String value) => values.firstWhereOrNull(
+        (element) => element.name == hyphenToCamelCase(value),
+      );
+
+  /// TODO: implement and test
+  static SystemRelation? fromXml(XmlElement xmlElement) {
+    return null;
   }
 }
