@@ -130,7 +130,7 @@ class StaffPainter extends CustomPainter {
     }
   }
 
-  void _paintEndingBarline(Canvas canvas, StaffPainterContext context) {
+  void _paintBarline(Canvas canvas, StaffPainterContext context) {
     Paint linePainter = Paint()
       ..color = const Color.fromRGBO(0, 0, 0, 1.0)
       ..strokeWidth = 1.5;
@@ -171,7 +171,7 @@ class StaffPainter extends CustomPainter {
     octave -= 4;
 
     // TODO fix nullable
-    return (form.step ?? Step.G).calculateX(-5) - ((octave * 41) + octave);
+    return (form.step ?? Step.G).calculateY(-5) - ((octave * 41) + octave);
   }
 
   void _drawAttributes({
@@ -304,7 +304,6 @@ class StaffPainter extends CustomPainter {
       textPainter.width + 8.0,
       textPainter.height + 8.0,
     );
-    if (debugFrame) {
       final borderPaint = Paint()
         ..color = const Color.fromRGBO(0, 0, 0, 1.0)
         ..style = PaintingStyle.stroke
@@ -341,22 +340,22 @@ extension NoteHeadSmufl on NoteTypeValue {
 }
 
 extension SymbolPosition on Step {
-  double calculateX(int startingX) {
+  double calculateY(int startingY) {
     switch (this) {
       case Step.B:
-        return (startingX * 3) - 2;
+        return (startingY * 3) - 2;
       case Step.A:
-        return (startingX * 2) - 1;
+        return (startingY * 2) - 1;
       case Step.G:
-        return (startingX * 1);
+        return (startingY * 1);
       case Step.F:
-        return (startingX * 0) + 1;
+        return (startingY * 0) + 1;
       case Step.E:
-        return (startingX * -2) - 3;
+        return (startingY * -2) - 3;
       case Step.D:
-        return (startingX * -3) - 2;
+        return (startingY * -3) - 2;
       case Step.C:
-        return (startingX * -4) - 1;
+        return (startingY * -4) - 1;
     }
   }
 
