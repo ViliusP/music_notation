@@ -15,7 +15,7 @@ import 'package:music_notation/src/models/elements/music_data/direction/scordatu
 import 'package:music_notation/src/models/elements/music_data/direction/staff_divide.dart';
 import 'package:music_notation/src/models/elements/music_data/direction/wedge.dart';
 import 'package:music_notation/src/models/elements/music_data/dynamics.dart';
-import 'package:music_notation/src/models/elements/sound/sound.dart';
+import 'package:music_notation/src/models/elements/music_data/sound/sound.dart';
 import 'package:music_notation/src/models/elements/text/text.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/utilities/type_parsers.dart';
