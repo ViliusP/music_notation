@@ -215,7 +215,7 @@ class Note implements MusicDataElement {
   };
 
   factory Note.fromXml(XmlElement xmlElement) {
-    var specifNoteType = GraceCueNote;
+    var specificNoteType = GraceCueNote;
     try {
       validateSequence(
         xmlElement,
@@ -223,7 +223,7 @@ class Note implements MusicDataElement {
           ..addAll(GraceCueNote._xmlExpectedOrder)
           ..addAll(_xmlExpectedOrder),
       );
-      specifNoteType = GraceCueNote;
+      specificNoteType = GraceCueNote;
     } on XmlSequenceException catch (_) {
     } catch (e) {
       rethrow;
@@ -235,7 +235,7 @@ class Note implements MusicDataElement {
           ..addAll(GraceTieNote._xmlExpectedOrder)
           ..addAll(_xmlExpectedOrder),
       );
-      specifNoteType = GraceTieNote;
+      specificNoteType = GraceTieNote;
     } on XmlSequenceException catch (_) {
     } catch (e) {
       rethrow;
@@ -247,7 +247,7 @@ class Note implements MusicDataElement {
           ..addAll(CueNote._xmlExpectedOrder)
           ..addAll(_xmlExpectedOrder),
       );
-      specifNoteType = CueNote;
+      specificNoteType = CueNote;
     } on XmlSequenceException catch (_) {
     } catch (e) {
       rethrow;
@@ -259,7 +259,7 @@ class Note implements MusicDataElement {
           ..addAll(RegularNote._xmlExpectedOrder)
           ..addAll(_xmlExpectedOrder),
       );
-      specifNoteType = RegularNote;
+      specificNoteType = RegularNote;
     } on XmlSequenceException catch (_) {
     } catch (e) {
       rethrow;
@@ -367,7 +367,7 @@ class Note implements MusicDataElement {
       // printLeger: printLager,
     );
 
-    switch (specifNoteType) {
+    switch (specificNoteType) {
       case GraceTieNote:
         return GraceTieNote._fromNote(
           grace: Grace.fromXml(xmlElement.getElement("grace")!),
