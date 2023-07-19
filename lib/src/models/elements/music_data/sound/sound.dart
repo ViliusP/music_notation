@@ -6,32 +6,30 @@ import 'package:music_notation/src/models/utilities/type_parsers.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/elements/music_data/note/play.dart';
-import 'package:music_notation/src/models/elements/offset.dart';
+import 'package:music_notation/src/models/elements/music_data/offset.dart';
 import 'package:music_notation/src/models/elements/midi.dart';
 
 /// The sound element contains general playback parameters. They can stand alone
 /// within a part/measure, or be a component element within a direction.
-///
-/// Instrument changes, MIDI devices, MIDI instruments, and playback techniques
-/// are changed using the instrument-change, midi-device, midi-instrument, and
-/// play elements. When there are multiple instances of these elements, they
-/// should be grouped together by instrument using the id attribute values.
-///
-/// The [offset] is used to indicate that the sound takes place offset from the
-/// current score position. If the sound element is a child of a direction element,
-/// the sound offset element overrides the direction offset element if both
-/// elements are present. Note that the offset reflects the intended musical
-/// position for the change in sound. It should not be used to compensate for
-/// latency issues in particular hardware configurations.
 class Sound implements MusicDataElement {
   // ------------------------- //
   // ------   Content   ------ //
   // ------------------------- //
 
-  SoundSequence soundSequence;
+  /// Instrument changes, MIDI devices, MIDI instruments, and playback techniques
+  /// are changed using the instrument-change, midi-device, midi-instrument, and
+  /// play elements. When there are multiple instances of these elements, they
+  /// should be grouped together by instrument using the id attribute values.
+  List<SoundSequence> soundSequence;
 
   Swing? swing;
 
+  /// Indicates that the sound takes place offset from the current score position.
+  /// If the sound element is a child of a direction element, the sound offset
+  /// element overrides the direction offset element if both elements are present.
+  /// Note that the offset reflects the intended musical position for the change
+  /// in sound. It should not be used to compensate for latency issues in
+  /// particular hardware configurations.
   Offset? offset;
 
   // ------------------------- //
@@ -40,17 +38,20 @@ class Sound implements MusicDataElement {
 
   /// Tempo is expressed in quarter notes per minute.
   ///
-  /// If 0, the sound-generating program should prompt the user at the time of compiling a sound (MIDI) file.
+  /// If 0, the sound-generating program should prompt the user at the time of
+  /// compiling a sound (MIDI) file.
   double? tempo;
 
-  /// Dynamics (or MIDI velocity) are expressed as a percentage of the default forte value (90 for MIDI 1.0).
+  /// Dynamics (or MIDI velocity) are expressed as a percentage of the default
+  /// forte value (90 for MIDI 1.0).
   double? dynamics;
 
   /// Indicates to go back to the beginning of the movement.
   /// When used it always has the value "yes".
   ///
-  /// By default, a dacapo attribute indicates that the jump should occur the first time through.
-  /// The times that jumps occur can be changed by using the time-only attribute.
+  /// By default, a dacapo attribute indicates that the jump should occur the
+  /// first time through. The times that jumps occur can be changed by using
+  /// the time-only attribute.
   bool? dacapo;
 
   /// Indicates the end point for a backward jump to a segno sign.
@@ -62,10 +63,10 @@ class Sound implements MusicDataElement {
   /// If there are multiple jumps,
   /// the value of these parameters can be used to name and distinguish them.
   ///
-  /// By default, a dalsegno attribute indicates that the jump should occur t
-  /// he first time through.
-  /// The times that jumps occur can be changed by using the time-only attribute.
-  String? delsegno;
+  /// By default, a dalsegno attribute indicates that the jump should occur the
+  /// first time through. The times that jumps occur can be changed by using
+  /// the time-only attribute.
+  String? dalsegno;
 
   /// Indicates the end point for a forward jump to a coda sign.
   /// If there are multiple jumps,
@@ -153,7 +154,7 @@ class Sound implements MusicDataElement {
     this.dynamics,
     this.dacapo,
     this.segno,
-    this.delsegno,
+    this.dalsegno,
     this.coda,
     this.tocoda,
     this.divisions,
@@ -170,10 +171,65 @@ class Sound implements MusicDataElement {
     required this.soundSequence,
   });
 
-  // TODO: implement
+  /// Creates an instance of the [Sound] class from an [XmlElement].
+  ///
+  /// This method extracts various attributes from the [XmlElement] parameter,
+  /// such as 'swing', 'offset', 'coda', 'dacapo', etc., to create a [Sound] object.
+  /// For any attribute that is not present in the [XmlElement], the corresponding field
+  /// in the [Sound] object will be set to `null` or an empty list (in case of 'soundSequence').
+  ///
+  /// It currently does not handle certain attributes like 'damperPedal',
+  /// 'softPedal', 'sostenutoPedal' as these are set to `null`.
+  ///
+  /// Example usage:
+  /// ```
+  /// var xmlElement = XmlDocument.parse("<sound dynamics="98"/>").root;
+  /// var sound = Sound.fromXml(xmlElement);
+  /// ```
   static Sound fromXml(XmlElement xmlElement) {
+    var swingElement = xmlElement.getElement("swing");
+    var offsetElement = xmlElement.getElement("offset");
+
+    var dynamics = Decimal.fromXml(xmlElement, 'dynamics', false);
+    if (dynamics != null && dynamics < 0) {
+      throw MusicXmlFormatException(
+        message: "'dynamics' attribute in sound element must be non negaitve",
+        xmlElement: xmlElement,
+        source: xmlElement.getAttribute("dynamics"),
+      );
+    }
+
+    var tempo = Decimal.fromXml(xmlElement, 'tempo', false);
+    if (tempo != null && tempo < 0) {
+      throw MusicXmlFormatException(
+        message: "'tempo' attribute in sound element must be non negaitve",
+        xmlElement: xmlElement,
+        source: xmlElement.getAttribute("tempo"),
+      );
+    }
+
     return Sound(
-      soundSequence: SoundSequence.fromXml(xmlElement),
+      soundSequence: [],
+      swing: swingElement != null ? Swing.fromXml(swingElement) : null,
+      offset: offsetElement != null ? Offset.fromXml(offsetElement) : null,
+      coda: xmlElement.getAttribute("coda"),
+      dacapo: YesNo.fromXml(xmlElement, "dacapo"),
+      dalsegno: xmlElement.getAttribute("dalsegno"),
+      damperPedal: null,
+      divisions: Decimal.fromXml(xmlElement, 'divisions', false),
+      dynamics: dynamics,
+      elevation: RotationDegrees.fromXml(xmlElement, 'elevation'),
+      fine: xmlElement.getAttribute("fine"),
+      forwardRepeat: YesNo.fromXml(xmlElement, "forward-repeat"),
+      id: xmlElement.getAttribute("id"),
+      pan: RotationDegrees.fromXml(xmlElement, 'pan'),
+      pizzicato: YesNo.fromXml(xmlElement, "pizzicato"),
+      segno: xmlElement.getAttribute("segno"),
+      softPedal: null,
+      sostenutoPedal: null,
+      tempo: tempo,
+      timeOnly: TimeOnly.fromXml(xmlElement),
+      tocoda: xmlElement.getAttribute("tocoda"),
     );
   }
 
@@ -244,8 +300,4 @@ class SoundSequence {
     this.midiInstrument,
     this.play,
   });
-
-  factory SoundSequence.fromXml(XmlElement xmlElement) {
-    return SoundSequence();
-  }
 }

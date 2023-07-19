@@ -202,8 +202,11 @@ class RotationDegrees {
   ///
   /// If the parsing fails or the parsed value is not within the valid range,
   /// the method throws a [MusicXmlFormatException] with a detailed error message.
-  static double? fromXml(XmlElement xmlElement) {
-    String? rawRotation = xmlElement.getAttribute(CommonAttributes.rotation);
+  static double? fromXml(
+    XmlElement xmlElement, [
+    String attribute = CommonAttributes.rotation,
+  ]) {
+    String? rawRotation = xmlElement.getAttribute(attribute);
     if (rawRotation == null) {
       return null;
     }

@@ -15,6 +15,8 @@
 // 		</xs:sequence>
 // 	</xs:complexType>
 
+import 'package:xml/xml.dart';
+
 /// The swing element specifies whether or not to use swing playback,
 /// where consecutive on-beat / off-beat eighth or 16th notes are played with unequal nominal durations.
 ///
@@ -46,6 +48,8 @@ abstract class Swing {
   Swing({
     required this.style,
   });
+
+  static fromXml(XmlElement swingElement) {}
 }
 
 class StraightSwing extends Swing {
