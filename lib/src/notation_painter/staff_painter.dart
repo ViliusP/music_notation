@@ -17,7 +17,7 @@ class StaffPainter extends CustomPainter {
   static const int _staffLines = 5;
   static const double _staffLineStrokeWidth = 1;
   static const bool debugFrame = false;
-  static const double ledgerLineWidth = 30;
+  static const double ledgerLineWidth = 26;
 
   StaffPainter({
     required this.score,
@@ -115,7 +115,7 @@ class StaffPainter extends CustomPainter {
 
     var positionY = (startingY + lineSpacing) * multiplier;
     for (var i = 0; i < count; i++) {
-      double center = 10.5 + positionX;
+      double center = 7.5 + positionX;
       double x1 = center - (ledgerLineWidth / 2);
       double x2 = center + (ledgerLineWidth / 2);
 
