@@ -264,6 +264,9 @@ class Note implements MusicDataElement {
     } catch (e) {
       rethrow;
     }
+    // ---- Chord ----
+    var chordElement = xmlElement.getElement("chord");
+    validateEmptyContent(chordElement);
 
     // ---- Type ----
     var typeElement = xmlElement.getElement("type");
@@ -347,6 +350,7 @@ class Note implements MusicDataElement {
     Note noteBase = Note._(
       // --- Content ---
       form: NoteForm._fromXml(xmlElement),
+      chord: chordElement != null ? const Empty() : null,
       editorialVoice: EditorialVoice.fromXml(xmlElement),
       type: type,
       accidental: accidental,

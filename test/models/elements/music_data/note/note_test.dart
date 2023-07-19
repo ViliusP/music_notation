@@ -498,4 +498,65 @@ void main() {
       });
     });
   });
+  group("Note chord", () {
+    // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/chord-element/
+    test("should parse chord from '<chord> example #1'", () {
+      String input = """
+        <note default-x="80">
+          <chord/>
+          <pitch>
+            <step>A</step>
+            <octave>4</octave>
+          </pitch>
+          <duration>128</duration>
+          <voice>1</voice>
+          <type>whole</type>
+        </note>
+      """;
+
+      expect(
+        Note.fromXml(XmlDocument.parse(input).rootElement).chord,
+        isNotNull,
+      );
+    });
+
+    test("should parse chord from '<chord> example' #2", () {
+      String input = """
+        <note default-x="80">
+          <chord/>
+          <pitch>
+            <step>C</step>
+            <octave>5</octave>
+          </pitch>
+          <duration>128</duration>
+          <voice>1</voice>
+          <type>whole</type>
+        </note>
+      """;
+
+      expect(
+        Note.fromXml(XmlDocument.parse(input).rootElement).chord,
+        isNotNull,
+      );
+    });
+    test("parsing should throw on non empty content", () {
+      String input = """
+        <note default-x="80">
+          <chord>foo</chord>
+          <pitch>
+            <step>C</step>
+            <octave>5</octave>
+          </pitch>
+          <duration>128</duration>
+          <voice>1</voice>
+          <type>whole</type>
+        </note>
+      """;
+
+      expect(
+        () => Note.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(isA<XmlElementContentException>()),
+      );
+    });
+  });
 }
