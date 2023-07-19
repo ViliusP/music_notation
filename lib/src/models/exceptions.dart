@@ -144,7 +144,7 @@ class MusicXmlTypeException implements MusicXmlException {
 
   @override
   String toString() {
-    return 'InvalidMusicXmlTypeException: $message';
+    return 'MusicXmlTypeException: $message';
   }
 }
 

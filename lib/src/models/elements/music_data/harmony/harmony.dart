@@ -30,7 +30,7 @@ import 'package:music_notation/src/models/elements/editorial.dart';
 import 'package:music_notation/src/models/elements/music_data/harmony/chord.dart';
 import 'package:music_notation/src/models/elements/music_data/harmony/frame.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
-import 'package:music_notation/src/models/elements/offset.dart';
+import 'package:music_notation/src/models/elements/music_data/offset.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/utilities/type_parsers.dart';

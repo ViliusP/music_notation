@@ -24,7 +24,7 @@ import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/data_types/system_relation.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
-import 'package:music_notation/src/models/elements/offset.dart';
+import 'package:music_notation/src/models/elements/music_data/offset.dart';
 
 /// Represents a direction in musical notation.
 /// It holds the various musical indications that are not attached to a specific note

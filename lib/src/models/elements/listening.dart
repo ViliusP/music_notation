@@ -2,7 +2,7 @@ import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 import 'package:music_notation/src/models/elements/music_data/note/listen.dart';
-import 'package:music_notation/src/models/elements/offset.dart';
+import 'package:music_notation/src/models/elements/music_data/offset.dart';
 
 /// The listen and listening types, new in Version 4.0,
 /// specify different ways that a score following or machine listening application can interact with a performer.
