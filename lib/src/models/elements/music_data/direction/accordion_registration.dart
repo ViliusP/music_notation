@@ -21,8 +21,10 @@
 // 	<xs:attributeGroup ref="optional-unique-id"/>
 // </xs:complexType>
 
+import 'package:music_notation/src/models/elements/music_data/direction/direction.dart';
 import 'package:music_notation/src/models/generic.dart';
 import 'package:music_notation/src/models/printing.dart';
+import 'package:xml/xml.dart';
 
 /// The accordion-registration type is used for accordion registration symbols.
 ///
@@ -33,7 +35,7 @@ import 'package:music_notation/src/models/printing.dart';
 /// the presence of one or more dots in the registration diagram.
 ///
 /// An accordion-registration element needs to have at least one of the child elements present.
-class AccordionRegistration {
+class AccordionRegistration implements DirectionType {
   // ------------------------- //
   // ------   Content   ------ //
   // ------------------------- //
@@ -71,4 +73,8 @@ class AccordionRegistration {
     required this.printStyleAlign,
     this.id,
   });
+
+  factory AccordionRegistration.fromXml(XmlElement xmlElement) {
+    throw UnimplementedError();
+  }
 }

@@ -799,6 +799,7 @@ class FormattedSymbolId {
 
   factory FormattedSymbolId.fromXml(XmlElement xmlElement) {
     return FormattedSymbolId(
+      // TODO: change 'xmlElement.text'.
       value: xmlElement.text,
       formatting: SymbolFormatting.fromXml(xmlElement),
       id: xmlElement.getAttribute('optional-unique-id') ?? '',

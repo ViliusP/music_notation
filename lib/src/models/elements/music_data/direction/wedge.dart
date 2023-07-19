@@ -1,4 +1,5 @@
 import 'package:music_notation/src/models/data_types/line.dart';
+import 'package:music_notation/src/models/elements/music_data/direction/direction.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/elements/text/text.dart';
@@ -10,7 +11,7 @@ import 'package:xml/xml.dart';
 ///
 /// For more details go to
 /// [The <wedge> element | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/wedge/).
-class Wedge {
+class Wedge implements DirectionType {
   // ------------------------- //
   // ------ Attributes ------- //
   // ------------------------- //

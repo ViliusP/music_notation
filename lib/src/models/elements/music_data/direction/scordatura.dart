@@ -1,9 +1,12 @@
+import 'package:music_notation/src/models/elements/music_data/direction/direction.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
+import 'package:xml/xml.dart';
 
-/// Scordatura string tunings are represented by a series of accord elements, similar to the staff-tuning elements.
+/// Scordatura string tunings are represented by a series of accord elements,
+/// similar to the staff-tuning elements.
 ///
 /// Strings are numbered from high to low.
-class Scordatura {
+class Scordatura implements DirectionType {
   List<Accord> accords;
 
   String id;
@@ -12,6 +15,10 @@ class Scordatura {
     required this.accords,
     required this.id,
   });
+
+  factory Scordatura.fromXml(XmlElement xmlElement) {
+    throw UnimplementedError();
+  }
 }
 
 /// The accord type represents the tuning of a single string in the scordatura element.

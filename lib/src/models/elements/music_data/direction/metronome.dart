@@ -1,10 +1,12 @@
 import 'package:music_notation/src/models/data_types/start_stop.dart';
+import 'package:music_notation/src/models/elements/music_data/direction/direction.dart';
 import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/music_data/note/time_modification.dart';
 import 'package:music_notation/src/models/generic.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/elements/text/text.dart';
+import 'package:xml/xml.dart';
 
 /// The metronome element represents metronome marks and other metric relationships.
 ///
@@ -18,7 +20,7 @@ import 'package:music_notation/src/models/elements/text/text.dart';
 ///
 /// The print-object attribute is set to no in cases where the metronome element represents
 /// a relationship or range that is not displayed in the music notation.
-abstract class Metronome {
+abstract class Metronome implements DirectionType {
   PrintStyleAlign printStyleAlign;
 
   /// Specifies whether or not to print an object. It is yes if not specified.
@@ -45,6 +47,51 @@ abstract class Metronome {
     required this.parentheses,
     required this.id,
   });
+
+  factory Metronome.fromXml(XmlElement xmlElement) {
+    // validateEmptyContent(xmlElement);
+    throw UnimplementedError();
+    // var wedgeAttribute = xmlElement.getAttribute("type");
+    // if (wedgeAttribute == null) {
+    //   throw MissingXmlAttribute(
+    //     message: "'type' attribute is required in 'wedge' element",
+    //     xmlElement: xmlElement,
+    //   );
+    // }
+
+    // var wedge = WedgeType.fromString(wedgeAttribute);
+    // if (wedge == null) {
+    //   throw MusicXmlTypeException(
+    //     message: "'type' attribute is not valid wedge-type",
+    //     xmlElement: xmlElement,
+    //   );
+    // }
+
+    // var niente = YesNo.fromXml(xmlElement, "niente");
+
+    // var spreadAttribute = xmlElement.getAttribute("spread");
+
+    // var spread = double.tryParse(spreadAttribute ?? "");
+    // if (spreadAttribute != null && spread == null) {
+    //   throw MusicXmlFormatException(
+    //     message: "'type' attribute is not valid tenths",
+    //     xmlElement: xmlElement,
+    //     source: spreadAttribute,
+    //   );
+    // }
+
+    // return Wedge(
+    //   type: wedge,
+    //   color: Color.fromXml(xmlElement),
+    //   dashedFormatting: DashedFormatting.fromXml(xmlElement),
+    //   position: Position.fromXml(xmlElement),
+    //   id: xmlElement.getAttribute("id"),
+    //   lineType: LineType.fromXml(xmlElement) ?? LineType.solid,
+    //   niente: niente ?? false,
+    //   number: NumberLevel.fromXml(xmlElement),
+    //   spread: spread,
+    // );
+  }
 }
 
 class MetronomeBeatUnit extends Metronome {

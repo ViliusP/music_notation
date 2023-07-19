@@ -15,6 +15,7 @@
 
 import 'package:music_notation/src/models/data_types/line.dart';
 import 'package:music_notation/src/models/data_types/start_stop.dart';
+import 'package:music_notation/src/models/elements/music_data/direction/direction.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/elements/text/text.dart';
 import 'package:xml/xml.dart';
@@ -27,7 +28,7 @@ import 'package:xml/xml.dart';
 /// If the line-end is up or down, the length of the jog can be specified using the end-length attribute.
 ///
 /// The line-type is solid if not specified.
-class Bracket {
+class Bracket implements DirectionType {
   StartStopContinue type;
 
   int? number;
