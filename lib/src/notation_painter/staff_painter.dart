@@ -7,6 +7,20 @@ import 'package:music_notation/src/models/elements/music_data/attributes/time.da
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
+import 'package:music_notation/src/notation_painter/clef_painter.dart';
+import 'package:music_notation/src/notation_painter/staff_painter_context.dart';
+
+class PainterSettings {
+  bool debugFrame = false;
+
+  static final PainterSettings _instance = PainterSettings._();
+
+  factory PainterSettings() {
+    return _instance;
+  }
+
+  PainterSettings._();
+}
 
 class StaffPainter extends CustomPainter {
   final ScorePartwise score;
@@ -16,7 +30,6 @@ class StaffPainter extends CustomPainter {
   static const lineSpacing = staffHeight / 4;
   static const int _staffLines = 5;
   static const double _staffLineStrokeWidth = 1;
-  static const bool debugFrame = false;
   static const double ledgerLineWidth = 26;
 
   StaffPainter({
@@ -26,22 +39,6 @@ class StaffPainter extends CustomPainter {
   final Paint _axisPaint = Paint()
     ..color = const Color(0xFFFF5252)
     ..strokeWidth = 1.0;
-
-  static const List<String> clefSymbols = [
-    '\uE050', // Treble Clef -5 y offset
-    '\uE062', // Bass Clef
-    '\uE05C', // Tenor Clef
-    '\uE058', // Alto Clef
-    '\uE063', // Percussion Clef
-    '\uE057', // Soprano Clef
-    '\uE059', // Mezzo-soprano Clef
-    '\uE05E', // Baritone Clef
-    '\uE055', // French Violin Clef
-    '\uE061', // Tab Clef
-    '\uE05F', // Neutral Clef
-    '\uE1D6',
-    '\uE1DC',
-  ];
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -65,12 +62,10 @@ class StaffPainter extends CustomPainter {
           }
         }
       }
+      context.offset = Offset(0, context.offset.dy + 120);
     }
 
-    _paintStaffLines(canvas, context);
-    _paintEndingBarline(canvas, context);
-
-    debugFrame ? paintCoordinates(canvas, size) : () {};
+    PainterSettings().debugFrame ? paintCoordinates(canvas, size) : () {};
   }
 
   void _drawNotes({
@@ -80,10 +75,14 @@ class StaffPainter extends CustomPainter {
     switch (note) {
       case RegularNote _:
         if (note.type != null) {
+          if (note.chord != null) {
+            context.offset += const Offset(-40, 0);
+          }
+
           double offsetY = _calculateNoteOffsetY(note.form);
           drawSmuflSymbol(
             context.canvas,
-            Offset(context.x, offsetY),
+            context.offset + Offset(0, offsetY),
             NoteHeadSmufl.getSmuflSymbol(note.type!.value),
           );
           var additionalLines = ledgerLines(note.form);
@@ -92,10 +91,10 @@ class StaffPainter extends CustomPainter {
               canvas: context.canvas,
               count: additionalLines.count,
               placement: additionalLines.placement,
-              positionX: context.x,
+              positionX: context.offset.dx,
             );
           }
-          context.x += 40;
+          context.offset += const Offset(40, 0);
         }
         break;
       default:
@@ -137,10 +136,12 @@ class StaffPainter extends CustomPainter {
       ..strokeWidth = 1.5;
 
     canvas.drawLine(
-      Offset(context.x, 0),
-      Offset(context.x, staffHeight),
+      context.offset,
+      context.offset + const Offset(0, staffHeight),
       linePainter,
     );
+
+    context.offset += const Offset(12, 0);
   }
 
   ({int count, LedgerPlacement placement})? ledgerLines(NoteForm form) {
@@ -186,8 +187,7 @@ class StaffPainter extends CustomPainter {
           Offset(context.x, -5),
           clef.sign.smufl!,
         );
-        context.x += 40;
-      }
+      context.offset += const Offset(48, 0);
     }
     for (var key in attributes.keys) {
       switch (key) {
@@ -206,16 +206,16 @@ class StaffPainter extends CustomPainter {
           if (signature != null) {
             drawSmuflSymbol(
               context.canvas,
-              Offset(context.x, (-staffHeight / 2) - 5),
+              context.offset + const Offset(0, (-staffHeight / 2) - 5),
               integerToSmufl(int.parse(signature.beats)),
             );
             drawSmuflSymbol(
               context.canvas,
-              Offset(context.x, -5),
+              context.offset + const Offset(0, -5),
               integerToSmufl(int.parse(signature.beatType)),
             );
 
-            context.x += 40;
+            context.offset += const Offset(40, 0);
           }
           break;
         case SenzaMisura _:
@@ -235,8 +235,9 @@ class StaffPainter extends CustomPainter {
     var lineY = 0.0;
     for (var i = 0; i < _staffLines; i++) {
       canvas.drawLine(
-        Offset(0, lineY),
-        Offset(context.x, lineY),
+        Offset(0, lineY + context.offset.dy),
+        // probably need to fix.
+        Offset(context.offset.dx, lineY + context.offset.dy),
         Paint()
           ..color = const Color.fromRGBO(0, 0, 0, 1.0)
           ..strokeWidth = _staffLineStrokeWidth,
@@ -275,6 +276,10 @@ class StaffPainter extends CustomPainter {
     );
   }
 
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
   void drawSmuflSymbol(
     Canvas canvas,
     Offset offset,
@@ -292,6 +297,7 @@ class StaffPainter extends CustomPainter {
     );
     textPainter.layout();
 
+  if (PainterSettings().debugFrame) {
     final borderRect = Rect.fromLTWH(
       offset.dx,
       offset.dy,
@@ -310,19 +316,6 @@ class StaffPainter extends CustomPainter {
       Offset(offset.dx, offset.dy),
     );
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class StaffPainterContext {
-  double x = 0;
-
-  final Canvas canvas;
-  final Size size;
-
-  StaffPainterContext({required this.canvas, required this.size});
-}
 
 extension NoteHeadSmufl on NoteTypeValue {
   static const _smuflSymbols = {
