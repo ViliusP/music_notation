@@ -181,34 +181,32 @@ class Clef {
 /// When the [none] sign is used, notes should be displayed as if in treble [G] - clef.
 enum ClefSign {
   /// Treble.
-  G(2, '\uE050'),
+  G(2),
 
   /// Bass.
-  F(4, '\uE062'),
+  F(4),
 
   /// Alto and Tenor.
-  C(3, '\uE05C'), // Tenor clef has different symbol '\uE058',
+  C(3), // Tenor clef has different symbol '\uE058',
 
   /// Percussion, Unpitched.
-  percussion(null, '\uE069'),
+  percussion(null),
 
   /// Indicates that the music that follows should be in tablature notation.
-  tab(null, '\uE06D'),
+  tab(null),
 
   /// Indicates that the music that follows should be in jianpu numbered notation.
   /// A [jianpu] sign does not correspond to a visual clef notation
-  jianpu(null, null),
+  jianpu(null),
 
   @Deprecated(
     "The none sign is deprecated as of MusicXML 4.0. Use the clef element's print-object attribute instead.",
   )
-  none(null, null);
+  none(null);
 
-  const ClefSign(this.defaultLineNumber, this.smufl);
+  const ClefSign(this.defaultLineNumber);
 
   final int? defaultLineNumber;
-  // Probably should remove it.
-  final String? smufl;
 
   static ClefSign? fromString(String value) {
     return values.firstWhereOrNull(
