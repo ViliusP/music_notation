@@ -112,7 +112,7 @@ class StaffPainter extends CustomPainter {
     String? flagSymbol,
     required StemDirection direction,
   }) {
-    // Stem offset note's offset.
+    // Stem offset note's offset. 40 and 15 values are chosen manually.
     Offset stemOffset = noteOffset + const Offset(15, 40);
     if (direction == StemDirection.down) {
       stemOffset = noteOffset + const Offset(1, 40);
