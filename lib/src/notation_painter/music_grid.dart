@@ -221,7 +221,8 @@ class MeasureGrid {
 
   /// Set the [value] at the given [column].
   void setElement(VisualMusicElement value, int column) {
-    var visualPosition = value.step.position(value.octave);
+    // TODO naming
+    var visualPosition = value.position.step.position(value.position.octave);
     int row = Step.G.position(4) - visualPosition;
     _data.setValue(row + (gridHeight ~/ 2), column, value);
   }
@@ -352,10 +353,20 @@ class MeasureGrid {
   }
 }
 
-class VisualMusicElement {
-  final String _symbol;
+class ElementPosition {
   final Step step;
   final int octave;
+
+  ElementPosition({
+    required this.step,
+    required this.octave,
+  });
+}
+
+
+class VisualMusicElement {
+  final String _symbol;
+  final ElementPosition position;
 
   /// Offset for element, so it could be painted correctly in G4 note position.
   final Offset _defaultOffsetG4;
@@ -365,8 +376,7 @@ class VisualMusicElement {
 
   VisualMusicElement({
     required String symbol,
-    required this.step,
-    required this.octave,
+    required this.position,
     Offset? defaultOffsetG4,
   })  : _symbol = symbol,
         _defaultOffsetG4 = defaultOffsetG4 ?? const Offset(0, 0);
@@ -415,8 +425,7 @@ class VisualMusicElement {
     }
     return VisualMusicElement(
       symbol: symbol,
-      step: step,
-      octave: octave,
+      position: ElementPosition(step: step, octave: octave),
       defaultOffsetG4: offset,
     );
   }
@@ -441,8 +450,10 @@ class VisualMusicElement {
             symbol: key.fifths >= 0
                 ? Accidentals.accidentalSharp.codepoint
                 : Accidentals.accidentalFlat.codepoint,
+            position: ElementPosition(
             step: Step.fromString(k[0])!,
             octave: int.parse(k[1]),
+            ),
             defaultOffsetG4: const Offset(0, -5),
           ),
         )
@@ -462,67 +473,25 @@ class VisualMusicElement {
           symbol: _integerToSmufl(
             int.parse(signature.beats),
           ),
+          position: ElementPosition(
           step: Step.D,
           octave: 5,
+          ),
           defaultOffsetG4: const Offset(0, -5),
         ),
         VisualMusicElement(
           symbol: _integerToSmufl(
             int.parse(signature.beatType),
           ),
+          position: ElementPosition(
           step: Step.G,
           octave: 4,
+          ),
           defaultOffsetG4: const Offset(0, -5),
         )
       ];
     }
     return [];
-  }
-
-  factory VisualMusicElement.fromNote(Note note) {
-    switch (note) {
-      case GraceTieNote _:
-        throw UnimplementedError(
-          "Grace tie note is not implemented yet in renderer",
-        );
-      case GraceCueNote _:
-        throw UnimplementedError(
-          "Grace cue note is not implemented yet in renderer",
-        );
-      case CueNote _:
-        throw UnimplementedError(
-          "Cue note is not implemented yet in renderer",
-        );
-      case RegularNote _:
-        NoteForm noteForm = note.form;
-        Step? step;
-        int? octave;
-        switch (noteForm) {
-          case Pitch _:
-            step = noteForm.step;
-            octave = noteForm.octave;
-            break;
-          case Unpitched _:
-            throw UnimplementedError(
-              "Unpitched is not implemented yet in renderer",
-            );
-          case Rest _:
-            break;
-        }
-        String? symbol = note.type?.value.smuflSymbol;
-        symbol ??= "\uE4E3";
-        return VisualMusicElement(
-          symbol: symbol,
-          step: step ?? Step.C,
-          octave: octave ?? 5,
-          defaultOffsetG4: const Offset(0, -5),
-        );
-
-      default:
-        throw UnimplementedError(
-          "This error shouldn't occur, TODO: make switch exhaustively matched",
-        );
-    }
   }
 
   static String _integerToSmufl(int num) {

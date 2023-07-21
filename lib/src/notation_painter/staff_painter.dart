@@ -75,8 +75,8 @@ class StaffPainter extends CustomPainter {
         var musicElement = grid.getValue(i, j);
         if (musicElement == null) continue;
         double offsetY = _calculateElementOffsetY(
-          musicElement.step,
-          musicElement.octave,
+          musicElement.position.step,
+          musicElement.position.octave,
           musicElement.defaultOffset.dy,
         );
 
