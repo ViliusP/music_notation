@@ -1,13 +1,10 @@
 import 'package:flutter/rendering.dart';
 
 import 'package:music_notation/src/models/data_types/step.dart';
-import 'package:music_notation/src/models/elements/music_data/attributes/attributes.dart';
-import 'package:music_notation/src/models/elements/music_data/attributes/key.dart';
-import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
+
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
-import 'package:music_notation/src/notation_painter/clef_painter.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
 import 'package:music_notation/src/notation_painter/staff_painter_context.dart';
 
@@ -46,118 +43,88 @@ class StaffPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    StaffPainterContext context = StaffPainterContext(
+    context = StaffPainterContext(
       canvas: canvas,
       size: size,
     );
     var grid = notationGrid;
     // Iterating throug part/row.
     for (var i = 0; i < grid.data.rowCount; i++) {
+      _paintBarline(canvas, context);
+
       // Iterating throug measures/part.
-      _paintStaffLines(canvas, context);
       for (var j = 0; j < grid.data.columnCount; j++) {
-        // print("i-$i j-$j");
         var measureGrid = grid.data.getValue(i, j);
         _paintMeasure(grid: measureGrid);
-        // switch (musicElement) {
-        //   case Note _:
-        //     _drawNotes(context: context, note: musicElement);
-        //     break;
-        //   case Attributes _:
-        //     _drawAttributes(context: context, attributes: musicElement);
-        //     break;
-        //   default:
-        //     break;
-        // }
       }
+      _paintStaffLines(canvas, context);
+      _paintBarline(canvas, context);
+
+      context.resetX();
+      context.moveY(120);
     }
-    // for (var part in grid.data.) {
-    //   for (var measure in part) {}
-    // }
-    // for (var part in score.parts) {
-    //   context.currentPart = part;
-    //   for (var measure in part.measures) {
-    //     context.currentMeasure = measure;
-
-    //     _paintBarline(canvas, context);
-
-    //     for (var musicElement in measure.data) {
-    //       // measure.data.
-    //       switch (musicElement) {
-    //         case Note _:
-    //           _drawNotes(context: context, note: musicElement);
-    //           break;
-    //         case Attributes _:
-    //           _drawAttributes(context: context, attributes: musicElement);
-    //           break;
-    //         default:
-    //           break;
-    //       }
-    //     }
-    //   }
-    //   _paintStaffLines(canvas, context);
-    //   _paintBarline(canvas, context);
-
-    //   context.offset = Offset(0, context.offset.dy + 120);
-    // }
 
     PainterSettings().debugFrame ? paintCoordinates(canvas, size) : () {};
   }
 
   void _paintMeasure({required MeasureGrid grid}) {
-    // print(grid);
-
-    for (var i = -grid.distance; i < grid.distance; i++) {
-      for (var j = 0; j < grid.elementCount; j++) {
+    for (var j = 0; j < grid.elementCount; j++) {
+      for (var i = -grid.distance; i < grid.distance; i++) {
         var musicElement = grid.getValue(i, j);
-        // switch (musicElement) {
-        //   case Note _:
-        //     _drawNotes(context: context, note: musicElement);
-        //     break;
-        //   case Attributes _:
-        //     _drawAttributes(context: context, attributes: musicElement);
-        //     break;
-        //   default:
-        //     break;
-        // }
+        if (musicElement == null) continue;
+        double offsetY = _calculateElementOffsetY(
+          musicElement.step,
+          musicElement.octave,
+          musicElement.defaultOffset.dy,
+        );
+
+        drawSmuflSymbol(
+          context.canvas,
+          context.offset + Offset(0, offsetY),
+          musicElement.symbol,
+        );
       }
+      context.moveX(40);
     }
   }
 
-  void _drawNotes({
-    required StaffPainterContext context,
-    required Note note,
-  }) {
-    switch (note) {
-      case RegularNote _:
-        if (note.type != null) {
-          if (note.chord != null) {
-            context.offset += const Offset(-40, 0);
-          }
+  // void _drawNotes({
+  //   required StaffPainterContext context,
+  //   required Note note,
+  // }) {
+  //   switch (note) {
+  //     case RegularNote _:
+  //       if (note.type != null) {
+  //         if (note.chord != null) {
+  //           context.moveX(-40);
+  //         }
 
-          double offsetY = _calculateNoteOffsetY(note.form);
-          // double offsetX = _calculateNote
-          drawSmuflSymbol(
-            context.canvas,
-            context.offset + Offset(0, offsetY),
-            NoteHeadSmufl.getSmuflSymbol(note.type!.value),
-          );
-          var additionalLines = ledgerLines(note.form);
-          if (additionalLines != null) {
-            _paintLedgerLines(
-              canvas: context.canvas,
-              count: additionalLines.count,
-              placement: additionalLines.placement,
-              positionX: context.offset.dx,
-            );
-          }
-          context.offset += const Offset(40, 0);
-        }
-        break;
-      default:
-        break;
-    }
-  }
+  //         double offsetY = _calculateElementOffsetY(
+  //           note.form.step!,
+  //           note.form.octave!,
+  //         );
+  //         // double offsetX = _calculateNote
+  //         drawSmuflSymbol(
+  //           context.canvas,
+  //           context.offset + Offset(0, offsetY),
+  //           NoteHeadSmufl.getSmuflSymbol(note.type!.value),
+  //         );
+  //         var additionalLines = ledgerLines(note.form);
+  //         if (additionalLines != null) {
+  //           _paintLedgerLines(
+  //             canvas: context.canvas,
+  //             count: additionalLines.count,
+  //             placement: additionalLines.placement,
+  //             positionX: context.offset.dx,
+  //           );
+  //         }
+  //         context.moveX(40);
+  //       }
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  // }
 
   void _paintLedgerLines({
     required Canvas canvas,
@@ -198,7 +165,7 @@ class StaffPainter extends CustomPainter {
       linePainter,
     );
 
-    context.offset += const Offset(12, 0);
+    context.moveX(12);
   }
 
   ({int count, LedgerPlacement placement})? ledgerLines(NoteForm form) {
@@ -222,70 +189,73 @@ class StaffPainter extends CustomPainter {
     return null;
   }
 
-  double _calculateNoteOffsetY(NoteForm form) {
-    int octave = form.octave ?? 4;
+  double _calculateElementOffsetY(
+    Step step,
+    int octave, [
+    double startingY = 0,
+  ]) {
+    const distancePerOctace = 41;
+    const startingOctave = 4; // Because starting note is G4.
 
-    octave -= 4;
-
-    // TODO fix nullable
-    return (form.step ?? Step.G).calculateY(-5) - ((octave * 41) + octave);
+    return step.calculateY(startingY) -
+        ((octave - startingOctave) * distancePerOctace);
   }
 
-  void _drawAttributes({
-    required StaffPainterContext context,
-    required Attributes attributes,
-  }) {
-    for (var clef in attributes.clefs) {
-      ClefPainter(
-        clef: clef,
-        offset: context.offset,
-      ).paint(
-        context.canvas,
-        context.size,
-      );
-      context.offset += const Offset(48, 0);
-    }
-    for (var key in attributes.keys) {
-      switch (key) {
-        case TraditionalKey _:
-          break;
-        case NonTraditionalKey _:
-          break;
-        default:
-          break;
-      }
-    }
-    for (var time in attributes.times) {
-      switch (time) {
-        case TimeBeat _:
-          var signature = time.timeSignatures.firstOrNull;
-          if (signature != null) {
-            drawSmuflSymbol(
-              context.canvas,
-              context.offset + const Offset(0, (-staffHeight / 2) - 5),
-              integerToSmufl(int.parse(signature.beats)),
-            );
-            drawSmuflSymbol(
-              context.canvas,
-              context.offset + const Offset(0, -5),
-              integerToSmufl(int.parse(signature.beatType)),
-            );
+  // void _drawAttributes({
+  //   required StaffPainterContext context,
+  //   required Attributes attributes,
+  // }) {
+  //   for (var clef in attributes.clefs) {
+  //     ClefPainter(
+  //       clef: clef,
+  //       offset: context.offset,
+  //     ).paint(
+  //       context.canvas,
+  //       context.size,
+  //     );
+  //     context.moveX(48);
+  //   }
+  //   for (var key in attributes.keys) {
+  //     switch (key) {
+  //       case TraditionalKey _:
+  //         break;
+  //       case NonTraditionalKey _:
+  //         break;
+  //       default:
+  //         break;
+  //     }
+  //   }
+  //   for (var time in attributes.times) {
+  //     switch (time) {
+  //       case TimeBeat _:
+  //         var signature = time.timeSignatures.firstOrNull;
+  //         if (signature != null) {
+  //           drawSmuflSymbol(
+  //             context.canvas,
+  //             context.offset + const Offset(0, (-staffHeight / 2) - 5),
+  //             integerToSmufl(int.parse(signature.beats)),
+  //           );
+  //           drawSmuflSymbol(
+  //             context.canvas,
+  //             context.offset + const Offset(0, -5),
+  //             integerToSmufl(int.parse(signature.beatType)),
+  //           );
 
-            context.offset += const Offset(40, 0);
-          }
-          break;
-        case SenzaMisura _:
-          break;
-        default:
-          break;
-      }
-    }
-  }
+  //           context.moveX(40);
+  //         }
+  //         break;
+  //       case SenzaMisura _:
+  //         break;
+  //       default:
+  //         break;
+  //     }
+  //   }
+  // }
 
-  String integerToSmufl(int num) {
-    final unicodeValue = 0xE080 + num;
-    return String.fromCharCode(unicodeValue);
-  }
+  // String integerToSmufl(int num) {
+  //   final unicodeValue = 0xE080 + num;
+  //   return String.fromCharCode(unicodeValue);
+  // }
 
   void _paintStaffLines(Canvas canvas, StaffPainterContext context) {
     var lineY = 0.0;
@@ -396,10 +366,11 @@ extension NoteHeadSmufl on NoteTypeValue {
 }
 
 extension SymbolPosition on Step {
-  double calculateY(int startingY) {
+  /// Calculates something 🙂.
+  double calculateY(double startingY) {
     switch (this) {
       case Step.B:
-        return (startingY * 3) - 2;
+        return (startingY * 2.75) - 3.75;
       case Step.A:
         return (startingY * 2) - 1;
       case Step.G:
@@ -409,7 +380,7 @@ extension SymbolPosition on Step {
       case Step.E:
         return (startingY * -2) - 3;
       case Step.D:
-        return (startingY * -3) - 2;
+        return (startingY * -2.75) - 2.75;
       case Step.C:
         return (startingY * -4) - 1;
     }

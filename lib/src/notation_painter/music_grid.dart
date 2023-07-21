@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/bookmark.dart';
@@ -6,6 +8,7 @@ import 'package:music_notation/src/models/elements/listening.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/attributes.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/key.dart';
+import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
 import 'package:music_notation/src/models/elements/music_data/backup.dart';
 import 'package:music_notation/src/models/elements/music_data/barline.dart';
 import 'package:music_notation/src/models/elements/music_data/direction/direction.dart';
@@ -253,15 +256,17 @@ class MeasureGrid {
           break;
         case Attributes _:
           var attributeVisuals = _fromAttributes(musicElement, staff);
-          for (var visual in attributeVisuals) {
+          for (var attributesInColumn in attributeVisuals) {
             final column = List<VisualMusicElement?>.filled(
               positionsCount,
               null,
             );
-            var visualPosition = visual.step.position(visual.octave);
-            var g4Position = Step.G.position(4);
             grid._data.addColumn(column);
-            grid.setElement(g4Position - visualPosition, columnCount, visual);
+            for (var visual in attributesInColumn) {
+              var visualPosition = visual.step.position(visual.octave);
+              var g4Position = Step.G.position(4);
+              grid.setElement(g4Position - visualPosition, columnCount, visual);
+            }
             columnCount++;
           }
 
@@ -289,16 +294,16 @@ class MeasureGrid {
     return grid;
   }
 
-  static List<VisualMusicElement> _fromAttributes(
+  static List<List<VisualMusicElement>> _fromAttributes(
     Attributes attributes, [
     int? staff,
   ]) {
     // List<(int, VisualMusicElement)> visuals = [];
-    List<VisualMusicElement> visuals = [];
+    List<List<VisualMusicElement>> visuals = [];
     if (attributes.clefs.isNotEmpty) {
       if (attributes.clefs.length > 1 && staff == null) {
         throw UnimplementedError(
-          "Multiple clef signs is not implemented in rendeder yet",
+          "Multiple clef signs is not implemented in renderer yet",
         );
       }
       var visual = VisualMusicElement.fromClef(attributes.clefs.firstWhere(
@@ -307,20 +312,32 @@ class MeasureGrid {
       // var visualPosition = visual.step.position(visual.octave);
       // var g4Position = Step.G.position(4);
       // visuals.add((visualPosition - g4Position, visual));
-      visuals.add(visual);
+      visuals.add([visual]);
     }
     for (var key in attributes.keys) {
       switch (key) {
         case TraditionalKey _:
-          visuals.addAll(VisualMusicElement.fromTraditionalKey(key));
+          visuals.addAll(
+            VisualMusicElement.fromTraditionalKey(key).map((e) => [e]),
+          );
           break;
         case NonTraditionalKey _:
           throw UnimplementedError(
-            "Non traditional key is not implemented in rendeder yet",
+            "Non traditional key is not implemented in renderer yet",
           );
       }
     }
-
+    for (var times in attributes.times) {
+      switch (times) {
+        case TimeBeat _:
+          visuals.add(VisualMusicElement.fromTimeBeat(times));
+          break;
+        case SenzaMisura _:
+          throw UnimplementedError(
+            "Senza misura is not implemented in renderer yet",
+          );
+      }
+    }
     return visuals;
   }
 
@@ -334,13 +351,20 @@ class VisualMusicElement {
   final String _symbol;
   final Step step;
   final int octave;
+
+  /// Offset for element, so it could be painted correctly in G4 note position.
+  final Offset _defaultOffsetG4;
+  Offset get defaultOffset => _defaultOffsetG4;
+
   String get symbol => _symbol;
 
   VisualMusicElement({
     required String symbol,
     required this.step,
     required this.octave,
-  }) : _symbol = symbol;
+    Offset? defaultOffsetG4,
+  })  : _symbol = symbol,
+        _defaultOffsetG4 = defaultOffsetG4 ?? const Offset(0, 0);
 
   // factory VisualMusicElement.fromClef(Clef clef) {
   //   return
@@ -350,16 +374,19 @@ class VisualMusicElement {
     String? symbol = ClefPainter.clefSignToSymbol(clef);
     Step? step;
     int? octave;
+    Offset offset = const Offset(0, 0);
 
     switch (clef.sign) {
       case ClefSign.G:
         symbol = '\uE050';
         step = Step.G;
         octave = 4;
+        offset = const Offset(0, -5);
       case ClefSign.F:
         symbol = '\uE062';
         step = Step.D;
         octave = 5;
+        offset = const Offset(0, -5);
       case ClefSign.C:
         symbol = '\uE05C';
         step = Step.C;
@@ -370,7 +397,7 @@ class VisualMusicElement {
         octave = 4;
       case ClefSign.tab:
         throw UnimplementedError(
-          "'${clef.sign}' clef sign is not implemented in rendeder yet",
+          "'${clef.sign}' clef sign is not implemented in renderer yet",
         );
       // symbol = '\uE06D';
       default:
@@ -378,13 +405,14 @@ class VisualMusicElement {
     }
     if (symbol == null || step == null || octave == null) {
       throw UnimplementedError(
-        "'${clef.sign}' clef sign is not implemented in rendeder yet",
+        "'${clef.sign}' clef sign is not implemented in renderer yet",
       );
     }
     return VisualMusicElement(
       symbol: symbol,
       step: step,
       octave: octave,
+      defaultOffsetG4: offset,
     );
   }
 
@@ -410,8 +438,44 @@ class VisualMusicElement {
                 : Accidentals.accidentalFlat.codepoint,
             step: Step.fromString(k[0])!,
             octave: int.parse(k[1]),
+            defaultOffsetG4: const Offset(0, -5),
           ),
         )
         .toList();
+  }
+
+  static List<VisualMusicElement> fromTimeBeat(TimeBeat timeBeat) {
+    if (timeBeat.timeSignatures.length > 1) {
+      throw UnimplementedError(
+        "multiple beat and beat type in one time-beat are not implemented in renderer yet",
+      );
+    }
+    var signature = timeBeat.timeSignatures.firstOrNull;
+    if (signature != null) {
+      return [
+        VisualMusicElement(
+          symbol: _integerToSmufl(
+            int.parse(signature.beats),
+          ),
+          step: Step.D,
+          octave: 5,
+          defaultOffsetG4: const Offset(0, -5),
+        ),
+        VisualMusicElement(
+          symbol: _integerToSmufl(
+            int.parse(signature.beatType),
+          ),
+          step: Step.G,
+          octave: 4,
+          defaultOffsetG4: const Offset(0, -5),
+        )
+      ];
+    }
+    return [];
+  }
+
+  static String _integerToSmufl(int num) {
+    final unicodeValue = 0xE080 + num;
+    return String.fromCharCode(unicodeValue);
   }
 }
