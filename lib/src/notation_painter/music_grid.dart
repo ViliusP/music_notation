@@ -203,7 +203,7 @@ class NotationGrid {
 }
 
 class MeasureGrid {
-  static const positionsCount = 42;
+  static const gridHeight = 84;
 
   static const Step startingStep = Step.G;
   static const int statingOctave = 4;
@@ -215,12 +215,14 @@ class MeasureGrid {
 
   // Get the value at the given row and column
   VisualMusicElement? getValue(int row, int column) {
-    return _data.getValue(row + (positionsCount ~/ 2), column);
+    return _data.getValue(row + (gridHeight ~/ 2), column);
   }
 
-  // Set the value at the given row and column
-  void setElement(int row, int column, VisualMusicElement value) {
-    _data.setValue(row + (positionsCount ~/ 2), column, value);
+  /// Set the [value] at the given [column].
+  void setElement(VisualMusicElement value, int column) {
+    var visualPosition = value.step.position(value.octave);
+    int row = Step.G.position(4) - visualPosition;
+    _data.setValue(row + (gridHeight ~/ 2), column, value);
   }
 
   /// Maximum available positions above and below from G4
@@ -233,15 +235,21 @@ class MeasureGrid {
     return _data.columnCount;
   }
 
+  void addEmptyColumn() {
+    final column = List<VisualMusicElement?>.filled(
+      gridHeight,
+      null,
+    );
+    _data.addColumn(column);
+  }
+
   /// The [staff] must be provided if [measure] has multiple staves.
   factory MeasureGrid.fromMeasure(Measure measure, [int? staff]) {
     Grid<VisualMusicElement?> data = Grid();
-    for (var i = 0; i < positionsCount; i++) {
+    for (var i = 0; i < gridHeight; i++) {
       data.addRow();
     }
     MeasureGrid grid = MeasureGrid._(data);
-
-    int columnCount = 0;
 
     for (var musicElement in measure.data) {
       switch (musicElement) {
@@ -256,17 +264,11 @@ class MeasureGrid {
         case Attributes _:
           var attributeVisuals = _fromAttributes(musicElement, staff);
           for (var attributesInColumn in attributeVisuals) {
-            final column = List<VisualMusicElement?>.filled(
-              positionsCount,
-              null,
-            );
-            grid._data.addColumn(column);
+            grid.addEmptyColumn();
+
             for (var visual in attributesInColumn) {
-              var visualPosition = visual.step.position(visual.octave);
-              var g4Position = Step.G.position(4);
-              grid.setElement(g4Position - visualPosition, columnCount, visual);
+              grid.setElement(visual, grid.elementCount - 1);
             }
-            columnCount++;
           }
 
           break;
