@@ -368,9 +368,10 @@ extension NoteHeadSmufl on NoteTypeValue {
 extension SymbolPosition on Step {
   /// Calculates something 🙂.
   double calculateY(double startingY) {
+    // Need to fix "starting * n", because when it is startingY=0, it returns useless number.
     switch (this) {
       case Step.B:
-        return (startingY * 2.75) - 3.75;
+        return (startingY * 2.75) - 3;
       case Step.A:
         return (startingY * 2) - 1;
       case Step.G:
@@ -378,11 +379,11 @@ extension SymbolPosition on Step {
       case Step.F:
         return (startingY * 0) + 1;
       case Step.E:
-        return (startingY * -2) - 3;
+        return (startingY * -1.75) - 3;
       case Step.D:
-        return (startingY * -2.75) - 2.75;
+        return (startingY * -2.75) - 2;
       case Step.C:
-        return (startingY * -4) - 1;
+        return (startingY * -3.75) - 1;
     }
   }
 
