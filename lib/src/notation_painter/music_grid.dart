@@ -476,3 +476,24 @@ class VisualMusicElement {
     return String.fromCharCode(unicodeValue);
   }
 }
+
+extension NoteHeadSmufl on NoteTypeValue {
+  static const _smuflSymbols = {
+    NoteTypeValue.n1024th: '\uE0A4',
+    NoteTypeValue.n512th: '\uE0A4',
+    NoteTypeValue.n256th: '\uE0A4',
+    NoteTypeValue.n128th: '\uE0A4',
+    NoteTypeValue.n64th: '\uE0A4',
+    NoteTypeValue.n32nd: '\uE0A4',
+    NoteTypeValue.n16th: '\uE0A4',
+    NoteTypeValue.eighth: '\uE0A4',
+    NoteTypeValue.quarter: '\uE0A4',
+    NoteTypeValue.half: '\uE0A3',
+    NoteTypeValue.whole: '\uE0A2',
+    NoteTypeValue.breve: '\uE0A0',
+    NoteTypeValue.long: '\uE0A1',
+    NoteTypeValue.maxima: '\uE0A1',
+  };
+
+  String get smuflSymbol => _smuflSymbols[this]!;
+}
