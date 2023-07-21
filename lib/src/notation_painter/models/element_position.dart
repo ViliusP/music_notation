@@ -1,5 +1,18 @@
 import 'package:music_notation/src/models/data_types/step.dart';
 
+/// The position of a musical element in a diatonic scale.
+///
+/// An [ElementPosition] is defined by a step (A-G) and an octave. This allows
+/// for precise definition and comparison of positions in a musical context.
+///
+/// The class provides various methods and operators for comparing and
+/// manipulating the position of musical elements. It also provides a numerical
+/// representation based on the traditional notion of steps and octaves in a
+/// diatonic scale.
+///
+/// This class is used in the context of generating and manipulating musical
+/// scores and representations, enabling operations that require knowledge of
+/// the position of notes or other musical elements.
 class ElementPosition {
   final Step step;
   final int octave;
