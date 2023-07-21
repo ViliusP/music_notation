@@ -20,7 +20,6 @@ import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/print.dart';
 import 'package:music_notation/src/models/elements/music_data/sound/sound.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
-import 'package:music_notation/src/notation_painter/clef_painter.dart';
 import 'package:music_notation/src/notation_painter/staff_painter.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart' show Accidentals;
 
@@ -367,7 +366,7 @@ class VisualMusicElement {
   // }
 
   factory VisualMusicElement.fromClef(Clef clef) {
-    String? symbol = ClefPainter.clefSignToSymbol(clef);
+    String? symbol;
     Step? step;
     int? octave;
     Offset offset = const Offset(0, 0);
