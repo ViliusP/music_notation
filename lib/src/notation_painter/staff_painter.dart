@@ -56,8 +56,10 @@ class StaffPainter extends CustomPainter {
       for (var j = 0; j < grid.data.columnCount; j++) {
         var measureGrid = grid.data.getValue(i, j);
         _paintMeasure(grid: measureGrid);
+        if (j != grid.data.columnCount - 1) _paintBarline(canvas, context);
       }
       _paintStaffLines(canvas, context);
+
       _paintBarline(canvas, context);
 
       context.resetX();
