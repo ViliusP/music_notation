@@ -10,6 +10,10 @@ class StaffPainterContext {
     _offset += Offset(x, 0);
   }
 
+  void resetX() {
+    _offset = Offset(0, _offset.dy);
+  }
+
   void moveY(double y) {
     _offset += Offset(0, y);
   }
