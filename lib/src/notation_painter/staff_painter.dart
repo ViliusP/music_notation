@@ -31,7 +31,8 @@ class StaffPainter extends CustomPainter {
   static const int _staffLines = 5;
   static const double _staffLineStrokeWidth = 1;
   static const double ledgerLineWidth = 26;
-  static const double _noteStemHeight = 20;
+  static const double _noteStemHeight = 42;
+  static const double _stemStrokeWidth = 1.5;
 
   StaffPainter({
     required this.score,
@@ -81,13 +82,57 @@ class StaffPainter extends CustomPainter {
           musicElement.defaultOffset.dy,
         );
 
+        var offset = context.offset + Offset(0, offsetY);
+
         drawSmuflSymbol(
           context.canvas,
-          context.offset + Offset(0, offsetY),
+          offset,
           musicElement.symbol,
         );
+
+        if (musicElement is VisualNoteElement &&
+            musicElement.stemDirection != StemDirection.none) {
+          String? flagSymbol = musicElement.stemDirection == StemDirection.up
+              ? musicElement.flagUpSymbol
+              : musicElement.flagDownSymbol;
+
+          _drawStem(
+            noteOffset: offset,
+            flagSymbol: flagSymbol,
+            direction: musicElement.stemDirection,
+          );
+        }
       }
       context.moveX(40);
+    }
+  }
+
+  void _drawStem({
+    required Offset noteOffset,
+    String? flagSymbol,
+    required StemDirection direction,
+  }) {
+    // Stem offset note's offset.
+    Offset stemOffset = noteOffset + const Offset(15, 40);
+    if (direction == StemDirection.down) {
+      stemOffset = noteOffset + const Offset(1, 40);
+    }
+
+    int stemHeightMultiplier = direction == StemDirection.down ? 1 : -1;
+
+    context.canvas.drawLine(
+      stemOffset,
+      stemOffset + Offset(0, stemHeightMultiplier * _noteStemHeight),
+      Paint()
+        ..color = const Color.fromRGBO(0, 0, 0, 1.0)
+        ..strokeWidth = _stemStrokeWidth,
+    );
+    if (flagSymbol != null) {
+      var stemFlagOffset = direction == StemDirection.down
+          ? stemOffset
+          : noteOffset + const Offset(15, -_noteStemHeight);
+
+      drawSmuflSymbol(context.canvas, stemFlagOffset, flagSymbol);
     }
   }
 

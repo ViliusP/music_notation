@@ -374,8 +374,8 @@ class VisualNoteElement extends VisualMusicElement {
 
   VisualNoteElement.stemmed({
     required this.stemDirection,
-    required String this.flagUpSymbol,
-    required String this.flagDownSymbol,
+    required this.flagUpSymbol,
+    required this.flagDownSymbol,
     required super.symbol,
     required super.position,
     super.defaultOffsetG4,
@@ -432,8 +432,8 @@ class VisualNoteElement extends VisualMusicElement {
             symbol: symbol,
             position: notePosition,
             defaultOffsetG4: const Offset(0, -5),
-            flagDownSymbol: note.type!.value.downwardFlag!,
-            flagUpSymbol: note.type!.value.upwardFlag!,
+            flagDownSymbol: note.type!.value.downwardFlag,
+            flagUpSymbol: note.type!.value.upwardFlag,
             stemDirection: notePosition >= _staffMiddle
                 ? StemDirection.down
                 : StemDirection.up,
