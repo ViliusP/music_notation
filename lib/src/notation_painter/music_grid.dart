@@ -17,6 +17,7 @@ import 'package:music_notation/src/models/elements/music_data/forward.dart';
 import 'package:music_notation/src/models/elements/music_data/grouping.dart';
 import 'package:music_notation/src/models/elements/music_data/harmony/harmony.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
+import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/music_data/print.dart';
 import 'package:music_notation/src/models/elements/music_data/sound/sound.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
@@ -254,6 +255,13 @@ class MeasureGrid {
     for (var musicElement in measure.data) {
       switch (musicElement) {
         case Note _:
+          if (staff == musicElement.staff || staff == null) {
+            if (musicElement.chord == null || grid.elementCount == 0) {
+              grid.addEmptyColumn();
+            }
+            var noteVisual = VisualMusicElement.fromNote(musicElement);
+            grid.setElement(noteVisual, grid.elementCount - 1);
+          }
           break;
         case Backup _:
           break;
@@ -469,6 +477,52 @@ class VisualMusicElement {
       ];
     }
     return [];
+  }
+
+  factory VisualMusicElement.fromNote(Note note) {
+    switch (note) {
+      case GraceTieNote _:
+        throw UnimplementedError(
+          "Grace tie note is not implemented yet in renderer",
+        );
+      case GraceCueNote _:
+        throw UnimplementedError(
+          "Grace cue note is not implemented yet in renderer",
+        );
+      case CueNote _:
+        throw UnimplementedError(
+          "Cue note is not implemented yet in renderer",
+        );
+      case RegularNote _:
+        NoteForm noteForm = note.form;
+        Step? step;
+        int? octave;
+        switch (noteForm) {
+          case Pitch _:
+            step = noteForm.step;
+            octave = noteForm.octave;
+            break;
+          case Unpitched _:
+            throw UnimplementedError(
+              "Unpitched is not implemented yet in renderer",
+            );
+          case Rest _:
+            break;
+        }
+        String? symbol = note.type?.value.smuflSymbol;
+        symbol ??= "\uE4E3";
+        return VisualMusicElement(
+          symbol: symbol,
+          step: step ?? Step.C,
+          octave: octave ?? 5,
+          defaultOffsetG4: const Offset(0, -5),
+        );
+
+      default:
+        throw UnimplementedError(
+          "This error shouldn't occur, TODO: make switch exhaustively matched",
+        );
+    }
   }
 
   static String _integerToSmufl(int num) {
