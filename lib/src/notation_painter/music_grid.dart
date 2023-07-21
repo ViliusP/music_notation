@@ -298,7 +298,6 @@ class MeasureGrid {
     Attributes attributes, [
     int? staff,
   ]) {
-    // List<(int, VisualMusicElement)> visuals = [];
     List<List<VisualMusicElement>> visuals = [];
     if (attributes.clefs.isNotEmpty) {
       if (attributes.clefs.length > 1 && staff == null) {
@@ -309,9 +308,6 @@ class MeasureGrid {
       var visual = VisualMusicElement.fromClef(attributes.clefs.firstWhere(
         (element) => staff != null ? element.number == staff : true,
       ));
-      // var visualPosition = visual.step.position(visual.octave);
-      // var g4Position = Step.G.position(4);
-      // visuals.add((visualPosition - g4Position, visual));
       visuals.add([visual]);
     }
     for (var key in attributes.keys) {
