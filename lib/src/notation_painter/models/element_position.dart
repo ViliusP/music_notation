@@ -17,7 +17,7 @@ class ElementPosition {
   final Step step;
   final int octave;
 
-  ElementPosition({
+  const ElementPosition({
     required this.step,
     required this.octave,
   });

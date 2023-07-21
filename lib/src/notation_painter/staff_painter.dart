@@ -31,6 +31,7 @@ class StaffPainter extends CustomPainter {
   static const int _staffLines = 5;
   static const double _staffLineStrokeWidth = 1;
   static const double ledgerLineWidth = 26;
+  static const double _noteStemHeight = 20;
 
   StaffPainter({
     required this.score,
@@ -204,62 +205,6 @@ class StaffPainter extends CustomPainter {
     return step.calculateY(startingY) -
         ((octave - startingOctave) * distancePerOctace);
   }
-
-  // void _drawAttributes({
-  //   required StaffPainterContext context,
-  //   required Attributes attributes,
-  // }) {
-  //   for (var clef in attributes.clefs) {
-  //     ClefPainter(
-  //       clef: clef,
-  //       offset: context.offset,
-  //     ).paint(
-  //       context.canvas,
-  //       context.size,
-  //     );
-  //     context.moveX(48);
-  //   }
-  //   for (var key in attributes.keys) {
-  //     switch (key) {
-  //       case TraditionalKey _:
-  //         break;
-  //       case NonTraditionalKey _:
-  //         break;
-  //       default:
-  //         break;
-  //     }
-  //   }
-  //   for (var time in attributes.times) {
-  //     switch (time) {
-  //       case TimeBeat _:
-  //         var signature = time.timeSignatures.firstOrNull;
-  //         if (signature != null) {
-  //           drawSmuflSymbol(
-  //             context.canvas,
-  //             context.offset + const Offset(0, (-staffHeight / 2) - 5),
-  //             integerToSmufl(int.parse(signature.beats)),
-  //           );
-  //           drawSmuflSymbol(
-  //             context.canvas,
-  //             context.offset + const Offset(0, -5),
-  //             integerToSmufl(int.parse(signature.beatType)),
-  //           );
-
-  //           context.moveX(40);
-  //         }
-  //         break;
-  //       case SenzaMisura _:
-  //         break;
-  //       default:
-  //         break;
-  //     }
-  //   }
-  // }
-
-  // String integerToSmufl(int num) {
-  //   final unicodeValue = 0xE080 + num;
-  //   return String.fromCharCode(unicodeValue);
-  // }
 
   void _paintStaffLines(Canvas canvas, StaffPainterContext context) {
     var lineY = 0.0;

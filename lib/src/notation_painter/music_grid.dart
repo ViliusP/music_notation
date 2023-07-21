@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:collection/collection.dart';
+import 'package:flutter/widgets.dart';
 
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/bookmark.dart';
@@ -224,7 +225,7 @@ class MeasureGrid {
   void setElement(VisualMusicElement value, int column) {
     // TODO naming
     var visualPosition = value.position.numericPosition;
-    int row = ElementPosition(step: Step.G, octave: 4).numericPosition -
+    int row = const ElementPosition(step: Step.G, octave: 4).numericPosition -
         visualPosition;
     _data.setValue(row + (gridHeight ~/ 2), column, value);
   }
@@ -262,7 +263,7 @@ class MeasureGrid {
             if (musicElement.chord == null || grid.elementCount == 0) {
               grid.addEmptyColumn();
             }
-            var noteVisual = VisualMusicElement.fromNote(musicElement);
+            var noteVisual = VisualNoteElement.fromNote(musicElement);
             grid.setElement(noteVisual, grid.elementCount - 1);
           }
           break;
@@ -355,16 +356,103 @@ class MeasureGrid {
   }
 }
 
-class ElementPosition {
-  final Step step;
-  final int octave;
-
-  ElementPosition({
-    required this.step,
-    required this.octave,
-  });
+enum StemDirection {
+  up,
+  down,
+  none;
 }
 
+class VisualNoteElement extends VisualMusicElement {
+  final StemDirection stemDirection;
+  final String? flagUpSymbol;
+  final String? flagDownSymbol;
+
+  static const ElementPosition _staffMiddle = ElementPosition(
+    step: Step.B,
+    octave: 4,
+  );
+
+  VisualNoteElement.stemmed({
+    required this.stemDirection,
+    required String this.flagUpSymbol,
+    required String this.flagDownSymbol,
+    required super.symbol,
+    required super.position,
+    super.defaultOffsetG4,
+  });
+
+  VisualNoteElement.noStem({
+    required super.symbol,
+    required super.position,
+    super.defaultOffsetG4,
+  })  : stemDirection = StemDirection.none,
+        flagDownSymbol = null,
+        flagUpSymbol = null;
+
+  factory VisualNoteElement.fromNote(Note note) {
+    switch (note) {
+      case GraceTieNote _:
+        throw UnimplementedError(
+          "Grace tie note is not implemented yet in renderer",
+        );
+      case GraceCueNote _:
+        throw UnimplementedError(
+          "Grace cue note is not implemented yet in renderer",
+        );
+      case CueNote _:
+        throw UnimplementedError(
+          "Cue note is not implemented yet in renderer",
+        );
+      case RegularNote _:
+        NoteForm noteForm = note.form;
+        Step? step;
+        int? octave;
+        switch (noteForm) {
+          case Pitch _:
+            step = noteForm.step;
+            octave = noteForm.octave;
+            break;
+          case Unpitched _:
+            throw UnimplementedError(
+              "Unpitched is not implemented yet in renderer",
+            );
+          case Rest _:
+            break;
+        }
+        String? symbol = note.type?.value.smuflSymbol;
+        symbol ??= "\uE4E3";
+
+        var notePosition = ElementPosition(
+          step: step ?? Step.C,
+          octave: octave ?? 5,
+        );
+
+        if (note.type?.value.stemmed == true) {
+          return VisualNoteElement.stemmed(
+            symbol: symbol,
+            position: notePosition,
+            defaultOffsetG4: const Offset(0, -5),
+            flagDownSymbol: note.type!.value.downwardFlag!,
+            flagUpSymbol: note.type!.value.upwardFlag!,
+            stemDirection: notePosition >= _staffMiddle
+                ? StemDirection.down
+                : StemDirection.up,
+          );
+        }
+
+        return VisualNoteElement.noStem(
+          symbol: symbol,
+          position: notePosition,
+          defaultOffsetG4: const Offset(0, -5),
+        );
+
+      default:
+        throw UnimplementedError(
+          "This error shouldn't occur, TODO: make switch exhaustively matched",
+        );
+    }
+  }
+}
 
 class VisualMusicElement {
   final String _symbol;
@@ -453,8 +541,8 @@ class VisualMusicElement {
                 ? Accidentals.accidentalSharp.codepoint
                 : Accidentals.accidentalFlat.codepoint,
             position: ElementPosition(
-            step: Step.fromString(k[0])!,
-            octave: int.parse(k[1]),
+              step: Step.fromString(k[0])!,
+              octave: int.parse(k[1]),
             ),
             defaultOffsetG4: const Offset(0, -5),
           ),
@@ -475,9 +563,9 @@ class VisualMusicElement {
           symbol: _integerToSmufl(
             int.parse(signature.beats),
           ),
-          position: ElementPosition(
-          step: Step.D,
-          octave: 5,
+          position: const ElementPosition(
+            step: Step.D,
+            octave: 5,
           ),
           defaultOffsetG4: const Offset(0, -5),
         ),
@@ -485,9 +573,9 @@ class VisualMusicElement {
           symbol: _integerToSmufl(
             int.parse(signature.beatType),
           ),
-          position: ElementPosition(
-          step: Step.G,
-          octave: 4,
+          position: const ElementPosition(
+            step: Step.G,
+            octave: 4,
           ),
           defaultOffsetG4: const Offset(0, -5),
         )
@@ -503,22 +591,125 @@ class VisualMusicElement {
 }
 
 extension NoteHeadSmufl on NoteTypeValue {
-  static const _smuflSymbols = {
-    NoteTypeValue.n1024th: '\uE0A4',
-    NoteTypeValue.n512th: '\uE0A4',
-    NoteTypeValue.n256th: '\uE0A4',
-    NoteTypeValue.n128th: '\uE0A4',
-    NoteTypeValue.n64th: '\uE0A4',
-    NoteTypeValue.n32nd: '\uE0A4',
-    NoteTypeValue.n16th: '\uE0A4',
-    NoteTypeValue.eighth: '\uE0A4',
-    NoteTypeValue.quarter: '\uE0A4',
-    NoteTypeValue.half: '\uE0A3',
-    NoteTypeValue.whole: '\uE0A2',
-    NoteTypeValue.breve: '\uE0A0',
-    NoteTypeValue.long: '\uE0A1',
-    NoteTypeValue.maxima: '\uE0A1',
-  };
+  String get smuflSymbol {
+    switch (this) {
+      case NoteTypeValue.n1024th:
+        return '\uE0A4';
+      case NoteTypeValue.n512th:
+        return '\uE0A4';
+      case NoteTypeValue.n256th:
+        return '\uE0A4';
+      case NoteTypeValue.n128th:
+        return '\uE0A4';
+      case NoteTypeValue.n64th:
+        return '\uE0A4';
+      case NoteTypeValue.n32nd:
+        return '\uE0A4';
+      case NoteTypeValue.n16th:
+        return '\uE0A4';
+      case NoteTypeValue.eighth:
+        return '\uE0A4';
+      case NoteTypeValue.quarter:
+        return '\uE0A4';
+      case NoteTypeValue.half:
+        return '\uE0A3';
+      case NoteTypeValue.whole:
+        return '\uE0A2';
+      case NoteTypeValue.breve:
+        return '\uE0A0';
+      case NoteTypeValue.long:
+        return '\uE0A1';
+      case NoteTypeValue.maxima:
+        return '\uE0A1';
+    }
+  }
 
-  String get smuflSymbol => _smuflSymbols[this]!;
+  bool get stemmed {
+    switch (this) {
+      case NoteTypeValue.n1024th:
+        return true;
+      case NoteTypeValue.n512th:
+        return true;
+      case NoteTypeValue.n256th:
+        return true;
+      case NoteTypeValue.n128th:
+        return true;
+      case NoteTypeValue.n64th:
+        return true;
+      case NoteTypeValue.n32nd:
+        return true;
+      case NoteTypeValue.n16th:
+        return true;
+      case NoteTypeValue.eighth:
+        return true;
+      case NoteTypeValue.quarter:
+        return true;
+      case NoteTypeValue.half:
+        return true;
+      case NoteTypeValue.whole:
+        return false;
+      case NoteTypeValue.breve:
+        return false;
+      case NoteTypeValue.long:
+        return false;
+      case NoteTypeValue.maxima:
+        return false;
+    }
+  }
+
+  String? get upwardFlag {
+    switch (this) {
+      case NoteTypeValue.n1024th:
+        return '\uE24E';
+      case NoteTypeValue.n512th:
+        return '\uE24C';
+      case NoteTypeValue.n256th:
+        return '\uE24A';
+      case NoteTypeValue.n128th:
+        return '\uE248';
+      case NoteTypeValue.n64th:
+        return '\uE246';
+      case NoteTypeValue.n32nd:
+        return '\uE244';
+      case NoteTypeValue.n16th:
+        return '\uE242';
+      case NoteTypeValue.eighth:
+        return '\uE240';
+      case NoteTypeValue.quarter:
+      case NoteTypeValue.half:
+      case NoteTypeValue.whole:
+      case NoteTypeValue.breve:
+      case NoteTypeValue.long:
+      case NoteTypeValue.maxima:
+        return null;
+    }
+  }
+
+  String? get downwardFlag {
+    switch (this) {
+      case NoteTypeValue.n1024th:
+        return '\uE24F';
+      case NoteTypeValue.n512th:
+        return '\uE24D';
+      case NoteTypeValue.n256th:
+        return '\uE24B';
+      case NoteTypeValue.n128th:
+        return '\uE249';
+      case NoteTypeValue.n64th:
+        return '\uE247';
+      case NoteTypeValue.n32nd:
+        return '\uE245';
+      case NoteTypeValue.n16th:
+        return '\uE243';
+      case NoteTypeValue.eighth:
+        return '\uE241';
+      case NoteTypeValue.quarter:
+      case NoteTypeValue.half:
+      case NoteTypeValue.whole:
+      case NoteTypeValue.breve:
+      case NoteTypeValue.long:
+      case NoteTypeValue.maxima:
+        return null;
+    }
+  }
 }
