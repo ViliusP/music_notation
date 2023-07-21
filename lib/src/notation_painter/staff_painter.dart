@@ -8,6 +8,7 @@ import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
 import 'package:music_notation/src/notation_painter/clef_painter.dart';
+import 'package:music_notation/src/notation_painter/music_grid.dart';
 import 'package:music_notation/src/notation_painter/staff_painter_context.dart';
 
 class PainterSettings {
@@ -24,6 +25,8 @@ class PainterSettings {
 
 class StaffPainter extends CustomPainter {
   final ScorePartwise score;
+  final NotationGrid notationGrid;
+  late StaffPainterContext context;
 
   /// Settings
   static const double staffHeight = 48;
@@ -34,6 +37,7 @@ class StaffPainter extends CustomPainter {
 
   StaffPainter({
     required this.score,
+    required this.notationGrid,
   });
 
   final Paint _axisPaint = Paint()
@@ -46,26 +50,78 @@ class StaffPainter extends CustomPainter {
       canvas: canvas,
       size: size,
     );
-
-    for (var part in score.parts) {
-      for (var measure in part.measures) {
-        for (var musicElement in measure.data) {
-          switch (musicElement) {
-            case Note _:
-              _drawNotes(context: context, note: musicElement);
-              break;
-            case Attributes _:
-              _drawAttributes(context: context, attributes: musicElement);
-              break;
-            default:
-              break;
-          }
-        }
+    var grid = notationGrid;
+    // Iterating throug part/row.
+    for (var i = 0; i < grid.data.rowCount; i++) {
+      // Iterating throug measures/part.
+      _paintStaffLines(canvas, context);
+      for (var j = 0; j < grid.data.columnCount; j++) {
+        // print("i-$i j-$j");
+        var measureGrid = grid.data.getValue(i, j);
+        _paintMeasure(grid: measureGrid);
+        // switch (musicElement) {
+        //   case Note _:
+        //     _drawNotes(context: context, note: musicElement);
+        //     break;
+        //   case Attributes _:
+        //     _drawAttributes(context: context, attributes: musicElement);
+        //     break;
+        //   default:
+        //     break;
+        // }
       }
-      context.offset = Offset(0, context.offset.dy + 120);
     }
+    // for (var part in grid.data.) {
+    //   for (var measure in part) {}
+    // }
+    // for (var part in score.parts) {
+    //   context.currentPart = part;
+    //   for (var measure in part.measures) {
+    //     context.currentMeasure = measure;
+
+    //     _paintBarline(canvas, context);
+
+    //     for (var musicElement in measure.data) {
+    //       // measure.data.
+    //       switch (musicElement) {
+    //         case Note _:
+    //           _drawNotes(context: context, note: musicElement);
+    //           break;
+    //         case Attributes _:
+    //           _drawAttributes(context: context, attributes: musicElement);
+    //           break;
+    //         default:
+    //           break;
+    //       }
+    //     }
+    //   }
+    //   _paintStaffLines(canvas, context);
+    //   _paintBarline(canvas, context);
+
+    //   context.offset = Offset(0, context.offset.dy + 120);
+    // }
 
     PainterSettings().debugFrame ? paintCoordinates(canvas, size) : () {};
+  }
+
+  void _paintMeasure({required MeasureGrid grid}) {
+    // print(grid);
+
+    for (var i = -grid.distance; i < grid.distance; i++) {
+      for (var j = 0; j < grid.elementCount; j++) {
+        var musicElement = grid.getValue(i, j);
+        // switch (musicElement) {
+        //   case Note _:
+        //     _drawNotes(context: context, note: musicElement);
+        //     break;
+        //   case Attributes _:
+        //     _drawAttributes(context: context, attributes: musicElement);
+        //     break;
+        //   default:
+        //     break;
+        // }
+      }
+    }
   }
 
   void _drawNotes({
@@ -80,6 +136,7 @@ class StaffPainter extends CustomPainter {
           }
 
           double offsetY = _calculateNoteOffsetY(note.form);
+          // double offsetX = _calculateNote
           drawSmuflSymbol(
             context.canvas,
             context.offset + Offset(0, offsetY),
@@ -179,14 +236,13 @@ class StaffPainter extends CustomPainter {
     required Attributes attributes,
   }) {
     for (var clef in attributes.clefs) {
-      if (clef.sign.smufl != null) {
-        context.x += 10;
-
-        drawSmuflSymbol(
-          context.canvas,
-          Offset(context.x, -5),
-          clef.sign.smufl!,
-        );
+      ClefPainter(
+        clef: clef,
+        offset: context.offset,
+      ).paint(
+        context.canvas,
+        context.size,
+      );
       context.offset += const Offset(48, 0);
     }
     for (var key in attributes.keys) {
@@ -280,22 +336,22 @@ class StaffPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-  void drawSmuflSymbol(
-    Canvas canvas,
-    Offset offset,
-    String symbol, [
-    double fontSize = 48,
-  ]) {
-    final textStyle = TextStyle(
-      fontFamily: 'Sebastian',
-      fontSize: fontSize,
-      color: const Color.fromRGBO(0, 0, 0, 1.0),
-    );
-    final textPainter = TextPainter(
-      text: TextSpan(text: symbol, style: textStyle),
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout();
+void drawSmuflSymbol(
+  Canvas canvas,
+  Offset offset,
+  String symbol, [
+  double fontSize = 48,
+]) {
+  final textStyle = TextStyle(
+    fontFamily: 'Sebastian',
+    fontSize: fontSize,
+    color: const Color.fromRGBO(0, 0, 0, 1.0),
+  );
+  final textPainter = TextPainter(
+    text: TextSpan(text: symbol, style: textStyle),
+    textDirection: TextDirection.ltr,
+  );
+  textPainter.layout();
 
   if (PainterSettings().debugFrame) {
     final borderRect = Rect.fromLTWH(
@@ -304,17 +360,17 @@ class StaffPainter extends CustomPainter {
       textPainter.width + 8.0,
       textPainter.height + 8.0,
     );
-      final borderPaint = Paint()
-        ..color = const Color.fromRGBO(0, 0, 0, 1.0)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.0;
-      canvas.drawRect(borderRect, borderPaint);
-    }
-    textPainter.paint(
-      canvas,
-      Offset(offset.dx, offset.dy),
-    );
+    final borderPaint = Paint()
+      ..color = const Color.fromRGBO(0, 0, 0, 1.0)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+    canvas.drawRect(borderRect, borderPaint);
   }
+  textPainter.paint(
+    canvas,
+    Offset(offset.dx, offset.dy),
+  );
+}
 
 extension NoteHeadSmufl on NoteTypeValue {
   static const _smuflSymbols = {
@@ -359,6 +415,7 @@ extension SymbolPosition on Step {
     }
   }
 
+  /// Numeric representation of step in octave.
   int get numerical {
     switch (this) {
       case Step.B:
@@ -378,6 +435,12 @@ extension SymbolPosition on Step {
     }
   }
 
+  /// Calculates vertical note/music element position from C0. Note at `7` position
+  /// would be C1, on `25` position would be G3.
+  ///
+  /// Position is calculated from 'C0' because it is the lowest note on standard,
+  /// 88-key piano. Also, the frequency of C0 is approximately 16.35 Hz, which
+  /// is at the very lower end of the human hearing range.
   int position(int octave) => (octave * 7) + numerical;
 }
 

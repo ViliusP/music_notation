@@ -1,3 +1,4 @@
+import 'package:example/grid_debug.dart';
 import 'package:flutter/material.dart';
 import 'package:music_notation/music_notation.dart';
 import 'package:collection/collection.dart';
@@ -25,6 +26,19 @@ class _ScorePageState extends State<ScorePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add_alert),
+            tooltip: 'Show Snackbar',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => GridDebug(score: widget.scorePartwise),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
