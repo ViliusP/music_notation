@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:collection/collection.dart';
+
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/bookmark.dart';
 import 'package:music_notation/src/models/elements/link.dart';
@@ -21,7 +22,7 @@ import 'package:music_notation/src/models/elements/music_data/note/note_type.dar
 import 'package:music_notation/src/models/elements/music_data/print.dart';
 import 'package:music_notation/src/models/elements/music_data/sound/sound.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
-import 'package:music_notation/src/notation_painter/staff_painter.dart';
+import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart' show Accidentals;
 
 class Grid<T> extends Iterable<List<T>> {
@@ -222,8 +223,9 @@ class MeasureGrid {
   /// Set the [value] at the given [column].
   void setElement(VisualMusicElement value, int column) {
     // TODO naming
-    var visualPosition = value.position.step.position(value.position.octave);
-    int row = Step.G.position(4) - visualPosition;
+    var visualPosition = value.position.numericPosition;
+    int row = ElementPosition(step: Step.G, octave: 4).numericPosition -
+        visualPosition;
     _data.setValue(row + (gridHeight ~/ 2), column, value);
   }
 

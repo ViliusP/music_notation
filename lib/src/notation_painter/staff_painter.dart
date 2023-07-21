@@ -3,8 +3,8 @@ import 'package:flutter/rendering.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
 
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
-import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
+import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
 import 'package:music_notation/src/notation_painter/staff_painter_context.dart';
 
@@ -173,7 +173,9 @@ class StaffPainter extends CustomPainter {
   ({int count, LedgerPlacement placement})? ledgerLines(NoteForm form) {
     // TODO fix nullable
 
-    int position = (form.step ?? Step.G).position(form.octave ?? 4);
+    int position =
+        ElementPosition(step: form.step ?? Step.G, octave: form.octave ?? 4)
+            .numericPosition;
     // 29 - D in 4 octave.
     // 39 - G in 5 octave.
     if (position < 29) {
@@ -365,34 +367,6 @@ extension SymbolPosition on Step {
         return (startingY * -3.75) - 1;
     }
   }
-
-  /// Numeric representation of step in octave.
-  int get numerical {
-    switch (this) {
-      case Step.B:
-        return 6;
-      case Step.A:
-        return 5;
-      case Step.G:
-        return 4;
-      case Step.F:
-        return 3;
-      case Step.E:
-        return 2;
-      case Step.D:
-        return 1;
-      case Step.C:
-        return 0;
-    }
-  }
-
-  /// Calculates vertical note/music element position from C0. Note at `7` position
-  /// would be C1, on `25` position would be G3.
-  ///
-  /// Position is calculated from 'C0' because it is the lowest note on standard,
-  /// 88-key piano. Also, the frequency of C0 is approximately 16.35 Hz, which
-  /// is at the very lower end of the human hearing range.
-  int position(int octave) => (octave * 7) + numerical;
 }
 
 enum LedgerPlacement {

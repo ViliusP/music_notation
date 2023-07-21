@@ -79,7 +79,7 @@ class _VisualElementCard extends StatelessWidget {
           ),
           cell?.symbol != null
               ? Text(
-                  "${cell?.step}${cell?.octave}",
+                  "${cell?.position}",
                   style: const TextStyle(fontSize: 20),
                 )
               : const SizedBox.shrink(),
