@@ -3,6 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
 
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
+import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
@@ -91,8 +92,8 @@ class StaffPainter extends CustomPainter {
         );
 
         if (musicElement is VisualNoteElement &&
-            musicElement.stemDirection != StemDirection.none) {
-          String? flagSymbol = musicElement.stemDirection == StemDirection.up
+            musicElement.stemDirection != StemValue.none) {
+          String? flagSymbol = musicElement.stemDirection == StemValue.up
               ? musicElement.flagUpSymbol
               : musicElement.flagDownSymbol;
 
@@ -110,15 +111,15 @@ class StaffPainter extends CustomPainter {
   void _drawStem({
     required Offset noteOffset,
     String? flagSymbol,
-    required StemDirection direction,
+    required StemValue direction,
   }) {
     // Stem offset note's offset. 40 and 15 values are chosen manually.
     Offset stemOffset = noteOffset + const Offset(15, 40);
-    if (direction == StemDirection.down) {
+    if (direction == StemValue.down) {
       stemOffset = noteOffset + const Offset(1, 40);
     }
 
-    int stemHeightMultiplier = direction == StemDirection.down ? 1 : -1;
+    int stemHeightMultiplier = direction == StemValue.down ? 1 : -1;
 
     context.canvas.drawLine(
       stemOffset,
@@ -128,7 +129,7 @@ class StaffPainter extends CustomPainter {
         ..strokeWidth = _stemStrokeWidth,
     );
     if (flagSymbol != null) {
-      var stemFlagOffset = direction == StemDirection.down
+      var stemFlagOffset = direction == StemValue.down
           ? stemOffset
           : noteOffset + const Offset(15, -_noteStemHeight);
 

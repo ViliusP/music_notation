@@ -20,6 +20,7 @@ import 'package:music_notation/src/models/elements/music_data/grouping.dart';
 import 'package:music_notation/src/models/elements/music_data/harmony/harmony.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
+import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
 import 'package:music_notation/src/models/elements/music_data/print.dart';
 import 'package:music_notation/src/models/elements/music_data/sound/sound.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
@@ -356,14 +357,8 @@ class MeasureGrid {
   }
 }
 
-enum StemDirection {
-  up,
-  down,
-  none;
-}
-
 class VisualNoteElement extends VisualMusicElement {
-  final StemDirection stemDirection;
+  final StemValue stemDirection;
   final String? flagUpSymbol;
   final String? flagDownSymbol;
 
@@ -385,7 +380,7 @@ class VisualNoteElement extends VisualMusicElement {
     required super.symbol,
     required super.position,
     super.defaultOffsetG4,
-  })  : stemDirection = StemDirection.none,
+  })  : stemDirection = StemValue.none,
         flagDownSymbol = null,
         flagUpSymbol = null;
 
@@ -428,15 +423,16 @@ class VisualNoteElement extends VisualMusicElement {
         );
 
         if (note.type?.value.stemmed == true) {
+          var calculatedStemDirection =
+              notePosition >= _staffMiddle ? StemValue.down : StemValue.up;
+
           return VisualNoteElement.stemmed(
             symbol: symbol,
             position: notePosition,
             defaultOffsetG4: const Offset(0, -5),
             flagDownSymbol: note.type!.value.downwardFlag,
             flagUpSymbol: note.type!.value.upwardFlag,
-            stemDirection: notePosition >= _staffMiddle
-                ? StemDirection.down
-                : StemDirection.up,
+            stemDirection: note.stem?.value ?? calculatedStemDirection,
           );
         }
 
