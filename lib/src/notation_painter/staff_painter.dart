@@ -220,9 +220,10 @@ class StaffPainter extends CustomPainter {
   ({int count, LedgerPlacement placement})? ledgerLines(NoteForm form) {
     // TODO fix nullable
 
-    int position =
-        ElementPosition(step: form.step ?? Step.G, octave: form.octave ?? 4)
-            .numericPosition;
+    int position = ElementPosition(
+      step: form.step ?? Step.G,
+      octave: form.octave ?? 4,
+    ).numericPosition;
     // 29 - D in 4 octave.
     // 39 - G in 5 octave.
     if (position < 29) {
