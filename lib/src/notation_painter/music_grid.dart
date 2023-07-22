@@ -362,6 +362,27 @@ class VisualNoteElement extends VisualMusicElement {
   final String? flagUpSymbol;
   final String? flagDownSymbol;
 
+  /// Ledger line count. Minus value means that ledger lines are under staff. Positive
+  /// value means that ledger lines are above staff.
+  int get ledgerLines {
+    int position = this.position.numericPosition;
+    int distance = 0;
+
+    // 29 - D in 4 octave.
+    // 39 - G in 5 octave.
+    if (position < 29) {
+      distance = (29 - position);
+
+      return -(distance / 2).ceil();
+    }
+
+    if (position > 39) {
+      distance = position - 39;
+    }
+
+    return (distance / 2).ceil();
+  }
+
   static const ElementPosition _staffMiddle = ElementPosition(
     step: Step.B,
     octave: 4,

@@ -1,4 +1,5 @@
 import 'package:flutter/rendering.dart';
+import 'package:music_notation/src/models/data_types/placement.dart';
 
 import 'package:music_notation/src/models/data_types/step.dart';
 
@@ -30,7 +31,7 @@ class StaffPainter extends CustomPainter {
   static const double staffHeight = 48;
   static const lineSpacing = staffHeight / 4;
   static const int _staffLines = 5;
-  static const double _staffLineStrokeWidth = 1;
+  static const double _staffLineStrokeWidth = 2;
   static const double ledgerLineWidth = 26;
   static const double _noteStemHeight = 42;
   static const double _stemStrokeWidth = 1.5;
@@ -74,6 +75,8 @@ class StaffPainter extends CustomPainter {
 
   void _paintMeasure({required MeasureGrid grid}) {
     for (var j = 0; j < grid.elementCount; j++) {
+      VisualNoteElement? lowestNote;
+      VisualNoteElement? highestNote;
       for (var i = -grid.distance; i < grid.distance; i++) {
         var musicElement = grid.getValue(i, j);
         if (musicElement == null) continue;
@@ -90,6 +93,10 @@ class StaffPainter extends CustomPainter {
           offset,
           musicElement.symbol,
         );
+        if (musicElement is VisualNoteElement) {
+          lowestNote ??= musicElement;
+          highestNote = musicElement;
+        }
 
         if (musicElement is VisualNoteElement &&
             musicElement.stemDirection != StemValue.none) {
@@ -103,6 +110,11 @@ class StaffPainter extends CustomPainter {
             direction: musicElement.stemDirection,
           );
         }
+      }
+      if (lowestNote != null) {
+        _paintLedgerLines(
+          count: lowestNote.ledgerLines,
+        );
       }
       context.moveX(40);
     }
@@ -176,24 +188,25 @@ class StaffPainter extends CustomPainter {
   // }
 
   void _paintLedgerLines({
-    required Canvas canvas,
     required int count,
-    required LedgerPlacement placement,
-    required double positionX,
   }) {
-    int multiplier = placement == LedgerPlacement.below ? 1 : -1;
+    if (count == 0) {
+      return;
+    }
 
-    double startingY = placement == LedgerPlacement.below ? 48 : 0;
+    int multiplier = count.isNegative ? 1 : -1;
+
+    double startingY = count.isNegative ? 48 : 0;
 
     var positionY = (startingY + lineSpacing) * multiplier;
-    for (var i = 0; i < count; i++) {
-      double center = 7.5 + positionX;
-      double x1 = center - (ledgerLineWidth / 2);
-      double x2 = center + (ledgerLineWidth / 2);
+    for (var i = 0; i < count.abs(); i++) {
+      // double center = 7.5 + context.offset.dx;
+      // double x1 = center - (ledgerLineWidth / 2);
+      // double x2 = center + (ledgerLineWidth / 2);
 
-      canvas.drawLine(
-        Offset(x1, positionY),
-        Offset(x2, positionY),
+      context.canvas.drawLine(
+        context.offset + Offset(multiplier * -5, positionY),
+        context.offset + Offset(multiplier * 20, positionY),
         Paint()
           ..color = const Color.fromRGBO(0, 0, 0, 1.0)
           ..strokeWidth = _staffLineStrokeWidth * 1,
@@ -215,30 +228,6 @@ class StaffPainter extends CustomPainter {
     );
 
     context.moveX(12);
-  }
-
-  ({int count, LedgerPlacement placement})? ledgerLines(NoteForm form) {
-    // TODO fix nullable
-
-    int position = ElementPosition(
-      step: form.step ?? Step.G,
-      octave: form.octave ?? 4,
-    ).numericPosition;
-    // 29 - D in 4 octave.
-    // 39 - G in 5 octave.
-    if (position < 29) {
-      int distance = 29 - position;
-
-      return (count: (distance / 2).ceil(), placement: LedgerPlacement.below);
-    }
-
-    if (position > 39) {
-      int distance = position - 39;
-
-      return (count: (distance / 2).ceil(), placement: LedgerPlacement.above);
-    }
-
-    return null;
   }
 
   double _calculateElementOffsetY(
