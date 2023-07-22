@@ -1,12 +1,10 @@
 import 'package:flutter/rendering.dart';
-import 'package:music_notation/src/models/data_types/placement.dart';
 
 import 'package:music_notation/src/models/data_types/step.dart';
 
-import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
-import 'package:music_notation/src/notation_painter/models/element_position.dart';
+import 'package:music_notation/src/notation_painter/models/visual_note_element.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
 import 'package:music_notation/src/notation_painter/staff_painter_context.dart';
 
@@ -112,6 +110,7 @@ class StaffPainter extends CustomPainter {
         }
       }
       if (lowestNote != null) {
+        print("${lowestNote.position} ${lowestNote.ledgerLines}");
         _paintLedgerLines(
           count: lowestNote.ledgerLines,
         );
