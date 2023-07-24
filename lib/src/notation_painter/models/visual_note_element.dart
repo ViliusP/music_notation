@@ -16,17 +16,18 @@ class VisualNoteElement extends VisualMusicElement {
   int get ledgerLines {
     int position = this.position.numericPosition;
     int distance = 0;
+    const d4 = ElementPosition(octave: 4, step: Step.D);
+    const g5 = ElementPosition(octave: 5, step: Step.G);
 
-    // 29 - D in 4 octave.
     // 39 - G in 5 octave.
-    if (position < 29) {
-      distance = (29 - position);
+    if (position < d4.numericPosition) {
+      distance = (d4.numericPosition - position);
 
       return -(distance / 2).ceil();
     }
 
-    if (position > 39) {
-      distance = position - 39;
+    if (position > g5.numericPosition) {
+      distance = position - g5.numericPosition;
     }
 
     return (distance / 2).ceil();
