@@ -92,8 +92,8 @@ class StaffPainter extends CustomPainter {
           musicElement.symbol,
         );
         if (musicElement is VisualNoteElement) {
-          lowestNote ??= musicElement;
-          highestNote = musicElement;
+          lowestNote = musicElement;
+          highestNote ??= musicElement;
         }
 
         if (musicElement is VisualNoteElement &&
