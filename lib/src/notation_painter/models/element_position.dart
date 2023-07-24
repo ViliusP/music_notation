@@ -109,4 +109,9 @@ class ElementPosition {
 
   @override
   int get hashCode => Object.hash(step, octave);
+
+  static const ElementPosition staffMiddle = ElementPosition(
+    step: Step.B,
+    octave: 4,
+  );
 }
