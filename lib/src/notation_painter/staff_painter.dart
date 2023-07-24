@@ -78,11 +78,22 @@ class StaffPainter extends CustomPainter {
       for (var i = -grid.distance; i < grid.distance; i++) {
         var musicElement = grid.getValue(i, j);
         if (musicElement == null) continue;
-
         var offset = context.offset +
             musicElement.defaultOffset +
             musicElement.position.step
                 .calculteOffset(musicElement.position.octave);
+
+        // 'highestNote' is same as note before.
+        // The stem is always placed between the two notes of an interval of a 2nd,
+        // with the upper note always to the right, the lower note always to the left.
+        if (highestNote != null && musicElement is VisualNoteElement) {
+          var distance = (highestNote.position.numericPosition -
+                  musicElement.position.numericPosition)
+              .abs();
+          if (distance == 1) {
+            offset += const Offset(14, 0);
+          }
+        }
 
         drawSmuflSymbol(
           context.canvas,
