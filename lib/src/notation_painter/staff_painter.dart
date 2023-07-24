@@ -95,27 +95,102 @@ class StaffPainter extends CustomPainter {
           lowestNote = musicElement;
           highestNote ??= musicElement;
         }
-
-        if (musicElement is VisualNoteElement &&
-            musicElement.stemDirection != StemValue.none) {
-          String? flagSymbol = musicElement.stemDirection == StemValue.up
-              ? musicElement.flagUpSymbol
-              : musicElement.flagDownSymbol;
-
-          _drawStem(
-            noteOffset: offset,
-            flagSymbol: flagSymbol,
-            direction: musicElement.stemDirection,
-          );
-        }
       }
       if (lowestNote != null) {
-        print("${lowestNote.position} ${lowestNote.ledgerLines}");
         _paintLedgerLines(
           count: lowestNote.ledgerLines,
         );
       }
+      _drawStemForColumn(lowestNote, highestNote);
+
       context.moveX(40);
+    }
+  }
+
+  /// Notes below line 3 have up stems on the right side of the notehead.
+
+  /// Notes on or above line 3 have down stems on the left side of the notehead.
+  ///
+  /// The stem is awalys placed between the two notes of an interval of a 2nd,
+  /// with the upper note always to the right, the lower note always to the left.
+  ///
+  /// When two notes share a stem:
+  /// - If the interval above the middle line is greater, the stem goes down;
+  /// - If the interval below the middle line is geater, the stem goes up;
+  /// - If the intervals above and below the middle ine are equidistant, the stem
+  /// goes down;
+  ///
+  /// When more than two notes share a stem, the direction is determined by the
+  /// highest and the lowest notes:
+  /// - If the interval from the highest note to the middle line is greater,
+  /// the stem goes down;
+  /// - If the interval from the lowest note to the middle line is greater, the
+  /// stem goes up;
+  /// - If equidistant the stem goes down.
+  ///
+  /// TODO: need to take account of different voices on the same staff:
+  /// If you are writing two vocies on the same staff, the stems for the upper
+  /// voice will go up, and the stems for the lower voice will go down.
+  void _drawStemForColumn(
+    VisualNoteElement? lowestNote,
+    VisualNoteElement? highestNote,
+  ) {
+    // If only one note exists in column.
+    if (lowestNote != null && lowestNote == highestNote && lowestNote.stemmed) {
+      double offsetY = _calculateElementOffsetY(
+        lowestNote.position.step,
+        lowestNote.position.octave,
+        lowestNote.defaultOffset.dy,
+      );
+
+      var offset = context.offset + Offset(0, offsetY);
+
+      final StemValue stemDirection =
+          lowestNote.distanceFromMiddle < 0 ? StemValue.up : StemValue.down;
+
+      String? flagSymbol = stemDirection == StemValue.up
+          ? lowestNote.flagUpSymbol
+          : lowestNote.flagDownSymbol;
+
+      _drawStem(
+        noteOffset: offset,
+        flagSymbol: flagSymbol,
+        direction: stemDirection,
+      );
+    }
+    if (lowestNote != null &&
+        highestNote != null &&
+        lowestNote != highestNote) {
+      StemValue stemDirection = StemValue.down;
+
+      if (lowestNote.distanceFromMiddle.abs() >
+          highestNote.distanceFromMiddle.abs()) {
+        stemDirection = StemValue.up;
+      }
+      double lowestNoteY = _calculateElementOffsetY(
+        lowestNote.position.step,
+        lowestNote.position.octave,
+        lowestNote.defaultOffset.dy,
+      );
+
+      double highestNoteY = _calculateElementOffsetY(
+        highestNote.position.step,
+        highestNote.position.octave,
+        highestNote.defaultOffset.dy,
+      );
+
+      String? flagSymbol = stemDirection == StemValue.up
+          ? lowestNote.flagUpSymbol
+          : lowestNote.flagDownSymbol;
+
+      var offset = context.offset + Offset(0, lowestNoteY);
+
+      _drawStem(
+        noteOffset: offset,
+        flagSymbol: flagSymbol,
+        direction: stemDirection,
+        stemHeight: _noteStemHeight + lowestNoteY - highestNoteY,
+      );
     }
   }
 
@@ -123,6 +198,7 @@ class StaffPainter extends CustomPainter {
     required Offset noteOffset,
     String? flagSymbol,
     required StemValue direction,
+    double stemHeight = _noteStemHeight,
   }) {
     // Stem offset note's offset. 40 and 15 values are chosen manually.
     Offset stemOffset = noteOffset + const Offset(15, 40);
@@ -134,7 +210,7 @@ class StaffPainter extends CustomPainter {
 
     context.canvas.drawLine(
       stemOffset,
-      stemOffset + Offset(0, stemHeightMultiplier * _noteStemHeight),
+      stemOffset + Offset(0, stemHeightMultiplier * stemHeight),
       Paint()
         ..color = const Color.fromRGBO(0, 0, 0, 1.0)
         ..strokeWidth = _stemStrokeWidth,
@@ -142,49 +218,11 @@ class StaffPainter extends CustomPainter {
     if (flagSymbol != null) {
       var stemFlagOffset = direction == StemValue.down
           ? stemOffset
-          : noteOffset + const Offset(15, -_noteStemHeight);
+          : noteOffset + Offset(15, -stemHeight);
 
       drawSmuflSymbol(context.canvas, stemFlagOffset, flagSymbol);
     }
   }
-
-  // void _drawNotes({
-  //   required StaffPainterContext context,
-  //   required Note note,
-  // }) {
-  //   switch (note) {
-  //     case RegularNote _:
-  //       if (note.type != null) {
-  //         if (note.chord != null) {
-  //           context.moveX(-40);
-  //         }
-
-  //         double offsetY = _calculateElementOffsetY(
-  //           note.form.step!,
-  //           note.form.octave!,
-  //         );
-  //         // double offsetX = _calculateNote
-  //         drawSmuflSymbol(
-  //           context.canvas,
-  //           context.offset + Offset(0, offsetY),
-  //           NoteHeadSmufl.getSmuflSymbol(note.type!.value),
-  //         );
-  //         var additionalLines = ledgerLines(note.form);
-  //         if (additionalLines != null) {
-  //           _paintLedgerLines(
-  //             canvas: context.canvas,
-  //             count: additionalLines.count,
-  //             placement: additionalLines.placement,
-  //             positionX: context.offset.dx,
-  //           );
-  //         }
-  //         context.moveX(40);
-  //       }
-  //       break;
-  //     default:
-  //       break;
-  //   }
-  // }
 
   void _paintLedgerLines({
     required int count,

@@ -7,6 +7,7 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 import 'package:music_notation/src/notation_painter/models/visual_music_element.dart';
 
 class VisualNoteElement extends VisualMusicElement {
+  final bool stemmed;
   final String? flagUpSymbol;
   final String? flagDownSymbol;
 
@@ -37,13 +38,14 @@ class VisualNoteElement extends VisualMusicElement {
     required super.symbol,
     required super.position,
     super.defaultOffsetG4,
-  });
+  }) : stemmed = true;
 
   VisualNoteElement.noStem({
     required super.symbol,
     required super.position,
     super.defaultOffsetG4,
-  })  : flagDownSymbol = null,
+  })  : stemmed = false,
+        flagDownSymbol = null,
         flagUpSymbol = null;
 
   factory VisualNoteElement.fromNote(Note note) {
