@@ -217,6 +217,17 @@ class MeasureGrid {
     return _data.getValue(row + (gridHeight ~/ 2), column);
   }
 
+  // Get the value at the given row and column
+  VisualMusicElement? nextNoteInColumn(int row, int column) {
+    for (int i = row + 1; i < distance; i++) {
+      var element = getValue(i, column);
+      if (element is VisualNoteElement) {
+        return element;
+      }
+    }
+    return null;
+  }
+
   /// Set the [value] at the given [column].
   void setElement(VisualMusicElement value, int column) {
     // TODO naming

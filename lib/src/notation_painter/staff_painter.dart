@@ -90,8 +90,8 @@ class StaffPainter extends CustomPainter {
           musicElement.symbol,
         );
         if (musicElement is VisualNoteElement) {
-          lowestNote = musicElement;
-          highestNote ??= musicElement;
+          lowestNote ??= musicElement;
+          highestNote = musicElement;
         }
       }
       if (lowestNote != null) {
@@ -157,7 +157,7 @@ class StaffPainter extends CustomPainter {
         lowestNote != highestNote) {
       StemValue stemDirection = StemValue.down;
 
-      if (lowestNote.distanceFromMiddle.abs() >
+      if (lowestNote.distanceFromMiddle.abs() <
           highestNote.distanceFromMiddle.abs()) {
         stemDirection = StemValue.up;
       }
@@ -175,11 +175,11 @@ class StaffPainter extends CustomPainter {
           : lowestNote.flagDownSymbol;
 
       _drawStem(
-        noteOffset: lowestNoteOffsetY,
+        noteOffset: highestNoteOffsetY,
         flagSymbol: flagSymbol,
         direction: stemDirection,
         stemHeight:
-            _noteStemHeight + lowestNoteOffsetY.dy - highestNoteOffsetY.dy,
+            _noteStemHeight - lowestNoteOffsetY.dy + highestNoteOffsetY.dy,
       );
     }
   }
