@@ -29,7 +29,7 @@ class StaffPainter extends CustomPainter {
   static const double staffHeight = 48;
   static const lineSpacing = staffHeight / 4;
   static const int _staffLines = 5;
-  static const double _staffLineStrokeWidth = 2;
+  static const double staffLineStrokeWidth = 2;
   static const double ledgerLineWidth = 26;
   static const double _noteStemHeight = 42;
   static const double _stemStrokeWidth = 1.5;
@@ -78,13 +78,11 @@ class StaffPainter extends CustomPainter {
       for (var i = -grid.distance; i < grid.distance; i++) {
         var musicElement = grid.getValue(i, j);
         if (musicElement == null) continue;
-        double offsetY = _calculateElementOffsetY(
-          musicElement.position.step,
-          musicElement.position.octave,
-          musicElement.defaultOffset.dy,
-        );
 
-        var offset = context.offset + Offset(0, offsetY);
+        var offset = context.offset +
+            musicElement.defaultOffset +
+            musicElement.position.step
+                .calculteOffset(musicElement.position.octave);
 
         drawSmuflSymbol(
           context.canvas,
@@ -137,13 +135,9 @@ class StaffPainter extends CustomPainter {
   ) {
     // If only one note exists in column.
     if (lowestNote != null && lowestNote == highestNote && lowestNote.stemmed) {
-      double offsetY = _calculateElementOffsetY(
-        lowestNote.position.step,
-        lowestNote.position.octave,
-        lowestNote.defaultOffset.dy,
-      );
-
-      var offset = context.offset + Offset(0, offsetY);
+      var offset = context.offset +
+          lowestNote.defaultOffset +
+          lowestNote.position.step.calculteOffset(lowestNote.position.octave);
 
       final StemValue stemDirection =
           lowestNote.distanceFromMiddle < 0 ? StemValue.up : StemValue.down;
@@ -167,29 +161,25 @@ class StaffPainter extends CustomPainter {
           highestNote.distanceFromMiddle.abs()) {
         stemDirection = StemValue.up;
       }
-      double lowestNoteY = _calculateElementOffsetY(
-        lowestNote.position.step,
-        lowestNote.position.octave,
-        lowestNote.defaultOffset.dy,
-      );
 
-      double highestNoteY = _calculateElementOffsetY(
-        highestNote.position.step,
-        highestNote.position.octave,
-        highestNote.defaultOffset.dy,
-      );
+      var lowestNoteOffsetY = context.offset +
+          lowestNote.defaultOffset +
+          lowestNote.position.step.calculteOffset(lowestNote.position.octave);
+
+      var highestNoteOffsetY = context.offset +
+          highestNote.defaultOffset +
+          highestNote.position.step.calculteOffset(highestNote.position.octave);
 
       String? flagSymbol = stemDirection == StemValue.up
           ? lowestNote.flagUpSymbol
           : lowestNote.flagDownSymbol;
 
-      var offset = context.offset + Offset(0, lowestNoteY);
-
       _drawStem(
-        noteOffset: offset,
+        noteOffset: lowestNoteOffsetY,
         flagSymbol: flagSymbol,
         direction: stemDirection,
-        stemHeight: _noteStemHeight + lowestNoteY - highestNoteY,
+        stemHeight:
+            _noteStemHeight + lowestNoteOffsetY.dy - highestNoteOffsetY.dy,
       );
     }
   }
@@ -237,16 +227,12 @@ class StaffPainter extends CustomPainter {
 
     var positionY = (startingY + lineSpacing) * multiplier;
     for (var i = 0; i < count.abs(); i++) {
-      // double center = 7.5 + context.offset.dx;
-      // double x1 = center - (ledgerLineWidth / 2);
-      // double x2 = center + (ledgerLineWidth / 2);
-
       context.canvas.drawLine(
         context.offset + Offset(multiplier * -5, positionY),
         context.offset + Offset(multiplier * 20, positionY),
         Paint()
           ..color = const Color.fromRGBO(0, 0, 0, 1.0)
-          ..strokeWidth = _staffLineStrokeWidth * 1,
+          ..strokeWidth = staffLineStrokeWidth,
       );
 
       positionY += multiplier * lineSpacing;
@@ -267,18 +253,6 @@ class StaffPainter extends CustomPainter {
     context.moveX(12);
   }
 
-  double _calculateElementOffsetY(
-    Step step,
-    int octave, [
-    double startingY = 0,
-  ]) {
-    const distancePerOctace = 41;
-    const startingOctave = 4; // Because starting note is G4.
-
-    return step.calculateY(startingY) -
-        ((octave - startingOctave) * distancePerOctace);
-  }
-
   void _paintStaffLines(Canvas canvas, StaffPainterContext context) {
     var lineY = 0.0;
     for (var i = 0; i < _staffLines; i++) {
@@ -288,9 +262,9 @@ class StaffPainter extends CustomPainter {
         Offset(context.offset.dx, lineY + context.offset.dy),
         Paint()
           ..color = const Color.fromRGBO(0, 0, 0, 1.0)
-          ..strokeWidth = _staffLineStrokeWidth,
+          ..strokeWidth = staffLineStrokeWidth,
       );
-      lineY = (i + 1) * (lineSpacing);
+      lineY += lineSpacing;
     }
   }
 
@@ -365,25 +339,28 @@ void drawSmuflSymbol(
 }
 
 extension SymbolPosition on Step {
-  /// Calculates something 🙂.
-  double calculateY(double startingY) {
-    // Need to fix "starting * n", because when it is startingY=0, it returns useless number.
+  /// Calculates offset needed to draw on staff.
+  Offset calculteOffset(int octave) {
+    double offsetY;
+
     switch (this) {
       case Step.B:
-        return (startingY * 2.75) - 3;
+        offsetY = 2;
       case Step.A:
-        return (startingY * 2) - 1;
+        offsetY = 1;
       case Step.G:
-        return (startingY * 1);
+        offsetY = 0;
       case Step.F:
-        return (startingY * 0) + 1;
+        offsetY = -1;
       case Step.E:
-        return (startingY * -1.75) - 3;
+        offsetY = -2;
       case Step.D:
-        return (startingY * -2.75) - 2;
+        offsetY = -3;
       case Step.C:
-        return (startingY * -3.75) - 1;
+        offsetY = -4;
     }
+    return Offset(0, (StaffPainter.lineSpacing / 2) * -offsetY) +
+        Offset(0, (octave - 4) * -42);
   }
 }
 
