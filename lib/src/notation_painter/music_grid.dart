@@ -5,6 +5,7 @@ import 'package:music_notation/src/models/elements/bookmark.dart';
 import 'package:music_notation/src/models/elements/link.dart';
 import 'package:music_notation/src/models/elements/listening.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/attributes.dart';
+import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/key.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
 import 'package:music_notation/src/models/elements/music_data/backup.dart';
@@ -184,13 +185,29 @@ class NotationGrid {
       for (var i = 0; i < staves; i++) {
         data.addRow();
       }
-
+      List<MeasureGrid> lastMeasures = [];
       for (var measure in part.measures) {
         for (var i = 0; i < staves; i++) {
+          Clef? clef;
+          if (lastMeasures.length >= i + 1) {
+            clef = lastMeasures[i]._clef;
+          }
+
+          var measureGrid = MeasureGrid.fromMeasure(
+            measure: measure,
+            staff: staves != 1 ? i + 1 : null,
+            clef: clef,
+          );
+
           data.addToRow(
             data.rowCount - staves + i,
-            MeasureGrid.fromMeasure(measure, staves != 1 ? i + 1 : null),
+            measureGrid,
           );
+          if (lastMeasures.length < i + 1) {
+            lastMeasures.add(measureGrid);
+          } else {
+            lastMeasures[i] = measureGrid;
+          }
         }
       }
     }
@@ -201,19 +218,42 @@ class NotationGrid {
   }
 }
 
-class MeasureGrid {
+class MeasureGrid extends Iterable<List<VisualMusicElement?>> {
   static const gridHeight = 84;
 
   static const Step startingStep = Step.G;
   static const int statingOctave = 4;
 
   final Grid<VisualMusicElement?> _data;
-  UnmodifiableGrid<VisualMusicElement?> get data => _data.asUnmodifiable();
+  // UnmodifiableGrid<VisualMusicElement?> get data => _data.asUnmodifiable();
 
-  MeasureGrid._(this._data);
+  Clef? _clef;
+
+  void setClef(Clef clef) {
+    _clef = clef;
+  }
+
+  MeasureGrid._({required Grid<VisualMusicElement?> data}) : _data = data;
 
   // Get the value at the given row and column
   VisualMusicElement? getValue(int row, int column) {
+    var data = _data.getValue(row + (gridHeight ~/ 2), column);
+    if (data == null) {
+      return null;
+    }
+    int transpose = 0;
+    switch (_clef?.sign) {
+      case ClefSign.F:
+        transpose = 12;
+        break;
+      default:
+    }
+
+    if (transpose != 0 && data.influencedByClef == true) {
+      return _data
+          .getValue(row + (gridHeight ~/ 2), column)
+          ?.tranpose(transpose);
+    }
     return _data.getValue(row + (gridHeight ~/ 2), column);
   }
 
@@ -254,13 +294,16 @@ class MeasureGrid {
   }
 
   /// The [staff] must be provided if [measure] has multiple staves.
-  factory MeasureGrid.fromMeasure(Measure measure, [int? staff]) {
+  factory MeasureGrid.fromMeasure({
+    required Measure measure,
+    int? staff,
+    Clef? clef,
+  }) {
     Grid<VisualMusicElement?> data = Grid();
     for (var i = 0; i < gridHeight; i++) {
       data.addRow();
     }
-    MeasureGrid grid = MeasureGrid._(data);
-
+    MeasureGrid grid = MeasureGrid._(data: data);
     for (var musicElement in measure.data) {
       switch (musicElement) {
         case Note _:
@@ -280,6 +323,7 @@ class MeasureGrid {
           break;
         case Attributes _:
           var attributeVisuals = _fromAttributes(musicElement, staff);
+
           for (var attributesInColumn in attributeVisuals) {
             grid.addEmptyColumn();
 
@@ -288,6 +332,19 @@ class MeasureGrid {
             }
           }
 
+          if (musicElement.clefs.isNotEmpty) {
+            if (musicElement.clefs.length > 1 && staff == null) {
+              throw UnimplementedError(
+                "Multiple clef signs is not implemented in renderer yet",
+              );
+            }
+            var attributesClef = musicElement.clefs.firstWhereOrNull(
+              (element) => staff != null ? element.number == staff : true,
+            );
+            if (attributesClef != null) {
+              grid.setClef(attributesClef);
+            }
+          }
           break;
         case Harmony _:
           break;
@@ -308,6 +365,9 @@ class MeasureGrid {
         case Bookmark _:
           break;
       }
+    }
+    if (grid._clef == null && clef != null) {
+      grid.setClef(clef);
     }
     return grid;
   }
@@ -332,7 +392,7 @@ class MeasureGrid {
       switch (key) {
         case TraditionalKey _:
           visuals.addAll(
-            VisualMusicElement.fromTraditionalKey(key).map((e) => [e]),
+            VisualKeyElement.fromTraditionalKey(key).map((e) => [e]),
           );
           break;
         case NonTraditionalKey _:
@@ -359,4 +419,7 @@ class MeasureGrid {
   String toString() {
     return _data.toString();
   }
+
+  @override
+  Iterator<List<VisualMusicElement?>> get iterator => _data.iterator;
 }

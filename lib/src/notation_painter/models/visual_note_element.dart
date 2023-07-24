@@ -33,18 +33,30 @@ class VisualNoteElement extends VisualMusicElement {
     return (distance / 2).ceil();
   }
 
+  VisualNoteElement._({
+    required this.flagUpSymbol,
+    required this.flagDownSymbol,
+    required super.symbol,
+    required super.position,
+    super.defaultOffsetG4,
+    required this.stemmed,
+    required super.influencedByClef,
+  });
+
   VisualNoteElement.stemmed({
     required this.flagUpSymbol,
     required this.flagDownSymbol,
     required super.symbol,
     required super.position,
     super.defaultOffsetG4,
+    required super.influencedByClef,
   }) : stemmed = true;
 
   VisualNoteElement.noStem({
     required super.symbol,
     required super.position,
     super.defaultOffsetG4,
+    required super.influencedByClef,
   })  : stemmed = false,
         flagDownSymbol = null,
         flagUpSymbol = null;
@@ -67,6 +79,7 @@ class VisualNoteElement extends VisualMusicElement {
         NoteForm noteForm = note.form;
         Step? step;
         int? octave;
+        bool influencedByClef = true;
         switch (noteForm) {
           case Pitch _:
             step = noteForm.step;
@@ -77,6 +90,7 @@ class VisualNoteElement extends VisualMusicElement {
               "Unpitched is not implemented yet in renderer",
             );
           case Rest _:
+            influencedByClef = false;
             break;
         }
         String? symbol = note.type?.value.smuflSymbol;
@@ -94,6 +108,7 @@ class VisualNoteElement extends VisualMusicElement {
             defaultOffsetG4: const Offset(0, -5),
             flagDownSymbol: note.type!.value.downwardFlag,
             flagUpSymbol: note.type!.value.upwardFlag,
+            influencedByClef: influencedByClef,
           );
         }
 
@@ -101,6 +116,7 @@ class VisualNoteElement extends VisualMusicElement {
           symbol: symbol,
           position: notePosition,
           defaultOffsetG4: const Offset(0, -5),
+          influencedByClef: influencedByClef,
         );
 
       default:
@@ -109,6 +125,25 @@ class VisualNoteElement extends VisualMusicElement {
         );
     }
   }
+
+  VisualNoteElement noteCopyWith({
+    String? symbol,
+    ElementPosition? position,
+    bool? stemmed,
+    String? flagUpSymbol,
+    String? flagDownSymbol,
+    Offset? defaultOffsetG4,
+    bool? influencedByClef,
+  }) =>
+      VisualNoteElement._(
+        symbol: symbol ?? this.symbol,
+        position: position ?? this.position,
+        defaultOffsetG4: defaultOffsetG4 ?? defaultOffset,
+        flagUpSymbol: flagUpSymbol ?? this.flagUpSymbol,
+        flagDownSymbol: flagDownSymbol ?? this.flagDownSymbol,
+        stemmed: stemmed ?? this.stemmed,
+        influencedByClef: influencedByClef ?? this.influencedByClef,
+      );
 }
 
 extension NoteHeadSmufl on NoteTypeValue {

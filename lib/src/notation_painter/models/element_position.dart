@@ -43,17 +43,45 @@ class ElementPosition {
     }
   }
 
+  static const int _notesPerOctave = 7;
+
   /// Calculates vertical note/music element position from C0. Note at `7` position
   /// would be C1, on `25` position would be G3.
   ///
   /// Position is calculated from 'C0' because it is the lowest note on standard,
   /// 88-key piano. Also, the frequency of C0 is approximately 16.35 Hz, which
   /// is at the very lower end of the human hearing range.
-  int get numericPosition => (octave * 7) + numericalStep;
+  int get numericPosition => (octave * _notesPerOctave) + numericalStep;
 
-  @override
-  String toString() {
-    return "$step$octave";
+  factory ElementPosition.fromInt(int numericPosition) {
+    int octave = numericPosition ~/ _notesPerOctave;
+    int remainder = numericPosition.remainder(_notesPerOctave);
+
+    return ElementPosition(
+      step: _fromInt(remainder)!,
+      octave: octave,
+    );
+  }
+
+  static Step? _fromInt(int value) {
+    switch (value) {
+      case 6:
+        return Step.B;
+      case 5:
+        return Step.A;
+      case 4:
+        return Step.G;
+      case 3:
+        return Step.F;
+      case 2:
+        return Step.E;
+      case 1:
+        return Step.D;
+      case 0:
+        return Step.C;
+      default:
+        return null;
+    }
   }
 
   /// Less-than operator. Compares an [ElementPosition] to another [ElementPosition]
@@ -109,6 +137,11 @@ class ElementPosition {
 
   @override
   int get hashCode => Object.hash(step, octave);
+
+  @override
+  String toString() {
+    return "$step$octave";
+  }
 
   static const ElementPosition staffMiddle = ElementPosition(
     step: Step.B,

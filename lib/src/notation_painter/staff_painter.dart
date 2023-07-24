@@ -112,7 +112,7 @@ class StaffPainter extends CustomPainter {
       }
       _drawStemForColumn(lowestNote, highestNote);
 
-      context.moveX(40);
+      context.moveX(48);
     }
   }
 

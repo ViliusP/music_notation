@@ -23,7 +23,7 @@ class MeasureGridDebug extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         child: Column(
-          children: measure.data
+          children: measure
               .map(
                 (row) => Padding(
                   padding: const EdgeInsets.all(8.0),
