@@ -157,7 +157,7 @@ class StaffPainter extends CustomPainter {
         lowestNote != highestNote) {
       StemValue stemDirection = StemValue.down;
 
-      if (lowestNote.distanceFromMiddle.abs() <
+      if (lowestNote.distanceFromMiddle.abs() >
           highestNote.distanceFromMiddle.abs()) {
         stemDirection = StemValue.up;
       }
@@ -175,11 +175,11 @@ class StaffPainter extends CustomPainter {
           : lowestNote.flagDownSymbol;
 
       _drawStem(
-        noteOffset: highestNoteOffsetY,
+        noteOffset: lowestNoteOffsetY,
         flagSymbol: flagSymbol,
         direction: stemDirection,
         stemHeight:
-            _noteStemHeight - lowestNoteOffsetY.dy + highestNoteOffsetY.dy,
+            _noteStemHeight + lowestNoteOffsetY.dy - highestNoteOffsetY.dy,
       );
     }
   }

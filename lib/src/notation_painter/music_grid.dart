@@ -230,10 +230,8 @@ class MeasureGrid {
 
   /// Set the [value] at the given [column].
   void setElement(VisualMusicElement value, int column) {
-    // TODO naming
-    var visualPosition = value.position.numericPosition;
-    int row = const ElementPosition(step: Step.G, octave: 4).numericPosition -
-        visualPosition;
+    int row = value.position.numericPosition -
+        const ElementPosition(step: Step.G, octave: 4).numericPosition;
     _data.setValue(row + (gridHeight ~/ 2), column, value);
   }
 
