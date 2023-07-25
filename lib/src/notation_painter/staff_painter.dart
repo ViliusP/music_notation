@@ -167,7 +167,6 @@ class StaffPainter extends CustomPainter {
         highestNote != null &&
         lowestNote != highestNote) {
       StemValue stemDirection = StemValue.down;
-
       if (lowestNote.distanceFromMiddle.abs() >
           highestNote.distanceFromMiddle.abs()) {
         stemDirection = StemValue.up;
@@ -181,12 +180,18 @@ class StaffPainter extends CustomPainter {
           highestNote.defaultOffset +
           highestNote.position.step.calculteOffset(highestNote.position.octave);
 
+      Offset notesOffset = lowestNoteOffsetY;
+      if (lowestNote.distanceFromMiddle.abs() <
+          highestNote.distanceFromMiddle.abs()) {
+        notesOffset = highestNoteOffsetY;
+      }
+
       String? flagSymbol = stemDirection == StemValue.up
           ? lowestNote.flagUpSymbol
           : lowestNote.flagDownSymbol;
 
       _drawStem(
-        noteOffset: lowestNoteOffsetY,
+        noteOffset: notesOffset,
         flagSymbol: flagSymbol,
         direction: stemDirection,
         stemHeight:
@@ -201,10 +206,10 @@ class StaffPainter extends CustomPainter {
     required StemValue direction,
     double stemHeight = _noteStemHeight,
   }) {
-    // Stem offset note's offset. 40 and 15 values are chosen manually.
-    Offset stemOffset = noteOffset + const Offset(15, 40);
+    // Stem offset note's offset. DX offset 15 values are chosen manually.
+    Offset stemOffset = noteOffset + const Offset(15, _noteStemHeight);
     if (direction == StemValue.down) {
-      stemOffset = noteOffset + const Offset(1, 40);
+      stemOffset = noteOffset + const Offset(1, _noteStemHeight);
     }
 
     int stemHeightMultiplier = direction == StemValue.down ? 1 : -1;
@@ -218,7 +223,7 @@ class StaffPainter extends CustomPainter {
     );
     if (flagSymbol != null) {
       var stemFlagOffset = direction == StemValue.down
-          ? stemOffset
+          ? noteOffset - Offset(0, -stemHeight)
           : noteOffset + Offset(15, -stemHeight);
 
       drawSmuflSymbol(context.canvas, stemFlagOffset, flagSymbol);
