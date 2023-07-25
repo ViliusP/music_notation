@@ -10,6 +10,7 @@ void main() {
         VisualNoteElement.noStem(
           symbol: "symbol",
           position: const ElementPosition(octave: 3, step: Step.A),
+          influencedByClef: false,
         ),
         -2
       ),
@@ -17,6 +18,7 @@ void main() {
         VisualNoteElement.noStem(
           symbol: "symbol",
           position: const ElementPosition(octave: 3, step: Step.B),
+          influencedByClef: false,
         ),
         -1
       ),
@@ -24,6 +26,7 @@ void main() {
         VisualNoteElement.noStem(
           symbol: "symbol",
           position: const ElementPosition(octave: 4, step: Step.C),
+          influencedByClef: false,
         ),
         -1
       ),
@@ -31,6 +34,7 @@ void main() {
         VisualNoteElement.noStem(
           symbol: "symbol",
           position: const ElementPosition(octave: 5, step: Step.C),
+          influencedByClef: false,
         ),
         0
       ),
@@ -38,6 +42,7 @@ void main() {
         VisualNoteElement.noStem(
           symbol: "symbol",
           position: const ElementPosition(octave: 6, step: Step.C),
+          influencedByClef: false,
         ),
         2
       ),
@@ -45,6 +50,7 @@ void main() {
         VisualNoteElement.noStem(
           symbol: "symbol",
           position: const ElementPosition(octave: 5, step: Step.B),
+          influencedByClef: false,
         ),
         1
       ),
