@@ -114,6 +114,7 @@ class StaffPainter extends CustomPainter {
       if (lowestNote != null) {
         _paintLedgerLines(
           count: lowestNote.ledgerLines,
+          noteheadWidth: lowestNote.noteheadWidth,
         );
       }
       _drawStemForColumn(lowestNote, highestNote);
@@ -238,11 +239,12 @@ class StaffPainter extends CustomPainter {
 
   void _paintLedgerLines({
     required int count,
+    required double noteheadWidth,
   }) {
     if (count == 0) {
       return;
     }
-
+    const double widthOutside = 4;
     int multiplier = count.isNegative ? 1 : -1;
 
     double startingY = count.isNegative ? 48 : 0;
@@ -250,8 +252,8 @@ class StaffPainter extends CustomPainter {
     var positionY = (startingY + lineSpacing) * multiplier;
     for (var i = 0; i < count.abs(); i++) {
       context.canvas.drawLine(
-        context.offset + Offset(multiplier * -5, positionY),
-        context.offset + Offset(multiplier * 20, positionY),
+        context.offset + Offset(-widthOutside, positionY),
+        context.offset + Offset(noteheadWidth + widthOutside, positionY),
         Paint()
           ..color = const Color.fromRGBO(0, 0, 0, 1.0)
           ..strokeWidth = staffLineStrokeWidth,

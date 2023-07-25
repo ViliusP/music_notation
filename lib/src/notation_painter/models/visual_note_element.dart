@@ -11,6 +11,7 @@ class VisualNoteElement extends VisualMusicElement {
   final bool stemmed;
   final String? flagUpSymbol;
   final String? flagDownSymbol;
+  final double noteheadWidth;
 
   @override
   HorizontalMargins? get defaultMargins => null;
@@ -45,6 +46,7 @@ class VisualNoteElement extends VisualMusicElement {
     super.defaultOffsetG4,
     required this.stemmed,
     required super.influencedByClef,
+    required this.noteheadWidth,
   });
 
   VisualNoteElement.stemmed({
@@ -54,6 +56,7 @@ class VisualNoteElement extends VisualMusicElement {
     required super.position,
     super.defaultOffsetG4,
     required super.influencedByClef,
+    required this.noteheadWidth,
   }) : stemmed = true;
 
   VisualNoteElement.noStem({
@@ -61,6 +64,7 @@ class VisualNoteElement extends VisualMusicElement {
     required super.position,
     super.defaultOffsetG4,
     required super.influencedByClef,
+    required this.noteheadWidth,
   })  : stemmed = false,
         flagDownSymbol = null,
         flagUpSymbol = null;
@@ -113,6 +117,8 @@ class VisualNoteElement extends VisualMusicElement {
             flagDownSymbol: note.type!.value.downwardFlag,
             flagUpSymbol: note.type!.value.upwardFlag,
             influencedByClef: influencedByClef,
+            noteheadWidth: note.type?.value.noteheadWidth ??
+                NoteTypeValue.quarter.noteheadWidth,
           );
         }
 
@@ -121,6 +127,8 @@ class VisualNoteElement extends VisualMusicElement {
           position: notePosition,
           defaultOffsetG4: const Offset(0, -5),
           influencedByClef: influencedByClef,
+          noteheadWidth: note.type?.value.noteheadWidth ??
+              NoteTypeValue.quarter.noteheadWidth,
         );
 
       default:
@@ -147,10 +155,11 @@ class VisualNoteElement extends VisualMusicElement {
         flagDownSymbol: flagDownSymbol ?? this.flagDownSymbol,
         stemmed: stemmed ?? this.stemmed,
         influencedByClef: influencedByClef ?? this.influencedByClef,
+        noteheadWidth: noteheadWidth,
       );
 }
 
-extension NoteHeadSmufl on NoteTypeValue {
+extension NoteVisualInformation on NoteTypeValue {
   String get smuflSymbol {
     switch (this) {
       case NoteTypeValue.n1024th:
@@ -181,6 +190,30 @@ extension NoteHeadSmufl on NoteTypeValue {
         return '\uE0A1';
       case NoteTypeValue.maxima:
         return '\uE0A1';
+    }
+  }
+
+  double get noteheadWidth {
+    switch (this) {
+      case NoteTypeValue.n1024th:
+      case NoteTypeValue.n512th:
+      case NoteTypeValue.n256th:
+      case NoteTypeValue.n128th:
+      case NoteTypeValue.n64th:
+      case NoteTypeValue.n32nd:
+      case NoteTypeValue.n16th:
+      case NoteTypeValue.eighth:
+      case NoteTypeValue.quarter:
+      case NoteTypeValue.half:
+        return 16;
+      case NoteTypeValue.whole:
+        return 21.2;
+      case NoteTypeValue.breve:
+        return 30; // Need to be adjusted in future.
+      case NoteTypeValue.long:
+        return 30; // Need to be adjusted in future.
+      case NoteTypeValue.maxima:
+        return 30; // Need to be adjusted in future.
     }
   }
 

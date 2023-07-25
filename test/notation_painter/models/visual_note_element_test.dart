@@ -8,10 +8,10 @@ void main() {
     var inputsOutputs = [
       (
         VisualNoteElement.noStem(
-          symbol: "symbol",
-          position: const ElementPosition(octave: 3, step: Step.A),
-          influencedByClef: false,
-        ),
+            symbol: "symbol",
+            position: const ElementPosition(octave: 3, step: Step.A),
+            influencedByClef: false,
+            noteheadWidth: 0),
         -2
       ),
       (
@@ -19,6 +19,7 @@ void main() {
           symbol: "symbol",
           position: const ElementPosition(octave: 3, step: Step.B),
           influencedByClef: false,
+          noteheadWidth: 0,
         ),
         -1
       ),
@@ -27,6 +28,7 @@ void main() {
           symbol: "symbol",
           position: const ElementPosition(octave: 4, step: Step.C),
           influencedByClef: false,
+          noteheadWidth: 0,
         ),
         -1
       ),
@@ -35,6 +37,7 @@ void main() {
           symbol: "symbol",
           position: const ElementPosition(octave: 5, step: Step.C),
           influencedByClef: false,
+          noteheadWidth: 0,
         ),
         0
       ),
@@ -43,6 +46,7 @@ void main() {
           symbol: "symbol",
           position: const ElementPosition(octave: 6, step: Step.C),
           influencedByClef: false,
+          noteheadWidth: 0,
         ),
         2
       ),
@@ -51,6 +55,7 @@ void main() {
           symbol: "symbol",
           position: const ElementPosition(octave: 5, step: Step.B),
           influencedByClef: false,
+          noteheadWidth: 0,
         ),
         1
       ),
