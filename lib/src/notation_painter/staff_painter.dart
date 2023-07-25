@@ -75,9 +75,15 @@ class StaffPainter extends CustomPainter {
     for (var j = 0; j < grid.elementCount; j++) {
       VisualNoteElement? lowestNote;
       VisualNoteElement? highestNote;
+      double? rightMargin;
       for (var i = -grid.distance; i < grid.distance; i++) {
         var musicElement = grid.getValue(i, j);
         if (musicElement == null) continue;
+        if (musicElement.defaultMargins != null) {
+          context.moveX(musicElement.defaultMargins!.left);
+          rightMargin = musicElement.defaultMargins!.right;
+        }
+
         var offset = context.offset +
             musicElement.defaultOffset +
             musicElement.position.step
@@ -112,7 +118,7 @@ class StaffPainter extends CustomPainter {
       }
       _drawStemForColumn(lowestNote, highestNote);
 
-      context.moveX(48);
+      context.moveX(rightMargin ?? 48);
     }
   }
 

@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:music_notation/src/models/data_types/step.dart';
+import 'package:music_notation/src/models/elements/layout.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/key.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
@@ -16,8 +17,11 @@ class VisualMusicElement {
   final bool influencedByClef;
 
   /// Offset for element, so it could be painted correctly in G4 note position.
+  /// Most of times it only has dy offset and zero value dx.
   final Offset _defaultOffsetG4;
   Offset get defaultOffset => _defaultOffsetG4;
+
+  final HorizontalMargins? defaultMargins;
 
   String get symbol => _symbol;
 
@@ -25,6 +29,7 @@ class VisualMusicElement {
     required String symbol,
     required ElementPosition position,
     required this.influencedByClef,
+    this.defaultMargins,
     Offset? defaultOffsetG4,
   })  : _symbol = symbol,
         _position = position,
@@ -77,11 +82,11 @@ class VisualMusicElement {
       );
     }
     return VisualMusicElement(
-      symbol: symbol,
-      influencedByClef: false,
-      position: ElementPosition(step: step, octave: octave),
-      defaultOffsetG4: offset,
-    );
+        symbol: symbol,
+        influencedByClef: false,
+        position: ElementPosition(step: step, octave: octave),
+        defaultOffsetG4: offset,
+        defaultMargins: HorizontalMargins(left: 0, right: 32));
   }
 
   static List<VisualMusicElement> fromTimeBeat(TimeBeat timeBeat) {
@@ -103,6 +108,7 @@ class VisualMusicElement {
           ),
           influencedByClef: false,
           defaultOffsetG4: const Offset(0, -5),
+          defaultMargins: HorizontalMargins(left: 0, right: 48),
         ),
         VisualMusicElement(
           symbol: _integerToSmufl(
@@ -114,6 +120,7 @@ class VisualMusicElement {
           ),
           influencedByClef: false,
           defaultOffsetG4: const Offset(0, -5),
+          defaultMargins: HorizontalMargins(left: 16, right: 0),
         )
       ];
     }
@@ -155,7 +162,10 @@ class VisualKeyElement extends VisualMusicElement {
     required super.symbol,
     required super.position,
     super.defaultOffsetG4,
-  }) : super(influencedByClef: true);
+  }) : super(
+          influencedByClef: true,
+          defaultMargins: HorizontalMargins(left: 10, right: 14),
+        );
 
   static List<VisualMusicElement> fromTraditionalKey(TraditionalKey key) {
     if (key.fifths == 0) {

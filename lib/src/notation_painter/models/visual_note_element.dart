@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:music_notation/src/models/data_types/step.dart';
+import 'package:music_notation/src/models/elements/layout.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
@@ -10,6 +11,9 @@ class VisualNoteElement extends VisualMusicElement {
   final bool stemmed;
   final String? flagUpSymbol;
   final String? flagDownSymbol;
+
+  @override
+  HorizontalMargins? get defaultMargins => null;
 
   /// Ledger line count. Minus value means that ledger lines are under staff. Positive
   /// value means that ledger lines are above staff.
