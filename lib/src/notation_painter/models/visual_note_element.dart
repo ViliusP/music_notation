@@ -163,27 +163,19 @@ extension NoteVisualInformation on NoteTypeValue {
   String get smuflSymbol {
     switch (this) {
       case NoteTypeValue.n1024th:
-        return '\uE0A4';
       case NoteTypeValue.n512th:
-        return '\uE0A4';
       case NoteTypeValue.n256th:
-        return '\uE0A4';
       case NoteTypeValue.n128th:
-        return '\uE0A4';
       case NoteTypeValue.n64th:
-        return '\uE0A4';
       case NoteTypeValue.n32nd:
-        return '\uE0A4';
       case NoteTypeValue.n16th:
-        return '\uE0A4';
       case NoteTypeValue.eighth:
-        return '\uE0A4';
       case NoteTypeValue.quarter:
-        return '\uE0A4';
+        return '\uE0A4'; // black note head.
       case NoteTypeValue.half:
-        return '\uE0A3';
+        return '\uE0A3'; // minim.
       case NoteTypeValue.whole:
-        return '\uE0A2';
+        return '\uE0A2'; // semibreve.
       case NoteTypeValue.breve:
         return '\uE0A0';
       case NoteTypeValue.long:

@@ -23,16 +23,8 @@ class PainterSettings {
 class StaffPainter extends CustomPainter {
   final ScorePartwise score;
   final NotationGrid notationGrid;
-  late StaffPainterContext context;
 
-  /// Settings
-  static const double staffHeight = 48;
-  static const lineSpacing = staffHeight / 4;
-  static const int _staffLines = 5;
-  static const double staffLineStrokeWidth = 2;
-  static const double ledgerLineWidth = 26;
-  static const double _noteStemHeight = 42;
-  static const double _stemStrokeWidth = 1.5;
+  late StaffPainterContext context;
 
   StaffPainter({
     required this.score,
@@ -201,8 +193,9 @@ class StaffPainter extends CustomPainter {
         noteOffset: notesOffset,
         flagSymbol: flagSymbol,
         direction: stemDirection,
-        stemHeight:
-            _noteStemHeight + lowestNoteOffsetY.dy - highestNoteOffsetY.dy,
+        stemHeight: NotationLayoutProperties.standardStemLength +
+            lowestNoteOffsetY.dy -
+            highestNoteOffsetY.dy,
       );
     }
   }
@@ -211,12 +204,20 @@ class StaffPainter extends CustomPainter {
     required Offset noteOffset,
     String? flagSymbol,
     required StemValue direction,
-    double stemHeight = _noteStemHeight,
+    double stemHeight = NotationLayoutProperties.standardStemLength,
   }) {
     // Stem offset note's offset. DX offset 15 values are chosen manually.
-    Offset stemOffset = noteOffset + const Offset(15, _noteStemHeight);
+    Offset stemOffset = noteOffset +
+        const Offset(
+          15,
+          NotationLayoutProperties.standardStemLength,
+        );
     if (direction == StemValue.down) {
-      stemOffset = noteOffset + const Offset(1, _noteStemHeight);
+      stemOffset = noteOffset +
+          const Offset(
+            1,
+            NotationLayoutProperties.standardStemLength,
+          );
     }
 
     int stemHeightMultiplier = direction == StemValue.down ? 1 : -1;
@@ -226,7 +227,7 @@ class StaffPainter extends CustomPainter {
       stemOffset + Offset(0, stemHeightMultiplier * stemHeight),
       Paint()
         ..color = const Color.fromRGBO(0, 0, 0, 1.0)
-        ..strokeWidth = _stemStrokeWidth,
+        ..strokeWidth = NotationLayoutProperties.stemStrokeWidth,
     );
     if (flagSymbol != null) {
       var stemFlagOffset = direction == StemValue.down
@@ -249,17 +250,18 @@ class StaffPainter extends CustomPainter {
 
     double startingY = count.isNegative ? 48 : 0;
 
-    var positionY = (startingY + lineSpacing) * multiplier;
+    var positionY =
+        (startingY + NotationLayoutProperties.staveSpace) * multiplier;
     for (var i = 0; i < count.abs(); i++) {
       context.canvas.drawLine(
         context.offset + Offset(-widthOutside, positionY),
         context.offset + Offset(noteheadWidth + widthOutside, positionY),
         Paint()
           ..color = const Color.fromRGBO(0, 0, 0, 1.0)
-          ..strokeWidth = staffLineStrokeWidth,
+          ..strokeWidth = NotationLayoutProperties.staffLineStrokeWidth,
       );
 
-      positionY += multiplier * lineSpacing;
+      positionY += multiplier * NotationLayoutProperties.staveSpace;
     }
   }
 
@@ -270,7 +272,7 @@ class StaffPainter extends CustomPainter {
 
     canvas.drawLine(
       context.offset,
-      context.offset + const Offset(0, staffHeight),
+      context.offset + const Offset(0, NotationLayoutProperties.staveHeight),
       linePainter,
     );
 
@@ -279,16 +281,16 @@ class StaffPainter extends CustomPainter {
 
   void _paintStaffLines(Canvas canvas, StaffPainterContext context) {
     var lineY = 0.0;
-    for (var i = 0; i < _staffLines; i++) {
+    for (var i = 0; i < NotationLayoutProperties.staffLines; i++) {
       canvas.drawLine(
         Offset(0, lineY + context.offset.dy),
         // probably need to fix.
         Offset(context.offset.dx, lineY + context.offset.dy),
         Paint()
           ..color = const Color.fromRGBO(0, 0, 0, 1.0)
-          ..strokeWidth = staffLineStrokeWidth,
+          ..strokeWidth = NotationLayoutProperties.staffLineStrokeWidth,
       );
-      lineY += lineSpacing;
+      lineY += NotationLayoutProperties.staveSpace;
     }
   }
 
@@ -383,7 +385,7 @@ extension SymbolPosition on Step {
       case Step.C:
         offsetY = -4;
     }
-    return Offset(0, (StaffPainter.lineSpacing / 2) * -offsetY) +
+    return Offset(0, (NotationLayoutProperties.staveSpace / 2) * -offsetY) +
         Offset(0, (octave - 4) * -42);
   }
 }
