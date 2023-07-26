@@ -43,6 +43,7 @@ class VisualMusicElement {
         ElementPosition.staffMiddle.numericPosition;
   }
 
+  // A clef is indented into the staves by the one stave-space or little less.
   factory VisualMusicElement.fromClef(Clef clef) {
     String? symbol;
     Step? step;

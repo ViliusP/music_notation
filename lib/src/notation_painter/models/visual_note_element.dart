@@ -11,6 +11,12 @@ class VisualNoteElement extends VisualMusicElement {
   final bool stemmed;
   final String? flagUpSymbol;
   final String? flagDownSymbol;
+
+  /// Width of notehead symbol.
+  ///
+  /// The minim is usually slightly larger than the black notehead.
+  /// The semibreve has greater width (in proportion 2.5 sembreves to 3 black
+  /// noteheads).
   final double noteheadWidth;
 
   @override

@@ -6,6 +6,7 @@ import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
 import 'package:music_notation/src/notation_painter/models/visual_note_element.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
+import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/staff_painter_context.dart';
 
 class PainterSettings {
@@ -63,6 +64,10 @@ class StaffPainter extends CustomPainter {
     PainterSettings().debugFrame ? paintCoordinates(canvas, size) : () {};
   }
 
+  /// Painting noteheads, it should fill the space between two lines, touching
+  /// the stave-line on each side of it, but without extending beyond either line.
+  ///
+  /// Notes on a line should be precisely centred on the stave-line.
   void _paintMeasure({required MeasureGrid grid}) {
     for (var j = 0; j < grid.elementCount; j++) {
       VisualNoteElement? lowestNote;
