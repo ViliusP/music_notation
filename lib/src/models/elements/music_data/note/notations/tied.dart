@@ -1,3 +1,4 @@
+import 'package:music_notation/src/models/data_types/line.dart';
 import 'package:music_notation/src/models/data_types/placement.dart';
 import 'package:music_notation/src/models/elements/music_data/note/notations/notation.dart';
 import 'package:music_notation/src/models/elements/music_data/note/notations/orientation.dart';

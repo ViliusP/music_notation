@@ -14,7 +14,7 @@ class Footnote {
   });
 }
 
-/// The editorial group specifies editorial information for a musical element.
+/// Editorial information for a musical element.
 class Editorial {
   final Footnote? footnote;
 
@@ -36,14 +36,16 @@ class Editorial {
 
 /// Specifies editorial information for different MusicXML elements.
 ///
-/// The content contains identifying and/or descriptive text about the editorial status of the parent element.
+/// The content contains identifying and/or descriptive text about the editorial
+/// status of the parent element. If the reference attribute is yes, this
+/// indicates editorial information that is for display only and should not affect playback.
 ///
-/// If the reference attribute is yes, this indicates editorial information that is for display only and should not affect playback.
-///
-/// For instance, a modern edition of older music may set reference="yes" on the attributes containing the music's original clef, key, and time signature.
+/// For instance, a modern edition of older music may set reference="yes" on the
+/// attributes containing the music's original clef, key, and time signature.
 /// It is no if not specified.
 ///
-/// The type attribute indicates whether the editorial information applies to the start of a series of symbols, the end of a series of symbols, or a single symbol.
+/// The type attribute indicates whether the editorial information applies to
+/// the start of a series of symbols, the end of a series of symbols, or a single symbol.
 ///
 /// It is single if not specified for compatibility with earlier MusicXML versions.
 class Level {
@@ -120,11 +122,11 @@ class LevelDisplay {
 
 // The common combination of editorial and voice information for a musical element.
 class EditorialVoice extends Editorial {
-  /// A voice is a sequence of musical events (e.g. notes, chords, rests) that proceeds linearly in time.
+  /// Musical events (e.g. notes, chords, rests) that proceeds linearly in time.
   ///
-  /// The voice element is used to distinguish between multiple voices in individual parts.
-  ///
-  /// It is defined within a group due to its multiple uses within the MusicXML schema.
+  /// The [voice] is used to distinguish between multiple voices in individual parts.
+  /// It is defined within a [EditorialVoice] due to its multiple uses within
+  /// the MusicXML schema.
   final String? voice;
 
   EditorialVoice({
@@ -138,6 +140,12 @@ class EditorialVoice extends Editorial {
         super.empty();
 
   factory EditorialVoice.fromXml(XmlElement xmlElement) {
-    return EditorialVoice();
+    var editorial = Editorial.fromXml(xmlElement);
+
+    return EditorialVoice(
+      voice: xmlElement.getElement("voice")?.innerText,
+      footnote: editorial.footnote,
+      level: editorial.level,
+    );
   }
 }

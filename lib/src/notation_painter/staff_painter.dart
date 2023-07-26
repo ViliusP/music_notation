@@ -1,245 +1,301 @@
 import 'package:flutter/rendering.dart';
 
 import 'package:music_notation/src/models/data_types/step.dart';
-import 'package:music_notation/src/models/elements/music_data/attributes/attributes.dart';
-import 'package:music_notation/src/models/elements/music_data/attributes/key.dart';
-import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
-import 'package:music_notation/src/models/elements/music_data/note/note.dart';
-import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
+
+import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
+import 'package:music_notation/src/notation_painter/models/visual_note_element.dart';
+import 'package:music_notation/src/notation_painter/music_grid.dart';
+import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/staff_painter_context.dart';
+
+class PainterSettings {
+  bool debugFrame = false;
+
+  static final PainterSettings _instance = PainterSettings._();
+
+  factory PainterSettings() {
+    return _instance;
+  }
+
+  PainterSettings._();
+}
 
 class StaffPainter extends CustomPainter {
   final ScorePartwise score;
+  final NotationGrid notationGrid;
 
-  /// Settings
-  static const double staffHeight = 48;
-  static const lineSpacing = staffHeight / 4;
-  static const int _staffLines = 5;
-  static const double _staffLineStrokeWidth = 1;
-  static const bool debugFrame = false;
-  static const double ledgerLineWidth = 30;
+  late StaffPainterContext context;
 
   StaffPainter({
     required this.score,
+    required this.notationGrid,
   });
 
   final Paint _axisPaint = Paint()
     ..color = const Color(0xFFFF5252)
     ..strokeWidth = 1.0;
 
-  static const List<String> clefSymbols = [
-    '\uE050', // Treble Clef -5 y offset
-    '\uE062', // Bass Clef
-    '\uE05C', // Tenor Clef
-    '\uE058', // Alto Clef
-    '\uE063', // Percussion Clef
-    '\uE057', // Soprano Clef
-    '\uE059', // Mezzo-soprano Clef
-    '\uE05E', // Baritone Clef
-    '\uE055', // French Violin Clef
-    '\uE061', // Tab Clef
-    '\uE05F', // Neutral Clef
-    '\uE1D6',
-    '\uE1DC',
-  ];
-
   @override
   void paint(Canvas canvas, Size size) {
-    StaffPainterContext context = StaffPainterContext(
+    context = StaffPainterContext(
       canvas: canvas,
       size: size,
     );
+    var grid = notationGrid;
+    // Iterating throug part/row.
+    for (var i = 0; i < grid.data.rowCount; i++) {
+      _paintBarline(canvas, context);
 
-    for (var part in score.parts) {
-      for (var measure in part.measures) {
-        for (var musicElement in measure.data) {
-          switch (musicElement) {
-            case Note _:
-              _drawNotes(context: context, note: musicElement);
-              break;
-            case Attributes _:
-              _drawAttributes(context: context, attributes: musicElement);
-              break;
-            default:
-              break;
-          }
-        }
+      // Iterating throug measures/part.
+      for (var j = 0; j < grid.data.columnCount; j++) {
+        var measureGrid = grid.data.getValue(i, j);
+        _paintMeasure(grid: measureGrid);
+        if (j != grid.data.columnCount - 1) _paintBarline(canvas, context);
       }
+      _paintStaffLines(canvas, context);
+
+      _paintBarline(canvas, context);
+
+      context.resetX();
+      context.moveY(120);
     }
 
-    _paintStaffLines(canvas, context);
-    _paintEndingBarline(canvas, context);
-
-    debugFrame ? paintCoordinates(canvas, size) : () {};
+    PainterSettings().debugFrame ? paintCoordinates(canvas, size) : () {};
   }
 
-  void _drawNotes({
-    required StaffPainterContext context,
-    required Note note,
-  }) {
-    switch (note) {
-      case RegularNote _:
-        double offsetY = _calculateNoteOffsetY(note.form);
+  /// Painting noteheads, it should fill the space between two lines, touching
+  /// the stave-line on each side of it, but without extending beyond either line.
+  ///
+  /// Notes on a line should be precisely centred on the stave-line.
+  void _paintMeasure({required MeasureGrid grid}) {
+    for (var j = 0; j < grid.elementCount; j++) {
+      VisualNoteElement? lowestNote;
+      VisualNoteElement? highestNote;
+      double? rightMargin;
+      for (var i = -grid.distance; i < grid.distance; i++) {
+        var musicElement = grid.getValue(i, j);
+        if (musicElement == null) continue;
+        if (musicElement.defaultMargins != null) {
+          context.moveX(musicElement.defaultMargins!.left);
+          rightMargin = musicElement.defaultMargins!.right;
+        }
+
+        var offset = context.offset +
+            musicElement.defaultOffset +
+            musicElement.position.step
+                .calculteOffset(musicElement.position.octave);
+
+        // 'highestNote' is same as note before.
+        // The stem is always placed between the two notes of an interval of a 2nd,
+        // with the upper note always to the right, the lower note always to the left.
+        if (highestNote != null && musicElement is VisualNoteElement) {
+          var distance = (highestNote.position.numericPosition -
+                  musicElement.position.numericPosition)
+              .abs();
+          if (distance == 1) {
+            offset += const Offset(14, 0);
+          }
+        }
+
         drawSmuflSymbol(
           context.canvas,
-          Offset(context.x, offsetY),
-          NoteHeadSmufl.getSmuflSymbol(note.type!.value),
+          offset,
+          musicElement.symbol,
         );
-        var additionalLines = ledgerLines(note.form);
-        if (additionalLines != null) {
-          _paintLedgerLines(
-            canvas: context.canvas,
-            count: additionalLines.count,
-            placement: additionalLines.placement,
-            positionX: context.x,
-          );
+        if (musicElement is VisualNoteElement) {
+          lowestNote ??= musicElement;
+          highestNote = musicElement;
         }
-        context.x += 40;
+      }
+      if (lowestNote != null) {
+        _paintLedgerLines(
+          count: lowestNote.ledgerLines,
+          noteheadWidth: lowestNote.noteheadWidth,
+        );
+      }
+      _drawStemForColumn(lowestNote, highestNote);
 
-        break;
-      default:
+      context.moveX(rightMargin ?? 48);
+    }
+  }
+
+  /// Notes below line 3 have up stems on the right side of the notehead.
+
+  /// Notes on or above line 3 have down stems on the left side of the notehead.
+  ///
+  /// The stem is awalys placed between the two notes of an interval of a 2nd,
+  /// with the upper note always to the right, the lower note always to the left.
+  ///
+  /// When two notes share a stem:
+  /// - If the interval above the middle line is greater, the stem goes down;
+  /// - If the interval below the middle line is geater, the stem goes up;
+  /// - If the intervals above and below the middle ine are equidistant, the stem
+  /// goes down;
+  ///
+  /// When more than two notes share a stem, the direction is determined by the
+  /// highest and the lowest notes:
+  /// - If the interval from the highest note to the middle line is greater,
+  /// the stem goes down;
+  /// - If the interval from the lowest note to the middle line is greater, the
+  /// stem goes up;
+  /// - If equidistant the stem goes down.
+  ///
+  /// TODO: need to take account of different voices on the same staff:
+  /// If you are writing two vocies on the same staff, the stems for the upper
+  /// voice will go up, and the stems for the lower voice will go down.
+  void _drawStemForColumn(
+    VisualNoteElement? lowestNote,
+    VisualNoteElement? highestNote,
+  ) {
+    // If only one note exists in column.
+    if (lowestNote != null && lowestNote == highestNote && lowestNote.stemmed) {
+      var offset = context.offset +
+          lowestNote.defaultOffset +
+          lowestNote.position.step.calculteOffset(lowestNote.position.octave);
+
+      final StemValue stemDirection =
+          lowestNote.distanceFromMiddle < 0 ? StemValue.up : StemValue.down;
+
+      String? flagSymbol = stemDirection == StemValue.up
+          ? lowestNote.flagUpSymbol
+          : lowestNote.flagDownSymbol;
+
+      _drawStem(
+        noteOffset: offset,
+        flagSymbol: flagSymbol,
+        direction: stemDirection,
+      );
+    }
+    if (lowestNote != null &&
+        highestNote != null &&
+        lowestNote != highestNote) {
+      StemValue stemDirection = StemValue.down;
+      if (lowestNote.distanceFromMiddle.abs() >
+          highestNote.distanceFromMiddle.abs()) {
+        stemDirection = StemValue.up;
+      }
+
+      var lowestNoteOffsetY = context.offset +
+          lowestNote.defaultOffset +
+          lowestNote.position.step.calculteOffset(lowestNote.position.octave);
+
+      var highestNoteOffsetY = context.offset +
+          highestNote.defaultOffset +
+          highestNote.position.step.calculteOffset(highestNote.position.octave);
+
+      Offset notesOffset = lowestNoteOffsetY;
+      if (lowestNote.distanceFromMiddle.abs() <
+          highestNote.distanceFromMiddle.abs()) {
+        notesOffset = highestNoteOffsetY;
+      }
+
+      String? flagSymbol = stemDirection == StemValue.up
+          ? lowestNote.flagUpSymbol
+          : lowestNote.flagDownSymbol;
+
+      _drawStem(
+        noteOffset: notesOffset,
+        flagSymbol: flagSymbol,
+        direction: stemDirection,
+        stemHeight: NotationLayoutProperties.standardStemLength +
+            lowestNoteOffsetY.dy -
+            highestNoteOffsetY.dy,
+      );
+    }
+  }
+
+  void _drawStem({
+    required Offset noteOffset,
+    String? flagSymbol,
+    required StemValue direction,
+    double stemHeight = NotationLayoutProperties.standardStemLength,
+  }) {
+    // Stem offset note's offset. DX offset 15 values are chosen manually.
+    Offset stemOffset = noteOffset +
+        const Offset(
+          15,
+          NotationLayoutProperties.standardStemLength,
+        );
+    if (direction == StemValue.down) {
+      stemOffset = noteOffset +
+          const Offset(
+            1,
+            NotationLayoutProperties.standardStemLength,
+          );
+    }
+
+    int stemHeightMultiplier = direction == StemValue.down ? 1 : -1;
+
+    context.canvas.drawLine(
+      stemOffset,
+      stemOffset + Offset(0, stemHeightMultiplier * stemHeight),
+      Paint()
+        ..color = const Color.fromRGBO(0, 0, 0, 1.0)
+        ..strokeWidth = NotationLayoutProperties.stemStrokeWidth,
+    );
+    if (flagSymbol != null) {
+      var stemFlagOffset = direction == StemValue.down
+          ? noteOffset - Offset(0, -stemHeight)
+          : noteOffset + Offset(15, -stemHeight);
+
+      drawSmuflSymbol(context.canvas, stemFlagOffset, flagSymbol);
     }
   }
 
   void _paintLedgerLines({
-    required Canvas canvas,
     required int count,
-    required LedgerPlacement placement,
-    required double positionX,
+    required double noteheadWidth,
   }) {
-    int multiplier = placement == LedgerPlacement.below ? 1 : -1;
+    if (count == 0) {
+      return;
+    }
+    const double widthOutside = 4;
+    int multiplier = count.isNegative ? 1 : -1;
 
-    double startingY = placement == LedgerPlacement.below ? 48 : 0;
+    double startingY = count.isNegative ? 48 : 0;
 
-    var positionY = (startingY + lineSpacing) * multiplier;
-    for (var i = 0; i < count; i++) {
-      double center = 10.5 + positionX;
-      double x1 = center - (ledgerLineWidth / 2);
-      double x2 = center + (ledgerLineWidth / 2);
-
-      canvas.drawLine(
-        Offset(x1, positionY),
-        Offset(x2, positionY),
+    var positionY =
+        (startingY + NotationLayoutProperties.staveSpace) * multiplier;
+    for (var i = 0; i < count.abs(); i++) {
+      context.canvas.drawLine(
+        context.offset + Offset(-widthOutside, positionY),
+        context.offset + Offset(noteheadWidth + widthOutside, positionY),
         Paint()
           ..color = const Color.fromRGBO(0, 0, 0, 1.0)
-          ..strokeWidth = _staffLineStrokeWidth * 1,
+          ..strokeWidth = NotationLayoutProperties.staffLineStrokeWidth,
       );
 
-      positionY += multiplier * lineSpacing;
+      positionY += multiplier * NotationLayoutProperties.staveSpace;
     }
   }
 
-  void _paintEndingBarline(Canvas canvas, StaffPainterContext context) {
+  void _paintBarline(Canvas canvas, StaffPainterContext context) {
     Paint linePainter = Paint()
       ..color = const Color.fromRGBO(0, 0, 0, 1.0)
       ..strokeWidth = 1.5;
 
     canvas.drawLine(
-      Offset(context.x, 0),
-      Offset(context.x, staffHeight),
+      context.offset,
+      context.offset + const Offset(0, NotationLayoutProperties.staveHeight),
       linePainter,
     );
-  }
 
-  ({int count, LedgerPlacement placement})? ledgerLines(NoteForm form) {
-    // TODO fix nullable
-
-    int position = (form.step ?? Step.G).position(form.octave ?? 4);
-    // 29 - D in 4 octave.
-    // 39 - G in 5 octave.
-    if (position < 29) {
-      int distance = 29 - position;
-
-      return (count: (distance / 2).ceil(), placement: LedgerPlacement.below);
-    }
-
-    if (position > 39) {
-      int distance = position - 39;
-
-      return (count: (distance / 2).ceil(), placement: LedgerPlacement.above);
-    }
-
-    return null;
-  }
-
-  double _calculateNoteOffsetY(NoteForm form) {
-    int octave = form.octave ?? 4;
-
-    octave -= 4;
-
-    // TODO fix nullable
-    return (form.step ?? Step.G).calculateX(-5) - ((octave * 41) + octave);
-  }
-
-  void _drawAttributes({
-    required StaffPainterContext context,
-    required Attributes attributes,
-  }) {
-    for (var clef in attributes.clefs) {
-      if (clef.sign.smufl != null) {
-        context.x += 10;
-
-        drawSmuflSymbol(
-          context.canvas,
-          Offset(context.x, -5),
-          clef.sign.smufl!,
-        );
-        context.x += 40;
-      }
-    }
-    for (var key in attributes.keys) {
-      switch (key) {
-        case TraditionalKey _:
-          break;
-        case NonTraditionalKey _:
-          break;
-        default:
-          break;
-      }
-    }
-    for (var time in attributes.times) {
-      switch (time) {
-        case TimeBeat _:
-          var signature = time.timeSignatures.firstOrNull;
-          if (signature != null) {
-            drawSmuflSymbol(
-              context.canvas,
-              Offset(context.x, -5),
-              integerToSmufl(int.parse(signature.beats)),
-            );
-            drawSmuflSymbol(
-              context.canvas,
-              Offset(context.x, (-staffHeight / 2) - 5),
-              integerToSmufl(int.parse(signature.beatType)),
-            );
-
-            context.x += 40;
-          }
-          break;
-        case SenzaMisura _:
-          break;
-        default:
-          break;
-      }
-    }
-  }
-
-  String integerToSmufl(int num) {
-    final unicodeValue = 0xE080 + num;
-    return String.fromCharCode(unicodeValue);
+    context.moveX(12);
   }
 
   void _paintStaffLines(Canvas canvas, StaffPainterContext context) {
     var lineY = 0.0;
-    for (var i = 0; i < _staffLines; i++) {
+    for (var i = 0; i < NotationLayoutProperties.staffLines; i++) {
       canvas.drawLine(
-        Offset(0, lineY),
-        Offset(context.x, lineY),
+        Offset(0, lineY + context.offset.dy),
+        // probably need to fix.
+        Offset(context.offset.dx, lineY + context.offset.dy),
         Paint()
           ..color = const Color.fromRGBO(0, 0, 0, 1.0)
-          ..strokeWidth = _staffLineStrokeWidth,
+          ..strokeWidth = NotationLayoutProperties.staffLineStrokeWidth,
       );
-      lineY = (i + 1) * (lineSpacing);
+      lineY += NotationLayoutProperties.staveSpace;
     }
   }
 
@@ -273,118 +329,70 @@ class StaffPainter extends CustomPainter {
     );
   }
 
-  void drawSmuflSymbol(
-    Canvas canvas,
-    Offset offset,
-    String symbol, [
-    double fontSize = 48,
-  ]) {
-    final textStyle = TextStyle(
-      fontFamily: 'Sebastian',
-      fontSize: fontSize,
-      color: const Color.fromRGBO(0, 0, 0, 1.0),
-    );
-    final textPainter = TextPainter(
-      text: TextSpan(text: symbol, style: textStyle),
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout();
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
 
+void drawSmuflSymbol(
+  Canvas canvas,
+  Offset offset,
+  String symbol, [
+  double fontSize = 48,
+]) {
+  final textStyle = TextStyle(
+    fontFamily: 'Sebastian',
+    fontSize: fontSize,
+    color: const Color.fromRGBO(0, 0, 0, 1.0),
+  );
+  final textPainter = TextPainter(
+    text: TextSpan(text: symbol, style: textStyle),
+    textDirection: TextDirection.ltr,
+  );
+  textPainter.layout();
+
+  if (PainterSettings().debugFrame) {
     final borderRect = Rect.fromLTWH(
       offset.dx,
       offset.dy,
       textPainter.width + 8.0,
       textPainter.height + 8.0,
     );
-    if (debugFrame) {
-      final borderPaint = Paint()
-        ..color = const Color.fromRGBO(0, 0, 0, 1.0)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.0;
-      canvas.drawRect(borderRect, borderPaint);
-    }
-    textPainter.paint(
-      canvas,
-      Offset(offset.dx, offset.dy),
-    );
+    final borderPaint = Paint()
+      ..color = const Color.fromRGBO(0, 0, 0, 1.0)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+    canvas.drawRect(borderRect, borderPaint);
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class StaffPainterContext {
-  double x = 0;
-
-  final Canvas canvas;
-  final Size size;
-
-  StaffPainterContext({required this.canvas, required this.size});
-}
-
-extension NoteHeadSmufl on NoteTypeValue {
-  static const _smuflSymbols = {
-    NoteTypeValue.n1024th: '\uE0A4',
-    NoteTypeValue.n512th: '\uE0A4',
-    NoteTypeValue.n256th: '\uE0A4',
-    NoteTypeValue.n128th: '\uE0A4',
-    NoteTypeValue.n64th: '\uE0A4',
-    NoteTypeValue.n32nd: '\uE0A4',
-    NoteTypeValue.n16th: '\uE0A4',
-    NoteTypeValue.eighth: '\uE0A4',
-    NoteTypeValue.quarter: '\uE0A4',
-    NoteTypeValue.half: '\uE0A3',
-    NoteTypeValue.whole: '\uE0A2',
-    NoteTypeValue.breve: '\uE0A0',
-    NoteTypeValue.long: '\uE0A1',
-    NoteTypeValue.maxima: '\uE0A1',
-  };
-
-  static String getSmuflSymbol(NoteTypeValue noteTypeValue) {
-    return _smuflSymbols[noteTypeValue]!;
-  }
+  textPainter.paint(
+    canvas,
+    Offset(offset.dx, offset.dy),
+  );
 }
 
 extension SymbolPosition on Step {
-  double calculateX(int startingX) {
+  /// Calculates offset needed to draw on staff.
+  Offset calculteOffset(int octave) {
+    double offsetY;
+
     switch (this) {
       case Step.B:
-        return (startingX * 3) - 2;
+        offsetY = 2;
       case Step.A:
-        return (startingX * 2) - 1;
+        offsetY = 1;
       case Step.G:
-        return (startingX * 1);
+        offsetY = 0;
       case Step.F:
-        return (startingX * 0) + 1;
+        offsetY = -1;
       case Step.E:
-        return (startingX * -2) - 3;
+        offsetY = -2;
       case Step.D:
-        return (startingX * -3) - 2;
+        offsetY = -3;
       case Step.C:
-        return (startingX * -4) - 1;
+        offsetY = -4;
     }
+    return Offset(0, (NotationLayoutProperties.staveSpace / 2) * -offsetY) +
+        Offset(0, (octave - 4) * -42);
   }
-
-  int get numerical {
-    switch (this) {
-      case Step.B:
-        return 6;
-      case Step.A:
-        return 5;
-      case Step.G:
-        return 4;
-      case Step.F:
-        return 3;
-      case Step.E:
-        return 2;
-      case Step.D:
-        return 1;
-      case Step.C:
-        return 0;
-    }
-  }
-
-  int position(int octave) => (octave * 7) + numerical;
 }
 
 enum LedgerPlacement {

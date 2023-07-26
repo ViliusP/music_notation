@@ -1,12 +1,12 @@
 import 'package:collection/collection.dart';
+import 'package:xml/xml.dart';
+
 import 'package:music_notation/src/models/data_types/accidental_value.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/generic.dart';
+import 'package:music_notation/src/models/printing.dart';
 import 'package:music_notation/src/models/utilities/common_attributes.dart';
 import 'package:music_notation/src/models/utilities/type_parsers.dart';
-import 'package:xml/xml.dart';
-
-import 'package:music_notation/src/models/printing.dart';
 
 abstract class TextElementBase {}
 
@@ -89,54 +89,49 @@ class TextFormatting extends PrintStyleAlign {
   // ------ Attributes ------- //
   // ------------------------- //
 
-  /// Indicates left, center, or right justification.
+  /// Indicates left, center, or right justification. The default value varies
+  /// for different elements.
   ///
-  /// The default value varies for different elements.
-  ///
-  /// For elements where the justify attribute is present but the halign attribute is not,
-  /// the justify attribute indicates horizontal alignment as well as justification.
+  /// For elements where the justify attribute is present but the halign
+  /// attribute is not, the justify attribute indicates horizontal alignment
+  /// as well as justification.
   HorizontalAlignment? justify;
 
   /// For definition, look at: [TextDecoration].
   TextDecoration textDecoration;
 
-  /// Used to rotate text around the alignment point specified by the halign and valign attributes.
-  ///
-  /// Positive values are clockwise rotations, while negative values are counter-clockwise rotations.
+  /// Used to rotate text around the alignment point specified by the halign
+  /// and valign attributes. Positive values are clockwise rotations, while
+  /// negative values are counter-clockwise rotations.
   double? textRotation;
 
   /// The letter-spacing attribute specifies text tracking.
   ///
-  /// Values are either "normal" or a number representing the number of ems to add between each letter.
+  /// Values are either "normal" or a number representing the number of ems to
+  /// add between each letter. The number may be negative in order to subtract space.
   ///
-  /// The number may be negative in order to subtract space.
-  ///
-  /// The default is normal, which allows flexibility of letter-spacing for purposes of text justification.
-  ///
-  /// Null value means normal.
+  /// The default is normal (`null`), which allows flexibility of letter-spacing for
+  /// purposes of text justification.
   double? letterSpacing;
 
   /// The line-height attribute specifies text leading.
   ///
-  /// Values are either "normal" or a number representing the percentage of the current font height to use for leading.
+  /// Values are either "normal" or a number representing the percentage of the
+  /// current font height to use for leading. The default is "normal"(`null`).
   ///
-  /// The default is "normal".
-  ///
-  /// The exact normal value is implementation-dependent, but values between 100 and 120 are recommended.
-  ///
-  /// Null value means normal.
+  /// The exact normal value is implementation-dependent, but values between
+  /// 100 and 120 are recommended.
   double? lineHeight;
 
-  /// Specifies the language used in the element content.
-  ///
-  /// It is Italian ("it") if not specified.
+  /// Specifies the language used in the element content. It is Italian ("it")
+  /// if not specified.
   String? lang;
 
   ///Indicates whether white space should be preserved by applications.
   XmlSpace? space;
 
-  /// Attribute that is used to adjust and override the Unicode bidirectional text algorithm,
-  /// similar to the Directionality data category in the
+  /// Attribute that is used to adjust and override the Unicode bidirectional
+  /// text algorithm, similar to the Directionality data category in the
   /// [W3C Internationalization Tag Set recommendation](https://www.w3.org/TR/2007/REC-its-20070403/#directionality).
   ///
   /// The default value is ltr. This attribute is typically used by applications
@@ -200,30 +195,55 @@ class TextFormatting extends PrintStyleAlign {
   }
 }
 
-/// Type that is used to adjust and override the Unicode bidirectional text algorithm, similar to the Directionality data category in the W3C Internationalization Tag Set recommendation.
-/// Values:
-///   - ltr (left-to-right embed);
-///   - rtl (right-to-left embed);
-///   - lro (left-to-right bidi-override);
-///   - rlo (right-to-left bidi-override).
+/// Enum representation for the `TextDirection` type used in MusicXML.
 ///
-/// The default value is ltr.
+/// This type is used to adjust and override the Unicode bidirectional text
+/// algorithm, similar to the Directionality data category in the W3C
+/// Internationalization Tag Set recommendation.
 ///
-/// This type is typically used by applications that store text in left-to-right visual order rather than logical order.
+/// The default value is [TextDirection.ltr]. This type is typically used by
+/// applications that store text in left-to-right visual order rather than
+/// logical order. Such applications can use the [TextDirection.lro] value to better
+/// communicate with other applications that more fully support bidirectional text.
 ///
-/// Such applications can use the lro value to better communicate with other applications that more fully support bidirectional text.
+/// For more details go to
+/// [text-direction data type | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/data-types/text-direction/).
 enum TextDirection {
+  /// Represents left-to-right text embedding. This is the default.
   ltr,
+
+  /// Represents right-to-left text embedding.
   rtl,
+
+  /// Represents left-to-right override. This is used to force left-to-right display in bidirectional text.
   lro,
+
+  /// Represents right-to-left override. This is used to force right-to-left display in bidirectional text.
   rlo;
 
+  /// Converts a string representation of text direction to an instance of this enum.
+  ///
+  /// Returns null if the provided string doesn't match any known text direction.
+  ///
+  /// Example:
+  ///
+  /// ```dart
+  /// var direction = TextDirection.fromString("ltr"); // returns TextDirection.ltr
+  /// ```
   static TextDirection? fromString(String value) {
     return TextDirection.values.firstWhereOrNull(
       (element) => element.name == value,
     );
   }
 
+  /// Extracts the text direction value from a provided [XmlElement].
+  ///
+  /// The method reads the `dir` attribute from the provided [XmlElement],
+  /// and converts it to a [TextDirection] instance. If the conversion is
+  /// successful, it returns this instance.
+  ///
+  /// If the attribute is present but doesn't match any known text direction,
+  /// the method throws a [MusicXmlFormatException] with a detailed error message.
   static TextDirection? fromXml(XmlElement xmlElement) {
     String? rawValue = xmlElement.getAttribute(CommonAttributes.textDirection);
     TextDirection? value = fromString(
@@ -242,11 +262,20 @@ enum TextDirection {
     return value;
   }
 
-  static String generateValidationError(String attributeName, String value) =>
-      "Attribute '$attributeName' is not a text-direction value: $value";
+  /// Generates a validation error message for invalid text direction values.
+  ///
+  /// The error message includes [attribute] name causing the error and its
+  /// invalid [value].
+  static String generateValidationError(String attribute, String value) =>
+      "Attribute '$attribute' is not a text-direction value: $value";
 }
 
-/// Type that is used to specify the number of lines in text decoration attributes.
+/// Represents the number of lines used for text decoration in MusicXML.
+///
+/// It allows for up to three lines of text decoration, or none at all.
+///
+/// For more details go to
+/// [number-of-lines data type | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/data-types/number-of-lines/).
 enum NumberOfLines {
   none(0),
   one(1),
@@ -257,64 +286,117 @@ enum NumberOfLines {
 
   final int value;
 
-  static NumberOfLines fromInt(int value) {
+  /// Converts provided string value to [NumberOfLines].
+  /// Returns `null` if the value is not a valid representation of [NumberOfLines].
+  static NumberOfLines? fromString(String value) {
     switch (value) {
-      case 0:
+      case "0":
         return NumberOfLines.none;
-      case 1:
+      case "1":
         return NumberOfLines.one;
-      case 2:
+      case "2":
         return NumberOfLines.two;
-      case 3:
+      case "3":
         return NumberOfLines.three;
       default:
-        // TODO: better exception
-        throw "Invalid number of lines: $value";
+        return null;
     }
+  }
+
+  /// Constructs a [NumberOfLines] from a [XmlElement] and an [attribute].
+  /// If the attribute is not a valid representation of [NumberOfLines],
+  /// a [MusicXmlTypeException] is thrown.
+  static NumberOfLines fromXml(XmlElement xmlElement, String attribute) {
+    var rawNumberOfLines = xmlElement.getAttribute(attribute);
+    if (rawNumberOfLines == null) {
+      return NumberOfLines.none;
+    }
+
+    var numberOfLines = NumberOfLines.fromString(rawNumberOfLines);
+    if (numberOfLines == null) {
+      throw MusicXmlTypeException(
+        message: "$attribute attribute is not valid number of lines",
+        xmlElement: xmlElement,
+      );
+    }
+    return numberOfLines;
   }
 }
 
-/// Group that is based on the similar feature in XHTML and CSS.
+/// The number of lines in text decoration attributes.
 ///
-/// It allows for text to be underlined, overlined, or struck-through.
-/// It extends the CSS version by allow double or triple lines instead of just being on or off.
+/// A TextDecoration element is used to decorate text by underlining, overlining,
+/// or striking through. It can use single, double, or triple lines, extending
+/// the capabilities of similar features found in XHTML and CSS.
+///
+/// Example:
+///
+/// ```dart
+/// TextDecoration(
+///   underline: NumberOfLines.two,
+///   overline: NumberOfLines.none,
+///   lineThrough: NumberOfLines.one,
+/// );
+/// ```
 class TextDecoration {
   // ------------------------- //
   // ------ Attributes ------- //
   // ------------------------- //
 
-  /// Number of lines to use when underlining text.
-  final NumberOfLines? underline;
+  /// The number of lines to use when underlining text.
+  /// This is represented by a [NumberOfLines] instance.
+  /// Defaults to [NumberOfLines.none] if not specified.
+  final NumberOfLines underline;
 
-  /// Number of lines to use when overlining text.
-  final NumberOfLines? overline;
+  /// The number of lines to use when overlining text.
+  /// This is represented by a [NumberOfLines] instance.
+  /// Defaults to [NumberOfLines.none] if not specified.
+  final NumberOfLines overline;
 
-  /// Number of lines to use when striking through text.
-  final NumberOfLines? lineThrough;
+  /// The number of lines to use when striking through text.
+  /// This is represented by a [NumberOfLines] instance.
+  /// Defaults to [NumberOfLines.none] if not specified.
+  final NumberOfLines lineThrough;
 
-  TextDecoration({
-    this.underline,
-    this.overline,
-    this.lineThrough,
+  const TextDecoration({
+    this.underline = NumberOfLines.none,
+    this.overline = NumberOfLines.none,
+    this.lineThrough = NumberOfLines.none,
   });
 
   const TextDecoration.empty()
-      : underline = null,
-        overline = null,
-        lineThrough = null;
+      : underline = NumberOfLines.none,
+        overline = NumberOfLines.none,
+        lineThrough = NumberOfLines.none;
 
+  /// Builds the [TextDecoration] class instance from the provided [XmlElement]
+  /// attributes. It will throw a [MusicXmlTypeException] if invalid content is provided.
   factory TextDecoration.fromXml(XmlElement xmlElement) {
-    var underline =
-        int.tryParse(xmlElement.getAttribute('underline') ?? "0") ?? 0;
-    var overline =
-        int.tryParse(xmlElement.getAttribute('overline') ?? "0") ?? 0;
-    var lineThrough =
-        int.tryParse(xmlElement.getAttribute('line-through') ?? "0") ?? 0;
-
     return TextDecoration(
-      underline: NumberOfLines.fromInt(underline),
-      overline: NumberOfLines.fromInt(overline),
-      lineThrough: NumberOfLines.fromInt(lineThrough),
+      underline: NumberOfLines.fromXml(
+        xmlElement,
+        CommonAttributes.underline,
+      ),
+      overline: NumberOfLines.fromXml(
+        xmlElement,
+        CommonAttributes.overline,
+      ),
+      lineThrough: NumberOfLines.fromXml(
+        xmlElement,
+        CommonAttributes.lineThrough,
+      ),
+    );
+  }
+
+  TextDecoration copyWith({
+    NumberOfLines? underline,
+    NumberOfLines? overline,
+    NumberOfLines? lineThrough,
+  }) {
+    return TextDecoration(
+      underline: underline ?? this.underline,
+      overline: overline ?? this.overline,
+      lineThrough: lineThrough ?? this.lineThrough,
     );
   }
 }
@@ -635,21 +717,21 @@ class FontSize {
 class Color {
   final String? value;
 
+  static const _colorRegex = r'^#[\dA-F]{6}([\dA-F][\dA-F])?$';
+
   Color({this.value});
 
   const Color.empty() : value = null;
 
   factory Color.fromXml(XmlElement xmlElement) {
     String? colorValue = xmlElement.getAttribute('color');
-    if (colorValue != null) {
-      // Verify the color value format with a regex pattern
-      bool isValid = RegExp(r'^#[\dA-F]{6}([\dA-F][\dA-F])?$').hasMatch(
-        colorValue,
+    // Verify the color value format with a regex pattern
+    if (colorValue != null && !RegExp(_colorRegex).hasMatch(colorValue)) {
+      throw MusicXmlFormatException(
+        message: "Invalid color value: $colorValue",
+        xmlElement: xmlElement,
+        source: colorValue,
       );
-      if (!isValid) {
-        /// TODO exception
-        throw Exception("Invalid color value: $colorValue");
-      }
     }
     return Color(value: colorValue);
   }
@@ -717,6 +799,7 @@ class FormattedSymbolId {
 
   factory FormattedSymbolId.fromXml(XmlElement xmlElement) {
     return FormattedSymbolId(
+      // TODO: change 'xmlElement.text'.
       value: xmlElement.text,
       formatting: SymbolFormatting.fromXml(xmlElement),
       id: xmlElement.getAttribute('optional-unique-id') ?? '',

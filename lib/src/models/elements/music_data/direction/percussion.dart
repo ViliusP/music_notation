@@ -8,7 +8,11 @@ import 'package:xml/xml.dart';
 ///
 /// Some values are added to these based on how usage has evolved in the 30 years
 /// since Stone's book was published.
-class Percussion implements DirectionType {}
+class Percussion implements DirectionType {
+  factory Percussion.fromXml(XmlElement xmlElement) {
+    throw UnimplementedError();
+  }
+}
 
 abstract class PercussionValueFromXml {}
 

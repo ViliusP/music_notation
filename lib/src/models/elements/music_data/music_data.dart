@@ -10,7 +10,7 @@ import 'package:music_notation/src/models/elements/music_data/forward.dart';
 import 'package:music_notation/src/models/elements/music_data/harmony/harmony.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/print.dart';
-import 'package:music_notation/src/models/elements/sound/sound.dart';
+import 'package:music_notation/src/models/elements/music_data/sound/sound.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:xml/xml.dart';
 

@@ -39,68 +39,79 @@ class BeamLevel {
       "Attribute '$attributeName' is not a percentage type: $value";
 }
 
-/// Slurs, tuplets, and many other features can be concurrent and overlap within a single musical part.
-/// The number-level entity distinguishes up to 16 concurrent objects of the same type when the objects overlap in MusicXML document order.
-/// Values greater than 6 are usually only needed for music with a large number of divisi staves in a single part,
-/// or if there are more than 6 cross-staff arpeggios in a single measure. When a number-level value is implied, the value is 1 by default.
+/// Slurs, tuplets, and many other features can be concurrent and overlap within
+/// a single musical part. The [NumberLevel] distinguishes up to 16 concurrent
+/// objects of the same type when the objects overlap in MusicXML document order.
+/// Values greater than 6 are usually only needed for music with a large number
+/// of divisi staves in a single part, or if there are more than 6 cross-staff
+/// arpeggios in a single measure.
 ///
-/// When polyphonic parts are involved, the ordering within a MusicXML document can differ from musical score order.
-/// As an example, say we have a piano part in 4/4 where within a single measure,
-/// all the notes on the top staff are followed by all the notes on the bottom staff.
-/// In this example, each staff has a slur that starts on beat 2 and stops on beat 3,
-/// and there is a third slur that goes from beat 1 of one staff to beat 4 of the other staff.
+/// When polyphonic parts are involved, the ordering within a MusicXML document
+/// can differ from musical score order. As an example, say we have a piano part
+/// in 4/4 where within a single measure, all the notes on the top staff are
+/// followed by all the notes on the bottom staff. In this example, each staff
+/// has a slur that starts on beat 2 and stops on beat 3, and there is a third
+/// slur that goes from beat 1 of one staff to beat 4 of the other staff.
 ///
-/// In this situation, the two mid-measure slurs can use the same number because they do not overlap in MusicXML document order,
-/// even though they do overlap in musical score order. Within the MusicXML document,
-/// the top staff slur will both start and stop before the bottom staff slur starts and stops.
+/// In this situation, the two mid-measure slurs can use the same number because
+/// they do not overlap in MusicXML document order, even though they do overlap
+/// in musical score order. Within the MusicXML document, the top staff slur
+/// will both start and stop before the bottom staff slur starts and stops.
 ///
 /// If the cross-staff slur starts in the top staff and stops in the bottom staff,
-/// it will need a separate number from the mid-measure slurs because it overlaps those slurs in MusicXML document order.
-/// However, if the cross-staff slur starts in the bottom staff and stops in the top staff,
-/// all three slurs can use the same number.
-/// None of them overlap within the MusicXML document,
-/// even though they all overlap each other in the musical score order.
-/// Within the MusicXML document, the start and stop of the top-staff slur will be followed by the stop and start of the cross-staff slur,
-/// followed by the start and stop of the bottom-staff slur.
+/// it will need a separate number from the mid-measure slurs because it overlaps
+/// those slurs in MusicXML document order. However, if the cross-staff slur
+/// starts in the bottom staff and stops in the top staff, all three slurs can
+/// use the same number. None of them overlap within the MusicXML document, even
+/// though they all overlap each other in the musical score order. Within the
+/// MusicXML document, the start and stop of the top-staff slur will be followed
+/// by the stop and start of the cross-staff slur, followed by the start and
+/// stop of the bottom-staff slur.
 ///
-/// As this example demonstrates,
-/// a reading program should be prepared to handle cases where the number-levels start and stop in an arbitrary order.
-/// Because the start and stop values refer to musical score order,
-/// a program may find the stopping point of an object earlier in the MusicXML document than it will find its starting point.
+/// As this example demonstrates, a reading program should be prepared to handle
+/// cases where the number-levels start and stop in an arbitrary order. Because
+/// the start and stop values refer to musical score order, a program may find
+/// the stopping point of an object earlier in the MusicXML document than it
+/// will find its starting point.
+///
+/// The [NumberLevel] class handles values from 1 (default) to 16 as per the
+/// MusicXML specification.
+///
+/// For more details go to
+/// [wedge-type data type | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/data-types/wedge-type/).
 class NumberLevel {
   static const int _min = 1;
   static const int _max = 16;
 
-  /// Throws [FormatExpcetion] if provided value is not integer.
+  /// Constructs a [NumberLevel] from an XML element.
   ///
-  /// Thorws [InvalidMusicXmlType] if provided value is integer but not beam-level.
-  static int parse(String value) {
-    int parsedValue = int.parse(value);
-
-    if (parsedValue < _min || parsedValue > _max) {
-      throw const FormatException();
-      // TODO throw
-      // throw InvalidMusicXmlType(
-      //   message: "Provided value - $value is not beam-level type",
-      //   xmlElement: null,
-      // );
-    }
-
-    return parsedValue;
-  }
-
-  static int? tryParse(String value) {
-    int? parsedValue = int.tryParse(value);
-
-    if (parsedValue == null || parsedValue < _min || parsedValue > _max) {
+  /// This method attempts to parse the "number" attribute of the provided XML
+  /// element into an integer and returns it. If the attribute is not present,
+  /// null is returned. If the attribute is present but is not a valid integer
+  /// or does not lie within the valid range (1 to 16), a
+  /// [MusicXmlFormatException] is thrown.
+  ///
+  /// Example usage:
+  /// ```
+  /// var xmlElement = parse("<note number='3'/>");
+  /// var numberLevel = NumberLevel.fromXml(xmlElement);
+  /// print(numberLevel);  // 3
+  /// ```
+  static int? fromXml(XmlElement xmlElement) {
+    String? numberAttribute = xmlElement.getAttribute("number");
+    if (numberAttribute == null) {
       return null;
     }
-
-    return parsedValue;
+    int? number = int.tryParse(numberAttribute);
+    if (number == null || number < _min || number > _max) {
+      throw MusicXmlFormatException(
+        message: "$number attribute is not valid number-level",
+        xmlElement: xmlElement,
+        source: numberAttribute,
+      );
+    }
+    return number;
   }
-
-  static String generateValidationError(String attributeName, double value) =>
-      "Attribute '$attributeName' is not a percentage type: $value";
 }
 
 /// Indicate that a particular playback- or listening-related element only
@@ -161,16 +172,41 @@ class Nmtoken {
       "Attribute '$attributeName' is not a valid NMTOKEN: $value";
 }
 
-/// The rotation-degrees type specifies rotation, pan, and elevation values in degrees.
-/// Values range from -180 to 180.
+/// Represents the rotation, pan, and elevation values in degrees
+/// as specified in MusicXML. These values typically range from `-180` to `180` degrees.
+///
+/// The class also provides functionality for validating and parsing these rotation values.
+///
+/// For more details go to
+/// [rotation-degrees data type | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/data-types/rotation-degrees/).
 class RotationDegrees {
-  /// Return true if [value] is between -180 (inclusive) and 180 (inclusive).
+  /// Checks if a rotation value is within the valid range.
+  ///
+  /// Returns `true` if the provided [value] lies within the range of -180 to 180 (inclusive), `false` otherwise.
+  ///
+  /// Example:
+  ///
+  /// ```dart
+  /// bool isValid = RotationDegrees.isValid(-90); // returns true
+  /// ```
   static bool isValid(double value) {
     return value >= -180 && value <= 180;
   }
 
-  static double? fromXml(XmlElement xmlElement) {
-    String? rawRotation = xmlElement.getAttribute(CommonAttributes.rotation);
+  /// Parses a rotation value from a given [XmlElement].
+  ///
+  /// The method reads the `rotation` attribute from the provided [XmlElement],
+  /// attempts to parse it into a `double`, and validates the parsed value.
+  /// If the parsing is successful and the parsed value is a valid rotation
+  /// degree, it returns this value.
+  ///
+  /// If the parsing fails or the parsed value is not within the valid range,
+  /// the method throws a [MusicXmlFormatException] with a detailed error message.
+  static double? fromXml(
+    XmlElement xmlElement, [
+    String attribute = CommonAttributes.rotation,
+  ]) {
+    String? rawRotation = xmlElement.getAttribute(attribute);
     if (rawRotation == null) {
       return null;
     }
@@ -188,8 +224,12 @@ class RotationDegrees {
     return rotation;
   }
 
-  static String generateValidationError(String attributeName, String value) =>
-      "Attribute '$attributeName' is not valid rotation degree: $value";
+  /// Generates a validation error message for invalid rotation values.
+  ///
+  /// The error message includes the name of the [attribute] causing the error
+  /// and its invalid [value].
+  static String generateValidationError(String attribute, String value) =>
+      "Attribute '$attribute' is not valid rotation degree: $value";
 }
 
 /// The [NumberOrNormal] values can be either a decimal number or the string "normal".
@@ -197,6 +237,9 @@ class RotationDegrees {
 /// This is used by the line-height and letter-spacing attributes.
 ///
 /// The "normal" value is represented as null.
+///
+/// For more details go to
+/// [number-or-normal data type | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/data-types/number-or-normal/).
 class NumberOrNormal {
   static double? fromXml(XmlElement xmlElement, String attributeName) {
     String? rawNumberOrNormal = xmlElement.getAttribute(
@@ -381,6 +424,74 @@ class Percent {
       throw MusicXmlFormatException(
         message: message,
         xmlElement: xmlElement,
+      );
+    }
+    return value;
+  }
+}
+
+/// The [Decimal] class provides a utility method for extracting and converting decimal values
+/// from XML elements in the context of a MusicXML document.
+class Decimal {
+  /// Returns a [double] from an XML element or its attribute.
+  ///
+  /// [xmlElement] is the XML element to parse the decimal from.
+  ///
+  /// [attributeName] is the optional attribute of the XML element to parse the
+  /// decimal from. If [attributeName] is not provided, the method will try to
+  /// parse the decimal from the text content of the XML element.
+  ///
+  /// [required] is a boolean flag that indicates whether the decimal value must
+  /// be present in the XML element. If [required] is true and the decimal value
+  /// is not found, the method throws a [MissingXmlAttribute] exception.
+  ///
+  /// The method returns the parsed decimal value as a [double]. If the decimal
+  /// value is not found and [required] is false, the method returns null.
+  /// If the decimal value is found but is not a valid decimal, the method throws
+  /// a [MusicXmlFormatException].
+  ///
+  /// Example usage:
+  /// ```dart
+  /// var xmlElement = parse("<note duration='1.5'/>");
+  /// var duration = Decimal.fromXml(xmlElement, "duration", true);
+  /// print(duration);  // 1.5
+  /// ```
+  static double? fromXml(
+    XmlElement xmlElement,
+    String? attributeName,
+    bool required,
+  ) {
+    var elementName = xmlElement.name.local;
+
+    final rawValue = attributeName != null
+        ? xmlElement.getAttribute(attributeName)
+        : xmlElement.innerText;
+    if (rawValue == null && !required) {
+      return null;
+    }
+
+    if (attributeName == null) {
+      validateTextContent(xmlElement);
+    }
+
+    if (rawValue == null && required && attributeName != null) {
+      throw MissingXmlAttribute(
+        message: "'$attributeName' attribute in '$elementName' is required",
+        xmlElement: xmlElement,
+      );
+    }
+
+    double? value = double.tryParse(rawValue ?? "");
+
+    if (rawValue != null && value == null) {
+      final message = attributeName != null
+          ? "'$attributeName' attribute in '$elementName' is not valid decimal content"
+          : "'$elementName' must have valid decimal content";
+
+      throw MusicXmlFormatException(
+        message: message,
+        xmlElement: xmlElement,
+        source: rawValue,
       );
     }
     return value;

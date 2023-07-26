@@ -1,3 +1,5 @@
+import 'package:music_notation/src/models/elements/music_data/attributes/attributes.dart';
+import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/utilities/type_parsers.dart';
 import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
@@ -61,11 +63,31 @@ class Part {
     // });
     return builder.buildDocument().rootElement;
   }
+
+  int calculateStaves() {
+    int? staves;
+    for (var measure in measures) {
+      for (var data in measure.data) {
+        switch (data) {
+          case Attributes _:
+            staves = data.staves;
+            if (staves != null) {
+              return staves;
+            }
+        }
+      }
+    }
+    return 1;
+  }
 }
 
 /// The basic musical data such as notes within a score partwise.
 class Measure {
   final List<MusicDataElement> data;
+
+  /// Measure's notes.
+  List<Note> get notes => data.whereType<Note>().toList();
+
   final MeasureAttributes attributes;
 
   Measure({

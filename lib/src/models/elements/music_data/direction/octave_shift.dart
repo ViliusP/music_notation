@@ -10,10 +10,11 @@
 // 	<xs:attributeGroup ref="optional-unique-id"/>
 // </xs:complexType>
 
+import 'package:music_notation/src/models/data_types/line.dart';
 import 'package:music_notation/src/models/data_types/start_stop.dart';
 import 'package:music_notation/src/models/elements/music_data/direction/direction.dart';
-import 'package:music_notation/src/models/elements/music_data/note/notations/notation.dart';
 import 'package:music_notation/src/models/printing.dart';
+import 'package:xml/xml.dart';
 
 /// The octave shift type indicates where notes are shifted up or down from
 ///
@@ -50,4 +51,8 @@ class OctaveShift implements DirectionType {
     required this.printStyle,
     required this.id,
   });
+
+  factory OctaveShift.fromXml(XmlElement xmlElement) {
+    throw UnimplementedError();
+  }
 }

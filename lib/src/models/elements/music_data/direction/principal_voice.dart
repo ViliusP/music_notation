@@ -1,6 +1,7 @@
 import 'package:music_notation/src/models/data_types/start_stop.dart';
 import 'package:music_notation/src/models/elements/music_data/direction/direction.dart';
 import 'package:music_notation/src/models/printing.dart';
+import 'package:xml/xml.dart';
 
 class PrincipalVoice implements DirectionType {
   String value;
@@ -28,6 +29,10 @@ class PrincipalVoice implements DirectionType {
     required this.id,
     required this.symbol,
   });
+
+  factory PrincipalVoice.fromXml(XmlElement xmlElement) {
+    throw UnimplementedError();
+  }
 }
 
 /// The principal-voice-symbol type represents the type of symbol used to

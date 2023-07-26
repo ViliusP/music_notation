@@ -22,7 +22,19 @@ The renderer included in this library is a Flutter widget. Therefore, a basic un
 
 Our library uses the SMuFL (Standard Music Font Layout) standard for music symbols in the rendered output. For precise rendering, you should have a SMuFL compliant font installed in your system. A list of such fonts can be found [here](https://www.smufl.org/fonts/).
 
+### Current status
 
+|<img src='./docs/images/current_status_apres.png' width='550'>|
+|:--:|
+| *Current rendering of Gabriel Fauré "Après un rêve* |
+
+|<img src='./docs/images/target_apres.png' width='550'>|
+|:--:|
+| *Target rendering of Gabriel Fauré "Après un rêve* |
+
+**IMPORTANT NOTE:** This library is currently in its early stages of development and not ready for production use. The API is still under active development and can change frequently. We strongly advise not using this library in a production environment as breaking changes may occur.
+
+This library is currently in a **preview phase** and we welcome all developers who are interested in contributing and helping us shape the future of this library.
 
 ## Installation
 

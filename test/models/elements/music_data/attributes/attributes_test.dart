@@ -105,4 +105,76 @@ void main() {
       );
     });
   });
+  group("Attribute staves", () {
+    test("should be parsed from '<part-symbol>' example", () {
+      String input = """
+        <attributes>
+          <divisions>2</divisions>
+          <key>
+            <fifths>0</fifths>
+            <mode>major</mode>
+          </key>
+          <time>
+            <beats>4</beats>
+            <beat-type>4</beat-type>
+          </time>
+          <staves>3</staves>
+          <part-symbol top-staff="1" bottom-staff="2">brace</part-symbol>
+          <clef number="1">
+            <sign>G</sign>
+            <line>2</line>
+          </clef>
+          <clef number="2">
+            <sign>F</sign>
+            <line>4</line>
+          </clef>
+          <clef number="3">
+            <sign>F</sign>
+            <line>4</line>
+          </clef>
+        </attributes>
+      """;
+
+      Attributes attributes = Attributes.fromXml(
+        XmlDocument.parse(input).rootElement,
+      );
+      expect(attributes.staves, 3);
+    });
+    test("parsing should throw on empty value", () {
+      String input = """
+        <attributes>
+          <staves></staves>
+        </attributes>
+      """;
+
+      expect(
+        () => Attributes.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(isA<MusicXmlFormatException>()),
+      );
+    });
+    test("parsing should throw on negative value", () {
+      String input = """
+        <attributes>
+          <staves>-1</staves>
+        </attributes>
+      """;
+
+      expect(
+        () => Attributes.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(isA<MusicXmlFormatException>()),
+      );
+    });
+    test("parsing should throw on xml children content", () {
+      String input = """
+        <attributes>
+          <staves><foo/></staves>
+        </attributes>
+      """;
+
+      expect(
+        () => Attributes.fromXml(XmlDocument.parse(input).rootElement),
+        throwsA(isA<XmlElementContentException>()),
+      );
+    });
+  });
 }

@@ -11,6 +11,7 @@
 // 	<xs:attributeGroup ref="optional-unique-id"/>
 // </xs:complexType>
 
+import 'package:music_notation/src/models/elements/music_data/direction/direction.dart';
 import 'package:music_notation/src/models/printing.dart';
 import 'package:xml/xml.dart';
 
@@ -27,7 +28,7 @@ import 'package:xml/xml.dart';
 /// and no if the full Ped and Sost signs are used. It is no by default.
 /// Otherwise the abbreviated attribute is ignored.
 /// The alignment attributes are ignored if the sign attribute is no.
-class Pedal {
+class Pedal implements DirectionType {
   // ------------------------- //
   // ------ Attributes ------- //
   // ------------------------- //

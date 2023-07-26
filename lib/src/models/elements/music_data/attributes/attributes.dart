@@ -50,7 +50,7 @@ class Attributes implements MusicDataElement {
   /// If absent, a value of 1 is assumed.
   ///
   /// Staves are ordered from top to bottom in a part in numerical order, with staff 1 above staff 2.
-  int staves;
+  int? staves;
 
   /// Indicates how a symbol for a multi-staff part is indicated in the score.
   PartSymbol? partSymbol;
@@ -102,7 +102,7 @@ class Attributes implements MusicDataElement {
     this.divisions,
     this.keys = const [],
     this.times = const [],
-    this.staves = 1,
+    this.staves,
     this.partSymbol,
     this.instruments = 1,
     this.clefs = const [],
@@ -229,8 +229,21 @@ class Attributes implements MusicDataElement {
     return [];
   }
 
-  static int _stavesFromXml(XmlElement xmlElement) {
-    return 1;
+  static int? _stavesFromXml(XmlElement xmlElement) {
+    XmlElement? stavesElement = xmlElement.getElement("staves");
+    if (stavesElement == null) {
+      return null;
+    }
+    validateTextContent(stavesElement);
+    int? staves = int.tryParse(stavesElement.innerText);
+    if (staves == null || staves < 1) {
+      throw MusicXmlFormatException(
+        message: "'staves' attribute is not non negative integer",
+        xmlElement: xmlElement,
+        source: stavesElement.innerText,
+      );
+    }
+    return staves;
   }
 
   static PartSymbol _partSymbolFromXml(XmlElement xmlElement) {

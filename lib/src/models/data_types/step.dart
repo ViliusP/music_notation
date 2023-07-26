@@ -18,4 +18,7 @@ enum Step {
       (element) => element.name == value,
     );
   }
+
+  @override
+  String toString() => name;
 }

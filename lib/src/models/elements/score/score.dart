@@ -117,33 +117,27 @@ class ScoreHeader {
 
   // Should be validated in parent class.
   factory ScoreHeader.fromXml(XmlElement xmlElement) {
-    final workElement = xmlElement.findElements('work').firstOrNull;
-    final identificationElement =
-        xmlElement.findElements('identification').firstOrNull;
-    final defaultsElement = xmlElement.findElements('defaults').firstOrNull;
+    final workElement = xmlElement.getElement('work');
+    final identificationElement = xmlElement.getElement('identification');
+    final defaultsElement = xmlElement.getElement('defaults');
 
     return ScoreHeader(
       work: workElement != null ? Work.fromXml(workElement) : null,
-      movementNumber: xmlElement
-          .findElements('movement-number')
-          .firstOrNull
-          ?.firstChild
-          ?.value,
-      movementTitle: xmlElement
-          .findElements('movement-title')
-          .firstOrNull
-          ?.firstChild
-          ?.value,
+      movementNumber: xmlElement.getElement('movement-number')?.innerText,
+      movementTitle: xmlElement.getElement('movement-title')?.innerText,
       identification: identificationElement != null
           ? Identification.fromXml(identificationElement)
           : null,
-      defaults:
-          defaultsElement != null ? Defaults.fromXml(defaultsElement) : null,
+      defaults: defaultsElement != null
+          ? Defaults.fromXml(
+              defaultsElement,
+            )
+          : null,
       credits: xmlElement
           .findElements('credit')
           .map((e) => Credit.fromXml(e))
           .toList(),
-      partList: PartList.fromXml(xmlElement.findElements('part-list').first),
+      partList: PartList.fromXml(xmlElement.getElement('part-list')!),
     );
   }
 

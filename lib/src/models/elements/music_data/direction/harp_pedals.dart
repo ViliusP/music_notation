@@ -1,6 +1,7 @@
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/direction/direction.dart';
 import 'package:music_notation/src/models/printing.dart';
+import 'package:xml/xml.dart';
 
 /// The harp-pedals type is used to create harp pedal diagrams.
 ///
@@ -21,6 +22,10 @@ class HarpPedals implements DirectionType {
     required this.printStyleAlign,
     required this.id,
   });
+
+  factory HarpPedals.fromXml(XmlElement xmlElement) {
+    throw UnimplementedError();
+  }
 }
 
 /// The pedal-tuning type specifies the tuning of a single harp pedal.

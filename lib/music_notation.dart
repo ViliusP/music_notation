@@ -1,7 +1,13 @@
 library music_notation;
 
-export 'src/notation_painter/notation_painter.dart';
 export 'src/notation_painter/music_notation_canvas.dart'
     show MusicNotationCanvas;
 
-export 'src/models/elements/score/score.dart' show ScorePartwise;
+export 'src/notation_painter/music_grid.dart' show NotationGrid, MeasureGrid;
+
+export 'src/notation_painter/models/visual_music_element.dart';
+export 'src/notation_painter/models/visual_note_element.dart';
+
+export 'src/models/elements/score/score.dart' show ScorePartwise, ScoreHeader;
+
+export 'src/smufl/glyph_class.dart' show GlyphClasses;
