@@ -24,11 +24,11 @@ Our library uses the SMuFL (Standard Music Font Layout) standard for music symbo
 
 ### Current status
 
-| !["Current rendering of Gabriel Fauré "Après un rêve"](./docs/images/current_status_apres.png =x250) |
+| !["Current rendering of Gabriel Fauré "Après un rêve"](./docs/images/current_status_apres.png | width=250) |
 |:--:|
 | *Current rendering of Gabriel Fauré "Après un rêve* |
 
-| !["Target rendering result of Gabriel Fauré "Après un rêve"](./docs/images/target_apres.png =x250) |
+| !["Target rendering result of Gabriel Fauré "Après un rêve"](./docs/images/target_apres.png | width=250 ) |
 |:--:|
 | *Current rendering of Gabriel Fauré "Après un rêve* |
 
