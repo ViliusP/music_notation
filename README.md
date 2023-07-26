@@ -24,13 +24,13 @@ Our library uses the SMuFL (Standard Music Font Layout) standard for music symbo
 
 ### Current status
 
-| !["Current rendering of Gabriel Fauré "Après un rêve"](./docs/images/current_status_apres.png | width=250) |
+|<img src='./docs/images/current_status_apres.png' width='550'>|
 |:--:|
 | *Current rendering of Gabriel Fauré "Après un rêve* |
 
-| !["Target rendering result of Gabriel Fauré "Après un rêve"](./docs/images/target_apres.png | width=250 ) |
+|<img src='./docs/images/target_apres.png' width='550'>|
 |:--:|
-| *Current rendering of Gabriel Fauré "Après un rêve* |
+| *Target rendering of Gabriel Fauré "Après un rêve* |
 
 **IMPORTANT NOTE:** This library is currently in its early stages of development and not ready for production use. The API is still under active development and can change frequently. We strongly advise not using this library in a production environment as breaking changes may occur.
 
