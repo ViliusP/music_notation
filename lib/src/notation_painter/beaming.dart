@@ -85,9 +85,12 @@ class BeatPattern {
 }
 
 class Beaming {
-  /// Returns a list of integers. The list has the same length as the provided [notes] list.
-  /// The value of -1 means that the note at that index is not part of any beam group.
-  /// If a note is part of a beam group, the value at that index is the ID of the beam group.
+  /// Returns a list of integers. Each integer corresponds to a [Note] in the
+  /// provided [notes] list. Each integer in the returned list represents the ID
+  /// of the beam group to which the corresponding [Note] belongs. A value of -1
+  /// means that the note at the corresponding index is not part of any beam group.
+  /// Note is not in a group when it is equal or longer than quarter note. These
+  /// notes aren't beamed together.
   static List<int> generate({
     required List<Note> notes,
     required TimeSignature timeSignature,
@@ -131,12 +134,15 @@ class Beaming {
 
       var note = notes[i] as RegularNote;
 
-      // Make note grouped if it is not rest and is smaller than quarter note.
+      // If the note is not a rest and its duration is smaller than a quarter note,
+      // it is part of a beam group.
       if (note.form is! Rest && note.duration < divisions) {
         double noteDuration = note.duration;
         currentDuration += noteDuration;
         notesGroups[i] = groupId;
       }
+      // If the current duration exceeds or equals a beat, or if the note is a
+      // rest, reset the current duration and increment the group ID.
       if (currentDuration >= durationPerBeat || note.form is Rest) {
         currentDuration = 0;
         groupId++;
