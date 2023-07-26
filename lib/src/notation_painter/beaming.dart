@@ -1,3 +1,6 @@
+import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
+import 'package:music_notation/src/models/elements/music_data/note/note.dart';
+
 /// Different beat strengths typically used in music notation.
 enum BeatStrength {
   strong,
@@ -10,7 +13,7 @@ enum BeatStrength {
 /// The class contains predefined patterns for simple and compound time signatures, and
 /// can be used to derive the pattern of strong, weak, and medium beats in a measure of
 /// music according to the time signature.
-class BeatPatternGenerator {
+class BeatPattern {
   /// A map of common beat patterns for simple time signatures.
   ///
   /// Each key is the beat type (the number of divisions in each beat), and the corresponding
@@ -67,12 +70,12 @@ class BeatPatternGenerator {
   ///
   /// This method returns a list of [BeatStrength] enumerations that define the
   /// strength of each beat in a measure.
-  static List<BeatStrength> generateBeatPattern(int beats, int beatType) {
+  static List<BeatStrength> generate(int beats, int beatType) {
     List<BeatStrength>? beatPattern;
-    if (beats == 4) {
-      beatPattern = _simplePatterns[beatType];
-    } else if (beatType == 8) {
-      beatPattern = _compoundPatterns[beatType];
+    if (beatType == 4) {
+      beatPattern = _simplePatterns[beats];
+    } else if (beatType == 8 && beats % 3 == 0) {
+      beatPattern = _compoundPatterns[beats ~/ 3];
     }
     if (beatPattern != null) return beatPattern;
     throw UnimplementedError(
@@ -81,23 +84,64 @@ class BeatPatternGenerator {
   }
 }
 
+class Beaming {
+  /// Returns a list of integers. The list has the same length as the provided [notes] list.
+  /// The value of -1 means that the note at that index is not part of any beam group.
+  /// If a note is part of a beam group, the value at that index is the ID of the beam group.
+  static List<int> generate({
+    required List<Note> notes,
+    required TimeSignature timeSignature,
+    required double divisions,
+  }) {
+    int? beats = int.tryParse(timeSignature.beats);
 
-   // int? beats = int.tryParse(timeSignature.beats);
+    if (beats == null) {
+      throw ArgumentError.value(
+        timeSignature.beats,
+        "timeSignature.beats",
+        "TimeSignature argument must have 'beats' that can be parsed to integer",
+      );
+    }
 
-    // if (beats == null) {
-    //   throw ArgumentError.value(
-    //     timeSignature.beats,
-    //     "timeSignature.beats",
-    //     "TimeSignature argument must have 'beats' that can be parsed to integer",
-    //   );
-    // }
+    int? beatType = int.tryParse(timeSignature.beatType);
 
-    // int? beatType = int.tryParse(timeSignature.beatType);
+    if (beatType == null) {
+      throw ArgumentError.value(
+        timeSignature.beatType,
+        "timeSignature.beatType",
+        "TimeSignature argument must have 'beatType' that can be parsed to integer",
+      );
+    }
+    // Will be used in future.
+    // ignore: unused_local_variable
+    var beatPattern = BeatPattern.generate(beats, beatType);
+    var notesGroups = List.filled(notes.length, -1);
 
-    // if (beatType == null) {
-    //   throw ArgumentError.value(
-    //     timeSignature.beatType,
-    //     "timeSignature.beatType",
-    //     "TimeSignature argument must have 'beatType' that can be parsed to integer",
-    //   );
-    // }
+    int groupId = 0;
+
+    double durationPerBeat = (beatType / 4) * divisions;
+    // double durationPerMeasure = durationPerBeat * beats;
+
+    double currentDuration = 0;
+
+    for (var i = 0; i < notes.length; i++) {
+      if (notes[i] is! RegularNote) {
+        UnimplementedError("Only regular note rendering is implemented");
+      }
+
+      var note = notes[i] as RegularNote;
+
+      // Make note grouped if it is not rest and is smaller than quarter note.
+      if (note.form is! Rest && note.duration < divisions) {
+        double noteDuration = note.duration;
+        currentDuration += noteDuration;
+        notesGroups[i] = groupId;
+      }
+      if (currentDuration >= durationPerBeat || note.form is Rest) {
+        currentDuration = 0;
+        groupId++;
+      }
+    }
+    return notesGroups;
+  }
+}
