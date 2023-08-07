@@ -150,14 +150,34 @@ class _RowIterator<T> implements Iterator<List<T>> {
   }
 }
 
+/// `NotationGrid` is a class designed to represent the structure of a musical
+/// score for the purpose of rendering it in a visual format.
+///
+/// This class takes a more complex approach to representation by using a two-dimensional
+/// grid (`data`). Each row in this grid represents a part or a staff within a part
+/// from a musical score, and each column corresponds to a measure.
+///
+/// Additionally, this class supports the concept of 'common staves', which are
+/// groups of staves that are linked across multiple parts. These common staves are
+/// stored as a list of lists (`commonStaves`), with each inner list corresponding
+/// to a group of common staves. They can also be accessed as a map (`commonStavesMap`)
+/// for easier lookup.
+///
+/// The grid structure provided by this class allows for efficient access to the
+/// musical data, making it an effective choice for operations such as rendering the
+/// score or performing musical analysis.
 class NotationGrid {
-  /// Row is part or part's staff. Column is a measure.
+  /// Represents the musical score as a grid. Each row corresponds to a part or
+  /// a staff within a part, and each column represents a measure.
   final Grid<MeasureSequence> data;
 
-  // [[0], [1, 2]]
+  /// Represents the musical score as a grid. Each row corresponds to a part or
+  /// a staff within a part, and each column represents a measure.
   final List<List<int>> commonStaves;
 
-  // {0: [0], 1: [1, 2], 2: [1, 2]}
+  /// Converts the commonStaves list into a map for easier lookup.
+  /// Each key represents a row index in the grid, and its corresponding
+  /// value is the list of common staves for that part.
   Map<int, List<int>> get commonStavesMap {
     Map<int, List<int>> map = {};
     for (var list in commonStaves) {
@@ -168,11 +188,16 @@ class NotationGrid {
     return map;
   }
 
+  // Private constructor used to initialize an instance with required properties.
   NotationGrid._({
     required this.data,
     required this.commonStaves,
   });
 
+  // Factory method that creates a NotationGrid from a list of Part instances.
+  // It first calculates the number of staves in each part and adds the corresponding
+  // number of rows to the grid. Then, it iterates through the measures in each part,
+  // creating MeasureSequence instances and adding them to the corresponding row in the grid.
   factory NotationGrid.fromScoreParts(List<Part> parts) {
     Grid<MeasureSequence> data = Grid();
     List<List<int>> commonStaves = [];
