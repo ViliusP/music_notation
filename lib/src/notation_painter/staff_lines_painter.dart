@@ -24,6 +24,11 @@ class PainterSettings {
 class StaffLinesPainter extends CustomPainter {
   final double length;
 
+  Size get size => Size(
+      length,
+      (NotationLayoutProperties.staffLines - 1) *
+          NotationLayoutProperties.staveSpace);
+
   StaffLinesPainter(this.length);
 
   @override
