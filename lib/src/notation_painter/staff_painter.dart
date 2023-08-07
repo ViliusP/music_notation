@@ -50,7 +50,7 @@ class StaffPainter extends CustomPainter {
       // Iterating throug measures/part.
       for (var j = 0; j < grid.data.columnCount; j++) {
         var measureGrid = grid.data.getValue(i, j);
-        _paintMeasure(grid: measureGrid);
+        _paintMeasure(sequence: measureGrid);
         if (j != grid.data.columnCount - 1) _paintBarline(canvas, context);
       }
       _paintStaffLines(canvas, context);
@@ -68,13 +68,13 @@ class StaffPainter extends CustomPainter {
   /// the stave-line on each side of it, but without extending beyond either line.
   ///
   /// Notes on a line should be precisely centred on the stave-line.
-  void _paintMeasure({required MeasureGrid grid}) {
-    for (var j = 0; j < grid.elementCount; j++) {
+  void _paintMeasure({required MeasureSequence sequence}) {
+    for (var column in sequence) {
       VisualNoteElement? lowestNote;
       VisualNoteElement? highestNote;
       double? rightMargin;
-      for (var i = -grid.distance; i < grid.distance; i++) {
-        var musicElement = grid.getValue(i, j);
+      for (var element in column) {
+        var musicElement = element;
         if (musicElement == null) continue;
         if (musicElement.defaultMargins != null) {
           context.moveX(musicElement.defaultMargins!.left);
@@ -121,7 +121,7 @@ class StaffPainter extends CustomPainter {
   }
 
   /// Notes below line 3 have up stems on the right side of the notehead.
-
+  ///
   /// Notes on or above line 3 have down stems on the left side of the notehead.
   ///
   /// The stem is awalys placed between the two notes of an interval of a 2nd,

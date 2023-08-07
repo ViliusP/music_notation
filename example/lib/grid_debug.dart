@@ -42,7 +42,7 @@ class GridDebug extends StatelessWidget {
                                   height: 120,
                                   width: 120,
                                   child: _MeasureGrid(
-                                    measure: measureGrid,
+                                    sequence: measureGrid,
                                     partIndex: partIndex,
                                     measureIndex: index,
                                   ),
@@ -59,20 +59,19 @@ class GridDebug extends StatelessWidget {
 }
 
 class _MeasureGrid extends StatelessWidget {
-  final MeasureGrid measure;
+  final MeasureSequence sequence;
   final int measureIndex;
   final int partIndex;
 
   const _MeasureGrid({
     super.key,
-    required this.measure,
+    required this.sequence,
     required this.measureIndex,
     required this.partIndex,
   });
 
   @override
   Widget build(BuildContext context) {
-    print("$partIndex");
     return Material(
       clipBehavior: Clip.antiAlias,
       color: Colors.amber,
@@ -86,7 +85,7 @@ class _MeasureGrid extends StatelessWidget {
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => MeasureGridDebug(
-                measure: measure,
+                sequence: sequence,
                 measureNumber: measureIndex,
                 partNumber: partIndex,
               ),

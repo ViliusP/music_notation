@@ -152,7 +152,7 @@ class _RowIterator<T> implements Iterator<List<T>> {
 
 class NotationGrid {
   /// Row is part or part's staff. Column is a measure.
-  final Grid<MeasureGrid> data;
+  final Grid<MeasureSequence> data;
 
   // [[0], [1, 2]]
   final List<List<int>> commonStaves;
@@ -174,7 +174,7 @@ class NotationGrid {
   });
 
   factory NotationGrid.fromScoreParts(List<Part> parts) {
-    Grid<MeasureGrid> data = Grid();
+    Grid<MeasureSequence> data = Grid();
     List<List<int>> commonStaves = [];
     for (var part in parts) {
       int staves = part.calculateStaves();
@@ -185,7 +185,7 @@ class NotationGrid {
       for (var i = 0; i < staves; i++) {
         data.addRow();
       }
-      List<MeasureGrid> lastMeasures = [];
+      List<MeasureSequence> lastMeasures = [];
       for (var measure in part.measures) {
         for (var i = 0; i < staves; i++) {
           Clef? clef;
@@ -193,7 +193,7 @@ class NotationGrid {
             clef = lastMeasures[i]._clef;
           }
 
-          var measureGrid = MeasureGrid.fromMeasure(
+          var measureGrid = MeasureSequence.fromMeasure(
             measure: measure,
             staff: staves != 1 ? i + 1 : null,
             clef: clef,
@@ -218,14 +218,17 @@ class NotationGrid {
   }
 }
 
-class MeasureGrid extends Iterable<List<VisualMusicElement?>> {
+/// | Clef |   Beat   | C4 note | Quarter rest | C5 note |
+/// |:----:|:--------:|:-------:|:------------:|:-------:|
+/// |      | BeatType | C3 note |              | G4 note |
+/// |      |          | D2 note |              |         |
+class MeasureSequence extends Iterable<List<VisualMusicElement?>> {
   static const gridHeight = 84;
 
   static const Step startingStep = Step.G;
   static const int statingOctave = 4;
 
-  final Grid<VisualMusicElement?> _data;
-  // UnmodifiableGrid<VisualMusicElement?> get data => _data.asUnmodifiable();
+  final List<List<VisualMusicElement>> _data;
 
   Clef? _clef;
 
@@ -233,12 +236,16 @@ class MeasureGrid extends Iterable<List<VisualMusicElement?>> {
     _clef = clef;
   }
 
-  MeasureGrid._({required Grid<VisualMusicElement?> data}) : _data = data;
+  MeasureSequence._({
+    required List<List<VisualMusicElement>> data,
+  }) : _data = data;
 
   // Get the value at the given row and column
   VisualMusicElement? getValue(int row, int column) {
-    var data = _data.getValue(row + (gridHeight ~/ 2), column);
-    if (data == null) {
+    VisualMusicElement? element;
+    try {
+      element = _data[column][row];
+    } catch (_) {
       return null;
     }
     int transpose = 0;
@@ -249,70 +256,45 @@ class MeasureGrid extends Iterable<List<VisualMusicElement?>> {
       default:
     }
 
-    if (transpose != 0 && data.influencedByClef == true) {
-      return _data
-          .getValue(row + (gridHeight ~/ 2), column)
-          ?.tranpose(transpose);
+    if (transpose != 0 && element.influencedByClef == true) {
+      return element.tranpose(transpose);
     }
-    return _data.getValue(row + (gridHeight ~/ 2), column);
-  }
-
-  // Get the value at the given row and column
-  VisualMusicElement? nextNoteInColumn(int row, int column) {
-    for (int i = row + 1; i < distance; i++) {
-      var element = getValue(i, column);
-      if (element is VisualNoteElement) {
-        return element;
-      }
-    }
-    return null;
+    return element;
   }
 
   /// Set the [value] at the given [column].
   void setElement(VisualMusicElement value, int column) {
-    int row = value.position.numericPosition -
-        const ElementPosition(step: Step.G, octave: 4).numericPosition;
-    _data.setValue(row + (gridHeight ~/ 2), column, value);
+    _data[column].add(value);
   }
 
-  /// Maximum available positions above and below from G4
-  int get distance {
-    return _data.rowCount ~/ 2;
+  int get horizontalPositions {
+    return _data.length;
   }
 
-  /// Maximum elements in measure.
-  int get elementCount {
-    return _data.columnCount;
-  }
-
-  void addEmptyColumn() {
-    final column = List<VisualMusicElement?>.filled(
-      gridHeight,
-      null,
-    );
-    _data.addColumn(column);
+  void add(List<VisualMusicElement> value) {
+    _data.add(value);
   }
 
   /// The [staff] must be provided if [measure] has multiple staves.
-  factory MeasureGrid.fromMeasure({
+  factory MeasureSequence.fromMeasure({
     required Measure measure,
     int? staff,
     Clef? clef,
   }) {
-    Grid<VisualMusicElement?> data = Grid();
-    for (var i = 0; i < gridHeight; i++) {
-      data.addRow();
-    }
-    MeasureGrid grid = MeasureGrid._(data: data);
+    // List<List<VisualMusicElement?> data = Grid();
+    // for (var i = 0; i < gridHeight; i++) {
+    //   data.addRow();
+    // }
+    MeasureSequence grid = MeasureSequence._(data: []);
     for (var musicElement in measure.data) {
       switch (musicElement) {
         case Note _:
           if (staff == musicElement.staff || staff == null) {
-            if (musicElement.chord == null || grid.elementCount == 0) {
-              grid.addEmptyColumn();
+            if (musicElement.chord == null || grid.horizontalPositions == 0) {
+              grid.add([]);
             }
             var noteVisual = VisualNoteElement.fromNote(musicElement);
-            grid.setElement(noteVisual, grid.elementCount - 1);
+            grid.setElement(noteVisual, grid.horizontalPositions - 1);
           }
           break;
         case Backup _:
@@ -324,11 +306,11 @@ class MeasureGrid extends Iterable<List<VisualMusicElement?>> {
         case Attributes _:
           var attributeVisuals = _fromAttributes(musicElement, staff);
 
-          for (var attributesInColumn in attributeVisuals) {
-            grid.addEmptyColumn();
+          for (var attributesColumn in attributeVisuals) {
+            grid.add([]);
 
-            for (var visual in attributesInColumn) {
-              grid.setElement(visual, grid.elementCount - 1);
+            for (var visual in attributesColumn) {
+              grid.setElement(visual, grid.horizontalPositions - 1);
             }
           }
 

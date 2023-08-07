@@ -5,11 +5,11 @@ import 'package:music_notation/music_notation.dart';
 class MeasureGridDebug extends StatelessWidget {
   final int partNumber;
   final int measureNumber;
-  final MeasureGrid measure;
+  final MeasureSequence sequence;
 
   const MeasureGridDebug({
     super.key,
-    required this.measure,
+    required this.sequence,
     required this.partNumber,
     required this.measureNumber,
   });
@@ -23,7 +23,7 @@ class MeasureGridDebug extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         child: Column(
-          children: measure
+          children: sequence
               .map(
                 (row) => Padding(
                   padding: const EdgeInsets.all(8.0),
