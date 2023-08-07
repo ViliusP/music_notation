@@ -13,9 +13,12 @@ import '../test_path.dart';
 void main() {
   group("Après un rêve beamings", () {
     var testCases = [
-      (measure: 1, part: 0, beamings: [-1, -1, -1]),
-      (measure: 2, part: 0, beamings: [-1, 0, 0, 0, 1, 1, 1]),
-      (measure: 3, part: 0, beamings: [-1, -1]),
+      (part: 0, measure: 1, staff: null, beamings: [-1, -1, -1]),
+      (part: 0, measure: 2, staff: null, beamings: [-1, 0, 0, 0, 1, 1, 1]),
+      (part: 0, measure: 3, staff: null, beamings: [-1, -1]),
+      (part: 1, measure: 0, staff: 1, beamings: [0, 0, 0, 0, 0, 0]),
+      (part: 1, measure: 1, staff: 1, beamings: [0, 0, 0, 0, 0, 0]),
+      (part: 1, measure: 2, staff: 1, beamings: [0, 0, 0, 0, 0, 0]),
     ];
 
     final inputFile = File(
@@ -32,6 +35,7 @@ void main() {
           notes: scorePartwise
               .parts[testCase.part].measures[testCase.measure].data
               .whereType<Note>()
+              .where((element) => element.staff == testCase.staff)
               .toList(),
           timeSignature: TimeSignature(beats: "3", beatType: "4"),
           divisions: 24,
@@ -40,6 +44,10 @@ void main() {
           groupings,
           testCase.beamings,
         );
+        if (!equal) {
+          // ignore: avoid_print
+          print("expected ${testCase.beamings} \nresults  $groupings");
+        }
         expect(equal, true);
       });
     }
