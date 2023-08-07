@@ -85,10 +85,10 @@ class StaffPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    context = StaffPainterContext(
-      canvas: canvas,
-      size: size,
-    );
+    // context = StaffPainterContext(
+    //   canvas: canvas,
+    //   size: size,
+    // );
     var grid = notationGrid;
     // Iterating throug part/row.
     for (var i = 0; i < grid.data.rowCount; i++) {
@@ -145,11 +145,11 @@ class StaffPainter extends CustomPainter {
           }
         }
 
-        drawSmuflSymbol(
-          context.canvas,
-          offset,
-          musicElement.symbol,
-        );
+        // drawSmuflSymbol(
+        //   context.canvas,
+        //   offset,
+        //   musicElement.symbol,
+        // );
         if (musicElement is VisualNoteElement) {
           lowestNote ??= musicElement;
           highestNote = musicElement;
@@ -274,20 +274,20 @@ class StaffPainter extends CustomPainter {
 
     int stemHeightMultiplier = direction == StemValue.down ? 1 : -1;
 
-    context.canvas.drawLine(
-      stemOffset,
-      stemOffset + Offset(0, stemHeightMultiplier * stemHeight),
-      Paint()
-        ..color = const Color.fromRGBO(0, 0, 0, 1.0)
-        ..strokeWidth = NotationLayoutProperties.stemStrokeWidth,
-    );
-    if (flagSymbol != null) {
-      var stemFlagOffset = direction == StemValue.down
-          ? noteOffset - Offset(0, -stemHeight)
-          : noteOffset + Offset(15, -stemHeight);
+    // context.canvas.drawLine(
+    //   stemOffset,
+    //   stemOffset + Offset(0, stemHeightMultiplier * stemHeight),
+    //   Paint()
+    //     ..color = const Color.fromRGBO(0, 0, 0, 1.0)
+    //     ..strokeWidth = NotationLayoutProperties.stemStrokeWidth,
+    // );
+    // if (flagSymbol != null) {
+    //   var stemFlagOffset = direction == StemValue.down
+    //       ? noteOffset - Offset(0, -stemHeight)
+    //       : noteOffset + Offset(15, -stemHeight);
 
-      drawSmuflSymbol(context.canvas, stemFlagOffset, flagSymbol);
-    }
+    //   drawSmuflSymbol(context.canvas, stemFlagOffset, flagSymbol);
+    // }
   }
 
   void _paintLedgerLines({
@@ -305,13 +305,13 @@ class StaffPainter extends CustomPainter {
     var positionY =
         (startingY + NotationLayoutProperties.staveSpace) * multiplier;
     for (var i = 0; i < count.abs(); i++) {
-      context.canvas.drawLine(
-        context.offset + Offset(-widthOutside, positionY),
-        context.offset + Offset(noteheadWidth + widthOutside, positionY),
-        Paint()
-          ..color = const Color.fromRGBO(0, 0, 0, 1.0)
-          ..strokeWidth = NotationLayoutProperties.staffLineStrokeWidth,
-      );
+      // context.canvas.drawLine(
+      //   context.offset + Offset(-widthOutside, positionY),
+      //   context.offset + Offset(noteheadWidth + widthOutside, positionY),
+      //   Paint()
+      //     ..color = const Color.fromRGBO(0, 0, 0, 1.0)
+      //     ..strokeWidth = NotationLayoutProperties.staffLineStrokeWidth,
+      // );
 
       positionY += multiplier * NotationLayoutProperties.staveSpace;
     }

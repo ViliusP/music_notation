@@ -21,10 +21,5 @@ class StaffPainterContext {
   Part? currentPart;
   Measure? currentMeasure;
 
-  // bool lastNoteChord = false;
-
-  final Canvas canvas;
-  final Size size;
-
-  StaffPainterContext({required this.canvas, required this.size});
+  StaffPainterContext();
 }
