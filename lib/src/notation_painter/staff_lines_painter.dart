@@ -21,6 +21,32 @@ class PainterSettings {
   PainterSettings._();
 }
 
+class StaffLinesPainter extends CustomPainter {
+  final double length;
+
+  StaffLinesPainter(this.length);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    var lineY = 0.0;
+    for (var i = 0; i < NotationLayoutProperties.staffLines; i++) {
+      canvas.drawLine(
+        Offset(0, lineY),
+        Offset(length, lineY),
+        Paint()
+          ..color = const Color.fromRGBO(0, 0, 0, 1.0)
+          ..strokeWidth = NotationLayoutProperties.staffLineStrokeWidth,
+      );
+      lineY += NotationLayoutProperties.staveSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
+  }
+}
+
 class StaffPainter extends CustomPainter {
   final ScorePartwise score;
   final NotationGrid notationGrid;
