@@ -2,7 +2,7 @@ import 'package:flutter/rendering.dart';
 
 import 'package:music_notation/src/models/elements/score/score.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
-import 'package:music_notation/src/notation_painter/staff_painter.dart';
+import 'package:music_notation/src/notation_painter/staff_lines_painter.dart';
 
 class ScorePartwisePainter extends CustomPainter {
   final ScorePartwise score;

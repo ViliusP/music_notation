@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
-import 'package:music_notation/src/notation_painter/score_partwise_painter.dart';
+import 'package:music_notation/src/notation_painter/staff_lines_painter.dart';
 
 class MusicNotationCanvas extends StatelessWidget {
   final ScorePartwise scorePartwise;
