@@ -50,6 +50,22 @@ class StaffLinesPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return false;
   }
+
+  @override
+  bool hitTest(Offset position) {
+    var lineY = 0.0;
+
+    for (var i = 0; i < NotationLayoutProperties.staffLines; i++) {
+      double halfStroke = NotationLayoutProperties.staffLineStrokeWidth / 2;
+
+      if (position.dy > lineY - halfStroke &&
+          position.dy < lineY + halfStroke) {
+        return true;
+      }
+      lineY += NotationLayoutProperties.staveSpace;
+    }
+    return false;
+  }
 }
 
 class StaffPainter extends CustomPainter {
