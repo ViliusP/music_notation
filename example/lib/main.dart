@@ -1,3 +1,4 @@
+import 'package:example/playground.dart';
 import 'package:example/score_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -111,6 +112,19 @@ class _MyHomePageState extends State<MyHomePage> {
                       )
                       .toList(),
                 ),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  fixedSize: const Size(320, 80),
+                ),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const Playground(),
+                    ),
+                  );
+                },
+                child: const Text("playground"),
               ),
               Column(
                 children: [

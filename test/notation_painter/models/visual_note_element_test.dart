@@ -1,4 +1,5 @@
 import 'package:music_notation/src/models/data_types/step.dart';
+import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/visual_note_element.dart';
 import 'package:test/test.dart';
@@ -8,10 +9,12 @@ void main() {
     var inputsOutputs = [
       (
         VisualNoteElement.noStem(
-            symbol: "symbol",
-            position: const ElementPosition(octave: 3, step: Step.A),
-            influencedByClef: false,
-            noteheadWidth: 0),
+          symbol: "symbol",
+          position: const ElementPosition(octave: 3, step: Step.A),
+          influencedByClef: false,
+          noteheadWidth: 0,
+          type: NoteTypeValue.eighth,
+        ),
         -2
       ),
       (
@@ -20,6 +23,7 @@ void main() {
           position: const ElementPosition(octave: 3, step: Step.B),
           influencedByClef: false,
           noteheadWidth: 0,
+          type: NoteTypeValue.eighth,
         ),
         -1
       ),
@@ -29,6 +33,7 @@ void main() {
           position: const ElementPosition(octave: 4, step: Step.C),
           influencedByClef: false,
           noteheadWidth: 0,
+          type: NoteTypeValue.eighth,
         ),
         -1
       ),
@@ -38,6 +43,7 @@ void main() {
           position: const ElementPosition(octave: 5, step: Step.C),
           influencedByClef: false,
           noteheadWidth: 0,
+          type: NoteTypeValue.eighth,
         ),
         0
       ),
@@ -47,6 +53,7 @@ void main() {
           position: const ElementPosition(octave: 6, step: Step.C),
           influencedByClef: false,
           noteheadWidth: 0,
+          type: NoteTypeValue.eighth,
         ),
         2
       ),
@@ -56,6 +63,7 @@ void main() {
           position: const ElementPosition(octave: 5, step: Step.B),
           influencedByClef: false,
           noteheadWidth: 0,
+          type: NoteTypeValue.eighth,
         ),
         1
       ),

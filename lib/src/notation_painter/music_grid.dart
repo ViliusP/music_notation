@@ -19,7 +19,6 @@ import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/print.dart';
 import 'package:music_notation/src/models/elements/music_data/sound/sound.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
-import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/visual_music_element.dart';
 import 'package:music_notation/src/notation_painter/models/visual_note_element.dart';
 
@@ -257,6 +256,7 @@ class MeasureSequence extends Iterable<List<VisualMusicElement?>> {
 
   final List<List<VisualMusicElement>> _data;
 
+  // In future, this will need some fix, it can be more than one clefs per measure.
   Clef? _clef;
 
   void setClef(Clef clef) {
@@ -283,7 +283,7 @@ class MeasureSequence extends Iterable<List<VisualMusicElement?>> {
       default:
     }
 
-    if (transpose != 0 && element.influencedByClef == true) {
+    if (transpose != 0 && element.influencedByClef) {
       return element.tranpose(transpose);
     }
     return element;

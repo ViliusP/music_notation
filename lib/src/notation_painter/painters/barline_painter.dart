@@ -8,10 +8,10 @@ class BarlinePainter extends CustomPainter {
     ..color = const Color.fromRGBO(0, 0, 0, 1.0)
     ..strokeWidth = 1.5;
 
-  Size get size => const Size(
-        strokeWidth,
-        NotationLayoutProperties.staveHeight,
-      );
+  static const Size size = Size(
+    strokeWidth,
+    NotationLayoutProperties.staveHeight,
+  );
 
   @override
   void paint(Canvas canvas, Size size) {

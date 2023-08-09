@@ -8,6 +8,7 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 import 'package:music_notation/src/notation_painter/models/visual_music_element.dart';
 
 class VisualNoteElement extends VisualMusicElement {
+  final NoteTypeValue type;
   final bool stemmed;
   final String? flagUpSymbol;
   final String? flagDownSymbol;
@@ -18,6 +19,8 @@ class VisualNoteElement extends VisualMusicElement {
   /// The semibreve has greater width (in proportion 2.5 sembreves to 3 black
   /// noteheads).
   final double noteheadWidth;
+
+  final double? voice;
 
   @override
   HorizontalMargins? get defaultMargins => null;
@@ -53,6 +56,8 @@ class VisualNoteElement extends VisualMusicElement {
     required this.stemmed,
     required super.influencedByClef,
     required this.noteheadWidth,
+    required this.type,
+    this.voice,
   });
 
   VisualNoteElement.stemmed({
@@ -63,6 +68,8 @@ class VisualNoteElement extends VisualMusicElement {
     super.defaultOffsetG4,
     required super.influencedByClef,
     required this.noteheadWidth,
+    required this.type,
+    this.voice,
   }) : stemmed = true;
 
   VisualNoteElement.noStem({
@@ -71,6 +78,8 @@ class VisualNoteElement extends VisualMusicElement {
     super.defaultOffsetG4,
     required super.influencedByClef,
     required this.noteheadWidth,
+    required this.type,
+    this.voice,
   })  : stemmed = false,
         flagDownSymbol = null,
         flagUpSymbol = null;
@@ -125,6 +134,7 @@ class VisualNoteElement extends VisualMusicElement {
             influencedByClef: influencedByClef,
             noteheadWidth: note.type?.value.noteheadWidth ??
                 NoteTypeValue.quarter.noteheadWidth,
+            type: note.type?.value ?? NoteTypeValue.eighth,
           );
         }
 
@@ -135,6 +145,7 @@ class VisualNoteElement extends VisualMusicElement {
           influencedByClef: influencedByClef,
           noteheadWidth: note.type?.value.noteheadWidth ??
               NoteTypeValue.quarter.noteheadWidth,
+          type: note.type?.value ?? NoteTypeValue.eighth,
         );
 
       default:
@@ -162,6 +173,7 @@ class VisualNoteElement extends VisualMusicElement {
         stemmed: stemmed ?? this.stemmed,
         influencedByClef: influencedByClef ?? this.influencedByClef,
         noteheadWidth: noteheadWidth,
+        type: type ?? NoteTypeValue.eighth,
       );
 }
 
@@ -273,6 +285,34 @@ extension NoteVisualInformation on NoteTypeValue {
       case NoteTypeValue.long:
       case NoteTypeValue.maxima:
         return null;
+    }
+  }
+
+  int get flagWidth {
+    switch (this) {
+      case NoteTypeValue.n1024th:
+        return 13;
+      case NoteTypeValue.n512th:
+        return 13;
+      case NoteTypeValue.n256th:
+        return 13;
+      case NoteTypeValue.n128th:
+        return 13;
+      case NoteTypeValue.n64th:
+        return 13;
+      case NoteTypeValue.n32nd:
+        return 13;
+      case NoteTypeValue.n16th:
+        return 13;
+      case NoteTypeValue.eighth:
+        return 13;
+      case NoteTypeValue.quarter:
+      case NoteTypeValue.half:
+      case NoteTypeValue.whole:
+      case NoteTypeValue.breve:
+      case NoteTypeValue.long:
+      case NoteTypeValue.maxima:
+        return 0;
     }
   }
 

@@ -3,6 +3,9 @@ library music_notation;
 export 'src/notation_painter/music_notation_canvas.dart'
     show MusicNotationCanvas;
 
+export 'src/notation_painter/notation_layout_delegate.dart'
+    show SpecialAlignmentWidget;
+
 export 'src/notation_painter/music_grid.dart'
     show NotationGrid, MeasureSequence;
 
