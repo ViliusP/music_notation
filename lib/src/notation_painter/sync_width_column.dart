@@ -11,8 +11,10 @@ import 'package:flutter/widgets.dart';
 /// any width constraints. Only those children that exist in a specific column
 /// are assigned a GlobalKey. This allows us to obtain their width post-rendering.
 ///
-/// 2. **Width Synchronization**: After gathering all the widths from the first render,
-///    we calculate the maximum width for each "column" and store them in a list.
+/// 2. **Aggregate Width Measurements**: Once the widths of all columns have been measured,
+///    we calculate the maximum width for each "column" and store them in a list. Instead of
+///    triggering a rebuild after every width measurement, the widget waits until all widths
+///    have been measured, reducing the number of rebuilds to just one.
 ///
 /// 3. **Re-render with Constraints**: The widget then rebuilds, applying the calculated maximum
 ///    widths as fixed widths to each corresponding child in all rows. This ensures that each
@@ -56,8 +58,11 @@ class _SyncWidthColumnState extends State<SyncWidthColumn> {
     maxColumnWidths = List.filled(maxColumns, null);
   }
 
+  int pendingMeasurements = 0;
   @override
   Widget build(BuildContext context) {
+    pendingMeasurements = maxColumnWidths.length;
+
     return Column(
       children: widget.children.map((row) {
         return Row(
@@ -85,18 +90,22 @@ class _SyncWidthColumnState extends State<SyncWidthColumn> {
     );
   }
 
+// Adjust the measureWidth method
   measureWidth(GlobalKey key, int colIndex) {
     final RenderBox? renderBox =
         key.currentContext?.findRenderObject() as RenderBox?;
     final size = renderBox?.size;
 
     if (size != null) {
-      setState(() {
-        if (maxColumnWidths[colIndex] == null ||
-            size.width > maxColumnWidths[colIndex]!) {
-          maxColumnWidths[colIndex] = size.width;
-        }
-      });
+      if (maxColumnWidths[colIndex] == null ||
+          size.width > maxColumnWidths[colIndex]!) {
+        maxColumnWidths[colIndex] = size.width;
+      }
+    }
+
+    pendingMeasurements -= 1;
+    if (pendingMeasurements == 0) {
+      setState(() {}); // Only rebuild once after all measurements are done
     }
   }
 }
