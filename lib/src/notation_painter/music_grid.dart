@@ -256,6 +256,28 @@ class MeasureSequence extends Iterable<List<VisualMusicElement?>> {
 
   final List<List<VisualMusicElement>> _data;
 
+  List<VisualMusicElement> get _flattenedData {
+    return _data.expand((i) => i).toList();
+  }
+
+  /// TODO comment
+  ({VisualMusicElement lowest, VisualMusicElement highest}) get range {
+    VisualMusicElement? lowest;
+    VisualMusicElement? highest;
+    for (var element in _flattenedData) {
+      if (lowest == null || lowest.position > element.position) {
+        lowest = element;
+      }
+      if (highest == null || highest.position < element.position) {
+        highest = element;
+      }
+    }
+    if (lowest == null || highest == null) {
+      throw ArgumentError("This error shouldn't occured");
+    }
+    return (lowest: lowest, highest: highest);
+  }
+
   // In future, this will need some fix, it can be more than one clefs per measure.
   Clef? _clef;
 
