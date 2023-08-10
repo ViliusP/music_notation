@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
@@ -23,15 +21,10 @@ class MusicNotationCanvas extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // var staffs = <Widget>[];
-    var barlines = <Widget>[];
+    // var barlines = <Widget>[];
     var parts = <Widget>[];
 
-    List<double> staffDistances = [];
-
-    final List<double> alignments = [0.2, -0.5, 0.7];
-
-    double maxAlignment = alignments
-        .reduce((value, element) => value > element ? value : element);
+    // List<double> staffDistances = [];
 
     for (int i = 0; i < grid.data.rowCount; i++) {
       // var barlinePainter = BarlinePainter();
@@ -52,7 +45,6 @@ class MusicNotationCanvas extends StatelessWidget {
         var measureSequence = grid.data.getValue(i, j);
         measures.add(
           Measure(
-            alignment: maxAlignment,
             sequence: measureSequence,
           ),
         );
@@ -61,7 +53,7 @@ class MusicNotationCanvas extends StatelessWidget {
       parts.add(Row(
         // mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: measures,
       ));
     }
