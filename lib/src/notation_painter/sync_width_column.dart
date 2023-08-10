@@ -7,18 +7,19 @@ import 'package:flutter/widgets.dart';
 ///
 /// Principles of Implementation:
 ///
-/// 1. **Measurement Phase**: Initially, children in each row are rendered without
-/// any width constraints. Only those children that exist in a specific column
-/// are assigned a GlobalKey. This allows us to obtain their width post-rendering.
+/// 1. **Initialization**: A set of GlobalKeys is created for each widget in every row.
 ///
-/// 2. **Aggregate Width Measurements**: Once the widths of all columns have been measured,
-///    we calculate the maximum width for each "column" and store them in a list. Instead of
-///    triggering a rebuild after every width measurement, the widget waits until all widths
-///    have been measured, reducing the number of rebuilds to just one.
+/// 2. **Measurement Phase (First Pass)**: Initially, children in each row are rendered without
+/// any width constraints. Those children that exist in a specific column
+/// are assigned a GlobalKey from the previously created set. This allows
+/// us to obtain their width post-rendering.
 ///
-/// 3. **Re-render with Constraints**: The widget then rebuilds, applying the calculated maximum
-///    widths as fixed widths to each corresponding child in all rows. This ensures that each
-///    "column" of children has a uniform width across all rows.
+/// 3. **Aggregate Width Measurements**: After the Measurement Phase, the maximum width
+/// for each "column" is determined based on the rendered widths of the children.
+///
+/// 4. **Layout Phase (Second Pass)**: Using `ListView.builder`, the widget lazily builds rows
+/// while applying the calculated maximum widths as fixed widths to each corresponding child
+/// in all rows. This ensures that each "column" of children has a uniform width across all rows.
 ///
 /// Example:
 ///
@@ -39,73 +40,86 @@ import 'package:flutter/widgets.dart';
 class SyncWidthColumn extends StatefulWidget {
   final List<Row> children;
 
-  const SyncWidthColumn({super.key, required this.children});
+  const SyncWidthColumn({Key? key, required this.children}) : super(key: key);
 
   @override
-  State createState() => _SyncWidthColumnState();
+  _SyncWidthColumnState createState() => _SyncWidthColumnState();
 }
 
 class _SyncWidthColumnState extends State<SyncWidthColumn> {
-  List<double?> maxColumnWidths = [];
+  late List<double?> maxColumnWidths;
+  late List<List<GlobalKey>> rowKeys;
+  bool inMeasurementPass = true;
 
   @override
   void initState() {
     super.initState();
-    int maxColumns = widget.children.fold(
+    int maxColumns = widget.children.fold<int>(
       0,
       (prev, row) => row.children.length > prev ? row.children.length : prev,
     );
     maxColumnWidths = List.filled(maxColumns, null);
+    rowKeys = List.generate(widget.children.length,
+        (_) => List.generate(maxColumns, (_) => GlobalKey()));
   }
 
-  int pendingMeasurements = 0;
   @override
   Widget build(BuildContext context) {
-    pendingMeasurements = maxColumnWidths.length;
+    if (inMeasurementPass) {
+      // Trigger the layout pass after the initial render
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) {
+          if (!mounted) return;
+          setState(() {
+            inMeasurementPass = false;
+          });
+        },
+      );
+    }
 
-    return Column(
-      children: widget.children.map((row) {
+    return ListView.builder(
+      itemCount: widget.children.length,
+      itemBuilder: (context, rowIndex) {
+        Row row = widget.children[rowIndex];
         return Row(
           children: List.generate(maxColumnWidths.length, (colIndex) {
             if (colIndex < row.children.length) {
               Widget child = row.children[colIndex];
-              GlobalKey key = GlobalKey();
+              GlobalKey key = rowKeys[rowIndex][colIndex];
 
-              // Schedule width measurement for after the frame
-              WidgetsBinding.instance.addPostFrameCallback(
-                (_) => measureWidth(key, colIndex),
-              );
-
-              return SizedBox(
-                key: key,
-                width: maxColumnWidths[colIndex],
-                child: child,
-              );
+              // If it's the measurement pass, don't set a width
+              if (inMeasurementPass) {
+                WidgetsBinding.instance.addPostFrameCallback(
+                  (_) => measureWidth(key, colIndex),
+                );
+                return Container(
+                  key: key,
+                  child: child,
+                );
+              } else {
+                // If it's the layout pass, set the width
+                return SizedBox(
+                  width: maxColumnWidths[colIndex],
+                  child: child,
+                );
+              }
             }
-            // Return a non-visible widget for non-existing children
-            return const SizedBox.shrink();
+            return const SizedBox.shrink(); // for non-existing children
           }),
         );
-      }).toList(),
+      },
     );
   }
 
-// Adjust the measureWidth method
-  measureWidth(GlobalKey key, int colIndex) {
+  void measureWidth(GlobalKey key, int colIndex) {
     final RenderBox? renderBox =
         key.currentContext?.findRenderObject() as RenderBox?;
     final size = renderBox?.size;
 
-    if (size != null) {
-      if (maxColumnWidths[colIndex] == null ||
-          size.width > maxColumnWidths[colIndex]!) {
-        maxColumnWidths[colIndex] = size.width;
-      }
-    }
-
-    pendingMeasurements -= 1;
-    if (pendingMeasurements == 0) {
-      setState(() {}); // Only rebuild once after all measurements are done
+    if (size != null &&
+        (maxColumnWidths[colIndex] == null ||
+            size.width > maxColumnWidths[colIndex]!)) {
+      maxColumnWidths[colIndex] = size.width;
     }
   }
 }
