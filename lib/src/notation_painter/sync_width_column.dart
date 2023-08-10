@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/widgets.dart';
 
 /// `SyncWidthColumn`:
@@ -54,16 +56,22 @@ class _SyncWidthColumnState extends State<SyncWidthColumn> {
   @override
   void initState() {
     super.initState();
+    initializeRowAndColumnData();
+    scheduleMaxWidthsUpdate();
+  }
 
+  void initializeRowAndColumnData() {
     int maxColumns = widget.children.fold<int>(
       0,
-      (prev, row) => row.children.length > prev ? row.children.length : prev,
+      (prev, row) => max(prev, row.children.length),
     );
 
     maxColumnWidths = List.filled(maxColumns, null);
     rowKeys = List.generate(widget.children.length,
         (_) => List.generate(maxColumns, (_) => GlobalKey()));
+  }
 
+  void scheduleMaxWidthsUpdate() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       updateMaxWidths();
       if (mounted) {
@@ -94,10 +102,7 @@ class _SyncWidthColumnState extends State<SyncWidthColumn> {
       for (int colIndex = 0;
           colIndex < widget.children[rowIndex].children.length;
           colIndex++) {
-        final RenderBox? renderBox = rowKeys[rowIndex][colIndex]
-            .currentContext
-            ?.findRenderObject() as RenderBox?;
-        final size = renderBox?.size;
+        final size = _getWidgetSize(rowKeys[rowIndex][colIndex]);
 
         if (size != null &&
             (maxColumnWidths[colIndex] == null ||
@@ -106,6 +111,11 @@ class _SyncWidthColumnState extends State<SyncWidthColumn> {
         }
       }
     }
+  }
+
+  Size? _getWidgetSize(GlobalKey key) {
+    final renderBox = key.currentContext?.findRenderObject() as RenderBox?;
+    return renderBox?.size;
   }
 }
 
@@ -125,23 +135,19 @@ class _SyncWidthRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: children.asMap().entries.map((entry) {
-        int colIndex = entry.key;
-        Widget child = entry.value;
-        GlobalKey key = rowKeys[colIndex];
-
-        if (inMeasurementPass) {
-          return Container(
-            key: key,
-            child: child,
-          );
-        } else {
-          return SizedBox(
-            width: maxColumnWidths[colIndex],
-            child: child,
-          );
-        }
-      }).toList(),
+      children: [
+        for (var colIndex = 0; colIndex < children.length; colIndex++)
+          ..._buildColumnContent(colIndex)
+      ],
     );
+  }
+
+  List<Widget> _buildColumnContent(int colIndex) {
+    if (inMeasurementPass) {
+      return [Container(key: rowKeys[colIndex], child: children[colIndex])];
+    }
+    return [
+      SizedBox(width: maxColumnWidths[colIndex], child: children[colIndex])
+    ];
   }
 }
