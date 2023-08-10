@@ -45,7 +45,7 @@ class SyncWidthColumn extends StatefulWidget {
   const SyncWidthColumn({Key? key, required this.children}) : super(key: key);
 
   @override
-  _SyncWidthColumnState createState() => _SyncWidthColumnState();
+  State createState() => _SyncWidthColumnState();
 }
 
 class _SyncWidthColumnState extends State<SyncWidthColumn> {
@@ -88,10 +88,10 @@ class _SyncWidthColumnState extends State<SyncWidthColumn> {
       itemCount: widget.children.length,
       itemBuilder: (context, rowIndex) {
         return _SyncWidthRow(
-          children: widget.children[rowIndex].children,
           maxColumnWidths: maxColumnWidths,
           rowKeys: rowKeys[rowIndex],
           inMeasurementPass: inMeasurementPass,
+          children: widget.children[rowIndex].children,
         );
       },
     );
@@ -103,11 +103,11 @@ class _SyncWidthColumnState extends State<SyncWidthColumn> {
           colIndex < widget.children[rowIndex].children.length;
           colIndex++) {
         final size = _getWidgetSize(rowKeys[rowIndex][colIndex]);
-
-        if (size != null &&
-            (maxColumnWidths[colIndex] == null ||
-                size.width > maxColumnWidths[colIndex]!)) {
-          maxColumnWidths[colIndex] = size.width;
+        if (size != null) {
+          maxColumnWidths[colIndex] = max(
+            size.width,
+            maxColumnWidths[colIndex] ?? 0,
+          );
         }
       }
     }
@@ -125,7 +125,7 @@ class _SyncWidthRow extends StatelessWidget {
   final List<GlobalKey> rowKeys;
   final bool inMeasurementPass;
 
-  _SyncWidthRow({
+  const _SyncWidthRow({
     required this.children,
     required this.maxColumnWidths,
     required this.rowKeys,
