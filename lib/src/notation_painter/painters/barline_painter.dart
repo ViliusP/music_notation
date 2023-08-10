@@ -6,7 +6,7 @@ class BarlinePainter extends CustomPainter {
 
   final Paint _linePainter = Paint()
     ..color = const Color.fromRGBO(0, 0, 0, 1.0)
-    ..strokeWidth = 1.5;
+    ..strokeWidth = strokeWidth;
 
   static const Size size = Size(
     strokeWidth,
