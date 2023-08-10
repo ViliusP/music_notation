@@ -21,19 +21,20 @@ import 'package:flutter/widgets.dart';
 /// 1. **Initialization**: A set of `GlobalKeys` is created for each widget in every row.
 ///    This helps in obtaining the actual width of the widget after it's rendered.
 ///
-/// 2. **Measurement Phase**: In the first rendering pass, children are rendered without width constraints.
-///    Their widths are then measured using the attached `GlobalKeys`.
+/// 2. **Measurement Phase**: After the initial render, the children's widths are measured
+///    using the attached `GlobalKeys`.
 ///
 /// 3. **Aggregation**: The maximum width for each "column" is determined based on the measured widths.
+///    This operation has been optimized to reduce unnecessary UI rebuilds.
 ///
-/// 4. **Layout Phase**: In the second rendering pass, the maximum width calculated for each column is applied to
-///    each child in that column to ensure consistent width across rows.
+/// 4. **Layout Phase**: In the subsequent rendering pass, the maximum width calculated for each column is
+///    applied to each child in that column to ensure consistent width across rows.
 ///
 /// Private Components:
 /// - `_SyncWidthColumnState`: The state associated with `SyncWidthColumn`, managing the width synchronization logic.
 /// - `_SyncWidthRow`: A helper widget to simplify the building of each row in `SyncWidthColumn`.
 ///
-/// Note: This widget is best suited for relatively static content where the cost of double layout pass
+/// Note: This widget is best suited for relatively static content where the cost of an additional layout pass
 ///       (measure and layout) can be afforded. For dynamic content or high-frequency layout changes,
 ///       consider an alternative approach or ensure performance benchmarks are satisfactory.
 class SyncWidthColumn extends StatefulWidget {
@@ -46,7 +47,7 @@ class SyncWidthColumn extends StatefulWidget {
 }
 
 class _SyncWidthColumnState extends State<SyncWidthColumn> {
-  late List<double?> maxColumnWidths;
+  List<double?> maxColumnWidths = [];
   late List<List<GlobalKey>> rowKeys;
   bool inMeasurementPass = true;
 
@@ -64,13 +65,7 @@ class _SyncWidthColumnState extends State<SyncWidthColumn> {
         (_) => List.generate(maxColumns, (_) => GlobalKey()));
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      for (int rowIndex = 0; rowIndex < widget.children.length; rowIndex++) {
-        for (int colIndex = 0;
-            colIndex < widget.children[rowIndex].children.length;
-            colIndex++) {
-          measureWidth(rowKeys[rowIndex][colIndex], colIndex);
-        }
-      }
+      updateMaxWidths();
       if (mounted) {
         setState(() {
           inMeasurementPass = false;
@@ -94,17 +89,22 @@ class _SyncWidthColumnState extends State<SyncWidthColumn> {
     );
   }
 
-  void measureWidth(GlobalKey key, int colIndex) {
-    final RenderBox? renderBox =
-        key.currentContext?.findRenderObject() as RenderBox?;
-    final size = renderBox?.size;
+  void updateMaxWidths() {
+    for (int rowIndex = 0; rowIndex < widget.children.length; rowIndex++) {
+      for (int colIndex = 0;
+          colIndex < widget.children[rowIndex].children.length;
+          colIndex++) {
+        final RenderBox? renderBox = rowKeys[rowIndex][colIndex]
+            .currentContext
+            ?.findRenderObject() as RenderBox?;
+        final size = renderBox?.size;
 
-    if (size != null &&
-        (maxColumnWidths[colIndex] == null ||
-            size.width > maxColumnWidths[colIndex]!)) {
-      setState(() {
-        maxColumnWidths[colIndex] = size.width;
-      });
+        if (size != null &&
+            (maxColumnWidths[colIndex] == null ||
+                size.width > maxColumnWidths[colIndex]!)) {
+          maxColumnWidths[colIndex] = size.width;
+        }
+      }
     }
   }
 }
@@ -125,25 +125,23 @@ class _SyncWidthRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: List.generate(maxColumnWidths.length, (colIndex) {
-        if (colIndex < children.length) {
-          Widget child = children[colIndex];
-          GlobalKey key = rowKeys[colIndex];
+      children: children.asMap().entries.map((entry) {
+        int colIndex = entry.key;
+        Widget child = entry.value;
+        GlobalKey key = rowKeys[colIndex];
 
-          if (inMeasurementPass) {
-            return Container(
-              key: key,
-              child: child,
-            );
-          } else {
-            return SizedBox(
-              width: maxColumnWidths[colIndex],
-              child: child,
-            );
-          }
+        if (inMeasurementPass) {
+          return Container(
+            key: key,
+            child: child,
+          );
+        } else {
+          return SizedBox(
+            width: maxColumnWidths[colIndex],
+            child: child,
+          );
         }
-        return const SizedBox.shrink(); // for non-existing children
-      }),
+      }).toList(),
     );
   }
 }
