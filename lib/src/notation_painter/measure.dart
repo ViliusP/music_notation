@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
+import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
-import 'package:music_notation/src/models/elements/music_data/note/notehead.dart';
+import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/visual_note_element.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
@@ -13,14 +14,11 @@ import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
 import 'package:music_notation/src/notation_painter/staff_painter_context.dart';
 
 class Measure extends StatelessWidget {
-  final double alignment;
-
   final MeasureSequence sequence;
 
   const Measure({
     super.key,
     required this.sequence,
-    required this.alignment,
   });
 
   @override
@@ -28,8 +26,23 @@ class Measure extends StatelessWidget {
     final context = StaffPainterContext();
     var notes = <Widget>[];
 
-    double defaultOffset = 20;
+    const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
 
+    var range = sequence.range;
+
+    var defaultLowest = const ElementPosition(step: Step.F, octave: 4);
+    var defaultHighest = const ElementPosition(step: Step.E, octave: 5);
+
+    var maxPositionsBelow =
+        defaultLowest.numericPosition - range.lowest.position.numericPosition;
+    var maxPositionsAbove =
+        range.highest.position.numericPosition - defaultHighest.numericPosition;
+
+    print("below $maxPositionsBelow | above $maxPositionsAbove");
+
+    double defaultOffset = offsetPerPosition *
+        [maxPositionsBelow, maxPositionsAbove, 0].max.toDouble();
+    context.moveX(20);
     for (var column in sequence) {
       VisualNoteElement? lowestNote;
       VisualNoteElement? highestNote;
@@ -54,6 +67,7 @@ class Measure extends StatelessWidget {
           var distance = (highestNote.position.numericPosition -
                   musicElement.position.numericPosition)
               .abs();
+          // If neighboring interval of notes is second
           if (distance == 1) {
             offset += const Offset(14, 0);
           }
@@ -76,11 +90,6 @@ class Measure extends StatelessWidget {
           );
         }
 
-        //   PainterUtilities.drawSmuflSymbol(
-        //     canvas,
-        //     offset,
-        //     musicElement.symbol,
-        //   );
         if (musicElement is VisualNoteElement) {
           lowestNote ??= musicElement;
           highestNote = musicElement;
@@ -109,24 +118,18 @@ class Measure extends StatelessWidget {
     return Stack(
       fit: StackFit.loose,
       children: [
-        Align(
-          alignment: Alignment.centerRight,
-          child: CustomPaint(
-            size: BarlinePainter.size,
-            painter: BarlinePainter(),
-          ),
+        CustomPaint(
+          size: BarlinePainter.size,
+          painter: BarlinePainter(),
         ),
-        Align(
-          alignment: Alignment(0, alignment),
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: defaultOffset),
-            child: CustomPaint(
-              size: const Size(
-                450,
-                NotationLayoutProperties.staveHeight,
-              ),
-              painter: StaffLinesPainter(),
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: defaultOffset),
+          child: CustomPaint(
+            size: Size(
+              context.offset.dx,
+              NotationLayoutProperties.staveHeight,
             ),
+            painter: StaffLinesPainter(),
           ),
         ),
         ...notes,
