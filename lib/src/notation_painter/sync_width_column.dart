@@ -7,8 +7,9 @@ import 'package:flutter/widgets.dart';
 ///
 /// Principles of Implementation:
 ///
-/// 1. **Measurement Phase**: Initially, we render the children without any width constraints.
-///    Each child gets a GlobalKey, which allows us to obtain its width post-rendering.
+/// 1. **Measurement Phase**: Initially, children in each row are rendered without
+/// any width constraints. Only those children that exist in a specific column
+/// are assigned a GlobalKey. This allows us to obtain their width post-rendering.
 ///
 /// 2. **Width Synchronization**: After gathering all the widths from the first render,
 ///    we calculate the maximum width for each "column" and store them in a list.
@@ -43,81 +44,57 @@ class SyncWidthColumn extends StatefulWidget {
 }
 
 class _SyncWidthColumnState extends State<SyncWidthColumn> {
-  // Store measured widths for each row's children
-  late List<List<double>> rowsWidths;
-
-  // Store maximum widths for each column
-  List<double> maxColumnWidths = [];
-
-  bool measured = false;
+  List<double?> maxColumnWidths = [];
 
   @override
   void initState() {
     super.initState();
-
-    // Initialize rowsWidths based on the provided children
-    rowsWidths = List.generate(widget.children.length,
-        (index) => List.filled(widget.children[index].children.length, 0.0));
+    int maxColumns = widget.children.fold(
+      0,
+      (prev, row) => row.children.length > prev ? row.children.length : prev,
+    );
+    maxColumnWidths = List.filled(maxColumns, null);
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!measured) {
-      return Column(
-        children: widget.children.map((row) {
-          int rowIndex = widget.children.indexOf(row);
-          return Row(
-            children: row.children.map((child) {
-              int colIndex = row.children.indexOf(child);
+    return Column(
+      children: widget.children.map((row) {
+        return Row(
+          children: List.generate(maxColumnWidths.length, (colIndex) {
+            if (colIndex < row.children.length) {
+              Widget child = row.children[colIndex];
               GlobalKey key = GlobalKey();
 
               // Schedule width measurement for after the frame
-              WidgetsBinding.instance!.addPostFrameCallback(
-                  (_) => measureWidth(key, rowIndex, colIndex));
+              WidgetsBinding.instance.addPostFrameCallback(
+                (_) => measureWidth(key, colIndex),
+              );
 
-              return Container(key: key, child: child);
-            }).toList(),
-          );
-        }).toList(),
-      );
-    } else {
-      return Column(
-        children: widget.children.map((row) {
-          return Row(
-            children: row.children.map((child) {
-              int colIndex = row.children.indexOf(child);
-              return SizedBox(width: maxColumnWidths[colIndex], child: child);
-            }).toList(),
-          );
-        }).toList(),
-      );
-    }
+              return SizedBox(
+                key: key,
+                width: maxColumnWidths[colIndex],
+                child: child,
+              );
+            }
+            // Return a non-visible widget for non-existing children
+            return const SizedBox.shrink();
+          }),
+        );
+      }).toList(),
+    );
   }
 
-  // Measure width of a widget after it's rendered
-  measureWidth(GlobalKey key, int rowIndex, int colIndex) {
+  measureWidth(GlobalKey key, int colIndex) {
     final RenderBox? renderBox =
         key.currentContext?.findRenderObject() as RenderBox?;
     final size = renderBox?.size;
 
     if (size != null) {
       setState(() {
-        rowsWidths[rowIndex][colIndex] = size.width;
-
-        // Check if all widths are measured
-        if (rowsWidths.every((row) => row.every((width) => width > 0))) {
-          measured = true;
-
-          // Calculate max width for each column
-          for (var i = 0; i < widget.children[0].children.length; i++) {
-            var maxColumnWidth = 0.0;
-            for (var row in rowsWidths) {
-              if (row[i] > maxColumnWidth) {
-                maxColumnWidth = row[i];
-              }
-            }
-            maxColumnWidths.add(maxColumnWidth);
-          }
+        if (maxColumnWidths[colIndex] == null ||
+            size.width > maxColumnWidths[colIndex]!) {
+          maxColumnWidths[colIndex] = size.width;
         }
       });
     }
