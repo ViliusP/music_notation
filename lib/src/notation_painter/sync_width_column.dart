@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/widgets.dart';
 
-/// `SyncWidthColumn`:
 /// A widget for synchronizing the width of children inside rows.
 /// Each child width is based on the maximum width child for the corresponding position
 /// across all rows. This is particularly useful for creating grid or table layouts

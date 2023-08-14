@@ -5,6 +5,7 @@ import 'package:music_notation/src/notation_painter/measure.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
 
 import 'package:music_notation/src/notation_painter/staff_painter_context.dart';
+import 'package:music_notation/src/notation_painter/sync_width_column.dart';
 
 class MusicNotationCanvas extends StatelessWidget {
   final ScorePartwise scorePartwise;
@@ -22,7 +23,7 @@ class MusicNotationCanvas extends StatelessWidget {
   Widget build(BuildContext context) {
     // var staffs = <Widget>[];
     // var barlines = <Widget>[];
-    var parts = <Widget>[];
+    var parts = <Row>[];
 
     // List<double> staffDistances = [];
 
@@ -57,9 +58,9 @@ class MusicNotationCanvas extends StatelessWidget {
         children: measures,
       ));
     }
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return SyncWidthColumn(
+      // mainAxisSize: MainAxisSize.min,
+      // crossAxisAlignment: CrossAxisAlignment.start,
       children: parts,
     );
   }

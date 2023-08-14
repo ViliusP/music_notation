@@ -14,16 +14,57 @@ import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
 import 'package:music_notation/src/notation_painter/staff_painter_context.dart';
 
 class Measure extends StatelessWidget {
+  static const double _minPositionPadding = 4;
+
   final MeasureSequence sequence;
+
+  double? get _cachedMinWidth => _initialSpacings?.last;
+
+  final List<double>? _initialSpacings;
 
   const Measure({
     super.key,
     required this.sequence,
-  });
+  }) : _initialSpacings = null;
+
+  const Measure._withCache({
+    super.key,
+    required this.sequence,
+    required List<double> initialSpacings,
+  }) : _initialSpacings = initialSpacings;
+
+  factory Measure.withCaching({Key? key, required MeasureSequence sequence}) {
+    return Measure._withCache(
+      key: key,
+      sequence: sequence,
+      initialSpacings: _calculateInitialSpacings(sequence),
+    );
+  }
+
+  static List<double> _calculateInitialSpacings(MeasureSequence sequence) {
+    final context = StaffPainterContext();
+    List<double> spacings = [];
+    context.moveX(20);
+    for (var column in sequence) {
+      double? rightMargin;
+      for (var element in column) {
+        var musicElement = element;
+        if (musicElement == null) continue;
+        if (musicElement.defaultMargins != null) {
+          context.moveX(musicElement.defaultMargins!.left);
+          rightMargin = musicElement.defaultMargins!.right;
+        }
+      }
+      spacings.add(context.offset.dx);
+      context.moveX(rightMargin ?? 48);
+    }
+    spacings.add(context.offset.dx);
+
+    return spacings;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final context = StaffPainterContext();
     var notes = <Widget>[];
 
     const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
@@ -38,24 +79,20 @@ class Measure extends StatelessWidget {
     var maxPositionsAbove =
         range.highest.position.numericPosition - defaultHighest.numericPosition;
 
-    print("below $maxPositionsBelow | above $maxPositionsAbove");
-
     double defaultOffset = offsetPerPosition *
-        [maxPositionsBelow, maxPositionsAbove, 0].max.toDouble();
-    context.moveX(20);
+        [maxPositionsBelow, maxPositionsAbove, _minPositionPadding].max;
+
+    List<double> spacings =
+        _initialSpacings ?? _calculateInitialSpacings(sequence);
+    int i = 0;
     for (var column in sequence) {
       VisualNoteElement? lowestNote;
       VisualNoteElement? highestNote;
-      double? rightMargin;
       for (var element in column) {
         var musicElement = element;
         if (musicElement == null) continue;
-        if (musicElement.defaultMargins != null) {
-          context.moveX(musicElement.defaultMargins!.left);
-          rightMargin = musicElement.defaultMargins!.right;
-        }
 
-        var offset = context.offset +
+        var offset = Offset(spacings[i], 0) +
             musicElement.defaultOffset +
             musicElement.position.step
                 .calculteOffset(musicElement.position.octave);
@@ -111,28 +148,66 @@ class Measure extends StatelessWidget {
       //   size: size,
       //   context: context,
       // );
-
-      context.moveX(rightMargin ?? 48);
+      i++;
     }
 
-    return Stack(
-      fit: StackFit.loose,
-      children: [
-        CustomPaint(
-          size: BarlinePainter.size,
-          painter: BarlinePainter(),
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(vertical: defaultOffset),
-          child: CustomPaint(
-            size: Size(
-              context.offset.dx,
-              NotationLayoutProperties.staveHeight,
+    double width = _cachedMinWidth ?? spacings.last;
+
+    return LayoutBuilder(builder: (context, constraints) {
+      return Stack(
+        fit: StackFit.loose,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: defaultOffset),
+            child: SizedBox.fromSize(
+              size: Size(
+                constraints.maxWidth.isFinite ? constraints.maxWidth : width,
+                NotationLayoutProperties.staveHeight,
+              ),
+              child: const StaffLines(),
             ),
-            painter: StaffLinesPainter(),
           ),
+          ...notes,
+        ],
+      );
+    });
+  }
+}
+
+class StaffLines extends StatelessWidget {
+  final bool startBarline;
+  final bool endBarline;
+
+  const StaffLines({
+    super.key,
+    this.startBarline = false,
+    this.endBarline = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        if (startBarline)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: CustomPaint(
+              size: BarlinePainter.size,
+              painter: BarlinePainter(),
+            ),
+          ),
+        CustomPaint(
+          painter: StaffLinesPainter(),
         ),
-        ...notes,
+        if (endBarline)
+          Align(
+            alignment: Alignment.centerRight,
+            child: CustomPaint(
+              size: BarlinePainter.size,
+              painter: BarlinePainter(),
+            ),
+          ),
       ],
     );
   }
