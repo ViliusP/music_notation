@@ -19,7 +19,7 @@ class MeasureElement extends StatelessWidget {
 
   final Measure measure;
   final MeasureSequence sequence;
-
+  final int? staff;
   double? get _cachedMinWidth => _initialSpacings?.last;
 
   final List<double>? _initialSpacings;
@@ -27,22 +27,29 @@ class MeasureElement extends StatelessWidget {
   MeasureElement({
     super.key,
     required this.measure,
+    this.staff,
   })  : _initialSpacings = null,
-        sequence = MeasureSequence.fromMeasure(measure: measure);
+        sequence = MeasureSequence.fromMeasure(measure: measure, staff: staff);
 
   MeasureElement._withCache({
     super.key,
     required this.measure,
     required List<double> initialSpacings,
+    this.staff,
   })  : _initialSpacings = initialSpacings,
-        sequence = MeasureSequence.fromMeasure(measure: measure);
+        sequence = MeasureSequence.fromMeasure(measure: measure, staff: staff);
 
-  factory MeasureElement.withCaching({Key? key, required Measure measure}) {
+  factory MeasureElement.withCaching({
+    Key? key,
+    required Measure measure,
+    int? staff,
+  }) {
     return MeasureElement._withCache(
       key: key,
       measure: measure,
+      staff: staff,
       initialSpacings: _calculateInitialSpacings(
-        MeasureSequence.fromMeasure(measure: measure),
+        MeasureSequence.fromMeasure(measure: measure, staff: staff),
       ),
     );
   }

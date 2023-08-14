@@ -168,18 +168,18 @@ class _RowIterator<T> implements Iterator<List<T>> {
 class NotationGrid {
   /// Represents the musical score as a grid. Each row corresponds to a part or
   /// a staff within a part, and each column represents a measure.
-  final Grid<MeasureSequence> data;
+  final Grid<Measure> data;
 
   /// Represents the musical score as a grid. Each row corresponds to a part or
   /// a staff within a part, and each column represents a measure.
-  final List<List<int>> commonStaves;
+  final List<List<int>> _commonStaves;
 
   /// Converts the commonStaves list into a map for easier lookup.
   /// Each key represents a row index in the grid, and its corresponding
   /// value is the list of common staves for that part.
-  Map<int, List<int>> get commonStavesMap {
+  Map<int, List<int>> get _commonStavesMap {
     Map<int, List<int>> map = {};
-    for (var list in commonStaves) {
+    for (var list in _commonStaves) {
       for (var i in list) {
         map[i] = list;
       }
@@ -187,11 +187,19 @@ class NotationGrid {
     return map;
   }
 
+  int? staffForRow(int row) {
+    int? index = _commonStavesMap[row]?.indexOf(row);
+    if (index == null || index == -1 || _commonStavesMap[row]?.length == 1) {
+      return null;
+    }
+    return index + 1;
+  }
+
   /// Private constructor used to initialize an instance with required properties.
   NotationGrid._({
     required this.data,
-    required this.commonStaves,
-  });
+    required List<List<int>> commonStaves,
+  }) : _commonStaves = commonStaves;
 
   /// Creates a [NotationGrid] from a music notation [parts].
   ///
@@ -200,7 +208,7 @@ class NotationGrid {
   /// measures in each part, creating MeasureSequence instances and adding them
   /// to the corresponding row in the grid.
   factory NotationGrid.fromScoreParts(List<Part> parts) {
-    Grid<MeasureSequence> data = Grid();
+    Grid<Measure> data = Grid();
     List<List<int>> commonStaves = [];
     for (var part in parts) {
       int staves = part.calculateStaves();
@@ -211,29 +219,29 @@ class NotationGrid {
       for (var i = 0; i < staves; i++) {
         data.addRow();
       }
-      List<MeasureSequence> lastMeasures = [];
+      // List<MeasureSequence> lastMeasures = [];
       for (var measure in part.measures) {
         for (var i = 0; i < staves; i++) {
-          Clef? clef;
-          if (lastMeasures.length >= i + 1) {
-            clef = lastMeasures[i]._clef;
-          }
+          // Clef? clef;
+          // if (lastMeasures.length >= i + 1) {
+          //   clef = lastMeasures[i]._clef;
+          // }
 
-          var measureGrid = MeasureSequence.fromMeasure(
-            measure: measure,
-            staff: staves != 1 ? i + 1 : null,
-            clef: clef,
-          );
+          // var measureGrid = MeasureSequence.fromMeasure(
+          //   measure: measure,
+          //   staff: staves != 1 ? i + 1 : null,
+          //   clef: clef,
+          // );
 
           data.addToRow(
             data.rowCount - staves + i,
-            measureGrid,
+            measure,
           );
-          if (lastMeasures.length < i + 1) {
-            lastMeasures.add(measureGrid);
-          } else {
-            lastMeasures[i] = measureGrid;
-          }
+          // if (lastMeasures.length < i + 1) {
+          //   lastMeasures.add(measureGrid);
+          // } else {
+          //   lastMeasures[i] = measureGrid;
+          // }
         }
       }
     }

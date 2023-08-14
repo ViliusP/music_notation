@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
-import 'package:music_notation/src/notation_painter/measure.dart';
+import 'package:music_notation/src/notation_painter/measure_element.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
 
 import 'package:music_notation/src/notation_painter/staff_painter_context.dart';
@@ -43,12 +43,10 @@ class MusicNotationCanvas extends StatelessWidget {
       var measures = <Widget>[];
       // Iterating throug measures/part.
       for (var j = 0; j < grid.data.columnCount; j++) {
-        var measureSequence = grid.data.getValue(i, j);
-        measures.add(
-          Measure(
-            sequence: measureSequence,
-          ),
-        );
+        measures.add(MeasureElement(
+          measure: grid.data.getValue(i, j),
+          staff: grid.staffForRow(i),
+        ));
       }
 
       parts.add(Row(

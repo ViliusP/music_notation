@@ -36,13 +36,15 @@ class GridDebug extends StatelessWidget {
                       // This next line does the trick.
                       scrollDirection: Axis.horizontal,
                       children: part
-                          .mapIndexed((index, measureGrid) => Padding(
+                          .mapIndexed((index, measure) => Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: SizedBox(
                                   height: 120,
                                   width: 120,
                                   child: _MeasureGrid(
-                                    sequence: measureGrid,
+                                    sequence: MeasureSequence.fromMeasure(
+                                      measure: measure,
+                                    ),
                                     partIndex: partIndex,
                                     measureIndex: index,
                                   ),
