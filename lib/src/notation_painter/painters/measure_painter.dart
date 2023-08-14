@@ -72,13 +72,13 @@ class MeasurePainter extends CustomPainter {
         }
       }
       if (lowestNote != null) {
-        _paintLedgerLines(
-          count: lowestNote.ledgerLines,
-          noteheadWidth: lowestNote.noteheadWidth,
-          canvas: canvas,
-          size: size,
-          context: context,
-        );
+        // _paintLedgerLines(
+        //   count: lowestNote.ledgerLines,
+        //   noteheadWidth: lowestNote.noteheadWidth,
+        //   canvas: canvas,
+        //   size: size,
+        //   context: context,
+        // );
       }
       _drawStemForColumn(
         lowestNote,
@@ -124,26 +124,26 @@ class MeasurePainter extends CustomPainter {
     required Size size,
   }) {
     // If only one note exists in column.
-    if (lowestNote != null && lowestNote == highestNote && lowestNote.stemmed) {
-      var offset = context.offset +
-          lowestNote.defaultOffset +
-          lowestNote.position.step.calculteOffset(lowestNote.position.octave);
+    // if (lowestNote != null && lowestNote == highestNote && lowestNote.stemmed) {
+    //   var offset = context.offset +
+    //       lowestNote.defaultOffset +
+    //       lowestNote.position.step.calculteOffset(lowestNote.position.octave);
 
-      final StemValue stemDirection =
-          lowestNote.distanceFromMiddle < 0 ? StemValue.up : StemValue.down;
+    //   final StemValue stemDirection =
+    //       lowestNote.distanceFromMiddle < 0 ? StemValue.up : StemValue.down;
 
-      String? flagSymbol = stemDirection == StemValue.up
-          ? lowestNote.flagUpSymbol
-          : lowestNote.flagDownSymbol;
+    //   String? flagSymbol = stemDirection == StemValue.up
+    //       ? lowestNote.flagUpSymbol
+    //       : lowestNote.flagDownSymbol;
 
-      _drawStem(
-        noteOffset: offset,
-        flagSymbol: flagSymbol,
-        direction: stemDirection,
-        canvas: canvas,
-        size: size,
-      );
-    }
+    //   _drawStem(
+    //     noteOffset: offset,
+    //     flagSymbol: flagSymbol,
+    //     direction: stemDirection,
+    //     canvas: canvas,
+    //     size: size,
+    //   );
+    // }
     if (lowestNote != null &&
         highestNote != null &&
         lowestNote != highestNote) {
@@ -167,20 +167,20 @@ class MeasurePainter extends CustomPainter {
         notesOffset = highestNoteOffsetY;
       }
 
-      String? flagSymbol = stemDirection == StemValue.up
-          ? lowestNote.flagUpSymbol
-          : lowestNote.flagDownSymbol;
+      // String? flagSymbol = stemDirection == StemValue.up
+      //     ? lowestNote.flagUpSymbol
+      //     : lowestNote.flagDownSymbol;
 
-      _drawStem(
-        noteOffset: notesOffset,
-        flagSymbol: flagSymbol,
-        direction: stemDirection,
-        canvas: canvas,
-        size: size,
-        stemHeight: NotationLayoutProperties.standardStemHeight +
-            lowestNoteOffsetY.dy -
-            highestNoteOffsetY.dy,
-      );
+      // _drawStem(
+      //   noteOffset: notesOffset,
+      //   flagSymbol: flagSymbol,
+      //   direction: stemDirection,
+      //   canvas: canvas,
+      //   size: size,
+      //   stemHeight: NotationLayoutProperties.standardStemHeight +
+      //       lowestNoteOffsetY.dy -
+      //       highestNoteOffsetY.dy,
+      // );
     }
   }
 

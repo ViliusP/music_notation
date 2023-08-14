@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
+import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
@@ -131,8 +132,8 @@ class MeasureElement extends StatelessWidget {
                 padding: EdgeInsets.only(
                   left: offset.dx,
                 ),
-                child: Note(
-                  note: musicElement,
+                child: NoteElement(
+                  note: musicElement.equivalent,
                 ),
               ),
             ),
@@ -225,29 +226,47 @@ class StaffLines extends StatelessWidget {
   }
 }
 
-class Note extends StatelessWidget {
-  final VisualNoteElement note;
+class Chord extends StatelessWidget {
+  final List<Note> notes;
 
-  const Note({super.key, required this.note});
+  const Chord({
+    super.key,
+    required this.notes,
+  });
 
   @override
   Widget build(BuildContext context) {
+    return Column(
+      children: notes.map((e) => NoteElement(note: e)).toList(),
+    );
+  }
+}
+
+class NoteElement extends StatelessWidget {
+  final Note note;
+
+  const NoteElement({super.key, required this.note});
+
+  @override
+  Widget build(BuildContext context) {
+    bool stemmed = note.type?.value.stemmed ?? false;
+    NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
     return Row(
       mainAxisSize: MainAxisSize.min,
       // mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Notehead(
-          type: note.type,
-          stemmed: note.stemmed,
+          type: type,
+          stemmed: stemmed,
         ),
-        if (note.stemmed)
+        if (stemmed)
           Padding(
             padding: const EdgeInsets.only(
-              bottom: NotationLayoutProperties.noteHeadHeight / 2,
+              bottom: NotationLayoutProperties.noteheadHeight / 2,
             ),
             child: Stem(
-              type: note.type,
+              type: type,
             ),
           )
       ],
@@ -258,7 +277,7 @@ class Note extends StatelessWidget {
 class Notehead extends StatelessWidget {
   final NoteTypeValue type;
 
-  /// If note are stemmed, notehead's width will be reduces for aesthetics.
+  /// If note are stemmed, notehead's width will be reduced for aesthetics.
   final bool stemmed;
 
   const Notehead({super.key, required this.type, required this.stemmed});
@@ -273,7 +292,7 @@ class Notehead extends StatelessWidget {
 
     Size size = Size(
       notesWidth,
-      NotationLayoutProperties.noteHeadHeight,
+      NotationLayoutProperties.noteheadHeight,
     );
 
     return CustomPaint(

@@ -46,6 +46,7 @@ class ElementPosition {
   static const int _notesPerOctave = 7;
 
   // TODO: consider to rename it to numeric.
+  //
   /// Calculates vertical note/music element position from C0. Note at `7` position
   /// would be C1, on `25` position would be G3.
   ///

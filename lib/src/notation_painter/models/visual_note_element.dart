@@ -8,81 +8,68 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 import 'package:music_notation/src/notation_painter/models/visual_music_element.dart';
 
 class VisualNoteElement extends VisualMusicElement {
-  final NoteTypeValue type;
-  final bool stemmed;
-  final String? flagUpSymbol;
-  final String? flagDownSymbol;
+  // final NoteTypeValue type;
+  // final bool stemmed;
+  // final String? flagUpSymbol;
+  // final String? flagDownSymbol;
 
   /// Width of notehead symbol.
   ///
   /// The minim is usually slightly larger than the black notehead.
   /// The semibreve has greater width (in proportion 2.5 sembreves to 3 black
   /// noteheads).
-  final double noteheadWidth;
+  // final double noteheadWidth;
 
-  final double? voice;
+  // final double? voice;
 
-  @override
-  HorizontalMargins? get defaultMargins => null;
+  // @override
+  // HorizontalMargins? get defaultMargins => null;
 
-  /// Ledger line count. Minus value means that ledger lines are under staff. Positive
-  /// value means that ledger lines are above staff.
-  int get ledgerLines {
-    int position = this.position.numericPosition;
-    int distance = 0;
-    const d4 = ElementPosition(octave: 4, step: Step.D);
-    const g5 = ElementPosition(octave: 5, step: Step.G);
+  // /// Ledger line count. Minus value means that ledger lines are under staff. Positive
+  // /// value means that ledger lines are above staff.
+  // int get ledgerLines {
+  //   int position = this.position.numericPosition;
+  //   int distance = 0;
+  //   const d4 = ElementPosition(octave: 4, step: Step.D);
+  //   const g5 = ElementPosition(octave: 5, step: Step.G);
 
-    // 39 - G in 5 octave.
-    if (position < d4.numericPosition) {
-      distance = (d4.numericPosition - position);
+  //   // 39 - G in 5 octave.
+  //   if (position < d4.numericPosition) {
+  //     distance = (d4.numericPosition - position);
 
-      return -(distance / 2).ceil();
-    }
+  //     return -(distance / 2).ceil();
+  //   }
 
-    if (position > g5.numericPosition) {
-      distance = position - g5.numericPosition;
-    }
+  //   if (position > g5.numericPosition) {
+  //     distance = position - g5.numericPosition;
+  //   }
 
-    return (distance / 2).ceil();
-  }
+  //   return (distance / 2).ceil();
+  // }
 
   VisualNoteElement._({
-    required this.flagUpSymbol,
-    required this.flagDownSymbol,
+    required super.equivalent,
     required super.symbol,
     required super.position,
     super.defaultOffsetG4,
-    required this.stemmed,
     required super.influencedByClef,
-    required this.noteheadWidth,
-    required this.type,
-    this.voice,
   });
 
   VisualNoteElement.stemmed({
-    required this.flagUpSymbol,
-    required this.flagDownSymbol,
+    required super.equivalent,
     required super.symbol,
     required super.position,
     super.defaultOffsetG4,
     required super.influencedByClef,
-    required this.noteheadWidth,
-    required this.type,
-    this.voice,
-  }) : stemmed = true;
+  });
 
   VisualNoteElement.noStem({
+    required super.equivalent,
     required super.symbol,
     required super.position,
     super.defaultOffsetG4,
     required super.influencedByClef,
-    required this.noteheadWidth,
-    required this.type,
-    this.voice,
-  })  : stemmed = false,
-        flagDownSymbol = null,
-        flagUpSymbol = null;
+  });
 
   factory VisualNoteElement.fromNote(Note note) {
     switch (note) {
@@ -126,26 +113,20 @@ class VisualNoteElement extends VisualMusicElement {
 
         if (note.type?.value.stemmed == true) {
           return VisualNoteElement.stemmed(
+            equivalent: note,
             symbol: symbol,
             position: notePosition,
             defaultOffsetG4: const Offset(0, -5),
-            flagDownSymbol: note.type!.value.downwardFlag,
-            flagUpSymbol: note.type!.value.upwardFlag,
             influencedByClef: influencedByClef,
-            noteheadWidth: note.type?.value.noteheadWidth ??
-                NoteTypeValue.quarter.noteheadWidth,
-            type: note.type?.value ?? NoteTypeValue.eighth,
           );
         }
 
         return VisualNoteElement.noStem(
+          equivalent: note,
           symbol: symbol,
           position: notePosition,
           defaultOffsetG4: const Offset(0, -5),
           influencedByClef: influencedByClef,
-          noteheadWidth: note.type?.value.noteheadWidth ??
-              NoteTypeValue.quarter.noteheadWidth,
-          type: note.type?.value ?? NoteTypeValue.eighth,
         );
 
       default:
@@ -165,15 +146,11 @@ class VisualNoteElement extends VisualMusicElement {
     bool? influencedByClef,
   }) =>
       VisualNoteElement._(
+        equivalent: equivalent,
         symbol: symbol ?? this.symbol,
         position: position ?? this.position,
         defaultOffsetG4: defaultOffsetG4 ?? defaultOffset,
-        flagUpSymbol: flagUpSymbol ?? this.flagUpSymbol,
-        flagDownSymbol: flagDownSymbol ?? this.flagDownSymbol,
-        stemmed: stemmed ?? this.stemmed,
         influencedByClef: influencedByClef ?? this.influencedByClef,
-        noteheadWidth: noteheadWidth,
-        type: type ?? NoteTypeValue.eighth,
       );
 }
 

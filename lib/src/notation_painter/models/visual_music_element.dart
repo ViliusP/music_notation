@@ -10,6 +10,8 @@ import 'package:music_notation/src/notation_painter/models/visual_note_element.d
 import 'package:music_notation/src/smufl/glyph_class.dart';
 
 class VisualMusicElement {
+  final dynamic equivalent;
+
   final String _symbol;
   final ElementPosition _position;
   ElementPosition get position => _position;
@@ -26,6 +28,7 @@ class VisualMusicElement {
   String get symbol => _symbol;
 
   VisualMusicElement({
+    required this.equivalent,
     required String symbol,
     required ElementPosition position,
     required this.influencedByClef,
@@ -83,6 +86,7 @@ class VisualMusicElement {
       );
     }
     return VisualMusicElement(
+        equivalent: clef,
         symbol: symbol,
         influencedByClef: false,
         position: ElementPosition(step: step, octave: octave),
@@ -100,6 +104,7 @@ class VisualMusicElement {
     if (signature != null) {
       return [
         VisualMusicElement(
+          equivalent: timeBeat,
           symbol: _integerToSmufl(
             int.parse(signature.beats),
           ),
@@ -112,6 +117,7 @@ class VisualMusicElement {
           defaultMargins: HorizontalMargins(left: 0, right: 48),
         ),
         VisualMusicElement(
+          equivalent: timeBeat,
           symbol: _integerToSmufl(
             int.parse(signature.beatType),
           ),
@@ -151,6 +157,7 @@ class VisualMusicElement {
     Offset? defaultOffsetG4,
   }) =>
       VisualMusicElement(
+        equivalent: equivalent,
         symbol: symbol ?? this.symbol,
         position: position ?? this.position,
         influencedByClef: influencedByClef ?? this.influencedByClef,
@@ -160,6 +167,7 @@ class VisualMusicElement {
 
 class VisualKeyElement extends VisualMusicElement {
   VisualKeyElement({
+    required super.equivalent,
     required super.symbol,
     required super.position,
     super.defaultOffsetG4,
@@ -185,6 +193,7 @@ class VisualKeyElement extends VisualMusicElement {
     return keys
         .map(
           (k) => VisualKeyElement(
+            equivalent: key,
             symbol: key.fifths >= 0
                 ? Accidentals.accidentalSharp.codepoint
                 : Accidentals.accidentalFlat.codepoint,
@@ -213,6 +222,7 @@ class VisualKeyElement extends VisualMusicElement {
     Offset? defaultOffsetG4,
   }) =>
       VisualKeyElement(
+        equivalent: equivalent,
         symbol: symbol ?? this.symbol,
         position: position ?? this.position,
         defaultOffsetG4: defaultOffsetG4 ?? _defaultOffsetG4,

@@ -11,6 +11,7 @@ void main() {
           symbol: "symbol",
           position: const ElementPosition(octave: 4, step: Step.C),
           influencedByClef: false,
+          equivalent: null,
         ),
         -6
       ),
@@ -19,6 +20,7 @@ void main() {
           symbol: "symbol",
           position: const ElementPosition(octave: 4, step: Step.E),
           influencedByClef: false,
+          equivalent: null,
         ),
         -4
       ),
@@ -27,6 +29,7 @@ void main() {
           symbol: "symbol",
           position: const ElementPosition(octave: 4, step: Step.A),
           influencedByClef: false,
+          equivalent: null,
         ),
         -1
       ),
@@ -35,6 +38,7 @@ void main() {
           symbol: "symbol",
           position: const ElementPosition(octave: 4, step: Step.B),
           influencedByClef: false,
+          equivalent: null,
         ),
         0
       ),
@@ -43,6 +47,7 @@ void main() {
           symbol: "symbol",
           position: const ElementPosition(octave: 5, step: Step.C),
           influencedByClef: false,
+          equivalent: null,
         ),
         1
       ),
@@ -51,6 +56,7 @@ void main() {
           symbol: "symbol",
           position: const ElementPosition(octave: 5, step: Step.G),
           influencedByClef: false,
+          equivalent: null,
         ),
         5
       ),
@@ -59,6 +65,7 @@ void main() {
           symbol: "symbol",
           position: const ElementPosition(octave: 6, step: Step.C),
           influencedByClef: false,
+          equivalent: null,
         ),
         8
       ),
