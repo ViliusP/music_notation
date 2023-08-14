@@ -6,7 +6,6 @@ import 'package:music_notation/src/models/elements/music_data/attributes/clef.da
 import 'package:music_notation/src/models/elements/music_data/attributes/key.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
-import 'package:music_notation/src/notation_painter/models/visual_note_element.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart';
 
 class VisualMusicElement {
@@ -144,9 +143,6 @@ class VisualMusicElement {
       this.position.numericPosition + positions,
     );
 
-    if (this is VisualNoteElement) {
-      return (this as VisualNoteElement).noteCopyWith(position: position);
-    }
     return copyWith(position: position);
   }
 

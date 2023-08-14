@@ -2,17 +2,13 @@ import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
-import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
-import 'package:music_notation/src/notation_painter/models/visual_note_element.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/note_element.dart';
 import 'package:music_notation/src/notation_painter/painters/barline_painter.dart';
-import 'package:music_notation/src/notation_painter/painters/measure_painter.dart';
-import 'package:music_notation/src/notation_painter/painters/note_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/staff_lines_painter.dart';
-import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
 import 'package:music_notation/src/notation_painter/staff_painter_context.dart';
 
 class MeasureElement extends StatelessWidget {
@@ -100,31 +96,31 @@ class MeasureElement extends StatelessWidget {
         _initialSpacings ?? _calculateInitialSpacings(sequence);
     int i = 0;
     for (var column in sequence) {
-      VisualNoteElement? lowestNote;
-      VisualNoteElement? highestNote;
+      NoteElement? lowestNote;
+      NoteElement? highestNote;
       for (var element in column) {
         var musicElement = element;
         if (musicElement == null) continue;
 
-        var offset = Offset(spacings[i], 0) +
-            musicElement.defaultOffset +
-            musicElement.position.step
-                .calculteOffset(musicElement.position.octave);
-
-        // 'highestNote' is same as note before.
-        // The stem is always placed between the two notes of an interval of a 2nd,
-        // with the upper note always to the right, the lower note always to the left.
-        if (highestNote != null && musicElement is VisualNoteElement) {
-          var distance = (highestNote.position.numericPosition -
-                  musicElement.position.numericPosition)
-              .abs();
-          // If neighboring interval of notes is second
-          if (distance == 1) {
-            offset += const Offset(14, 0);
+        if (musicElement.equivalent is Note) {
+          NoteElement noteElement = NoteElement(note: musicElement.equivalent);
+          var offset = Offset(spacings[i], 0) +
+              musicElement.defaultOffset +
+              (noteElement.position?.step ?? Step.C)
+                  .calculteOffset(noteElement.position?.octave ?? 5);
+          // 'highestNote' is same as note before.
+          // The stem is always placed between the two notes of an interval of a 2nd,
+          // with the upper note always to the right, the lower note always to the left.
+          if (highestNote != null && highestNote.position != null) {
+            var distance = (highestNote.position!.numericPosition -
+                    musicElement.position.numericPosition)
+                .abs();
+            // If neighboring interval of notes is second
+            if (distance == 1) {
+              offset += const Offset(14, 0);
+            }
           }
-        }
 
-        if (musicElement is VisualNoteElement) {
           notes.add(
             Positioned(
               bottom: defaultOffset - offset.dy,
@@ -132,17 +128,14 @@ class MeasureElement extends StatelessWidget {
                 padding: EdgeInsets.only(
                   left: offset.dx,
                 ),
-                child: NoteElement(
-                  note: musicElement.equivalent,
-                ),
+                child: noteElement,
               ),
             ),
           );
-        }
 
-        if (musicElement is VisualNoteElement) {
-          lowestNote ??= musicElement;
-          highestNote = musicElement;
+          lowestNote ??= noteElement;
+          highestNote = noteElement;
+          continue;
         }
       }
       if (lowestNote != null) {
@@ -222,103 +215,6 @@ class StaffLines extends StatelessWidget {
             ),
           ),
       ],
-    );
-  }
-}
-
-class Chord extends StatelessWidget {
-  final List<Note> notes;
-
-  const Chord({
-    super.key,
-    required this.notes,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: notes.map((e) => NoteElement(note: e)).toList(),
-    );
-  }
-}
-
-class NoteElement extends StatelessWidget {
-  final Note note;
-
-  const NoteElement({super.key, required this.note});
-
-  @override
-  Widget build(BuildContext context) {
-    bool stemmed = note.type?.value.stemmed ?? false;
-    NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      // mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Notehead(
-          type: type,
-          stemmed: stemmed,
-        ),
-        if (stemmed)
-          Padding(
-            padding: const EdgeInsets.only(
-              bottom: NotationLayoutProperties.noteheadHeight / 2,
-            ),
-            child: Stem(
-              type: type,
-            ),
-          )
-      ],
-    );
-  }
-}
-
-class Notehead extends StatelessWidget {
-  final NoteTypeValue type;
-
-  /// If note are stemmed, notehead's width will be reduced for aesthetics.
-  final bool stemmed;
-
-  const Notehead({super.key, required this.type, required this.stemmed});
-
-  @override
-  Widget build(BuildContext context) {
-    double notesWidth = type.noteheadWidth;
-
-    if (stemmed) {
-      notesWidth -= NotationLayoutProperties.stemStrokeWidth;
-    }
-
-    Size size = Size(
-      notesWidth,
-      NotationLayoutProperties.noteheadHeight,
-    );
-
-    return CustomPaint(
-      size: size,
-      painter: NotePainter(type.smuflSymbol),
-    );
-  }
-}
-
-class Stem extends StatelessWidget {
-  final NoteTypeValue type;
-  final double heigth;
-
-  const Stem({
-    super.key,
-    required this.type,
-    this.heigth = NotationLayoutProperties.standardStemHeight,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(StemPainter.strokeWidth + type.flagWidth, heigth),
-      painter: StemPainter(
-        flagSmufl: type.upwardFlag,
-      ),
     );
   }
 }

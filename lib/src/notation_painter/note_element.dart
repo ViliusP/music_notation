@@ -1,13 +1,29 @@
-import 'dart:ui';
-
+import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
-import 'package:music_notation/src/models/elements/layout.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
-import 'package:music_notation/src/notation_painter/models/visual_music_element.dart';
+import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/painters/note_painter.dart';
+import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
 
-class VisualNoteElement extends VisualMusicElement {
+class Chord extends StatelessWidget {
+  final List<Note> notes;
+
+  const Chord({
+    super.key,
+    required this.notes,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: notes.map((e) => NoteElement(note: e)).toList(),
+    );
+  }
+}
+
+class NoteElement extends StatelessWidget {
   // final NoteTypeValue type;
   // final bool stemmed;
   // final String? flagUpSymbol;
@@ -47,31 +63,13 @@ class VisualNoteElement extends VisualMusicElement {
   //   return (distance / 2).ceil();
   // }
 
-  VisualNoteElement._({
-    required super.equivalent,
-    required super.symbol,
-    required super.position,
-    super.defaultOffsetG4,
-    required super.influencedByClef,
-  });
+  final Note note;
 
-  VisualNoteElement.stemmed({
-    required super.equivalent,
-    required super.symbol,
-    required super.position,
-    super.defaultOffsetG4,
-    required super.influencedByClef,
-  });
+  bool get influencedByClef {
+    return note.form is! Rest;
+  }
 
-  VisualNoteElement.noStem({
-    required super.equivalent,
-    required super.symbol,
-    required super.position,
-    super.defaultOffsetG4,
-    required super.influencedByClef,
-  });
-
-  factory VisualNoteElement.fromNote(Note note) {
+  ElementPosition? get position {
     switch (note) {
       case GraceTieNote _:
         throw UnimplementedError(
@@ -89,69 +87,147 @@ class VisualNoteElement extends VisualMusicElement {
         NoteForm noteForm = note.form;
         Step? step;
         int? octave;
-        bool influencedByClef = true;
         switch (noteForm) {
           case Pitch _:
             step = noteForm.step;
             octave = noteForm.octave;
             break;
           case Unpitched _:
-            throw UnimplementedError(
-              "Unpitched is not implemented yet in renderer",
-            );
+            step = noteForm.displayStep;
+            octave = noteForm.displayOctave;
           case Rest _:
-            influencedByClef = false;
+            step = noteForm.displayStep;
+            octave = noteForm.displayOctave;
             break;
         }
-        String? symbol = note.type?.value.smuflSymbol;
-        symbol ??= "\uE4E3";
-
-        var notePosition = ElementPosition(
-          step: step ?? Step.C,
-          octave: octave ?? 5,
-        );
-
-        if (note.type?.value.stemmed == true) {
-          return VisualNoteElement.stemmed(
-            equivalent: note,
-            symbol: symbol,
-            position: notePosition,
-            defaultOffsetG4: const Offset(0, -5),
-            influencedByClef: influencedByClef,
+        if (step != null && octave != null) {
+          return ElementPosition(
+            step: step,
+            octave: octave,
           );
         }
-
-        return VisualNoteElement.noStem(
-          equivalent: note,
-          symbol: symbol,
-          position: notePosition,
-          defaultOffsetG4: const Offset(0, -5),
-          influencedByClef: influencedByClef,
-        );
-
       default:
         throw UnimplementedError(
           "This error shouldn't occur, TODO: make switch exhaustively matched",
         );
     }
+    return null;
   }
 
-  VisualNoteElement noteCopyWith({
-    String? symbol,
-    ElementPosition? position,
-    bool? stemmed,
-    String? flagUpSymbol,
-    String? flagDownSymbol,
-    Offset? defaultOffsetG4,
-    bool? influencedByClef,
-  }) =>
-      VisualNoteElement._(
-        equivalent: equivalent,
-        symbol: symbol ?? this.symbol,
-        position: position ?? this.position,
-        defaultOffsetG4: defaultOffsetG4 ?? defaultOffset,
-        influencedByClef: influencedByClef ?? this.influencedByClef,
-      );
+  const NoteElement({super.key, required this.note});
+
+  @override
+  Widget build(BuildContext context) {
+    // String? symbol = note.type?.value.smuflSymbol;
+    // symbol ??= "\uE4E3";
+
+    bool stemmed = note.type?.value.stemmed ?? false;
+    NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      // mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Notehead(
+          type: type,
+          stemmed: stemmed,
+        ),
+        if (stemmed)
+          Padding(
+            padding: const EdgeInsets.only(
+              bottom: NotationLayoutProperties.noteheadHeight / 2,
+            ),
+            child: Stem(
+              type: type,
+            ),
+          )
+      ],
+    );
+  }
+}
+
+/// Painting noteheads, it should fill the space between two lines, touching
+/// the stave-line on each side of it, but without extending beyond either line.
+///
+/// Notes on a line should be precisely centred on the stave-line.
+class Notehead extends StatelessWidget {
+  final NoteTypeValue type;
+
+  /// If note are stemmed, notehead's width will be reduced for aesthetics.
+  final bool stemmed;
+
+  const Notehead({super.key, required this.type, required this.stemmed});
+
+  @override
+  Widget build(BuildContext context) {
+    double notesWidth = type.noteheadWidth;
+
+    if (stemmed) {
+      notesWidth -= NotationLayoutProperties.stemStrokeWidth;
+    }
+
+    Size size = Size(
+      notesWidth,
+      NotationLayoutProperties.noteheadHeight,
+    );
+
+    return CustomPaint(
+      size: size,
+      painter: NotePainter(type.smuflSymbol),
+    );
+  }
+}
+
+class Stem extends StatelessWidget {
+  final NoteTypeValue type;
+  final double heigth;
+
+  const Stem({
+    super.key,
+    required this.type,
+    this.heigth = NotationLayoutProperties.standardStemHeight,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: Size(StemPainter.strokeWidth + type.flagWidth, heigth),
+      painter: StemPainter(
+        flagSmufl: type.upwardFlag,
+      ),
+    );
+  }
+}
+
+extension SymbolPosition on Step {
+  /// Calculates offset needed to draw on staff.
+  Offset calculteOffset(int octave) {
+    double offsetY;
+
+    switch (this) {
+      case Step.B:
+        offsetY = 2;
+      case Step.A:
+        offsetY = 1;
+      case Step.G:
+        offsetY = 0;
+      case Step.F:
+        offsetY = -1;
+      case Step.E:
+        offsetY = -2;
+      case Step.D:
+        offsetY = -3;
+      case Step.C:
+        offsetY = -4;
+    }
+    return Offset(0, (NotationLayoutProperties.staveSpace / 2) * -offsetY) +
+        Offset(0, (octave - 4) * -42);
+  }
+}
+
+enum LedgerPlacement {
+  above,
+  below;
 }
 
 extension NoteVisualInformation on NoteTypeValue {

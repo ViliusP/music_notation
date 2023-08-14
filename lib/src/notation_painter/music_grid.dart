@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:flutter/rendering.dart';
 
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/bookmark.dart';
@@ -19,8 +20,8 @@ import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/print.dart';
 import 'package:music_notation/src/models/elements/music_data/sound/sound.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
+import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/visual_music_element.dart';
-import 'package:music_notation/src/notation_painter/models/visual_note_element.dart';
 
 class Grid<T> extends Iterable<List<T>> {
   final List<List<T>> _grid = List<List<T>>.empty(growable: true);
@@ -350,7 +351,13 @@ class MeasureSequence extends Iterable<List<VisualMusicElement?>> {
             if (musicElement.chord == null || grid.horizontalPositions == 0) {
               grid.add([]);
             }
-            var noteVisual = VisualNoteElement.fromNote(musicElement);
+            var noteVisual = VisualMusicElement(
+              equivalent: musicElement,
+              influencedByClef: true,
+              position: const ElementPosition(octave: 6, step: Step.A),
+              symbol: '',
+              defaultOffsetG4: const Offset(0, -5),
+            );
             grid.setElement(noteVisual, grid.horizontalPositions - 1);
           }
           break;
