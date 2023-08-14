@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
+import 'package:music_notation/src/models/elements/score/part.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/visual_note_element.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
@@ -13,31 +14,36 @@ import 'package:music_notation/src/notation_painter/painters/staff_lines_painter
 import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
 import 'package:music_notation/src/notation_painter/staff_painter_context.dart';
 
-class Measure extends StatelessWidget {
+class MeasureElement extends StatelessWidget {
   static const double _minPositionPadding = 4;
 
+  final Measure measure;
   final MeasureSequence sequence;
 
   double? get _cachedMinWidth => _initialSpacings?.last;
 
   final List<double>? _initialSpacings;
 
-  const Measure({
+  MeasureElement({
     super.key,
-    required this.sequence,
-  }) : _initialSpacings = null;
+    required this.measure,
+  })  : _initialSpacings = null,
+        sequence = MeasureSequence.fromMeasure(measure: measure);
 
-  const Measure._withCache({
+  MeasureElement._withCache({
     super.key,
-    required this.sequence,
+    required this.measure,
     required List<double> initialSpacings,
-  }) : _initialSpacings = initialSpacings;
+  })  : _initialSpacings = initialSpacings,
+        sequence = MeasureSequence.fromMeasure(measure: measure);
 
-  factory Measure.withCaching({Key? key, required MeasureSequence sequence}) {
-    return Measure._withCache(
+  factory MeasureElement.withCaching({Key? key, required Measure measure}) {
+    return MeasureElement._withCache(
       key: key,
-      sequence: sequence,
-      initialSpacings: _calculateInitialSpacings(sequence),
+      measure: measure,
+      initialSpacings: _calculateInitialSpacings(
+        MeasureSequence.fromMeasure(measure: measure),
+      ),
     );
   }
 
@@ -117,7 +123,6 @@ class Measure extends StatelessWidget {
               child: Padding(
                 padding: EdgeInsets.only(
                   left: offset.dx,
-                  // top: defaultOffset,
                 ),
                 child: Note(
                   note: musicElement,
