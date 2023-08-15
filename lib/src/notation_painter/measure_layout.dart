@@ -9,6 +9,7 @@ import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
 import 'package:music_notation/src/notation_painter/attributes_elements.dart';
 import 'package:music_notation/src/notation_painter/measure_element.dart';
+import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/note_element.dart';
 import 'package:music_notation/src/notation_painter/painters/barline_painter.dart';
@@ -24,6 +25,8 @@ class MeasureLayout extends StatelessWidget {
   static const double _minPositionPadding = 4;
 
   final Measure measure;
+  final NotationContext _contextBefore;
+  final NotationContext contextAfter;
 
   final int? staff;
   double? get _cachedMinWidth => _initialSpacings?.last;
@@ -32,43 +35,57 @@ class MeasureLayout extends StatelessWidget {
 
   final List<_MeasureElementBuilder>? _precomputedChildren;
 
-  const MeasureLayout({
-    super.key,
-    required this.measure,
-    this.staff,
-  })  : _initialSpacings = null,
-        _precomputedChildren = null;
+  // const MeasureLayout({
+  //   super.key,
+  //   required this.measure,
+  //   this.staff,
+  //   required NotationContext? notationContext,
+  // })  : _initialSpacings = null,
+  //       _precomputedChildren = null,
+  //       _notationContext = notationContext;
 
-  const MeasureLayout._withCache({
+  const MeasureLayout._({
     super.key,
     required this.measure,
     required List<double> initialSpacings,
     required final List<_MeasureElementBuilder> precomputedBuilders,
     this.staff,
+    required NotationContext contextBefore,
+    required this.contextAfter,
   })  : _initialSpacings = initialSpacings,
-        _precomputedChildren = precomputedBuilders;
+        _precomputedChildren = precomputedBuilders,
+        _contextBefore = contextBefore;
 
-  factory MeasureLayout.withCaching({
+  factory MeasureLayout.fromMeasureData({
     Key? key,
     required Measure measure,
     int? staff,
+    required NotationContext notationContext,
   }) {
-    var precomputes = _precomputeChildrenBuilders(measure, staff);
+    var precomputes = _computeBuilders(
+      notationContext,
+      measure,
+      staff,
+    );
 
-    return MeasureLayout._withCache(
+    return MeasureLayout._(
       key: key,
       measure: measure,
       staff: staff,
       initialSpacings: precomputes.spacings,
       precomputedBuilders: precomputes.builders,
+      contextBefore: notationContext,
+      contextAfter: precomputes.contextAfter,
     );
   }
 
   /// Returns initial list of spacings that do not consider measure stretching and compression [measure].
   static ({
+    NotationContext contextAfter,
     List<double> spacings,
     List<_MeasureElementBuilder> builders,
-  }) _precomputeChildrenBuilders(
+  }) _computeBuilders(
+    NotationContext contextBefore,
     Measure measure,
     int? staff,
   ) {
@@ -152,7 +169,11 @@ class MeasureLayout extends StatelessWidget {
       spacings.add(spacing);
     }
     spacings.add(spacings.last + 100);
-    return (spacings: spacings, builders: builders);
+    return (
+      contextAfter: contextBefore,
+      spacings: spacings,
+      builders: builders
+    );
   }
 
   @override
@@ -175,13 +196,8 @@ class MeasureLayout extends StatelessWidget {
     double defaultOffset = offsetPerPosition *
         [maxPositionsBelow, maxPositionsAbove, _minPositionPadding].max;
 
-    List<double> spacings = _initialSpacings ?? [];
-    var builders = _precomputedChildren ?? [];
-    if (_initialSpacings == null && _precomputedChildren == null) {
-      var childrenData = _precomputeChildrenBuilders(measure, staff);
-      spacings = childrenData.spacings;
-      builders = childrenData.builders;
-    }
+    List<double> spacings = _initialSpacings!;
+    var builders = _precomputedChildren!;
 
     List<Widget> children = [];
     for (var (index, builder) in builders.indexed) {
@@ -269,9 +285,6 @@ class MeasureLayout extends StatelessWidget {
               child: const StaffLines(),
             ),
           ),
-          // Stack(
-          //   children: children,
-          // ),
           ...children,
         ],
       );

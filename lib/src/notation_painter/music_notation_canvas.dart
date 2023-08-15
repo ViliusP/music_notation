@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
 import 'package:music_notation/src/notation_painter/measure_layout.dart';
+import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
 
 import 'package:music_notation/src/notation_painter/staff_painter_context.dart';
@@ -21,32 +22,25 @@ class MusicNotationCanvas extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // var staffs = <Widget>[];
-    // var barlines = <Widget>[];
     var parts = <Row>[];
 
-    // List<double> staffDistances = [];
-
     for (int i = 0; i < grid.data.rowCount; i++) {
-      // var barlinePainter = BarlinePainter();
+      var measures = <MeasureLayout>[];
 
-      // barlines.add(
-      //   Positioned(
-      //     top: staffDistances[i],
-      //     left: 0,
-      //     child: CustomPaint(
-      //       size: BarlinePainter.size,
-      //       painter: barlinePainter,
-      //     ),
-      //   ),
-      // );
-      var measures = <Widget>[];
-      // Iterating throug measures/part.
       for (var j = 0; j < grid.data.columnCount; j++) {
-        measures.add(MeasureLayout(
+        var measure = MeasureLayout.fromMeasureData(
           measure: grid.data.getValue(i, j),
           staff: grid.staffForRow(i),
-        ));
+          notationContext: j != 0
+              ? measures.last.contextAfter
+              : NotationContext(
+                  divisions: null,
+                  clef: null,
+                  time: null,
+                ),
+        );
+
+        measures.add(measure);
       }
 
       parts.add(Row(
