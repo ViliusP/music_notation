@@ -1,26 +1,11 @@
 import 'package:collection/collection.dart';
-import 'package:flutter/rendering.dart';
 
 import 'package:music_notation/src/models/data_types/step.dart';
-import 'package:music_notation/src/models/elements/bookmark.dart';
-import 'package:music_notation/src/models/elements/link.dart';
-import 'package:music_notation/src/models/elements/listening.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/attributes.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/key.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
-import 'package:music_notation/src/models/elements/music_data/backup.dart';
-import 'package:music_notation/src/models/elements/music_data/barline.dart';
-import 'package:music_notation/src/models/elements/music_data/direction/direction.dart';
-import 'package:music_notation/src/models/elements/music_data/figured_bass.dart';
-import 'package:music_notation/src/models/elements/music_data/forward.dart';
-import 'package:music_notation/src/models/elements/music_data/grouping.dart';
-import 'package:music_notation/src/models/elements/music_data/harmony/harmony.dart';
-import 'package:music_notation/src/models/elements/music_data/note/note.dart';
-import 'package:music_notation/src/models/elements/music_data/print.dart';
-import 'package:music_notation/src/models/elements/music_data/sound/sound.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
-import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/visual_music_element.dart';
 
 class Grid<T> extends Iterable<List<T>> {
@@ -315,7 +300,7 @@ class MeasureSequence extends Iterable<List<VisualMusicElement?>> {
     }
 
     if (transpose != 0 && element.influencedByClef) {
-      return element.tranpose(transpose);
+      return element.transpose(transpose);
     }
     return element;
   }
@@ -333,107 +318,12 @@ class MeasureSequence extends Iterable<List<VisualMusicElement?>> {
     _data.add(value);
   }
 
-  /// The [staff] must be provided if [measure] has multiple staves.
-  factory MeasureSequence.fromMeasure({
-    required Measure measure,
-    int? staff,
-    Clef? clef,
-  }) {
-    // List<List<VisualMusicElement?> data = Grid();
-    // for (var i = 0; i < gridHeight; i++) {
-    //   data.addRow();
-    // }
-    MeasureSequence grid = MeasureSequence._(data: []);
-    for (var musicElement in measure.data) {
-      switch (musicElement) {
-        case Note _:
-          if (staff == musicElement.staff || staff == null) {
-            if (musicElement.chord == null || grid.horizontalPositions == 0) {
-              grid.add([]);
-            }
-            var noteVisual = VisualMusicElement(
-              equivalent: musicElement,
-              influencedByClef: true,
-              position: const ElementPosition(octave: 6, step: Step.A),
-              symbol: '',
-              defaultOffsetG4: const Offset(0, -5),
-            );
-            grid.setElement(noteVisual, grid.horizontalPositions - 1);
-          }
-          break;
-        case Backup _:
-          break;
-        case Forward _:
-          break;
-        case Direction _:
-          break;
-        case Attributes _:
-          var attributeVisuals = _fromAttributes(musicElement, staff);
-
-          for (var attributesColumn in attributeVisuals) {
-            grid.add([]);
-
-            for (var visual in attributesColumn) {
-              grid.setElement(visual, grid.horizontalPositions - 1);
-            }
-          }
-
-          if (musicElement.clefs.isNotEmpty) {
-            if (musicElement.clefs.length > 1 && staff == null) {
-              throw UnimplementedError(
-                "Multiple clef signs is not implemented in renderer yet",
-              );
-            }
-            var attributesClef = musicElement.clefs.firstWhereOrNull(
-              (element) => staff != null ? element.number == staff : true,
-            );
-            if (attributesClef != null) {
-              grid.setClef(attributesClef);
-            }
-          }
-          break;
-        case Harmony _:
-          break;
-        case FiguredBass _:
-          break;
-        case Print _:
-          break;
-        case Sound _:
-          break;
-        case Listening _:
-          break;
-        case Barline _:
-          break;
-        case Grouping _:
-          break;
-        case Link _:
-          break;
-        case Bookmark _:
-          break;
-      }
-    }
-    if (grid._clef == null && clef != null) {
-      grid.setClef(clef);
-    }
-    return grid;
-  }
-
   static List<List<VisualMusicElement>> _fromAttributes(
     Attributes attributes, [
     int? staff,
   ]) {
     List<List<VisualMusicElement>> visuals = [];
-    if (attributes.clefs.isNotEmpty) {
-      if (attributes.clefs.length > 1 && staff == null) {
-        throw UnimplementedError(
-          "Multiple clef signs is not implemented in renderer yet",
-        );
-      }
-      var visual = VisualMusicElement.fromClef(attributes.clefs.firstWhere(
-        (element) => staff != null ? element.number == staff : true,
-      ));
-      visuals.add([visual]);
-    }
+
     for (var key in attributes.keys) {
       switch (key) {
         case TraditionalKey _:

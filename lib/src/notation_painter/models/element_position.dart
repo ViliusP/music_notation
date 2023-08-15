@@ -149,4 +149,11 @@ class ElementPosition {
     step: Step.B,
     octave: 4,
   );
+
+  /// Calculates numerical difference from middle (B4). If distance is positive,
+  /// note is positioned above staff middle. If it is negative, it is positioned
+  /// below middle of staff.
+  int get distanceFromMiddle {
+    return numericPosition - ElementPosition.staffMiddle.numericPosition;
+  }
 }

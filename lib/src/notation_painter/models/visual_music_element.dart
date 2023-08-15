@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/layout.dart';
-import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/key.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
@@ -36,62 +35,6 @@ class VisualMusicElement {
   })  : _symbol = symbol,
         _position = position,
         _defaultOffsetG4 = defaultOffsetG4 ?? const Offset(0, 0);
-
-  /// Calculates numerical difference from middle (B4). If distance is positive,
-  /// note is positioned above staff middle. If it is negative, it is positioned
-  /// below middle of staff.
-  int get distanceFromMiddle {
-    return position.numericPosition -
-        ElementPosition.staffMiddle.numericPosition;
-  }
-
-  // A clef is indented into the staves by the one stave-space or little less.
-  factory VisualMusicElement.fromClef(Clef clef) {
-    String? symbol;
-    Step? step;
-    int? octave;
-    Offset offset = const Offset(0, 0);
-
-    switch (clef.sign) {
-      case ClefSign.G:
-        symbol = '\uE050';
-        step = Step.G;
-        octave = 4;
-        offset = const Offset(0, -5);
-      case ClefSign.F:
-        symbol = '\uE062';
-        step = Step.D;
-        octave = 5;
-        offset = const Offset(0, -5);
-      case ClefSign.C:
-        symbol = '\uE05C';
-        step = Step.C;
-        octave = 4;
-      case ClefSign.percussion:
-        symbol = '\uE069';
-        step = Step.B;
-        octave = 4;
-      case ClefSign.tab:
-        throw UnimplementedError(
-          "'${clef.sign}' clef sign is not implemented in renderer yet",
-        );
-      // symbol = '\uE06D';
-      default:
-        symbol = null;
-    }
-    if (symbol == null || step == null || octave == null) {
-      throw UnimplementedError(
-        "'${clef.sign}' clef sign is not implemented in renderer yet",
-      );
-    }
-    return VisualMusicElement(
-        equivalent: clef,
-        symbol: symbol,
-        influencedByClef: false,
-        position: ElementPosition(step: step, octave: octave),
-        defaultOffsetG4: offset,
-        defaultMargins: HorizontalMargins(left: 0, right: 32));
-  }
 
   static List<VisualMusicElement> fromTimeBeat(TimeBeat timeBeat) {
     if (timeBeat.timeSignatures.length > 1) {
@@ -138,7 +81,7 @@ class VisualMusicElement {
     return String.fromCharCode(unicodeValue);
   }
 
-  VisualMusicElement tranpose(int positions) {
+  VisualMusicElement transpose(int positions) {
     var position = ElementPosition.fromInt(
       this.position.numericPosition + positions,
     );
@@ -204,7 +147,7 @@ class VisualKeyElement extends VisualMusicElement {
   }
 
   @override
-  VisualMusicElement tranpose(int positions) {
+  VisualMusicElement transpose(int positions) {
     var position = ElementPosition.fromInt(
       this.position.numericPosition + positions - 14,
     );

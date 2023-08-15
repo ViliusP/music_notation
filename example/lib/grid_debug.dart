@@ -28,33 +28,34 @@ class GridDebug extends StatelessWidget {
             PointerDeviceKind.unknown
           },
         ),
-        child: Column(
-          children: notationGrid.data
-              .mapIndexed((partIndex, part) => SizedBox(
-                    height: 120,
-                    child: ListView(
-                      // This next line does the trick.
-                      scrollDirection: Axis.horizontal,
-                      children: part
-                          .mapIndexed((index, measure) => Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: SizedBox(
-                                  height: 120,
-                                  width: 120,
-                                  child: _MeasureGrid(
-                                    sequence: MeasureSequence.fromMeasure(
-                                      measure: measure,
-                                    ),
-                                    partIndex: partIndex,
-                                    measureIndex: index,
-                                  ),
-                                ),
-                              ))
-                          .toList(),
-                    ),
-                  ))
-              .toList(),
-        ),
+        child: Column(),
+        // child: Column(
+        //   children: notationGrid.data
+        //       .mapIndexed((partIndex, part) => SizedBox(
+        //             height: 120,
+        //             child: ListView(
+        //               // This next line does the trick.
+        //               scrollDirection: Axis.horizontal,
+        //               children: part
+        //                   .mapIndexed((index, measure) => Padding(
+        //                         padding: const EdgeInsets.all(8.0),
+        //                         child: SizedBox(
+        //                           height: 120,
+        //                           width: 120,
+        //                           child: _MeasureGrid(
+        //                             sequence: MeasureSequence.fromMeasure(
+        //                               measure: measure,
+        //                             ),
+        //                             partIndex: partIndex,
+        //                             measureIndex: index,
+        //                           ),
+        //                         ),
+        //                       ))
+        //                   .toList(),
+        //             ),
+        //           ))
+        //       .toList(),
+        // ),
       ),
     );
   }

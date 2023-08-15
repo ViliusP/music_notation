@@ -73,7 +73,7 @@ void main() {
 
     for (var (input, output) in inputsOutputs) {
       test("${input.position} should be $output from the middle", () {
-        expect(input.distanceFromMiddle, output);
+        expect(input.position.distanceFromMiddle, output);
       });
     }
   });

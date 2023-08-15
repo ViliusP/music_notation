@@ -69,7 +69,7 @@ class NoteElement extends StatelessWidget {
     return note.form is! Rest;
   }
 
-  ElementPosition? get position {
+  ElementPosition get position {
     switch (note) {
       case GraceTieNote _:
         throw UnimplementedError(
@@ -96,23 +96,24 @@ class NoteElement extends StatelessWidget {
             step = noteForm.displayStep;
             octave = noteForm.displayOctave;
           case Rest _:
-            step = noteForm.displayStep;
-            octave = noteForm.displayOctave;
+            step = noteForm.displayStep ?? Step.C;
+            octave = noteForm.displayOctave ?? 4;
             break;
         }
-        if (step != null && octave != null) {
-          return ElementPosition(
-            step: step,
-            octave: octave,
-          );
-        }
+        return ElementPosition(
+          step: step,
+          octave: octave,
+        );
+
       default:
         throw UnimplementedError(
           "This error shouldn't occur, TODO: make switch exhaustively matched",
         );
     }
-    return null;
+    // return null;
   }
+
+  // static efault
 
   const NoteElement({super.key, required this.note});
 
@@ -180,48 +181,22 @@ class Notehead extends StatelessWidget {
 
 class Stem extends StatelessWidget {
   final NoteTypeValue type;
-  final double heigth;
+  final double height;
 
   const Stem({
     super.key,
     required this.type,
-    this.heigth = NotationLayoutProperties.standardStemHeight,
+    this.height = NotationLayoutProperties.standardStemHeight,
   });
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      size: Size(StemPainter.strokeWidth + type.flagWidth, heigth),
+      size: Size(StemPainter.strokeWidth + type.flagWidth, height),
       painter: StemPainter(
         flagSmufl: type.upwardFlag,
       ),
     );
-  }
-}
-
-extension SymbolPosition on Step {
-  /// Calculates offset needed to draw on staff.
-  Offset calculteOffset(int octave) {
-    double offsetY;
-
-    switch (this) {
-      case Step.B:
-        offsetY = 2;
-      case Step.A:
-        offsetY = 1;
-      case Step.G:
-        offsetY = 0;
-      case Step.F:
-        offsetY = -1;
-      case Step.E:
-        offsetY = -2;
-      case Step.D:
-        offsetY = -3;
-      case Step.C:
-        offsetY = -4;
-    }
-    return Offset(0, (NotationLayoutProperties.staveSpace / 2) * -offsetY) +
-        Offset(0, (octave - 4) * -42);
   }
 }
 

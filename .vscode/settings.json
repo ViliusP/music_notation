@@ -1,4 +1,17 @@
 {
-    "code-runner.runInTerminal": true
+    "code-runner.runInTerminal": true,
+    "cSpell.words": [
+        "codepoint",
+        "Misura",
+        "notehead",
+        "noteheads",
+        "Partwise",
+        "precompute",
+        "precomputes",
+        "Senza",
+        "Smufl",
+        "sublist",
+        "Unpitched"
+    ]
     
 }
