@@ -21,7 +21,7 @@ void main() {
       expect(clef.line, 2);
       expect(clef.octaveChange, isNull);
       expect(clef.additional, isNull);
-      expect(clef.afteBarline, isNull);
+      expect(clef.afterBarline, isNull);
       expect(clef.id, isNull);
       expect(clef.number, 1);
       expect(clef.printObject, isTrue);
@@ -43,7 +43,7 @@ void main() {
       expect(clef.line, 4);
       expect(clef.octaveChange, isNull);
       expect(clef.additional, isNull);
-      expect(clef.afteBarline, isNull);
+      expect(clef.afterBarline, isNull);
       expect(clef.id, isNull);
       expect(clef.number, 1);
       expect(clef.printObject, isTrue);
@@ -65,7 +65,7 @@ void main() {
       expect(clef.line, 2);
       expect(clef.octaveChange, isNull);
       expect(clef.additional, isNull);
-      expect(clef.afteBarline, isNull);
+      expect(clef.afterBarline, isNull);
       expect(clef.id, isNull);
       expect(clef.number, 1);
       expect(clef.printObject, isTrue);
@@ -87,7 +87,7 @@ void main() {
       expect(clef.line, 4);
       expect(clef.octaveChange, isNull);
       expect(clef.additional, isNull);
-      expect(clef.afteBarline, isNull);
+      expect(clef.afterBarline, isNull);
       expect(clef.id, isNull);
       expect(clef.number, 2);
       expect(clef.printObject, isTrue);
@@ -109,7 +109,7 @@ void main() {
       expect(clef.line, 5);
       expect(clef.octaveChange, isNull);
       expect(clef.additional, isNull);
-      expect(clef.afteBarline, isNull);
+      expect(clef.afterBarline, isNull);
       expect(clef.id, isNull);
       expect(clef.number, 2);
       expect(clef.printObject, isTrue);
@@ -132,7 +132,7 @@ void main() {
       expect(clef.line, 4);
       expect(clef.octaveChange, -1);
       expect(clef.additional, isNull);
-      expect(clef.afteBarline, isNull);
+      expect(clef.afterBarline, isNull);
       expect(clef.id, isNull);
       expect(clef.number, 1);
       expect(clef.printObject, isTrue);
