@@ -1,6 +1,6 @@
 import 'package:flutter/rendering.dart';
 
-import 'package:music_notation/src/notation_painter/painters/utilties.dart';
+import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 
 class NotePainter extends CustomPainter {
   final String smufl;
