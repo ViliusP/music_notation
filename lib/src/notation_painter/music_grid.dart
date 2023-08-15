@@ -337,17 +337,7 @@ class MeasureSequence extends Iterable<List<VisualMusicElement?>> {
           );
       }
     }
-    for (var times in attributes.times) {
-      switch (times) {
-        case TimeBeat _:
-          visuals.add(VisualMusicElement.fromTimeBeat(times));
-          break;
-        case SenzaMisura _:
-          throw UnimplementedError(
-            "Senza misura is not implemented in renderer yet",
-          );
-      }
-    }
+
     return visuals;
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 
 import 'package:music_notation/src/models/elements/music_data/attributes/attributes.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
+import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
 import 'package:music_notation/src/models/elements/music_data/backup.dart';
 import 'package:music_notation/src/models/elements/music_data/direction/direction.dart';
 import 'package:music_notation/src/models/elements/music_data/forward.dart';
@@ -15,6 +16,7 @@ import 'package:music_notation/src/notation_painter/notation_layout_properties.d
 import 'package:music_notation/src/notation_painter/note_element.dart';
 import 'package:music_notation/src/notation_painter/painters/barline_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/staff_lines_painter.dart';
+import 'package:music_notation/src/notation_painter/time_beat_element.dart';
 
 typedef _MeasureElementBuilder = Widget Function(
   BuildContext context,
@@ -125,6 +127,8 @@ class MeasureLayout extends StatelessWidget {
               ),
             );
           }
+          spacings.add(spacing);
+
           break;
 
         case Backup _:
@@ -134,13 +138,16 @@ class MeasureLayout extends StatelessWidget {
         case Direction _:
           break;
         case Attributes _:
+          // -----------------------------
+          // Clef
+          // -----------------------------
           if (element.clefs.isNotEmpty) {
             if (element.clefs.length > 1 && staff == null) {
               throw UnimplementedError(
                 "Multiple clef signs is not implemented in renderer yet",
               );
             }
-            spacing += 30;
+            spacing += 8;
 
             Clef clef = element.clefs.firstWhere(
               (element) => staff != null ? element.number == staff : true,
@@ -160,7 +167,38 @@ class MeasureLayout extends StatelessWidget {
                 child: clefElement,
               ),
             );
+            spacings.add(spacing);
           }
+          // -----------------------------
+          // Time
+          // -----------------------------
+
+          for (var times in element.times) {
+            switch (times) {
+              case TimeBeat _:
+                var timeBeatWidget = TimeBeatElement(timeBeat: times);
+
+                builders.add(
+                  (context, leftOffset, initialBottom) => MeasureElement(
+                    position: timeBeatWidget.position,
+                    // influencedByClef: false,
+                    left: leftOffset,
+                    bottom: initialBottom - 16,
+                    child: timeBeatWidget,
+                  ),
+                );
+
+                spacing += 40;
+
+                break;
+              case SenzaMisura _:
+                throw UnimplementedError(
+                  "Senza misura is not implemented in renderer yet",
+                );
+            }
+            spacings.add(spacing);
+          }
+
           break;
         // case Harmony _:
         //   break;
@@ -181,7 +219,6 @@ class MeasureLayout extends StatelessWidget {
         // case Bookmark _:
         //   break;
       }
-      spacings.add(spacing);
     }
     spacings.add(spacings.last + 100);
     return (
