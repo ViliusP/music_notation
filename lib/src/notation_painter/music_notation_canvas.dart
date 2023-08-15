@@ -5,12 +5,10 @@ import 'package:music_notation/src/notation_painter/measure_layout.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
 
-import 'package:music_notation/src/notation_painter/staff_painter_context.dart';
 import 'package:music_notation/src/notation_painter/sync_width_column.dart';
 
 class MusicNotationCanvas extends StatelessWidget {
   final ScorePartwise scorePartwise;
-  final StaffPainterContext painterContext = StaffPainterContext();
   NotationGrid get grid => NotationGrid.fromScoreParts(
         scorePartwise.parts,
       );

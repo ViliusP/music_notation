@@ -1,7 +1,6 @@
 import 'package:flutter/rendering.dart';
 import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
-import 'package:music_notation/src/notation_painter/staff_painter_context.dart';
 
 class PainterUtilities {
   static void drawSmuflSymbol(
@@ -166,7 +165,6 @@ void _paintLedgerLines({
   required double noteheadWidth,
   required Canvas canvas,
   required Size size,
-  required StaffPainterContext context,
 }) {
   if (count == 0) {
     return;
@@ -179,13 +177,13 @@ void _paintLedgerLines({
   var positionY =
       (startingY + NotationLayoutProperties.staveSpace) * multiplier;
   for (var i = 0; i < count.abs(); i++) {
-    canvas.drawLine(
-      context.offset + Offset(-widthOutside, positionY),
-      context.offset + Offset(noteheadWidth + widthOutside, positionY),
-      Paint()
-        ..color = const Color.fromRGBO(0, 0, 0, 1.0)
-        ..strokeWidth = NotationLayoutProperties.staffLineStrokeWidth,
-    );
+    // canvas.drawLine(
+    //   context.offset + Offset(-widthOutside, positionY),
+    //   context.offset + Offset(noteheadWidth + widthOutside, positionY),
+    //   Paint()
+    //     ..color = const Color.fromRGBO(0, 0, 0, 1.0)
+    //     ..strokeWidth = NotationLayoutProperties.staffLineStrokeWidth,
+    // );
 
     positionY += multiplier * NotationLayoutProperties.staveSpace;
   }
