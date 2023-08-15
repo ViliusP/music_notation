@@ -60,7 +60,7 @@ class Clef {
   /// In this situation, the additional attribute is set to "yes" and the line value is ignored.
   ///
   /// The attribute is ignored for mid-measure clefs.
-  bool? afteBarline;
+  bool? afterBarline;
 
   /// Sometimes clefs are added to the staff in non-standard line positions,
   /// either to indicate cue passages, or when there are multiple clefs present
@@ -84,7 +84,7 @@ class Clef {
     this.octaveChange,
     this.number = 1,
     this.size,
-    this.afteBarline,
+    this.afterBarline,
     this.additional,
     this.printStyle = const PrintStyle.empty(),
     this.printObject = true,
@@ -167,7 +167,7 @@ class Clef {
       octaveChange: octaveChange,
       number: number ?? 1,
       size: size,
-      afteBarline: YesNo.fromXml(xmlElement, "after-barline"),
+      afterBarline: YesNo.fromXml(xmlElement, "after-barline"),
       additional: YesNo.fromXml(xmlElement, "additional"),
       printStyle: PrintStyle.fromXml(xmlElement),
       printObject: printObject ?? true,
