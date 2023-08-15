@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:music_notation/src/models/elements/music_data/attributes/attributes.dart';
+import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/models/elements/music_data/backup.dart';
 import 'package:music_notation/src/models/elements/music_data/direction/direction.dart';
 import 'package:music_notation/src/models/elements/music_data/forward.dart';
@@ -25,6 +26,7 @@ class MeasureLayout extends StatelessWidget {
   static const double _minPositionPadding = 4;
 
   final Measure measure;
+  // ignore: unused_field
   final NotationContext _contextBefore;
   final NotationContext contextAfter;
 
@@ -89,6 +91,7 @@ class MeasureLayout extends StatelessWidget {
     Measure measure,
     int? staff,
   ) {
+    NotationContext contextAfter = contextBefore.copyWith();
     double spacing = 0;
 
     final List<double> spacings = [];
@@ -99,8 +102,15 @@ class MeasureLayout extends StatelessWidget {
       switch (element) {
         case Note _:
           if (staff == element.staff || staff == null) {
+            if (contextAfter.divisions == null) {
+              throw ArgumentError(
+                "Context or measure must have divisions in attributes element",
+              );
+            }
+
             var noteElement = NoteElement(
               note: element,
+              divisions: contextAfter.divisions!,
             );
             if (element.chord == null) {
               spacing += 40;
@@ -132,10 +142,15 @@ class MeasureLayout extends StatelessWidget {
             }
             spacing += 30;
 
-            var clefElement = ClefElement(
-                clef: element.clefs.firstWhere(
+            Clef clef = element.clefs.firstWhere(
               (element) => staff != null ? element.number == staff : true,
-            ));
+            );
+
+            contextAfter = contextAfter.copyWith(
+              clef: clef,
+              divisions: element.divisions,
+            );
+            var clefElement = ClefElement(clef: clef);
 
             builders.add(
               (context, leftOffset, initialBottom) => MeasureElement(
@@ -170,9 +185,9 @@ class MeasureLayout extends StatelessWidget {
     }
     spacings.add(spacings.last + 100);
     return (
-      contextAfter: contextBefore,
+      contextAfter: contextAfter,
       spacings: spacings,
-      builders: builders
+      builders: builders,
     );
   }
 

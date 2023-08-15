@@ -3,7 +3,7 @@ import 'package:music_notation/src/models/elements/music_data/attributes/time.da
 
 class NotationContext {
   final Clef? clef;
-  final int? divisions;
+  final double? divisions;
   final Time? time;
 
   NotationContext({
@@ -14,7 +14,7 @@ class NotationContext {
 
   NotationContext copyWith({
     Clef? clef,
-    int? divisions,
+    double? divisions,
     Time? time,
   }) {
     return NotationContext(

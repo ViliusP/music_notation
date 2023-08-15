@@ -9,16 +9,23 @@ import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
 
 class Chord extends StatelessWidget {
   final List<Note> notes;
+  final double divisions;
 
   const Chord({
     super.key,
     required this.notes,
+    required this.divisions,
   });
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: notes.map((e) => NoteElement(note: e)).toList(),
+      children: notes
+          .map((e) => NoteElement(
+                note: e,
+                divisions: divisions,
+              ))
+          .toList(),
     );
   }
 }
@@ -64,6 +71,7 @@ class NoteElement extends StatelessWidget {
   // }
 
   final Note note;
+  final double divisions;
 
   bool get influencedByClef {
     return note.form is! Rest;
@@ -115,7 +123,11 @@ class NoteElement extends StatelessWidget {
 
   // static efault
 
-  const NoteElement({super.key, required this.note});
+  const NoteElement({
+    super.key,
+    required this.note,
+    required this.divisions,
+  });
 
   @override
   Widget build(BuildContext context) {
