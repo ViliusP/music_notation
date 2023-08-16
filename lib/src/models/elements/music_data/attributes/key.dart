@@ -324,7 +324,7 @@ class NonTraditionalKey extends Key {
   ///
   /// Each [KeyPitch] object represents a unique alteration
   /// of step and alter, with an optional accidental.
-  List<KeyPitch> content;
+  List<PitchedKeyAccidental> content;
 
   NonTraditionalKey({
     this.content = const [],
@@ -355,7 +355,7 @@ class NonTraditionalKey extends Key {
     validateSequence(xmlElement, _xmlExpectedOrder);
 
     List<KeyOctave> octaves = [];
-    List<KeyPitch> content = [];
+    List<PitchedKeyAccidental> content = [];
 
     Step? step;
     double? alter;
@@ -365,7 +365,7 @@ class NonTraditionalKey extends Key {
       switch (childElement.name.local) {
         case 'key-step':
           if (index != 0) {
-            content.add(KeyPitch(
+            content.add(PitchedKeyAccidental(
               step: step!,
               alter: alter!,
               accidental: accidental,
@@ -404,7 +404,7 @@ class NonTraditionalKey extends Key {
       }
     }
     // Adds the last one
-    content.add(KeyPitch(
+    content.add(PitchedKeyAccidental(
       step: step!,
       alter: alter!,
       accidental: accidental,
@@ -421,7 +421,7 @@ class NonTraditionalKey extends Key {
   }
 }
 
-class KeyPitch {
+class PitchedKeyAccidental {
   // ------------------------- //
   // ------   Content   ------ //
   // ------------------------- //
@@ -443,14 +443,14 @@ class KeyPitch {
   /// This is optional, and may be `null` if no accidental is specified.
   KeyAccidental? accidental;
 
-  KeyPitch({
+  PitchedKeyAccidental({
     required this.step,
     required this.alter,
     this.accidental,
   });
 }
 
-/// Representes a key accidental in MusicXML format.
+/// Represents a key accidental in MusicXML format.
 ///
 /// Indicates the accidental to be displayed in the key signature.
 /// It is used for disambiguating microtonal accidentals.
