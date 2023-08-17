@@ -30,12 +30,12 @@ class PainterUtilities {
 ///
 /// Notes on or above line 3 have down stems on the left side of the notehead.
 ///
-/// The stem is awalys placed between the two notes of an interval of a 2nd,
+/// The stem is always placed between the two notes of an interval of a 2nd,
 /// with the upper note always to the right, the lower note always to the left.
 ///
 /// When two notes share a stem:
 /// - If the interval above the middle line is greater, the stem goes down;
-/// - If the interval below the middle line is geater, the stem goes up;
+/// - If the interval below the middle line is greater, the stem goes up;
 /// - If the intervals above and below the middle ine are equidistant, the stem
 /// goes down;
 ///
@@ -48,7 +48,7 @@ class PainterUtilities {
 /// - If equidistant the stem goes down.
 ///
 /// TODO: need to take account of different voices on the same staff:
-/// If you are writing two vocies on the same staff, the stems for the upper
+/// If you are writing two voices on the same staff, the stems for the upper
 /// voice will go up, and the stems for the lower voice will go down.
 // void _drawStemForColumn(
 //   VisualNoteElement? lowestNote,
@@ -61,7 +61,7 @@ class PainterUtilities {
 //   // if (lowestNote != null && lowestNote == highestNote && lowestNote.stemmed) {
 //   //   var offset = context.offset +
 //   //       lowestNote.defaultOffset +
-//   //       lowestNote.position.step.calculteOffset(lowestNote.position.octave);
+//   //       lowestNote.position.step.calculateOffset(lowestNote.position.octave);
 
 //   //   final StemValue stemDirection =
 //   //       lowestNote.distanceFromMiddle < 0 ? StemValue.up : StemValue.down;
@@ -87,11 +87,11 @@ class PainterUtilities {
 
 //     // var lowestNoteOffsetY = context.offset +
 //     //     lowestNote.defaultOffset +
-//     //     lowestNote.position.step.calculteOffset(lowestNote.position.octave);
+//     //     lowestNote.position.step.calculateOffset(lowestNote.position.octave);
 
 //     // var highestNoteOffsetY = context.offset +
 //     //     highestNote.defaultOffset +
-//     //     highestNote.position.step.calculteOffset(highestNote.position.octave);
+//     //     highestNote.position.step.calculateOffset(highestNote.position.octave);
 
 //     // Offset notesOffset = lowestNoteOffsetY;
 //     // if (lowestNote.distanceFromMiddle.abs() <
