@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:music_notation/music_notation.dart';
-
 class MeasureGridDebug extends StatelessWidget {
   final int partNumber;
   final int measureNumber;
@@ -53,34 +51,32 @@ class MeasureGridDebug extends StatelessWidget {
 }
 
 class _VisualElementCard extends StatelessWidget {
-  final VisualMusicElement? cell;
-
   const _VisualElementCard({
     Key? key,
-    required this.cell,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return const Card(
       color: Colors.pink,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            cell?.symbol ?? "-",
-            style: const TextStyle(fontFamily: "Sebastian", fontSize: 28),
+            "-",
+            style: TextStyle(fontFamily: "Sebastian", fontSize: 28),
           ),
-          const SizedBox(
+          SizedBox(
             height: 8,
           ),
-          cell?.symbol != null
+          null != null
+              // ignore: dead_code
               ? Text(
-                  "${cell?.position}",
-                  style: const TextStyle(fontSize: 20),
+                  "cell?.position",
+                  style: TextStyle(fontSize: 20),
                 )
-              : const SizedBox.shrink(),
+              : SizedBox.shrink(),
         ],
       ),
     );
