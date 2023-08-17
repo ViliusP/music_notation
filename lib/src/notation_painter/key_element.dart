@@ -128,7 +128,7 @@ class KeySignature extends StatelessWidget {
 
     return Size(
       width - _spaceBetweenAccidentals,
-      tallestAccidental * 1.25 + range * _verticalOffsetPerPosition,
+      tallestAccidental * 1.30 + range * _verticalOffsetPerPosition,
     );
   }
 
