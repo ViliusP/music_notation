@@ -5,11 +5,9 @@ import 'package:music_notation/music_notation.dart';
 class MeasureGridDebug extends StatelessWidget {
   final int partNumber;
   final int measureNumber;
-  final MeasureSequence sequence;
 
   const MeasureGridDebug({
     super.key,
-    required this.sequence,
     required this.partNumber,
     required this.measureNumber,
   });
@@ -21,34 +19,34 @@ class MeasureGridDebug extends StatelessWidget {
       appBar: AppBar(
         title: Text("Debug: $partNumber.$measureNumber measure grid"),
       ),
-      body: SingleChildScrollView(
+      body: const SingleChildScrollView(
         child: Column(
-          children: sequence
-              .map(
-                (row) => Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: SizedBox(
-                    height: 140,
-                    width: MediaQuery.of(context).size.width,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: row
-                          .map((cell) => Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: SizedBox(
-                                  width: 120,
-                                  child: _VisualElementCard(
-                                    cell: cell,
-                                  ),
-                                ),
-                              ))
-                          .toList(),
-                    ),
-                  ),
-                ),
-              )
-              .toList(),
-        ),
+            // children: sequence
+            //     .map(
+            //       (row) => Padding(
+            //         padding: const EdgeInsets.all(8.0),
+            //         child: SizedBox(
+            //           height: 140,
+            //           width: MediaQuery.of(context).size.width,
+            //           child: ListView(
+            //             scrollDirection: Axis.horizontal,
+            //             children: row
+            //                 .map((cell) => Padding(
+            //                       padding: const EdgeInsets.all(8.0),
+            //                       child: SizedBox(
+            //                         width: 120,
+            //                         child: _VisualElementCard(
+            //                           cell: cell,
+            //                         ),
+            //                       ),
+            //                     ))
+            //                 .toList(),
+            //           ),
+            //         ),
+            //       ),
+            //     )
+            //     .toList(),
+            ),
       ),
     );
   }

@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:example/measure_grid_debug.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -62,13 +61,11 @@ class GridDebug extends StatelessWidget {
 }
 
 class _MeasureGrid extends StatelessWidget {
-  final MeasureSequence sequence;
   final int measureIndex;
   final int partIndex;
 
   const _MeasureGrid({
     super.key,
-    required this.sequence,
     required this.measureIndex,
     required this.partIndex,
   });
@@ -88,7 +85,6 @@ class _MeasureGrid extends StatelessWidget {
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => MeasureGridDebug(
-                sequence: sequence,
                 measureNumber: measureIndex,
                 partNumber: partIndex,
               ),

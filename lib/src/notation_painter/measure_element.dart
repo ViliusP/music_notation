@@ -57,3 +57,10 @@ extension SymbolPosition on Step {
         Offset(0, (octave - 4) * -42);
   }
 }
+  // VisualMusicElement transpose(int positions) {
+  //   var position = ElementPosition.fromInt(
+  //     this.position.numericPosition + positions,
+  //   );
+
+  //   return copyWith(position: position);
+  // }

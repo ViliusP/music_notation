@@ -1,12 +1,6 @@
 import 'package:collection/collection.dart';
 
-import 'package:music_notation/src/models/data_types/step.dart';
-import 'package:music_notation/src/models/elements/music_data/attributes/attributes.dart';
-import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
-import 'package:music_notation/src/models/elements/music_data/attributes/key.dart';
-import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
-import 'package:music_notation/src/notation_painter/models/visual_music_element.dart';
 
 class Grid<T> extends Iterable<List<T>> {
   final List<List<T>> _grid = List<List<T>>.empty(growable: true);
@@ -205,29 +199,12 @@ class NotationGrid {
       for (var i = 0; i < staves; i++) {
         data.addRow();
       }
-      // List<MeasureSequence> lastMeasures = [];
       for (var measure in part.measures) {
         for (var i = 0; i < staves; i++) {
-          // Clef? clef;
-          // if (lastMeasures.length >= i + 1) {
-          //   clef = lastMeasures[i]._clef;
-          // }
-
-          // var measureGrid = MeasureSequence.fromMeasure(
-          //   measure: measure,
-          //   staff: staves != 1 ? i + 1 : null,
-          //   clef: clef,
-          // );
-
           data.addToRow(
             data.rowCount - staves + i,
             measure,
           );
-          // if (lastMeasures.length < i + 1) {
-          //   lastMeasures.add(measureGrid);
-          // } else {
-          //   lastMeasures[i] = measureGrid;
-          // }
         }
       }
     }
@@ -236,116 +213,4 @@ class NotationGrid {
       commonStaves: commonStaves,
     );
   }
-}
-
-/// | Clef |   Beat   | C4 note | Quarter rest | C5 note |
-/// |:----:|:--------:|:-------:|:------------:|:-------:|
-/// |      | BeatType | C3 note |              | G4 note |
-/// |      |          | D2 note |              |         |
-class MeasureSequence extends Iterable<List<VisualMusicElement?>> {
-  static const gridHeight = 84;
-
-  static const Step startingStep = Step.G;
-  static const int statingOctave = 4;
-
-  final List<List<VisualMusicElement>> _data;
-
-  List<VisualMusicElement> get _flattenedData {
-    return _data.expand((i) => i).toList();
-  }
-
-  /// TODO comment
-  ({VisualMusicElement lowest, VisualMusicElement highest}) get range {
-    VisualMusicElement? lowest;
-    VisualMusicElement? highest;
-    for (var element in _flattenedData) {
-      if (lowest == null || lowest.position > element.position) {
-        lowest = element;
-      }
-      if (highest == null || highest.position < element.position) {
-        highest = element;
-      }
-    }
-    if (lowest == null || highest == null) {
-      throw ArgumentError("This error shouldn't occured");
-    }
-    return (lowest: lowest, highest: highest);
-  }
-
-  // In future, this will need some fix, it can be more than one clefs per measure.
-  Clef? _clef;
-
-  void setClef(Clef clef) {
-    _clef = clef;
-  }
-
-  MeasureSequence._({
-    required List<List<VisualMusicElement>> data,
-  }) : _data = data;
-
-  // Get the value at the given row and column
-  VisualMusicElement? getValue(int row, int column) {
-    VisualMusicElement? element;
-    try {
-      element = _data[column][row];
-    } catch (_) {
-      return null;
-    }
-    int transpose = 0;
-    switch (_clef?.sign) {
-      case ClefSign.F:
-        transpose = 12;
-        break;
-      default:
-    }
-
-    if (transpose != 0 && element.influencedByClef) {
-      return element.transpose(transpose);
-    }
-    return element;
-  }
-
-  /// Set the [value] at the given [column].
-  void setElement(VisualMusicElement value, int column) {
-    _data[column].add(value);
-  }
-
-  int get horizontalPositions {
-    return _data.length;
-  }
-
-  void add(List<VisualMusicElement> value) {
-    _data.add(value);
-  }
-
-  static List<List<VisualMusicElement>> _fromAttributes(
-    Attributes attributes, [
-    int? staff,
-  ]) {
-    List<List<VisualMusicElement>> visuals = [];
-
-    for (var key in attributes.keys) {
-      switch (key) {
-        case TraditionalKey _:
-          visuals.addAll(
-            VisualKeyElement.fromTraditionalKey(key).map((e) => [e]),
-          );
-          break;
-        case NonTraditionalKey _:
-          throw UnimplementedError(
-            "Non traditional key is not implemented in renderer yet",
-          );
-      }
-    }
-
-    return visuals;
-  }
-
-  @override
-  String toString() {
-    return _data.toString();
-  }
-
-  @override
-  Iterator<List<VisualMusicElement?>> get iterator => _data.iterator;
 }

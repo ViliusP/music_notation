@@ -430,20 +430,20 @@ class PitchedKeyAccidental {
   ///
   /// The step is represented by an instance of the [Step] enum,
   /// which includes values from A to G.
-  Step step;
+  final Step step;
 
   /// The microtonal alteration of the step for this non-traditional key content.
   ///
   /// This is represented as a double, where 1.0 represents a one semitone sharp,
   /// -1.0 represents a one semitone flat, 0.5 represents a quarter tone sharp, etc.
-  double alter;
+  final double alter;
 
   /// The [KeyAccidental] for this non-traditional key content.
   ///
   /// This is optional, and may be `null` if no accidental is specified.
-  KeyAccidental? accidental;
+  final KeyAccidental? accidental;
 
-  PitchedKeyAccidental({
+  const PitchedKeyAccidental({
     required this.step,
     required this.alter,
     this.accidental,

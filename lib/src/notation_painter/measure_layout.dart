@@ -3,6 +3,9 @@ import 'package:flutter/widgets.dart';
 
 import 'package:music_notation/src/models/elements/music_data/attributes/attributes.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
+import 'package:music_notation/src/models/elements/music_data/attributes/key.dart'
+    as musicxml show Key;
+
 import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
 import 'package:music_notation/src/models/elements/music_data/backup.dart';
 import 'package:music_notation/src/models/elements/music_data/direction/direction.dart';
@@ -10,6 +13,7 @@ import 'package:music_notation/src/models/elements/music_data/forward.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
 import 'package:music_notation/src/notation_painter/attributes_elements.dart';
+import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
@@ -198,7 +202,39 @@ class MeasureLayout extends StatelessWidget {
             }
             spacings.add(spacing);
           }
-
+          // -----------------------------
+          // Keys
+          // -----------------------------
+          var keys = element.keys;
+          if (keys.isEmpty) break;
+          musicxml.Key? musicKey;
+          if (keys.length == 1 && keys.first.number == null) {
+            musicKey = keys.first;
+          }
+          if (staff != null && keys.length > 1) {
+            musicKey = keys.firstWhereOrNull(
+              (element) => element.number == staff,
+            );
+          }
+          if (musicKey == null) {
+            throw ArgumentError(
+              "There are multiple keys elements in attributes, therefore correct staff must be provided",
+            );
+          }
+          var keySignature = KeySignature.fromKeyData(keyData: musicKey);
+          if (keySignature.firstPosition != null) {
+            builders.add(
+              (context, leftOffset, initialBottom) => MeasureElement(
+                position: keySignature.firstPosition!,
+                // influencedByClef: false,
+                left: leftOffset,
+                bottom: initialBottom - 16,
+                child: keySignature,
+              ),
+            );
+            spacing += 40;
+            spacings.add(spacing);
+          }
           break;
         // case Harmony _:
         //   break;
