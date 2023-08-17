@@ -167,7 +167,7 @@ class MeasureLayout extends StatelessWidget {
               (context, leftOffset, initialBottom) => MeasureElement(
                 position: clefElement.position,
                 left: leftOffset,
-                bottom: initialBottom,
+                bottom: initialBottom + clefElement.measureOffset.dy,
                 child: clefElement,
               ),
             );

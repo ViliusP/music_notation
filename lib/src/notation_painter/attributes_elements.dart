@@ -18,10 +18,8 @@ class ClefElement extends StatelessWidget {
     switch (clef.sign) {
       case ClefSign.G:
         return '\uE050';
-
       case ClefSign.F:
         return '\uE062';
-
       case ClefSign.C:
         return '\uE05C';
       case ClefSign.percussion:
@@ -38,44 +36,102 @@ class ClefElement extends StatelessWidget {
     }
   }
 
-  ElementPosition get position {
-    Step? step;
-    int? octave;
-
+  Offset get measureOffset {
     switch (clef.sign) {
       case ClefSign.G:
-        step = Step.G;
-        octave = 4;
+        return const Offset(0, -25);
       case ClefSign.F:
-        step = Step.D;
-        octave = 5;
+        return const Offset(0, -22);
       case ClefSign.C:
-        step = Step.C;
-        octave = 4;
+        // TODO: adjust
+        return const Offset(0, -26);
       case ClefSign.percussion:
-        step = Step.B;
-        octave = 4;
+        // TODO: adjust
+        return const Offset(0, -26);
       case ClefSign.tab:
         throw UnimplementedError(
           "'${clef.sign}' clef sign is not implemented in renderer yet",
         );
       default:
-        break;
+        throw UnimplementedError(
+          "'${clef.sign}' clef sign is not implemented in renderer yet",
+        );
     }
-    if (step == null || octave == null) {
-      throw UnimplementedError(
-        "'${clef.sign}' clef sign is not implemented in renderer yet",
-      );
+  }
+
+  ElementPosition get position {
+    switch (clef.sign) {
+      case ClefSign.G:
+        return const ElementPosition(step: Step.G, octave: 4);
+      case ClefSign.F:
+        return const ElementPosition(step: Step.D, octave: 5);
+      case ClefSign.C:
+        return const ElementPosition(step: Step.C, octave: 4);
+      case ClefSign.percussion:
+        return const ElementPosition(step: Step.B, octave: 4);
+      case ClefSign.tab:
+        throw UnimplementedError(
+          "'${clef.sign}' clef sign is not implemented in renderer yet",
+        );
+      default:
+        throw UnimplementedError(
+          "'${clef.sign}' clef sign is not implemented in renderer yet",
+        );
     }
-    return ElementPosition(octave: octave, step: step);
   }
 
   const ClefElement({super.key, required this.clef});
 
+  Size get size {
+    switch (clef.sign) {
+      case ClefSign.G:
+        // TODO: adjust
+        return const Size(32, 88);
+      case ClefSign.F:
+        return const Size(33, 42);
+      case ClefSign.C:
+        // TODO: adjust
+        return const Size(33, 42);
+      case ClefSign.percussion:
+        // TODO: adjust
+        return const Size(33, 42);
+      case ClefSign.tab:
+        // TODO: adjust
+        return const Size(33, 42);
+      default:
+        throw UnimplementedError(
+          "'${clef.sign}' clef sign is not implemented in renderer yet",
+        );
+    }
+  }
+
+  Offset get _paintingOffset {
+    switch (clef.sign) {
+      case ClefSign.G:
+        return const Offset(0, 73);
+      case ClefSign.F:
+        return const Offset(0, 70);
+      case ClefSign.C:
+        // TODO: adjust
+        return const Offset(0, 70);
+      case ClefSign.percussion:
+        // TODO: adjust
+        return const Offset(0, 70);
+      case ClefSign.tab:
+        // TODO: adjust
+        return const Offset(0, 70);
+      default:
+        throw UnimplementedError(
+          "'${clef.sign}' clef sign is not implemented in renderer yet",
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      painter: ClefPainter(_symbol),
+      size: size,
+      painter: ClefPainter(_symbol, _paintingOffset),
     );
   }
 }
