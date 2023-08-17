@@ -98,7 +98,13 @@ class MeasureLayout extends StatelessWidget {
     int? staff,
   ) {
     NotationContext contextAfter = contextBefore.copyWith();
-    double spacing = 0;
+
+    const offsetFromStart = 8.0;
+
+    double leftOffset = offsetFromStart;
+
+    // Will be change in future.
+    const spacingBetweenElements = 8;
 
     final List<double> spacings = [];
 
@@ -118,9 +124,6 @@ class MeasureLayout extends StatelessWidget {
               note: element,
               divisions: contextAfter.divisions!,
             );
-            if (element.chord == null) {
-              spacing += 40;
-            }
 
             builders.add(
               (context, leftOffset, initialBottom) => MeasureElement(
@@ -130,9 +133,13 @@ class MeasureLayout extends StatelessWidget {
                 child: noteElement,
               ),
             );
-          }
-          spacings.add(spacing);
 
+            spacings.add(leftOffset);
+            if (element.chord == null) {
+              // TOOD: change to noteElement.size.width
+              leftOffset += spacingBetweenElements + 16;
+            }
+          }
           break;
 
         case Backup _:
@@ -151,7 +158,6 @@ class MeasureLayout extends StatelessWidget {
                 "Multiple clef signs is not implemented in renderer yet",
               );
             }
-            spacing += 8;
 
             Clef clef = element.clefs.firstWhere(
               (element) => staff != null ? element.number == staff : true,
@@ -171,7 +177,8 @@ class MeasureLayout extends StatelessWidget {
                 child: clefElement,
               ),
             );
-            spacings.add(spacing);
+            spacings.add(leftOffset);
+            leftOffset += spacingBetweenElements + clefElement.size.width;
           }
           // -----------------------------
           // Time
@@ -192,15 +199,15 @@ class MeasureLayout extends StatelessWidget {
                   ),
                 );
 
-                spacing += 40;
-
+                spacings.add(leftOffset);
+                // TOOD: change to timeBeatWidget.size.width
+                leftOffset += spacingBetweenElements + 20;
                 break;
               case SenzaMisura _:
                 throw UnimplementedError(
                   "Senza misura is not implemented in renderer yet",
                 );
             }
-            spacings.add(spacing);
           }
           // -----------------------------
           // Keys
@@ -232,8 +239,8 @@ class MeasureLayout extends StatelessWidget {
                 child: keySignature,
               ),
             );
-            spacing += 40;
-            spacings.add(spacing);
+            spacings.add(leftOffset);
+            leftOffset += spacingBetweenElements + keySignature.size.width;
           }
           break;
         // case Harmony _:
@@ -256,7 +263,7 @@ class MeasureLayout extends StatelessWidget {
         //   break;
       }
     }
-    spacings.add(spacings.last + 100);
+    // spacings.add(spacings.last + 100);
     return (
       contextAfter: contextAfter,
       spacings: spacings,

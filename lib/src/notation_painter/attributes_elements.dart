@@ -85,7 +85,6 @@ class ClefElement extends StatelessWidget {
   Size get size {
     switch (clef.sign) {
       case ClefSign.G:
-        // TODO: adjust
         return const Size(32, 88);
       case ClefSign.F:
         return const Size(33, 42);
