@@ -99,9 +99,9 @@ class MeasureLayout extends StatelessWidget {
   ) {
     NotationContext contextAfter = contextBefore.copyWith();
 
-    const offsetFromStart = 8.0;
+    const horizontalPadding = 8.0;
 
-    double leftOffset = offsetFromStart;
+    double leftOffset = horizontalPadding;
 
     // Will be change in future.
     const spacingBetweenElements = 8;
@@ -263,7 +263,10 @@ class MeasureLayout extends StatelessWidget {
         //   break;
       }
     }
-    // spacings.add(spacings.last + 100);
+    // TODO: change to something smarter, it must be constant or it has to be
+    // dependent on width of measure.
+    // Adding padding to measure's end.
+    spacings.add(leftOffset + horizontalPadding);
     return (
       contextAfter: contextAfter,
       spacings: spacings,
