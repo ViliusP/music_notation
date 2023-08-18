@@ -138,14 +138,11 @@ class MeasureLayout extends StatelessWidget {
             );
             // Removing last added offset if note is in chord.
             if (element.chord != null) {
-              // TOOD: change to noteElement.size.width
-
-              leftOffset -= spacingBetweenElements + 16;
+              leftOffset -= spacingBetweenElements + noteElement.size.width;
             }
             spacings.add(leftOffset);
-            // TOOD: change to noteElement.size.width
-            leftOffset += spacingBetweenElements + 16;
-            lastElementWidth = 16;
+            leftOffset += spacingBetweenElements + noteElement.size.width;
+            lastElementWidth = noteElement.size.width;
           }
           break;
 
