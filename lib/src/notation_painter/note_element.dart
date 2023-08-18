@@ -118,10 +118,29 @@ class NoteElement extends StatelessWidget {
           "This error shouldn't occur, TODO: make switch exhaustively matched",
         );
     }
-    // return null;
   }
 
-  // static efault
+  Size get size {
+    NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
+
+    var noteheadSize = Notehead(
+      type: type,
+    ).size;
+
+    double width = noteheadSize.width;
+    double height = noteheadSize.height;
+
+    if (note.type?.value.stemmed ?? false) {
+      width = width - NotationLayoutProperties.stemStrokeWidth;
+
+      var stemSize = Stem(type: type).size;
+
+      width += Stem(type: type).size.width;
+      height += stemSize.height - noteheadSize.height / 2;
+    }
+
+    return Size(width, height);
+  }
 
   const NoteElement({
     super.key,
@@ -154,9 +173,7 @@ class NoteElement extends StatelessWidget {
       children: [
         SizedBox(
           width: noteheadWidth,
-          child: Notehead(
-            type: type,
-          ),
+          child: notehead,
         ),
         if (stemmed)
           Padding(
@@ -220,6 +237,10 @@ class Stem extends StatelessWidget {
   final NoteTypeValue type;
   final double height;
 
+  Size get size {
+    return Size(StemPainter.strokeWidth + type.flagWidth, height);
+  }
+
   const Stem({
     super.key,
     required this.type,
@@ -229,7 +250,7 @@ class Stem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      size: Size(StemPainter.strokeWidth + type.flagWidth, height),
+      size: size,
       painter: StemPainter(
         flagSmufl: type.upwardFlag,
       ),
