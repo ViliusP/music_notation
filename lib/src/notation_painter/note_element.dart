@@ -136,14 +136,27 @@ class NoteElement extends StatelessWidget {
 
     bool stemmed = note.type?.value.stemmed ?? false;
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
+
+    var notehead = Notehead(
+      type: type,
+    );
+
+    double? noteheadWidth;
+
+    if (stemmed) {
+      noteheadWidth =
+          notehead.size.width - NotationLayoutProperties.stemStrokeWidth;
+    }
+
     return Row(
       mainAxisSize: MainAxisSize.min,
-      // mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        Notehead(
-          type: type,
-          stemmed: stemmed,
+        SizedBox(
+          width: noteheadWidth,
+          child: Notehead(
+            type: type,
+          ),
         ),
         if (stemmed)
           Padding(
@@ -166,24 +179,36 @@ class NoteElement extends StatelessWidget {
 class Notehead extends StatelessWidget {
   final NoteTypeValue type;
 
-  /// If note are stemmed, notehead's width will be reduced for aesthetics.
-  final bool stemmed;
+  Size get size {
+    const height = NotationLayoutProperties.noteheadHeight;
 
-  const Notehead({super.key, required this.type, required this.stemmed});
+    switch (type) {
+      case NoteTypeValue.n1024th:
+      case NoteTypeValue.n512th:
+      case NoteTypeValue.n256th:
+      case NoteTypeValue.n128th:
+      case NoteTypeValue.n64th:
+      case NoteTypeValue.n32nd:
+      case NoteTypeValue.n16th:
+      case NoteTypeValue.eighth:
+      case NoteTypeValue.quarter:
+      case NoteTypeValue.half:
+        return const Size(16, height);
+      case NoteTypeValue.whole:
+        return const Size(21.2, height);
+      case NoteTypeValue.breve:
+        return const Size(30, height); // Need to be adjusted in future.
+      case NoteTypeValue.long:
+        return const Size(30, height); // Need to be adjusted in future.
+      case NoteTypeValue.maxima:
+        return const Size(30, height); // Need to be adjusted in future.
+    }
+  }
+
+  const Notehead({super.key, required this.type});
 
   @override
   Widget build(BuildContext context) {
-    double notesWidth = type.noteheadWidth;
-
-    if (stemmed) {
-      notesWidth -= NotationLayoutProperties.stemStrokeWidth;
-    }
-
-    Size size = Size(
-      notesWidth,
-      NotationLayoutProperties.noteheadHeight,
-    );
-
     return CustomPaint(
       size: size,
       painter: NotePainter(type.smuflSymbol),
@@ -240,30 +265,6 @@ extension NoteVisualInformation on NoteTypeValue {
         return '\uE0A1';
       case NoteTypeValue.maxima:
         return '\uE0A1';
-    }
-  }
-
-  double get noteheadWidth {
-    switch (this) {
-      case NoteTypeValue.n1024th:
-      case NoteTypeValue.n512th:
-      case NoteTypeValue.n256th:
-      case NoteTypeValue.n128th:
-      case NoteTypeValue.n64th:
-      case NoteTypeValue.n32nd:
-      case NoteTypeValue.n16th:
-      case NoteTypeValue.eighth:
-      case NoteTypeValue.quarter:
-      case NoteTypeValue.half:
-        return 16;
-      case NoteTypeValue.whole:
-        return 21.2;
-      case NoteTypeValue.breve:
-        return 30; // Need to be adjusted in future.
-      case NoteTypeValue.long:
-        return 30; // Need to be adjusted in future.
-      case NoteTypeValue.maxima:
-        return 30; // Need to be adjusted in future.
     }
   }
 
