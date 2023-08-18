@@ -110,6 +110,8 @@ class MeasureLayout extends StatelessWidget {
 
     final builders = <_MeasureElementBuilder>[];
 
+    double lastElementWidth = 0;
+
     for (var element in measure.data) {
       switch (element) {
         case Note _:
@@ -140,6 +142,7 @@ class MeasureLayout extends StatelessWidget {
               // TOOD: change to noteElement.size.width
               leftOffset += spacingBetweenElements + 16;
             }
+            lastElementWidth = 16;
           }
           break;
 
@@ -203,6 +206,8 @@ class MeasureLayout extends StatelessWidget {
                 spacings.add(leftOffset);
                 // TOOD: change to timeBeatWidget.size.width
                 leftOffset += spacingBetweenElements + 20;
+                lastElementWidth = 20;
+
                 break;
               case SenzaMisura _:
                 throw UnimplementedError(
@@ -242,6 +247,7 @@ class MeasureLayout extends StatelessWidget {
             );
             spacings.add(leftOffset);
             leftOffset += spacingBetweenElements + keySignature.size.width;
+            lastElementWidth = keySignature.size.width;
           }
           break;
         // case Harmony _:
@@ -267,7 +273,7 @@ class MeasureLayout extends StatelessWidget {
     // TODO: change to something smarter, it must be constant or it has to be
     // dependent on width of measure.
     // Adding padding to measure's end.
-    spacings.add(leftOffset + horizontalPadding);
+    spacings.add(leftOffset + horizontalPadding + lastElementWidth);
     return (
       contextAfter: contextAfter,
       spacings: spacings,
