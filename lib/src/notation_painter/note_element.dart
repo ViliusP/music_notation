@@ -36,11 +36,6 @@ class NoteElement extends StatelessWidget {
   // final String? flagUpSymbol;
   // final String? flagDownSymbol;
 
-  /// Width of notehead symbol.
-  ///
-  /// The minim is usually slightly larger than the black notehead.
-  /// The semibreve has greater width (in proportion 2.5 sembreves to 3 black
-  /// noteheads).
   // final double noteheadWidth;
 
   // final double? voice;
@@ -196,6 +191,14 @@ class NoteElement extends StatelessWidget {
 class Notehead extends StatelessWidget {
   final NoteTypeValue type;
 
+  /// Size of notehead symbol.
+  ///
+  /// The minim is usually slightly larger than the black notehead.
+  /// The semibreve has greater width (in proportion 2.5 semibreves to 3 black
+  /// noteheads).
+  ///
+  /// The height of all notehead types is same and equal to the sum of the staff
+  /// line stroke width and stave space.
   Size get size {
     const height = NotationLayoutProperties.noteheadHeight;
 
