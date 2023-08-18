@@ -136,12 +136,15 @@ class MeasureLayout extends StatelessWidget {
                 child: noteElement,
               ),
             );
-
-            spacings.add(leftOffset);
-            if (element.chord == null) {
+            // Removing last added offset if note is in chord.
+            if (element.chord != null) {
               // TOOD: change to noteElement.size.width
-              leftOffset += spacingBetweenElements + 16;
+
+              leftOffset -= spacingBetweenElements + 16;
             }
+            spacings.add(leftOffset);
+            // TOOD: change to noteElement.size.width
+            leftOffset += spacingBetweenElements + 16;
             lastElementWidth = 16;
           }
           break;
@@ -183,6 +186,7 @@ class MeasureLayout extends StatelessWidget {
             );
             spacings.add(leftOffset);
             leftOffset += spacingBetweenElements + clefElement.size.width;
+            lastElementWidth = clefElement.size.width;
           }
           // -----------------------------
           // Time
