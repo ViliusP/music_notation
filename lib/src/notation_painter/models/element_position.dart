@@ -86,6 +86,10 @@ class ElementPosition {
     }
   }
 
+  ElementPosition transpose(int by) {
+    return ElementPosition.fromInt(numericPosition + by);
+  }
+
   /// Less-than operator. Compares an [ElementPosition] to another [ElementPosition]
   /// and returns true if the vertical position in staff left-hand-side operand
   /// are lower than the position of the right-hand-side operand respectively.

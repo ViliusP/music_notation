@@ -127,6 +127,7 @@ class MeasureLayout extends StatelessWidget {
 
             builders.add(
               (context, leftOffset, initialBottom) => MeasureElement(
+                clef: contextAfter.clef,
                 position: noteElement.position,
                 bottom: initialBottom,
                 left: leftOffset,
@@ -233,7 +234,7 @@ class MeasureLayout extends StatelessWidget {
             builders.add(
               (context, leftOffset, initialBottom) => MeasureElement(
                 position: keySignature.firstPosition!,
-                // influencedByClef: false,
+                clef: contextAfter.clef,
                 left: leftOffset,
                 bottom: initialBottom - 16,
                 child: keySignature,
