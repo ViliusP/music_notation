@@ -85,7 +85,7 @@ extension ElementPositionOffset on ElementPosition {
       case Step.C:
         offsetY = -4;
     }
-    return Offset(0, (NotationLayoutProperties.staveSpace / 2) * -offsetY) +
+    return Offset(0, -(NotationLayoutProperties.staveSpace / 2) * offsetY) +
         Offset(0, (octave - 4) * -42);
   }
 }

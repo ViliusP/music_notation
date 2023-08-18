@@ -86,8 +86,8 @@ class ElementPosition {
     }
   }
 
-  ElementPosition transpose(int by) {
-    return ElementPosition.fromInt(numericPosition + by);
+  ElementPosition transpose(int interval) {
+    return ElementPosition.fromInt(numericPosition + interval);
   }
 
   /// Less-than operator. Compares an [ElementPosition] to another [ElementPosition]
