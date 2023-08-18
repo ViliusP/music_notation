@@ -16,9 +16,10 @@ class MeasureElement extends StatelessWidget {
 
   final Widget child;
 
-  final ElementPosition position;
+  ElementPosition get position => _position.transpose(_transposeInterval);
+  final ElementPosition _position;
 
-  int _clefTranspose() {
+  int get _transposeInterval {
     if (child is NoteElement && (child as NoteElement).note.form is Rest) {
       return 0;
     }
@@ -45,16 +46,16 @@ class MeasureElement extends StatelessWidget {
 
   const MeasureElement({
     super.key,
-    required this.position,
+    required ElementPosition position,
     required this.child,
     this.left = 0,
     this.bottom = 0,
     this.clef,
-  });
+  }) : _position = position;
 
   @override
   Widget build(BuildContext context) {
-    var fromBottom = position.transpose(_clefTranspose()).offset.dy;
+    var fromBottom = position.offset.dy;
 
     return Positioned(
       left: left,
