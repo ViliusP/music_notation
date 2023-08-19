@@ -299,7 +299,7 @@ class MeasureLayout extends StatelessWidget {
     //     range.highest.position.numericPosition - defaultHighest.numericPosition;
     var maxPositionsBelow = 5;
     var maxPositionsAbove = 4;
-    double defaultOffset = offsetPerPosition *
+    double verticalPadding = offsetPerPosition *
         [maxPositionsBelow, maxPositionsAbove, _minPositionPadding].max;
 
     List<double> spacings = _initialSpacings!;
@@ -308,54 +308,10 @@ class MeasureLayout extends StatelessWidget {
     List<Widget> children = [];
     for (var (index, builder) in builders.indexed) {
       children.add(
-        builder(context, spacings[index], defaultOffset),
+        builder(context, spacings[index], verticalPadding),
       );
     }
 
-    // int i = 0;
-    // for (var column in sequence) {
-    //   NoteElement? lowestNote;
-    //   NoteElement? highestNote;
-    //   for (var element in column) {
-    //     var musicElement = element;
-    //     if (musicElement == null) continue;
-
-    //     if (musicElement.equivalent is Note) {
-    //       NoteElement noteElement = NoteElement(note: musicElement.equivalent);
-    //       var offset = Offset(spacings[i], 0) +
-    //           musicElement.defaultOffset +
-    //           (noteElement.position?.step ?? Step.C)
-    //               .calculteOffset(noteElement.position?.octave ?? 5);
-    //       // 'highestNote' is same as note before.
-    //       // The stem is always placed between the two notes of an interval of a 2nd,
-    //       // with the upper note always to the right, the lower note always to the left.
-    //       if (highestNote != null && highestNote.position != null) {
-    //         var distance = (highestNote.position!.numericPosition -
-    //                 musicElement.position.numericPosition)
-    //             .abs();
-    //         // If neighboring interval of notes is second
-    //         if (distance == 1) {
-    //           offset += const Offset(14, 0);
-    //         }
-    //       }
-
-    //       notes.add(
-    //         Positioned(
-    //           bottom: defaultOffset - offset.dy,
-    //           child: Padding(
-    //             padding: EdgeInsets.only(
-    //               left: offset.dx,
-    //             ),
-    //             child: noteElement,
-    //           ),
-    //         ),
-    //       );
-
-    //       lowestNote ??= noteElement;
-    //       highestNote = noteElement;
-    //       continue;
-    //     }
-    //   }
     //   if (lowestNote != null) {
     //     // _paintLedgerLines(
     //     //   count: lowestNote.ledgerLines,
@@ -382,7 +338,7 @@ class MeasureLayout extends StatelessWidget {
         fit: StackFit.loose,
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(vertical: defaultOffset),
+            padding: EdgeInsets.symmetric(vertical: verticalPadding),
             child: SizedBox.fromSize(
               size: Size(
                 constraints.maxWidth.isFinite ? constraints.maxWidth : width,

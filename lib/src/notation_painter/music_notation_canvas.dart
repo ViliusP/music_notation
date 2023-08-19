@@ -13,7 +13,7 @@ class MusicNotationCanvas extends StatelessWidget {
         scorePartwise.parts,
       );
 
-  MusicNotationCanvas({
+  const MusicNotationCanvas({
     super.key,
     required this.scorePartwise,
   });
