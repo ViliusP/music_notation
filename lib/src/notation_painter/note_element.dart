@@ -2,10 +2,12 @@ import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
+import 'package:music_notation/src/models/elements/music_data/note/notehead.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/note_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
+import 'package:music_notation/src/smufl/smufl_glyph.dart';
 
 class Chord extends StatelessWidget {
   final List<Note> notes;
@@ -72,6 +74,10 @@ class NoteElement extends StatelessWidget {
     return note.form is! Rest;
   }
 
+  bool get _isRest {
+    return note.form is Rest;
+  }
+
   ElementPosition get position {
     switch (note) {
       case GraceTieNote _:
@@ -99,9 +105,7 @@ class NoteElement extends StatelessWidget {
             step = noteForm.displayStep;
             octave = noteForm.displayOctave;
           case Rest _:
-            step = noteForm.displayStep ?? Step.C;
-            octave = noteForm.displayOctave ?? 4;
-            break;
+            return RestElement.fromNote(note, divisions).position;
         }
         return ElementPosition(
           step: step,
@@ -118,8 +122,8 @@ class NoteElement extends StatelessWidget {
   Size get size {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
 
-    var noteheadSize = Notehead(
-      type: type,
+    var noteheadSize = NoteheadElement(
+      noteType: type,
     ).size;
 
     double width = noteheadSize.width;
@@ -151,8 +155,8 @@ class NoteElement extends StatelessWidget {
     bool stemmed = note.type?.value.stemmed ?? false;
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
 
-    var notehead = Notehead(
-      type: type,
+    var notehead = NoteheadElement(
+      noteType: type,
     );
 
     double? noteheadWidth;
@@ -160,6 +164,10 @@ class NoteElement extends StatelessWidget {
     if (stemmed) {
       noteheadWidth =
           notehead.size.width - NotationLayoutProperties.stemStrokeWidth;
+    }
+
+    if (_isRest) {
+      return RestElement.fromNote(note, divisions);
     }
 
     return Row(
@@ -188,8 +196,9 @@ class NoteElement extends StatelessWidget {
 /// the stave-line on each side of it, but without extending beyond either line.
 ///
 /// Notes on a line should be precisely centred on the stave-line.
-class Notehead extends StatelessWidget {
-  final NoteTypeValue type;
+class NoteheadElement extends StatelessWidget {
+  final NoteTypeValue noteType;
+  final Notehead? notehead;
 
   /// Size of notehead symbol.
   ///
@@ -202,7 +211,7 @@ class Notehead extends StatelessWidget {
   Size get size {
     const height = NotationLayoutProperties.noteheadHeight;
 
-    switch (type) {
+    switch (noteType) {
       case NoteTypeValue.n1024th:
       case NoteTypeValue.n512th:
       case NoteTypeValue.n256th:
@@ -225,13 +234,205 @@ class Notehead extends StatelessWidget {
     }
   }
 
-  const Notehead({super.key, required this.type});
+  String get _smufl {
+    return noteType.smuflSymbol;
+  }
+
+  const NoteheadElement({super.key, required this.noteType, this.notehead});
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
       size: size,
-      painter: NotePainter(type.smuflSymbol),
+      painter: NotePainter(noteType.smuflSymbol),
+    );
+  }
+}
+
+class RestElement extends StatelessWidget {
+  final Note note;
+
+  final double divisions;
+
+  /// Determines the appropriate note type value based on the note's properties.
+  ///
+  /// If the note has an explicit type value defined, that value is returned.
+  /// If the note is a complete measure rest (or a voice within a measure),
+  /// it is considered a whole note regardless of the time signature.
+  /// Otherwise, the note type is calculated based on its duration and divisions.
+  ///
+  /// Returns the determined [NoteTypeValue] for the note.
+  NoteTypeValue get _type {
+    if (note.type?.value != null) {
+      return note.type!.value;
+    }
+    if (note.form is Rest && (note.form as Rest).measure == true) {
+      return NoteTypeValue.whole;
+    }
+
+    return calculateNoteType((note as RegularNote).duration, divisions);
+  }
+
+  /// Calculates the appropriate [NoteTypeValue] based on the given note's [duration]
+  /// and the [divisions] specified by the time signature.
+  ///
+  /// The function determines the [duration] of the note relative to the [divisions]
+  /// and matches it to a corresponding [NoteTypeValue] based on predefined
+  /// ratio ranges. If no exact match is found, the closest [NoteTypeValue] is selected.
+  /// If the note duration significantly exceeds the [divisions], it defaults to [NoteTypeValue.maxima].
+  static NoteTypeValue calculateNoteType(double duration, double divisions) {
+    // Calculate the ratio of note's duration to divisions
+    final ratio = duration / divisions;
+
+    // Define a map that relates ratio ranges to NoteTypeValue
+    final ratioToNoteTypeMap = {
+      1 / 256: NoteTypeValue.n1024th,
+      1 / 128: NoteTypeValue.n512th,
+      1 / 64: NoteTypeValue.n256th,
+      1 / 32: NoteTypeValue.n128th,
+      1 / 16: NoteTypeValue.n64th,
+      1 / 8: NoteTypeValue.n32nd,
+      1 / 4: NoteTypeValue.n16th,
+      1 / 2: NoteTypeValue.eighth,
+      1 / 1: NoteTypeValue.quarter,
+      2: NoteTypeValue.half,
+      4: NoteTypeValue.whole,
+      8: NoteTypeValue.breve,
+      16: NoteTypeValue.long,
+      32: NoteTypeValue.maxima,
+    };
+
+    // Find the appropriate NoteTypeValue based on the ratio
+    NoteTypeValue? noteType;
+    ratioToNoteTypeMap.forEach((ratioRange, type) {
+      if (ratio <= ratioRange) {
+        noteType = type;
+        return;
+      }
+    });
+
+    // Default to maxima if the note duration is larger than 8 times the divisions
+    noteType ??= NoteTypeValue.maxima;
+
+    return noteType!;
+  }
+
+  ElementPosition get position {
+    Step? step = (note.form as Rest).displayStep;
+    int? octave = (note.form as Rest).displayOctave;
+
+    if (step != null && octave != null) {
+      return ElementPosition(step: step, octave: octave);
+    }
+
+    switch (_type) {
+      case NoteTypeValue.n1024th:
+        return const ElementPosition(step: Step.C, octave: 4); // Adjust
+      case NoteTypeValue.n512th:
+        return const ElementPosition(step: Step.C, octave: 4); // Adjust
+      case NoteTypeValue.n256th:
+        return const ElementPosition(step: Step.C, octave: 4); // Adjust
+      case NoteTypeValue.n128th:
+        return const ElementPosition(step: Step.C, octave: 4); // Adjust
+      case NoteTypeValue.n64th:
+        return const ElementPosition(step: Step.C, octave: 4); // Adjust
+      case NoteTypeValue.n32nd:
+        return const ElementPosition(step: Step.C, octave: 4); // Adjust
+      case NoteTypeValue.n16th:
+        return const ElementPosition(step: Step.C, octave: 4); // Adjust
+      case NoteTypeValue.eighth:
+        return const ElementPosition(step: Step.C, octave: 4); // Adjust
+      case NoteTypeValue.quarter:
+        return const ElementPosition(step: Step.B, octave: 4);
+      case NoteTypeValue.half:
+        return const ElementPosition(step: Step.C, octave: 5);
+      case NoteTypeValue.whole:
+        return const ElementPosition(step: Step.C, octave: 5);
+      case NoteTypeValue.breve:
+        return const ElementPosition(step: Step.C, octave: 4); // Adjust
+      case NoteTypeValue.long:
+        return const ElementPosition(step: Step.C, octave: 4); // Adjust
+      case NoteTypeValue.maxima:
+        return const ElementPosition(step: Step.C, octave: 4); // Adjust
+    }
+  }
+
+  String get _smufl {
+    switch (_type) {
+      case NoteTypeValue.n1024th:
+        return SmuflGlyph.rest1024th.codepoint;
+      case NoteTypeValue.n512th:
+        return SmuflGlyph.rest512th.codepoint;
+      case NoteTypeValue.n256th:
+        return SmuflGlyph.rest256th.codepoint;
+      case NoteTypeValue.n128th:
+        return SmuflGlyph.rest128th.codepoint;
+      case NoteTypeValue.n64th:
+        return SmuflGlyph.rest64th.codepoint;
+      case NoteTypeValue.n32nd:
+        return SmuflGlyph.rest32nd.codepoint;
+      case NoteTypeValue.n16th:
+        return SmuflGlyph.rest16th.codepoint;
+      case NoteTypeValue.eighth:
+        return SmuflGlyph.rest8th.codepoint;
+      case NoteTypeValue.quarter:
+        return SmuflGlyph.restQuarter.codepoint;
+      case NoteTypeValue.half:
+        return SmuflGlyph.restHalf.codepoint;
+      case NoteTypeValue.whole:
+        return SmuflGlyph.restWhole.codepoint;
+      case NoteTypeValue.breve:
+        return SmuflGlyph.restDoubleWhole.codepoint;
+      case NoteTypeValue.long:
+        return SmuflGlyph.restLonga.codepoint;
+      case NoteTypeValue.maxima:
+        return SmuflGlyph.restMaxima.codepoint;
+    }
+  }
+
+  Size get size {
+    const height = NotationLayoutProperties.noteheadHeight;
+
+    switch (_type) {
+      case NoteTypeValue.n1024th:
+      case NoteTypeValue.n512th:
+      case NoteTypeValue.n256th:
+      case NoteTypeValue.n128th:
+      case NoteTypeValue.n64th:
+      case NoteTypeValue.n32nd:
+      case NoteTypeValue.n16th:
+      case NoteTypeValue.eighth:
+      case NoteTypeValue.quarter:
+      case NoteTypeValue.half:
+        return const Size(16, 14); // Need to be adjusted in future.
+      case NoteTypeValue.whole:
+        return const Size(
+          17,
+          NotationLayoutProperties.noteheadHeight / 2,
+        ); // Need to be adjusted in future.
+      case NoteTypeValue.breve:
+        return const Size(30, 14); // Need to be adjusted in future.
+      case NoteTypeValue.long:
+        return const Size(30, 14); // Need to be adjusted in future.
+      case NoteTypeValue.maxima:
+        return const Size(30, 14); // Need to be adjusted in future.
+    }
+  }
+
+  factory RestElement.fromNote(Note note, double divisions) {
+    return RestElement._(
+      note: note,
+      divisions: divisions,
+    );
+  }
+
+  const RestElement._({super.key, required this.note, required this.divisions});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: size,
+      painter: NotePainter(_smufl),
     );
   }
 }
