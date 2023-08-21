@@ -1,4 +1,5 @@
 import 'package:music_notation/src/models/data_types/step.dart';
+import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 
 /// The position of a musical element in a diatonic scale.
 ///
@@ -88,6 +89,35 @@ class ElementPosition {
 
   ElementPosition transpose(int interval) {
     return ElementPosition.fromInt(numericPosition + interval);
+  }
+
+  static int clefTransposeInterval(Clef clef) {
+    switch (clef.sign) {
+      case ClefSign.G:
+        return 0;
+      case ClefSign.F:
+        return 12;
+      case ClefSign.C:
+        throw UnimplementedError(
+          "ClefSign.C is transpose is not implemented yet",
+        );
+      case ClefSign.percussion:
+        throw UnimplementedError(
+          "ClefSign.percussion is transpose is not implemented yet",
+        );
+      case ClefSign.tab:
+        throw UnimplementedError(
+          "ClefSign.tab is transpose is not implemented yet",
+        );
+      case ClefSign.jianpu:
+        throw UnimplementedError(
+          "ClefSign.jianpu is transpose is not implemented yet",
+        );
+      case ClefSign.none:
+        throw UnimplementedError(
+          "ClefSign.none is transpose is not implemented yet",
+        );
+    }
   }
 
   /// Less-than operator. Compares an [ElementPosition] to another [ElementPosition]

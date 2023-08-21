@@ -1,9 +1,11 @@
 import 'package:flutter/widgets.dart';
+
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/music_data/note/notehead.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
+import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/note_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
@@ -22,53 +24,51 @@ class Chord extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: notes
-          .map((e) => NoteElement(
-                note: e,
-                divisions: divisions,
-              ))
-          .toList(),
-    );
+        // children: notes
+        //     .map((e) => NoteElement(
+        //           note: e,
+        //           divisions: divisions,
+        //         ))
+        //     .toList(),
+        );
   }
 }
 
 class NoteElement extends StatelessWidget {
-  // final NoteTypeValue type;
-  // final bool stemmed;
-  // final String? flagUpSymbol;
-  // final String? flagDownSymbol;
+  /// Create [NoteElement] from musicXML [note]. Throws exception if divisions of
+  /// [notationContext] is null.
+  factory NoteElement.fromNote({
+    Key? key,
+    required Note note,
+    required NotationContext notationContext,
+    bool? stemmed,
+  }) {
+    if (notationContext.divisions == null) {
+      throw ArgumentError(
+        "Divisions in notationContext cannot be null on note's initialization",
+      );
+    }
 
-  // final double noteheadWidth;
+    return NoteElement._(
+      key: key,
+      note: note,
+      notationContext: notationContext,
+    );
+  }
 
-  // final double? voice;
-
-  // @override
-  // HorizontalMargins? get defaultMargins => null;
-
-  // /// Ledger line count. Minus value means that ledger lines are under staff. Positive
-  // /// value means that ledger lines are above staff.
-  // int get ledgerLines {
-  //   int position = this.position.numericPosition;
-  //   int distance = 0;
-  //   const d4 = ElementPosition(octave: 4, step: Step.D);
-  //   const g5 = ElementPosition(octave: 5, step: Step.G);
-
-  //   // 39 - G in 5 octave.
-  //   if (position < d4.numericPosition) {
-  //     distance = (d4.numericPosition - position);
-
-  //     return -(distance / 2).ceil();
-  //   }
-
-  //   if (position > g5.numericPosition) {
-  //     distance = position - g5.numericPosition;
-  //   }
-
-  //   return (distance / 2).ceil();
-  // }
+  const NoteElement._({
+    super.key,
+    required this.note,
+    required this.notationContext,
+    bool? stemmed,
+  }) : _stemmed = stemmed;
 
   final Note note;
-  final double divisions;
+
+  final bool? _stemmed;
+  bool get stemmed => _stemmed ?? note.type?.value.stemmed ?? false;
+
+  final NotationContext notationContext;
 
   bool get influencedByClef {
     return note.form is! Rest;
@@ -105,11 +105,24 @@ class NoteElement extends StatelessWidget {
             step = noteForm.displayStep;
             octave = noteForm.displayOctave;
           case Rest _:
-            return RestElement.fromNote(note, divisions).position;
+            return RestElement.fromNote(
+              note,
+              notationContext.divisions!,
+            ).position;
         }
-        return ElementPosition(
+
+        final position = ElementPosition(
           step: step,
           octave: octave,
+        );
+
+        if (notationContext.clef == null) {
+          return position;
+        }
+
+        // Unpitched notes probably shouldn't be transposed;
+        return position.transpose(
+          ElementPosition.clefTransposeInterval(notationContext.clef!),
         );
 
       default:
@@ -119,11 +132,43 @@ class NoteElement extends StatelessWidget {
     }
   }
 
+  final bool drawLedgerLines = true;
+
+  LedgerLines? get _ledgerLines {
+    int distance = 0;
+    const d4 = ElementPosition(octave: 4, step: Step.D);
+    const g5 = ElementPosition(octave: 5, step: Step.G);
+
+    if (position.numericPosition < d4.numericPosition) {
+      distance = (d4.numericPosition - position.numericPosition);
+
+      // Indicates if the note is placed directly on a staff/ledger line.
+      bool lineNote = distance % 2 != 0;
+
+      return LedgerLines(
+        count: (distance / 2).ceil(),
+        placement:
+            lineNote ? LedgerPlacement.belowCrossing : LedgerPlacement.below,
+      );
+    }
+
+    if (position.numericPosition > g5.numericPosition) {
+      distance = position.numericPosition - g5.numericPosition;
+    }
+    bool lineNote = distance % 2 != 0;
+
+    return LedgerLines(
+      count: (distance / 2).ceil(),
+      placement:
+          lineNote ? LedgerPlacement.aboveCrossing : LedgerPlacement.above,
+    );
+  }
+
   Size get size {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
 
     var noteheadSize = NoteheadElement(
-      noteType: type,
+      note: note,
     ).size;
 
     double width = noteheadSize.width;
@@ -141,22 +186,13 @@ class NoteElement extends StatelessWidget {
     return Size(width, height);
   }
 
-  const NoteElement({
-    super.key,
-    required this.note,
-    required this.divisions,
-  });
-
   @override
   Widget build(BuildContext context) {
-    // String? symbol = note.type?.value.smuflSymbol;
-    // symbol ??= "\uE4E3";
-
-    bool stemmed = note.type?.value.stemmed ?? false;
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
 
     var notehead = NoteheadElement(
-      noteType: type,
+      note: note,
+      ledgerLines: _ledgerLines,
     );
 
     double? noteheadWidth;
@@ -167,7 +203,7 @@ class NoteElement extends StatelessWidget {
     }
 
     if (_isRest) {
-      return RestElement.fromNote(note, divisions);
+      return RestElement.fromNote(note, notationContext.divisions!);
     }
 
     return Row(
@@ -197,8 +233,11 @@ class NoteElement extends StatelessWidget {
 ///
 /// Notes on a line should be precisely centred on the stave-line.
 class NoteheadElement extends StatelessWidget {
-  final NoteTypeValue noteType;
-  final Notehead? notehead;
+  final Note note;
+  NoteTypeValue get _noteType => note.type?.value ?? NoteTypeValue.quarter;
+  NoteheadValue get _notehead => note.notehead?.value ?? NoteheadValue.normal;
+
+  final LedgerLines? ledgerLines;
 
   /// Size of notehead symbol.
   ///
@@ -211,7 +250,7 @@ class NoteheadElement extends StatelessWidget {
   Size get size {
     const height = NotationLayoutProperties.noteheadHeight;
 
-    switch (noteType) {
+    switch (_noteType) {
       case NoteTypeValue.n1024th:
       case NoteTypeValue.n512th:
       case NoteTypeValue.n256th:
@@ -235,16 +274,23 @@ class NoteheadElement extends StatelessWidget {
   }
 
   String get _smufl {
-    return noteType.smuflSymbol;
+    return _noteType.smuflSymbol;
   }
 
-  const NoteheadElement({super.key, required this.noteType, this.notehead});
+  const NoteheadElement({
+    super.key,
+    required this.note,
+    this.ledgerLines,
+  });
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
       size: size,
-      painter: NotePainter(noteType.smuflSymbol),
+      painter: NotePainter(
+        smufl: _smufl,
+        ledgerLines: ledgerLines,
+      ),
     );
   }
 }
@@ -391,8 +437,6 @@ class RestElement extends StatelessWidget {
   }
 
   Size get size {
-    const height = NotationLayoutProperties.noteheadHeight;
-
     switch (_type) {
       case NoteTypeValue.n1024th:
       case NoteTypeValue.n512th:
@@ -432,7 +476,7 @@ class RestElement extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       size: size,
-      painter: NotePainter(_smufl),
+      painter: NotePainter(smufl: _smufl),
     );
   }
 }
@@ -460,11 +504,6 @@ class Stem extends StatelessWidget {
       ),
     );
   }
-}
-
-enum LedgerPlacement {
-  above,
-  below;
 }
 
 extension NoteVisualInformation on NoteTypeValue {
@@ -609,4 +648,64 @@ extension NoteVisualInformation on NoteTypeValue {
         return null;
     }
   }
+}
+
+/// Enumerates the possible placements of ledger lines in relation to a note.
+/// Ledger lines can be positioned either above or below a note symbol, and in
+/// some cases, they can also cross through the note symbol, with the first
+/// ledger line crossing in the middle while the others remain above or below.
+enum LedgerPlacement {
+  /// Indicates that the ledger line(s) is positioned above the note symbol.
+  above,
+
+  /// Indicates that the ledger line(s) is positioned below the note symbol.
+  below,
+
+  /// Indicates that the first ledger line crosses through the note symbol,
+  /// positioned in the middle, while subsequent ledger lines are placed above.
+  aboveCrossing,
+
+  /// Indicates that the first ledger line crosses through the note symbol,
+  /// positioned in the middle, while subsequent ledger lines are placed below.
+  belowCrossing;
+}
+
+/// Represents the configuration of ledger lines for a particular note or element.
+class LedgerLines {
+  /// The number of ledger lines needed for the note or element.
+  final int count;
+
+  /// The placement of the ledger lines relative to the note or element.
+  final LedgerPlacement placement;
+
+  LedgerLines({
+    required this.count,
+    required this.placement,
+  });
+
+  /// Creates a copy of the current [LedgerLines] instance with optional modifications.
+  LedgerLines copyWith({
+    int? count,
+    LedgerPlacement? placement,
+  }) {
+    return LedgerLines(
+      count: count ?? this.count,
+      placement: placement ?? this.placement,
+    );
+  }
+
+  @override
+  String toString() => '_LedgerLines(count: $count, placement: $placement)';
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is LedgerLines &&
+        other.count == count &&
+        other.placement == placement;
+  }
+
+  @override
+  int get hashCode => count.hashCode ^ placement.hashCode;
 }

@@ -125,14 +125,14 @@ class MeasureLayout extends StatelessWidget {
               );
             }
 
-            var noteElement = NoteElement(
+            var noteElement = NoteElement.fromNote(
               note: element,
-              divisions: contextAfter.divisions!,
+              notationContext: contextAfter,
             );
 
             builders.add(
               (context, leftOffset, initialBottom) => MeasureElement(
-                clef: contextAfter.clef,
+                // clef: contextAfter.clef,
                 position: noteElement.position,
                 bottom: initialBottom,
                 left: leftOffset,
