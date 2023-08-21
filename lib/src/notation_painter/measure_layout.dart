@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
+import 'package:music_notation/src/models/data_types/step.dart';
 
 import 'package:music_notation/src/models/elements/music_data/attributes/attributes.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
@@ -15,6 +16,7 @@ import 'package:music_notation/src/models/elements/score/part.dart';
 import 'package:music_notation/src/notation_painter/attributes_elements.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure_element.dart';
+import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/note_element.dart';
@@ -22,7 +24,7 @@ import 'package:music_notation/src/notation_painter/painters/barline_painter.dar
 import 'package:music_notation/src/notation_painter/painters/staff_lines_painter.dart';
 import 'package:music_notation/src/notation_painter/time_beat_element.dart';
 
-typedef _MeasureElementBuilder = Widget Function(
+typedef _MeasureElementBuilder = MeasureElement Function(
   BuildContext context,
   double initialBottom,
   double leftOffset,
@@ -87,7 +89,8 @@ class MeasureLayout extends StatelessWidget {
     );
   }
 
-  /// Returns initial list of spacings that do not consider measure stretching and compression [measure].
+  /// Returns initial list of spacings that do not consider [measure]'s stretching
+  /// and compression.
   static ({
     NotationContext contextAfter,
     List<double> spacings,
@@ -288,24 +291,43 @@ class MeasureLayout extends StatelessWidget {
 
     const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
 
-    // var range = sequence.range;
-
-    // var defaultLowest = const ElementPosition(step: Step.F, octave: 4);
-    // var defaultHighest = const ElementPosition(step: Step.E, octave: 5);
-
-    // var maxPositionsBelow =
-    //     defaultLowest.numericPosition - range.lowest.position.numericPosition;
-    // var maxPositionsAbove =
-    //     range.highest.position.numericPosition - defaultHighest.numericPosition;
-    var maxPositionsBelow = 5;
-    var maxPositionsAbove = 4;
-    double verticalPadding = offsetPerPosition *
-        [maxPositionsBelow, maxPositionsAbove, _minPositionPadding].max;
+    var defaultLowest = const ElementPosition(step: Step.F, octave: 4);
+    var defaultHighest = const ElementPosition(step: Step.E, octave: 5);
 
     List<double> spacings = _initialSpacings!;
     var builders = _precomputedChildren!;
 
+    ElementPosition highestElementPosition = defaultHighest;
+    ElementPosition lowestElementPosition = defaultLowest;
+
     List<Widget> children = [];
+    // This is bad.
+    for (var (index, builder) in builders.indexed) {
+      MeasureElement e = builder(context, spacings[index], 0);
+
+      if (highestElementPosition < e.position) {
+        highestElementPosition = e.position;
+      }
+      if (lowestElementPosition > e.position) {
+        lowestElementPosition = e.position;
+      }
+    }
+
+    var positionsBelow =
+        defaultLowest.numericPosition - lowestElementPosition.numericPosition;
+    var positionsAbove =
+        highestElementPosition.numericPosition - defaultHighest.numericPosition;
+
+    double verticalPadding = offsetPerPosition *
+        [
+          positionsBelow,
+          positionsAbove,
+          _minPositionPadding,
+        ].max;
+
+    // This need to done properly.
+    verticalPadding += 1;
+
     for (var (index, builder) in builders.indexed) {
       children.add(
         builder(context, spacings[index], verticalPadding),
