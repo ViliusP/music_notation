@@ -27,18 +27,12 @@ class NotePainter extends CustomPainter {
     );
     if (ledgerLines == null || ledgerLines?.count == 0) return;
 
-    double level = -NotationLayoutProperties.stemStrokeWidth;
-
-    if ([LedgerPlacement.aboveCrossing, LedgerPlacement.belowCrossing]
-        .contains(ledgerLines!.placement)) {
+    double level = NotationLayoutProperties.stemStrokeWidth / 2;
+    if (ledgerLines!.extendsThroughNote) {
       level = NotationLayoutProperties.noteheadHeight / 2;
-    } else {
-      level += NotationLayoutProperties.noteheadHeight;
     }
 
-    double lengthOutside = 8;
-
-    print("Ledger: ${ledgerLines?.count}");
+    double lengthOutside = 4;
 
     for (int i = 0; i < (ledgerLines?.count ?? 0); i++) {
       canvas.drawLine(
@@ -47,6 +41,7 @@ class NotePainter extends CustomPainter {
         _ledgerLinePaint,
       );
       level -= NotationLayoutProperties.noteheadHeight;
+      level += NotationLayoutProperties.stemStrokeWidth / 0.75;
     }
   }
 
