@@ -120,7 +120,7 @@ void _drawStem({
   required Offset noteOffset,
   String? flagSymbol,
   required StemValue direction,
-  double stemHeight = NotationLayoutProperties.standardStemHeight,
+  double stemHeight = NotationLayoutProperties.standardStemLength,
   required Canvas canvas,
   required Size size,
 }) {
@@ -128,13 +128,13 @@ void _drawStem({
   Offset stemOffset = noteOffset +
       const Offset(
         15,
-        NotationLayoutProperties.standardStemHeight,
+        NotationLayoutProperties.standardStemLength,
       );
   if (direction == StemValue.down) {
     stemOffset = noteOffset +
         const Offset(
           1,
-          NotationLayoutProperties.standardStemHeight,
+          NotationLayoutProperties.standardStemLength,
         );
   }
 

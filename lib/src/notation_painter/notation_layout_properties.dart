@@ -27,7 +27,7 @@ class NotationLayoutProperties {
   /// Stems within the stave are one octave long (3.5 stave-spaces); stems for the
   /// notes on ledger lines reach to the middle line. Stems outside the stave are
   /// progressively shortened (as in double-stemmed writing, opposite).
-  static const double standardStemHeight = staveSpace * 3.5;
+  static const double standardStemLength = staveSpace * 3.5;
 
   // Stems should be thinner than the stave-line, but not so thin as to
   // reproduce too faintly.

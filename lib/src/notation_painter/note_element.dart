@@ -41,7 +41,7 @@ class NoteElement extends StatelessWidget {
     Key? key,
     required Note note,
     required NotationContext notationContext,
-    double stemLength = Stem.defaultHeight,
+    double? stemLength,
   }) {
     if (notationContext.divisions == null) {
       throw ArgumentError(
@@ -53,7 +53,7 @@ class NoteElement extends StatelessWidget {
       key: key,
       note: note,
       notationContext: notationContext,
-      stemLength: stemLength,
+      stemLength: stemLength ?? calculatedLength ?? 0,
     );
   }
 
@@ -61,7 +61,7 @@ class NoteElement extends StatelessWidget {
     super.key,
     required this.note,
     required this.notationContext,
-    this.stemLength = Stem.defaultHeight,
+    this.stemLength = Stem.defaultLength,
   });
 
   final Note note;
@@ -456,10 +456,10 @@ class Stem extends StatelessWidget {
   const Stem({
     super.key,
     required this.type,
-    this.height = defaultHeight,
+    this.height = defaultLength,
   });
 
-  static const defaultHeight = NotationLayoutProperties.standardStemHeight;
+  static const defaultLength = NotationLayoutProperties.standardStemLength;
 
   final NoteTypeValue type;
   final double height;
