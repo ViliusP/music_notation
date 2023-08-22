@@ -134,36 +134,6 @@ class NoteElement extends StatelessWidget {
 
   final bool drawLedgerLines = true;
 
-  LedgerLines? get _ledgerLines {
-    int distance = 0;
-    const d4 = ElementPosition(octave: 4, step: Step.D);
-    const g5 = ElementPosition(octave: 5, step: Step.G);
-
-    if (position.numericPosition < d4.numericPosition) {
-      distance = (d4.numericPosition - position.numericPosition);
-
-      // Indicates if the note is placed directly on a staff/ledger line.
-      bool lineNote = distance % 2 != 0;
-
-      return LedgerLines(
-        count: (distance / 2).ceil(),
-        placement:
-            lineNote ? LedgerPlacement.belowCrossing : LedgerPlacement.below,
-      );
-    }
-
-    if (position.numericPosition > g5.numericPosition) {
-      distance = position.numericPosition - g5.numericPosition;
-    }
-    bool lineNote = distance % 2 != 0;
-
-    return LedgerLines(
-      count: (distance / 2).ceil(),
-      placement:
-          lineNote ? LedgerPlacement.aboveCrossing : LedgerPlacement.above,
-    );
-  }
-
   Size get size {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
 
@@ -192,7 +162,7 @@ class NoteElement extends StatelessWidget {
 
     var notehead = NoteheadElement(
       note: note,
-      ledgerLines: _ledgerLines,
+      ledgerLines: LedgerLines.fromElementPosition(position),
     );
 
     double? noteheadWidth;
@@ -651,23 +621,13 @@ extension NoteVisualInformation on NoteTypeValue {
 }
 
 /// Enumerates the possible placements of ledger lines in relation to a note.
-/// Ledger lines can be positioned either above or below a note symbol, and in
-/// some cases, they can also cross through the note symbol, with the first
-/// ledger line crossing in the middle while the others remain above or below.
+/// Ledger lines can be positioned either above or below a note symbol.
 enum LedgerPlacement {
   /// Indicates that the ledger line(s) is positioned above the note symbol.
   above,
 
   /// Indicates that the ledger line(s) is positioned below the note symbol.
   below,
-
-  /// Indicates that the first ledger line crosses through the note symbol,
-  /// positioned in the middle, while subsequent ledger lines are placed above.
-  aboveCrossing,
-
-  /// Indicates that the first ledger line crosses through the note symbol,
-  /// positioned in the middle, while subsequent ledger lines are placed below.
-  belowCrossing;
 }
 
 /// Represents the configuration of ledger lines for a particular note or element.
@@ -678,24 +638,54 @@ class LedgerLines {
   /// The placement of the ledger lines relative to the note or element.
   final LedgerPlacement placement;
 
+  /// Indicates whether the ledger line extends through or intersects the note's head.
+  /// When set to `true`, the ledger line will pass through the note's head, which is typically
+  /// seen for notes that are directly adjacent to the staff.
+  final bool extendsThroughNote;
+
   LedgerLines({
     required this.count,
     required this.placement,
+    required this.extendsThroughNote,
   });
+
+  static LedgerLines? fromElementPosition(ElementPosition position) {
+    const middleDistanceToOuterLine = 4;
+    int distance = position.distanceFromMiddle;
+
+    var placement = LedgerPlacement.below;
+    // if positive
+    if (!distance.isNegative) {
+      placement = LedgerPlacement.above;
+    }
+    distance = distance.abs();
+
+    if (distance <= middleDistanceToOuterLine + 1) return null;
+    distance -= middleDistanceToOuterLine;
+
+    return LedgerLines(
+      count: (distance / 2).floor(),
+      placement: placement,
+      extendsThroughNote: ((distance / 2) % 1) == 0,
+    );
+  }
 
   /// Creates a copy of the current [LedgerLines] instance with optional modifications.
   LedgerLines copyWith({
     int? count,
     LedgerPlacement? placement,
+    bool? extendsThroughNote,
   }) {
     return LedgerLines(
       count: count ?? this.count,
       placement: placement ?? this.placement,
+      extendsThroughNote: extendsThroughNote ?? this.extendsThroughNote,
     );
   }
 
   @override
-  String toString() => '_LedgerLines(count: $count, placement: $placement)';
+  String toString() =>
+      '_LedgerLines(count: $count, placement: $placement, extendsThroughNote: $extendsThroughNote)';
 
   @override
   bool operator ==(Object other) {
@@ -703,9 +693,11 @@ class LedgerLines {
 
     return other is LedgerLines &&
         other.count == count &&
-        other.placement == placement;
+        other.placement == placement &&
+        other.extendsThroughNote == extendsThroughNote;
   }
 
   @override
-  int get hashCode => count.hashCode ^ placement.hashCode;
+  int get hashCode =>
+      count.hashCode ^ placement.hashCode ^ extendsThroughNote.hashCode;
 }
