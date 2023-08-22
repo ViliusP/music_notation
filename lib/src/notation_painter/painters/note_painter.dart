@@ -26,22 +26,31 @@ class NotePainter extends CustomPainter {
       offset: Offset(0, size.height - 48),
     );
     if (ledgerLines == null || ledgerLines?.count == 0) return;
+    const double lengthOutside = 4;
 
-    double level = NotationLayoutProperties.stemStrokeWidth / 2;
+    double level = 0;
     if (ledgerLines!.extendsThroughNote) {
       level = NotationLayoutProperties.noteheadHeight / 2;
+    } else if (ledgerLines!.placement == LedgerPlacement.above) {
+      level = NotationLayoutProperties.noteheadHeight;
+      level -= NotationLayoutProperties.stemStrokeWidth / 1.5;
     }
 
-    double lengthOutside = 4;
-
-    for (int i = 0; i < (ledgerLines?.count ?? 0); i++) {
+    for (int i = 0; i < ledgerLines!.count; i++) {
       canvas.drawLine(
         Offset(-lengthOutside, level),
         Offset(lengthOutside + size.width, level),
         _ledgerLinePaint,
       );
-      level -= NotationLayoutProperties.noteheadHeight;
-      level += NotationLayoutProperties.stemStrokeWidth / 0.75;
+
+      if (ledgerLines!.placement == LedgerPlacement.below) {
+        level -= NotationLayoutProperties.noteheadHeight;
+        level += NotationLayoutProperties.stemStrokeWidth / 0.75;
+      }
+      if (ledgerLines!.placement == LedgerPlacement.above) {
+        level += NotationLayoutProperties.noteheadHeight;
+        level -= NotationLayoutProperties.stemStrokeWidth / 0.75;
+      }
     }
   }
 
