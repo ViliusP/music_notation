@@ -115,37 +115,69 @@ class MeasureLayout extends StatelessWidget {
 
     double lastElementWidth = 0;
 
-    for (var element in measure.data) {
+    int i = 0;
+    while (i < measure.data.length) {
+      var element = measure.data[i];
       switch (element) {
         case Note _:
+          if (contextAfter.divisions == null) {
+            throw ArgumentError(
+              "Context or measure must have divisions in attributes element",
+            );
+          }
+
           if (staff == element.staff || staff == null) {
-            if (contextAfter.divisions == null) {
-              throw ArgumentError(
-                "Context or measure must have divisions in attributes element",
+            List<Note> notes = [];
+            notes.add(element);
+            int j = i + 1;
+            for (; j < measure.data.length; j++) {
+              var nextElement = measure.data[j];
+              if (nextElement is! Note || nextElement.chord == null) {
+                break;
+              }
+              notes.add(nextElement);
+            }
+            i = j - 1;
+            if (notes.length == 1) {
+              var noteElement = NoteElement.fromNote(
+                note: element,
+                notationContext: contextAfter,
               );
-            }
 
-            var noteElement = NoteElement.fromNote(
-              note: element,
-              notationContext: contextAfter,
-            );
+              builders.add(
+                (context, leftOffset, initialBottom) => MeasureElement(
+                  // clef: contextAfter.clef,
+                  position: noteElement.position,
+                  bottom: initialBottom,
+                  left: leftOffset,
+                  child: noteElement,
+                ),
+              );
 
-            builders.add(
-              (context, leftOffset, initialBottom) => MeasureElement(
-                // clef: contextAfter.clef,
-                position: noteElement.position,
-                bottom: initialBottom,
-                left: leftOffset,
-                child: noteElement,
-              ),
-            );
-            // Removing last added offset if note is in chord.
-            if (element.chord != null) {
-              leftOffset -= spacingBetweenElements + noteElement.size.width;
+              spacings.add(leftOffset);
+              lastElementWidth = noteElement.size.width;
+              leftOffset += spacingBetweenElements + noteElement.size.width;
             }
-            spacings.add(leftOffset);
-            leftOffset += spacingBetweenElements + noteElement.size.width;
-            lastElementWidth = noteElement.size.width;
+            if (notes.length > 1) {
+              var chordElement = Chord.fromNotes(
+                notes: notes,
+                notationContext: contextAfter,
+              );
+
+              builders.add(
+                (context, leftOffset, initialBottom) => MeasureElement(
+                  // clef: contextAfter.clef,
+                  position: chordElement.position,
+                  bottom: initialBottom,
+                  left: leftOffset,
+                  child: chordElement,
+                ),
+              );
+              spacings.add(leftOffset);
+
+              lastElementWidth = chordElement.size.width;
+              leftOffset += spacingBetweenElements + chordElement.size.width;
+            }
           }
           break;
 
@@ -273,6 +305,7 @@ class MeasureLayout extends StatelessWidget {
         // case Bookmark _:
         //   break;
       }
+      i++;
     }
     // TODO: change to something smarter, it must be constant or it has to be
     // dependent on width of measure.
