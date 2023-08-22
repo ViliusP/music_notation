@@ -41,7 +41,7 @@ class NoteElement extends StatelessWidget {
     Key? key,
     required Note note,
     required NotationContext notationContext,
-    bool? stemmed,
+    double stemLength = Stem.defaultHeight,
   }) {
     if (notationContext.divisions == null) {
       throw ArgumentError(
@@ -53,6 +53,7 @@ class NoteElement extends StatelessWidget {
       key: key,
       note: note,
       notationContext: notationContext,
+      stemLength: stemLength,
     );
   }
 
@@ -60,13 +61,13 @@ class NoteElement extends StatelessWidget {
     super.key,
     required this.note,
     required this.notationContext,
-    bool? stemmed,
-  }) : _stemmed = stemmed;
+    this.stemLength = Stem.defaultHeight,
+  });
 
   final Note note;
 
-  final bool? _stemmed;
-  bool get stemmed => _stemmed ?? note.type?.value.stemmed ?? false;
+  final double stemLength;
+  bool get _stemmed => stemLength != 0;
 
   final NotationContext notationContext;
 
@@ -167,7 +168,7 @@ class NoteElement extends StatelessWidget {
 
     double? noteheadWidth;
 
-    if (stemmed) {
+    if (_stemmed) {
       noteheadWidth =
           notehead.size.width - NotationLayoutProperties.stemStrokeWidth;
     }
@@ -184,7 +185,7 @@ class NoteElement extends StatelessWidget {
           width: noteheadWidth,
           child: notehead,
         ),
-        if (stemmed)
+        if (_stemmed)
           Padding(
             padding: const EdgeInsets.only(
               bottom: NotationLayoutProperties.noteheadHeight / 2,
@@ -452,18 +453,23 @@ class RestElement extends StatelessWidget {
 }
 
 class Stem extends StatelessWidget {
+  const Stem({
+    super.key,
+    required this.type,
+    this.height = defaultHeight,
+  });
+
+  static const defaultHeight = NotationLayoutProperties.standardStemHeight;
+
   final NoteTypeValue type;
   final double height;
 
   Size get size {
-    return Size(StemPainter.strokeWidth + type.flagWidth, height);
+    return Size(
+      StemPainter.strokeWidth + type.flagWidth,
+      height,
+    );
   }
-
-  const Stem({
-    super.key,
-    required this.type,
-    this.height = NotationLayoutProperties.standardStemHeight,
-  });
 
   @override
   Widget build(BuildContext context) {
