@@ -48,9 +48,13 @@ void main() {
       form: Pitch(step: Step.C, octave: 6),
       duration: 1,
     ),
+    const RegularNote(
+      form: Pitch(step: Step.D, octave: 4),
+      duration: 1,
+    ),
   ];
 
-  group("Ledger lines passed to notehead in Clef G", () {
+  group("Ledger lines passed to notehead in clef G", () {
     final expected = [
       LedgerLines(
         count: 2,
@@ -90,6 +94,7 @@ void main() {
         placement: LedgerPlacement.above,
         extendsThroughNote: true,
       ), // C6
+      null
     ];
 
     for (var (index, note) in notes.indexed) {
@@ -128,45 +133,91 @@ void main() {
       });
     }
   });
-  // group("Ledger lines passed to notehead in Clef G", () {
-  //   final expected = [
-  //     LedgerLines(count: 0, placement: LedgerPlacement.above),
-  //     LedgerLines(count: 0, placement: LedgerPlacement.above),
-  //     LedgerLines(count: 0, placement: LedgerPlacement.above),
-  //     LedgerLines(count: 0, placement: LedgerPlacement.above),
-  //     LedgerLines(count: 0, placement: LedgerPlacement.above),
-  //     LedgerLines(count: 0, placement: LedgerPlacement.above),
-  //     LedgerLines(count: 0, placement: LedgerPlacement.above),
-  //     LedgerLines(count: 0, placement: LedgerPlacement.above),
-  //   ];
+  group("Ledger lines passed to notehead in clef F", () {
+    final expected = [
+      null, // G3
+      LedgerLines(
+        count: 1,
+        placement: LedgerPlacement.above,
+        extendsThroughNote: true,
+      ), // C4
+      LedgerLines(
+        count: 2,
+        placement: LedgerPlacement.above,
+        extendsThroughNote: true,
+      ), // E4
+      LedgerLines(
+        count: 3,
+        placement: LedgerPlacement.above,
+        extendsThroughNote: true,
+      ), // G4
+      null, // A3
+      LedgerLines(
+        count: 4,
+        placement: LedgerPlacement.below,
+        extendsThroughNote: true,
+      ), // F1
+      LedgerLines(
+        count: 3,
+        placement: LedgerPlacement.below,
+        extendsThroughNote: false,
+      ), // G1
+      LedgerLines(
+        count: 6,
+        placement: LedgerPlacement.above,
+        extendsThroughNote: false,
+      ), // G5
+      LedgerLines(
+        count: 7,
+        placement: LedgerPlacement.above,
+        extendsThroughNote: false,
+      ), // B5
+      LedgerLines(
+        count: 8,
+        placement: LedgerPlacement.above,
+        extendsThroughNote: true,
+      ), // C6
+      LedgerLines(
+        count: 1,
+        placement: LedgerPlacement.above,
+        extendsThroughNote: false,
+      ), // D4
+    ];
 
-  //   for (var (index, element) in xmlDoc.childElements.indexed) {
-  //     testWidgets("", (WidgetTester tester) async {
-  //       final note = Note.fromXml(element);
+    for (var (index, note) in notes.indexed) {
+      final noteName = "${note.form.step}${note.form.octave}";
+      final lines = expected[index]?.count ?? 0;
 
-  //       Widget widget = NoteElement.fromNote(
-  //         note: note,
-  //         notationContext: NotationContext(
-  //           divisions: 1,
-  //           clef: Clef(sign: ClefSign.G),
-  //           time: null,
-  //         ),
-  //       );
+      final belowAbove = switch (expected[index]?.placement) {
+        null => "",
+        LedgerPlacement.above => "above staff",
+        LedgerPlacement.below => "below staff",
+      };
+      testWidgets("$noteName should have $lines ledger lines $belowAbove",
+          (WidgetTester tester) async {
+        Widget widget = NoteElement.fromNote(
+          note: note,
+          notationContext: NotationContext(
+            divisions: 1,
+            clef: Clef(sign: ClefSign.F),
+            time: null,
+          ),
+        );
 
-  //       widget = Directionality(
-  //         textDirection: TextDirection.ltr,
-  //         child: widget,
-  //       );
+        widget = Directionality(
+          textDirection: TextDirection.ltr,
+          child: widget,
+        );
 
-  //       await tester.pumpWidget(widget);
+        await tester.pumpWidget(widget);
 
-  //       final childFinder = find.byType(NoteheadElement);
+        final childFinder = find.byType(NoteheadElement);
 
-  //       expect(childFinder, findsOneWidget);
+        expect(childFinder, findsOneWidget);
 
-  //       final notehead = tester.firstWidget(childFinder) as NoteheadElement;
-  //       expect(notehead.ledgerLines, expected[index]);
-  //     });
-  //   }
-  // });
+        final notehead = tester.firstWidget(childFinder) as NoteheadElement;
+        expect(notehead.ledgerLines, expected[index]);
+      });
+    }
+  });
 }

@@ -175,9 +175,7 @@ class ElementPosition {
   int get hashCode => Object.hash(step, octave);
 
   @override
-  String toString() {
-    return "$step$octave";
-  }
+  String toString() => 'ElementPosition  $step$octave';
 
   static const ElementPosition staffMiddle = ElementPosition(
     step: Step.B,
