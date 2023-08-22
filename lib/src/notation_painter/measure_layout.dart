@@ -346,10 +346,9 @@ class MeasureLayout extends StatelessWidget {
       }
     }
 
-    var positionsBelow =
-        defaultLowest.numericPosition - lowestElementPosition.numericPosition;
+    var positionsBelow = defaultLowest.numeric - lowestElementPosition.numeric;
     var positionsAbove =
-        highestElementPosition.numericPosition - defaultHighest.numericPosition;
+        highestElementPosition.numeric - defaultHighest.numeric;
 
     double verticalPadding = offsetPerPosition *
         [

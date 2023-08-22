@@ -46,15 +46,13 @@ class ElementPosition implements Comparable<ElementPosition> {
 
   static const int _notesPerOctave = 7;
 
-  // TODO: consider to rename it to numeric.
-  //
   /// Calculates vertical note/music element position from C0. Note at `7` position
   /// would be C1, on `25` position would be G3.
   ///
   /// Position is calculated from 'C0' because it is the lowest note on standard,
   /// 88-key piano. Also, the frequency of C0 is approximately 16.35 Hz, which
   /// is at the very lower end of the human hearing range.
-  int get numericPosition => (octave * _notesPerOctave) + numericalStep;
+  int get numeric => (octave * _notesPerOctave) + numericalStep;
 
   factory ElementPosition.fromInt(int numericPosition) {
     int octave = numericPosition ~/ _notesPerOctave;
@@ -88,7 +86,7 @@ class ElementPosition implements Comparable<ElementPosition> {
   }
 
   ElementPosition transpose(int interval) {
-    return ElementPosition.fromInt(numericPosition + interval);
+    return ElementPosition.fromInt(numeric + interval);
   }
 
   static int clefTransposeInterval(Clef clef) {
@@ -127,8 +125,7 @@ class ElementPosition implements Comparable<ElementPosition> {
   ///
   /// This is a partial ordering. It is possible for two values to be neither
   /// less, nor greater than, nor equal to, another.
-  bool operator <(ElementPosition other) =>
-      numericPosition < other.numericPosition;
+  bool operator <(ElementPosition other) => numeric < other.numeric;
 
   /// Greater-than operator. Compares an [ElementPosition] to another [ElementPosition]
   /// and returns true if the vertical position in staff left-hand-side operand
@@ -137,8 +134,7 @@ class ElementPosition implements Comparable<ElementPosition> {
   ///
   /// This is a partial ordering. It is possible for two values to be neither
   /// less, nor greater than, nor equal to, another.
-  bool operator >(ElementPosition other) =>
-      numericPosition > other.numericPosition;
+  bool operator >(ElementPosition other) => numeric > other.numeric;
 
   /// Greater-than-or-equal-to operator. Compares an [ElementPosition] to another
   /// [ElementPosition] and returns true if the vertical position in staff
@@ -147,8 +143,7 @@ class ElementPosition implements Comparable<ElementPosition> {
   ///
   /// This is a partial ordering. It is possible for two values to be neither
   /// less, nor greater than, nor equal to, another.
-  bool operator >=(ElementPosition other) =>
-      numericPosition >= other.numericPosition;
+  bool operator >=(ElementPosition other) => numeric >= other.numeric;
 
   /// Less-than-or-equal-to operator. Compares an [ElementPosition] to another
   /// [ElementPosition] and returns true if the vertical position in staff
@@ -157,8 +152,7 @@ class ElementPosition implements Comparable<ElementPosition> {
   ///
   /// This is a partial ordering. It is possible for two values to be neither
   /// less, nor greater than, nor equal to, another.
-  bool operator <=(ElementPosition other) =>
-      numericPosition <= other.numericPosition;
+  bool operator <=(ElementPosition other) => numeric <= other.numeric;
 
   /// Equality operator. Compares an [ElementPosition] to another [ElementPosition]
   /// and returns true if the step and octave of the left-hand-side operand are
@@ -197,6 +191,6 @@ class ElementPosition implements Comparable<ElementPosition> {
   /// note is positioned above staff middle. If it is negative, it is positioned
   /// below middle of staff.
   int get distanceFromMiddle {
-    return numericPosition - ElementPosition.staffMiddle.numericPosition;
+    return numeric - ElementPosition.staffMiddle.numeric;
   }
 }

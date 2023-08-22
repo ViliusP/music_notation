@@ -105,8 +105,7 @@ class KeySignature extends StatelessWidget {
     var tallestAccidental = 0.0;
     var width = 0.0;
 
-    int range =
-        _range!.highest.numericPosition - _range!.lowest.numericPosition;
+    int range = _range!.highest.numeric - _range!.lowest.numeric;
 
     if (accidentals.isEmpty) {
       return const Size(0, 0);
@@ -188,8 +187,8 @@ class KeySignature extends StatelessWidget {
         type: AccidentalValue.flat,
       );
 
-      int fromLowest = _accidentalPosition(accidental).numericPosition -
-          _range!.lowest.numericPosition;
+      int fromLowest =
+          _accidentalPosition(accidental).numeric - _range!.lowest.numeric;
 
       children.add(
         Positioned(
