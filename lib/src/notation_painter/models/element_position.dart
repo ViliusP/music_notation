@@ -14,7 +14,7 @@ import 'package:music_notation/src/models/elements/music_data/attributes/clef.da
 /// This class is used in the context of generating and manipulating musical
 /// scores and representations, enabling operations that require knowledge of
 /// the position of notes or other musical elements.
-class ElementPosition {
+class ElementPosition implements Comparable<ElementPosition> {
   final Step step;
   final int octave;
 
@@ -176,6 +176,17 @@ class ElementPosition {
 
   @override
   String toString() => 'ElementPosition  $step$octave';
+
+  @override
+  int compareTo(ElementPosition other) {
+    if (this < other) {
+      return -1;
+    } else if (this > other) {
+      return 1;
+    } else {
+      return 0;
+    }
+  }
 
   static const ElementPosition staffMiddle = ElementPosition(
     step: Step.B,
