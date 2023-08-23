@@ -135,7 +135,11 @@ class MeasureLayout extends StatelessWidget {
               if (nextElement is! Note || nextElement.chord == null) {
                 break;
               }
+              if (staff == nextElement.staff || staff == null) {
               notes.add(nextElement);
+                continue;
+              }
+              break;
             }
             i = j - 1;
             if (notes.length == 1) {
