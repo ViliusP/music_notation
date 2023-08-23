@@ -7,6 +7,13 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/note_element.dart';
 
+abstract class MeasureWidget extends Widget {
+  ElementPosition get position;
+  Size get size;
+
+  const MeasureWidget({super.key});
+}
+
 /// Helper widget that sets vertical position of element in staff.
 class MeasureElementWrapper extends StatelessWidget {
   final double left;

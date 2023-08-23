@@ -13,7 +13,7 @@ import 'package:music_notation/src/notation_painter/painters/note_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
 import 'package:music_notation/src/smufl/smufl_glyph.dart';
 
-class Chord extends StatelessWidget {
+class Chord extends StatelessWidget implements MeasureWidget {
   const Chord({
     super.key,
     required this.children,

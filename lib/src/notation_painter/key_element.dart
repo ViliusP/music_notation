@@ -7,6 +7,7 @@ import 'package:music_notation/src/models/elements/music_data/attributes/key.dar
     hide Key;
 import 'package:music_notation/src/models/elements/music_data/attributes/key.dart'
     as musicxml show Key;
+import 'package:music_notation/src/notation_painter/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/key_accidental_painter.dart';
@@ -33,7 +34,7 @@ class KeySignatureAccidental extends StatelessWidget {
   }
 }
 
-class KeySignature extends StatelessWidget {
+class KeySignature extends StatelessWidget implements MeasureWidget {
   static const _spaceBetweenAccidentals = 6.0;
   static const _verticalOffsetPerPosition =
       NotationLayoutProperties.staveSpace / 2;
@@ -101,6 +102,7 @@ class KeySignature extends StatelessWidget {
     return (lowest: lowestAccidental!, highest: highestAccidental!);
   }
 
+  @override
   Size get size {
     var tallestAccidental = 0.0;
     var width = 0.0;
@@ -134,6 +136,15 @@ class KeySignature extends StatelessWidget {
   ElementPosition? get firstPosition => accidentals.firstOrNull != null
       ? _accidentalPosition(accidentals.first)
       : null;
+
+  // TODO: fix
+  @override
+  ElementPosition get position =>
+      firstPosition ??
+      const ElementPosition(
+        step: Step.A,
+        octave: 4,
+      );
 
   const KeySignature({
     super.key,
