@@ -49,6 +49,12 @@ class NoteElement extends StatelessWidget {
       );
     }
 
+    double? calculatedLength;
+
+    if (stemLength == null && note.type?.value.stemmed == true) {
+      calculatedLength = Stem.defaultLength;
+    }
+
     return NoteElement._(
       key: key,
       note: note,
@@ -191,6 +197,7 @@ class NoteElement extends StatelessWidget {
               bottom: NotationLayoutProperties.noteheadHeight / 2,
             ),
             child: Stem(
+              length: stemLength,
               type: type,
             ),
           )
@@ -456,18 +463,18 @@ class Stem extends StatelessWidget {
   const Stem({
     super.key,
     required this.type,
-    this.height = defaultLength,
+    this.length = defaultLength,
   });
 
   static const defaultLength = NotationLayoutProperties.standardStemLength;
 
   final NoteTypeValue type;
-  final double height;
+  final double length;
 
   Size get size {
     return Size(
       StemPainter.strokeWidth + type.flagWidth,
-      height,
+      length,
     );
   }
 
