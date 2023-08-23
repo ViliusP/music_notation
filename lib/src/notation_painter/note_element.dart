@@ -1,6 +1,8 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:music_notation/src/models/data_types/step.dart';
+import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/music_data/note/notehead.dart';
@@ -12,25 +14,130 @@ import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
 import 'package:music_notation/src/smufl/smufl_glyph.dart';
 
 class Chord extends StatelessWidget {
-  final List<Note> notes;
-  final double divisions;
-
   const Chord({
     super.key,
-    required this.notes,
-    required this.divisions,
+    required this.children,
   });
+
+  /// IMPORTANT: [notes] cannot be empty.
+  factory Chord.fromNotes({
+    Key? key,
+    required List<Note> notes,
+    required NotationContext notationContext,
+  }) {
+    if (notes.isEmpty) {
+      throw ArgumentError('notes list is empty');
+    }
+
+    var children = _notesToChildren(
+      notes: notes,
+      notationContext: notationContext,
+    );
+
+    return Chord(
+      key: key,
+      children: children,
+    );
+  }
+
+  final List<NoteElement> children;
+  List<NoteElement> get _sortedNotesElements =>
+      children.sortedBy((element) => element.position).reversed.toList();
+
+  /// Calculates chord widget size from provided [notes].
+  static Size _calculateSize(List<NoteElement> notes) {
+    // Sorts from lowest to highest note. First being lowest.
+    List<NoteElement> sortedNotesElements = notes.sortedBy(
+      (element) => element.position,
+    );
+
+    int lowestPosition = sortedNotesElements.first.position.numeric;
+    int highestPosition = sortedNotesElements.last.position.numeric;
+    int positionDifference = highestPosition - lowestPosition;
+
+    const heightPerPosition = NotationLayoutProperties.staveSpace / 2;
+    double height = positionDifference * heightPerPosition;
+    height += sortedNotesElements.last.size.height;
+
+    double width = sortedNotesElements.map((e) => e.size.width).max;
+
+    return Size(width, height);
+  }
+
+  static List<NoteElement> _notesToChildren({
+    required List<Note> notes,
+    required NotationContext notationContext,
+  }) {
+    // Sorts from lowest to highest note. First being lowest.
+    var sortedNotes = notes.sortedBy(
+      (note) => NoteElement.determinePosition(note, notationContext.clef),
+    );
+
+    List<NoteElement> notesElements = [];
+
+    int lowestPosition = NoteElement.determinePosition(
+      notes.first,
+      notationContext.clef,
+    ).numeric;
+
+    int highestPosition = NoteElement.determinePosition(
+      notes.last,
+      notationContext.clef,
+    ).numeric;
+
+    int positionDifference = highestPosition - lowestPosition;
+    const heightPerPosition = NotationLayoutProperties.staveSpace / 2;
+
+    double stemLength = positionDifference * heightPerPosition;
+    stemLength += Stem.defaultLength;
+
+    for (var (index, note) in sortedNotes.indexed) {
+      bool isLowest = index == 0;
+      bool isHighest = index == notes.length - 1;
+
+      bool showLedger = isLowest || isHighest;
+
+      var noteElement = NoteElement.fromNote(
+        note: note,
+        notationContext: notationContext,
+        showLedger: showLedger,
+        stemLength: isLowest ? stemLength : 0,
+      );
+
+      notesElements.add(noteElement);
+    }
+    return notesElements;
+  }
+
+  Size get size => _calculateSize(children);
+
+  ElementPosition get _lowest => _sortedNotesElements.first.position;
+  ElementPosition get _highest => _sortedNotesElements.last.position;
+
+  ElementPosition get position => _sortedNotesElements.last.position;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-        // children: notes
-        //     .map((e) => NoteElement(
-        //           note: e,
-        //           divisions: divisions,
-        //         ))
-        //     .toList(),
-        );
+    var children = <Widget>[];
+
+    for (var element in _sortedNotesElements) {
+      var positionsDifference = element.position.numeric - position.numeric;
+
+      children.add(
+        Positioned(
+          bottom: positionsDifference * NotationLayoutProperties.staveSpace / 2,
+          child: element,
+        ),
+      );
+    }
+
+    return SizedBox.fromSize(
+      size: size,
+      child: Stack(
+        // mainAxisSize: MainAxisSize.min,
+        children: children,
+      ),
+    );
   }
 }
 
@@ -42,6 +149,7 @@ class NoteElement extends StatelessWidget {
     required Note note,
     required NotationContext notationContext,
     double? stemLength,
+    bool showLedger = true,
   }) {
     if (notationContext.divisions == null) {
       throw ArgumentError(
@@ -60,6 +168,7 @@ class NoteElement extends StatelessWidget {
       note: note,
       notationContext: notationContext,
       stemLength: stemLength ?? calculatedLength ?? 0,
+      showLedger: showLedger,
     );
   }
 
@@ -68,12 +177,15 @@ class NoteElement extends StatelessWidget {
     required this.note,
     required this.notationContext,
     this.stemLength = Stem.defaultLength,
+    this.showLedger = true,
   });
 
   final Note note;
 
   final double stemLength;
   bool get _stemmed => stemLength != 0;
+
+  final bool showLedger;
 
   final NotationContext notationContext;
 
@@ -85,7 +197,7 @@ class NoteElement extends StatelessWidget {
     return note.form is Rest;
   }
 
-  ElementPosition get position {
+  static ElementPosition determinePosition(Note note, Clef? clef) {
     switch (note) {
       case GraceTieNote _:
         throw UnimplementedError(
@@ -112,10 +224,7 @@ class NoteElement extends StatelessWidget {
             step = noteForm.displayStep;
             octave = noteForm.displayOctave;
           case Rest _:
-            return RestElement.fromNote(
-              note,
-              notationContext.divisions!,
-            ).position;
+            return RestElement.fromNote(note, 1).position;
         }
 
         final position = ElementPosition(
@@ -123,13 +232,13 @@ class NoteElement extends StatelessWidget {
           octave: octave,
         );
 
-        if (notationContext.clef == null) {
+        if (clef == null) {
           return position;
         }
 
         // Unpitched notes probably shouldn't be transposed;
         return position.transpose(
-          ElementPosition.clefTransposeInterval(notationContext.clef!),
+          ElementPosition.clefTransposeInterval(clef),
         );
 
       default:
@@ -138,6 +247,8 @@ class NoteElement extends StatelessWidget {
         );
     }
   }
+
+  ElementPosition get position => determinePosition(note, notationContext.clef);
 
   final bool drawLedgerLines = true;
 
@@ -167,9 +278,15 @@ class NoteElement extends StatelessWidget {
   Widget build(BuildContext context) {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
 
+    LedgerLines? ledgerLines;
+
+    if (showLedger) {
+      ledgerLines = LedgerLines.fromElementPosition(position);
+    }
+
     var notehead = NoteheadElement(
       note: note,
-      ledgerLines: LedgerLines.fromElementPosition(position),
+      ledgerLines: ledgerLines,
     );
 
     double? noteheadWidth;
