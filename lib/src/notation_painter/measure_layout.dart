@@ -24,7 +24,7 @@ import 'package:music_notation/src/notation_painter/painters/barline_painter.dar
 import 'package:music_notation/src/notation_painter/painters/staff_lines_painter.dart';
 import 'package:music_notation/src/notation_painter/time_beat_element.dart';
 
-typedef _MeasureElementBuilder = MeasureElement Function(
+typedef _MeasureElementBuilder = MeasureElementWrapper Function(
   BuildContext context,
   double initialBottom,
   double leftOffset,
@@ -39,20 +39,14 @@ class MeasureLayout extends StatelessWidget {
   final NotationContext contextAfter;
 
   final int? staff;
-  double? get _cachedMinWidth => _initialSpacings?.last;
+  double? get _cachedWidth => _initialSpacings?.last;
+  double get _height {
+    return 0;
+  }
 
   final List<double>? _initialSpacings;
 
   final List<_MeasureElementBuilder>? _precomputedChildren;
-
-  // const MeasureLayout({
-  //   super.key,
-  //   required this.measure,
-  //   this.staff,
-  //   required NotationContext? notationContext,
-  // })  : _initialSpacings = null,
-  //       _precomputedChildren = null,
-  //       _notationContext = notationContext;
 
   const MeasureLayout._({
     super.key,
@@ -136,7 +130,7 @@ class MeasureLayout extends StatelessWidget {
                 break;
               }
               if (staff == nextElement.staff || staff == null) {
-              notes.add(nextElement);
+                notes.add(nextElement);
                 continue;
               }
               break;
@@ -149,7 +143,7 @@ class MeasureLayout extends StatelessWidget {
               );
 
               builders.add(
-                (context, leftOffset, initialBottom) => MeasureElement(
+                (context, leftOffset, initialBottom) => MeasureElementWrapper(
                   // clef: contextAfter.clef,
                   position: noteElement.position,
                   bottom: initialBottom,
@@ -169,7 +163,7 @@ class MeasureLayout extends StatelessWidget {
               );
 
               builders.add(
-                (context, leftOffset, initialBottom) => MeasureElement(
+                (context, leftOffset, initialBottom) => MeasureElementWrapper(
                   // clef: contextAfter.clef,
                   position: chordElement.position,
                   bottom: initialBottom,
@@ -213,7 +207,7 @@ class MeasureLayout extends StatelessWidget {
             var clefElement = ClefElement(clef: clef);
 
             builders.add(
-              (context, leftOffset, initialBottom) => MeasureElement(
+              (context, leftOffset, initialBottom) => MeasureElementWrapper(
                 position: clefElement.position,
                 left: leftOffset,
                 bottom: initialBottom + clefElement.measureOffset.dy,
@@ -234,7 +228,7 @@ class MeasureLayout extends StatelessWidget {
                 var timeBeatWidget = TimeBeatElement(timeBeat: times);
 
                 builders.add(
-                  (context, leftOffset, initialBottom) => MeasureElement(
+                  (context, leftOffset, initialBottom) => MeasureElementWrapper(
                     position: timeBeatWidget.position,
                     // influencedByClef: false,
                     left: leftOffset,
@@ -277,7 +271,7 @@ class MeasureLayout extends StatelessWidget {
           var keySignature = KeySignature.fromKeyData(keyData: musicKey);
           if (keySignature.firstPosition != null) {
             builders.add(
-              (context, leftOffset, initialBottom) => MeasureElement(
+              (context, leftOffset, initialBottom) => MeasureElementWrapper(
                 position: keySignature.firstPosition!,
                 clef: contextAfter.clef,
                 left: leftOffset,
@@ -340,7 +334,7 @@ class MeasureLayout extends StatelessWidget {
     List<Widget> children = [];
     // This is bad.
     for (var (index, builder) in builders.indexed) {
-      MeasureElement e = builder(context, spacings[index], 0);
+      MeasureElementWrapper e = builder(context, spacings[index], 0);
 
       if (highestElementPosition < e.position) {
         highestElementPosition = e.position;
@@ -370,26 +364,7 @@ class MeasureLayout extends StatelessWidget {
       );
     }
 
-    //   if (lowestNote != null) {
-    //     // _paintLedgerLines(
-    //     //   count: lowestNote.ledgerLines,
-    //     //   noteheadWidth: lowestNote.noteheadWidth,
-    //     //   canvas: canvas,
-    //     //   size: size,
-    //     //   context: context,
-    //     // );
-    //   }
-    //   // _drawStemForColumn(
-    //   //   lowestNote,
-    //   //   highestNote,
-    //   //   canvas: canvas,
-    //   //   size: size,
-    //   //   context: context,
-    //   // );
-    //   i++;
-    // }
-
-    double width = _cachedMinWidth ?? spacings.last;
+    double width = _cachedWidth ?? spacings.last;
 
     return LayoutBuilder(builder: (context, constraints) {
       return Stack(

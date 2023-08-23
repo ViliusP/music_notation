@@ -8,7 +8,7 @@ import 'package:music_notation/src/notation_painter/notation_layout_properties.d
 import 'package:music_notation/src/notation_painter/note_element.dart';
 
 /// Helper widget that sets vertical position of element in staff.
-class MeasureElement extends StatelessWidget {
+class MeasureElementWrapper extends StatelessWidget {
   final double left;
   final double bottom;
 
@@ -44,7 +44,7 @@ class MeasureElement extends StatelessWidget {
     return transpose;
   }
 
-  const MeasureElement({
+  const MeasureElementWrapper({
     super.key,
     required ElementPosition position,
     required this.child,
