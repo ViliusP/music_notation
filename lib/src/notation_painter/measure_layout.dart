@@ -26,19 +26,46 @@ import 'package:music_notation/src/notation_painter/time_beat_element.dart';
 
 typedef _MeasureElementBuilder = MeasureElementWrapper Function(
   BuildContext context,
-  double initialBottom,
   double leftOffset,
+  double bottom,
 );
 
 class MeasureLayout extends StatelessWidget {
   static const double _minPositionPadding = 4;
 
-  final Measure measure;
-  // ignore: unused_field
-  final NotationContext _contextBefore;
-  final NotationContext contextAfter;
+  final List<MeasureWidget> children;
 
-  final int? staff;
+  final NotationContext notationContext;
+  NotationContext get contextAfter {
+    NotationContext contextAfter = notationContext.copyWith();
+    for (var measureElement in children) {
+      switch (measureElement) {
+        case ClefElement _:
+          contextAfter = contextAfter.copyWith(
+            clef: measureElement.clef,
+          );
+          break;
+        case NoteElement _:
+          contextAfter = contextAfter.copyWith(
+            divisions: measureElement.divisions,
+          );
+          break;
+        case Chord _:
+          contextAfter = contextAfter.copyWith(
+            divisions: measureElement.divisions,
+          );
+          break;
+        case TimeBeatElement _:
+          contextAfter = contextAfter.copyWith(
+            time: measureElement.timeBeat,
+          );
+          break;
+      }
+    }
+    return contextAfter;
+  }
+
+  // final int? staff;
   double? get _cachedWidth => _initialSpacings?.last;
   double get _height {
     return 0;
@@ -46,19 +73,12 @@ class MeasureLayout extends StatelessWidget {
 
   final List<double>? _initialSpacings;
 
-  final List<_MeasureElementBuilder>? _precomputedChildren;
-
   const MeasureLayout._({
     super.key,
-    required this.measure,
+    required this.children,
     required List<double> initialSpacings,
-    required final List<_MeasureElementBuilder> precomputedBuilders,
-    this.staff,
-    required NotationContext contextBefore,
-    required this.contextAfter,
-  })  : _initialSpacings = initialSpacings,
-        _precomputedChildren = precomputedBuilders,
-        _contextBefore = contextBefore;
+    required this.notationContext,
+  }) : _initialSpacings = initialSpacings;
 
   factory MeasureLayout.fromMeasureData({
     Key? key,
@@ -66,49 +86,30 @@ class MeasureLayout extends StatelessWidget {
     int? staff,
     required NotationContext notationContext,
   }) {
-    var precomputes = _computeBuilders(
-      notationContext,
-      measure,
-      staff,
+    var children = _computeChildren(
+      context: notationContext,
+      measure: measure,
+      staff: staff,
     );
+
+    var spacings = _computeSpacings(children);
 
     return MeasureLayout._(
       key: key,
-      measure: measure,
-      staff: staff,
-      initialSpacings: precomputes.spacings,
-      precomputedBuilders: precomputes.builders,
-      contextBefore: notationContext,
-      contextAfter: precomputes.contextAfter,
+      initialSpacings: spacings,
+      notationContext: notationContext,
+      children: children,
     );
   }
 
-  /// Returns initial list of spacings that do not consider [measure]'s stretching
-  /// and compression.
-  static ({
-    NotationContext contextAfter,
-    List<double> spacings,
-    List<_MeasureElementBuilder> builders,
-  }) _computeBuilders(
-    NotationContext contextBefore,
-    Measure measure,
-    int? staff,
-  ) {
-    NotationContext contextAfter = contextBefore.copyWith();
+  static List<MeasureWidget> _computeChildren({
+    required NotationContext context,
+    required int? staff,
+    required Measure measure,
+  }) {
+    NotationContext contextAfter = context.copyWith();
 
-    const horizontalPadding = 8.0;
-
-    double leftOffset = horizontalPadding;
-
-    // Will be change in future.
-    const spacingBetweenElements = 8;
-
-    final List<double> spacings = [];
-
-    final builders = <_MeasureElementBuilder>[];
-
-    double lastElementWidth = 0;
-
+    final children = <MeasureWidget>[];
     int i = 0;
     while (i < measure.data.length) {
       var element = measure.data[i];
@@ -142,19 +143,7 @@ class MeasureLayout extends StatelessWidget {
                 notationContext: contextAfter,
               );
 
-              builders.add(
-                (context, leftOffset, initialBottom) => MeasureElementWrapper(
-                  // clef: contextAfter.clef,
-                  position: noteElement.position,
-                  bottom: initialBottom,
-                  left: leftOffset,
-                  child: noteElement,
-                ),
-              );
-
-              spacings.add(leftOffset);
-              lastElementWidth = noteElement.size.width;
-              leftOffset += spacingBetweenElements + noteElement.size.width;
+              children.add(noteElement);
             }
             if (notes.length > 1) {
               var chordElement = Chord.fromNotes(
@@ -162,19 +151,7 @@ class MeasureLayout extends StatelessWidget {
                 notationContext: contextAfter,
               );
 
-              builders.add(
-                (context, leftOffset, initialBottom) => MeasureElementWrapper(
-                  // clef: contextAfter.clef,
-                  position: chordElement.position,
-                  bottom: initialBottom,
-                  left: leftOffset,
-                  child: chordElement,
-                ),
-              );
-              spacings.add(leftOffset);
-
-              lastElementWidth = chordElement.size.width;
-              leftOffset += spacingBetweenElements + chordElement.size.width;
+              children.add(chordElement);
             }
           }
           break;
@@ -204,19 +181,7 @@ class MeasureLayout extends StatelessWidget {
               clef: clef,
               divisions: element.divisions,
             );
-            var clefElement = ClefElement(clef: clef);
-
-            builders.add(
-              (context, leftOffset, initialBottom) => MeasureElementWrapper(
-                position: clefElement.position,
-                left: leftOffset,
-                bottom: initialBottom + clefElement.measureOffset.dy,
-                child: clefElement,
-              ),
-            );
-            spacings.add(leftOffset);
-            leftOffset += spacingBetweenElements + clefElement.size.width;
-            lastElementWidth = clefElement.size.width;
+            children.add(ClefElement(clef: clef));
           }
           // -----------------------------
           // Time
@@ -226,22 +191,7 @@ class MeasureLayout extends StatelessWidget {
             switch (times) {
               case TimeBeat _:
                 var timeBeatWidget = TimeBeatElement(timeBeat: times);
-
-                builders.add(
-                  (context, leftOffset, initialBottom) => MeasureElementWrapper(
-                    position: timeBeatWidget.position,
-                    // influencedByClef: false,
-                    left: leftOffset,
-                    bottom: initialBottom - 16,
-                    child: timeBeatWidget,
-                  ),
-                );
-
-                spacings.add(leftOffset);
-                // TOOD: change to timeBeatWidget.size.width
-                leftOffset += spacingBetweenElements + 20;
-                lastElementWidth = 20;
-
+                children.add(timeBeatWidget);
                 break;
               case SenzaMisura _:
                 throw UnimplementedError(
@@ -268,20 +218,12 @@ class MeasureLayout extends StatelessWidget {
               "There are multiple keys elements in attributes, therefore correct staff must be provided",
             );
           }
-          var keySignature = KeySignature.fromKeyData(keyData: musicKey);
+          var keySignature = KeySignature.fromKeyData(
+            keyData: musicKey,
+            notationContext: contextAfter,
+          );
           if (keySignature.firstPosition != null) {
-            builders.add(
-              (context, leftOffset, initialBottom) => MeasureElementWrapper(
-                position: keySignature.firstPosition!,
-                clef: contextAfter.clef,
-                left: leftOffset,
-                bottom: initialBottom - 16,
-                child: keySignature,
-              ),
-            );
-            spacings.add(leftOffset);
-            leftOffset += spacingBetweenElements + keySignature.size.width;
-            lastElementWidth = keySignature.size.width;
+            children.add(keySignature);
           }
           break;
         // case Harmony _:
@@ -305,35 +247,66 @@ class MeasureLayout extends StatelessWidget {
       }
       i++;
     }
-    // TODO: change to something smarter, it must be constant or it has to be
-    // dependent on width of measure.
-    // Adding padding to measure's end.
+    return children;
+  }
+
+  /// Returns initial list of spacings that do not consider [measure]'s stretching
+  /// and compression.
+  static List<double> _computeSpacings(List<MeasureWidget> children) {
+    const horizontalPadding = 8.0;
+    double leftOffset = horizontalPadding;
+    // Will be change in future.
+    const spacingBetweenElements = 8;
+    double lastElementWidth = 0;
+
+    final List<double> spacings = [];
+
+    for (var child in children) {
+      spacings.add(leftOffset);
+      lastElementWidth = child.size.width;
+      leftOffset += spacingBetweenElements + child.size.width;
+    }
+
     spacings.add(leftOffset + horizontalPadding + lastElementWidth);
-    return (
-      contextAfter: contextAfter,
-      spacings: spacings,
-      builders: builders,
-    );
+    return spacings;
   }
 
   @override
   Widget build(BuildContext context) {
-    // var notes = <Widget>[];
-
     const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
 
     var defaultLowest = const ElementPosition(step: Step.F, octave: 4);
     var defaultHighest = const ElementPosition(step: Step.E, octave: 5);
 
     List<double> spacings = _initialSpacings!;
-    var builders = _precomputedChildren!;
 
     ElementPosition highestElementPosition = defaultHighest;
     ElementPosition lowestElementPosition = defaultLowest;
 
-    List<Widget> children = [];
-    // This is bad.
-    for (var (index, builder) in builders.indexed) {
+    var childrenBuilders = <_MeasureElementBuilder>[];
+
+    for (var child in children) {
+      Clef? clef;
+
+      if (child is NoteElement) {
+        clef = child.notationContext.clef;
+      }
+      if (child is KeySignature) {
+        clef = child.notationContext.clef;
+      }
+
+      childrenBuilders.add(
+        (context, leftOffset, bottom) => MeasureElementWrapper(
+          clef: clef,
+          position: child.position,
+          bottom: bottom + child.defaultBottomPosition,
+          left: leftOffset,
+          child: child,
+        ),
+      );
+    }
+
+    for (var (index, builder) in childrenBuilders.indexed) {
       MeasureElementWrapper e = builder(context, spacings[index], 0);
 
       if (highestElementPosition < e.position) {
@@ -358,8 +331,10 @@ class MeasureLayout extends StatelessWidget {
     // This need to done properly.
     verticalPadding += 1;
 
-    for (var (index, builder) in builders.indexed) {
-      children.add(
+    var composedChildren = <Widget>[];
+
+    for (var (index, builder) in childrenBuilders.indexed) {
+      composedChildren.add(
         builder(context, spacings[index], verticalPadding),
       );
     }
@@ -380,7 +355,7 @@ class MeasureLayout extends StatelessWidget {
               child: const StaffLines(),
             ),
           ),
-          ...children,
+          ...composedChildren,
         ],
       );
     });

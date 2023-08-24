@@ -21,9 +21,10 @@ class Chord extends StatelessWidget implements MeasureWidget {
   const Chord({
     super.key,
     required this.children,
+    required this.divisions,
   });
 
-  /// IMPORTANT: [notes] cannot be empty.
+  /// **IMPORTANT**: [notes] cannot be empty.
   factory Chord.fromNotes({
     Key? key,
     required List<Note> notes,
@@ -33,6 +34,12 @@ class Chord extends StatelessWidget implements MeasureWidget {
       throw ArgumentError('notes list is empty');
     }
 
+    if (notationContext.divisions == null) {
+      throw ArgumentError(
+        "Divisions in notationContext cannot be null on note's initialization",
+      );
+    }
+
     var children = _notesToChildren(
       notes: notes,
       notationContext: notationContext,
@@ -40,6 +47,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
 
     return Chord(
       key: key,
+      divisions: notationContext.divisions!,
       children: children,
     );
   }
@@ -47,6 +55,8 @@ class Chord extends StatelessWidget implements MeasureWidget {
   final List<NoteElement> children;
   List<NoteElement> get _sortedNotesElements =>
       children.sortedBy((element) => element.position).reversed.toList();
+
+  final double divisions;
 
   /// Calculates chord widget size from provided [notes].
   static Size _calculateSize(List<NoteElement> notes) {
@@ -175,6 +185,8 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       notationContext: notationContext,
       stemLength: stemLength ?? calculatedLength ?? 0,
       showLedger: showLedger,
+      duration: _determineDuration(note),
+      divisions: notationContext.divisions!,
     );
   }
 
@@ -184,9 +196,17 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     required this.notationContext,
     this.stemLength = Stem.defaultLength,
     this.showLedger = true,
+    required this.duration,
+    required this.divisions,
   });
 
   final Note note;
+
+  @override
+  double get defaultBottomPosition => 0;
+
+  final double duration;
+  final double divisions;
 
   final double stemLength;
   bool get _stemmed => stemLength != 0;
@@ -201,6 +221,28 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
 
   bool get _isRest {
     return note.form is Rest;
+  }
+
+  static double _determineDuration(Note note) {
+    switch (note) {
+      case GraceTieNote _:
+        throw UnimplementedError(
+          "Grace tie note is not implemented yet in renderer",
+        );
+      case GraceCueNote _:
+        throw UnimplementedError(
+          "Grace cue note is not implemented yet in renderer",
+        );
+      case CueNote _:
+        return note.duration;
+      case RegularNote _:
+        return note.duration;
+
+      default:
+        throw UnimplementedError(
+          "This error shouldn't occur, TODO: make switch exhaustively matched",
+        );
+    }
   }
 
   static ElementPosition determinePosition(Note note, Clef? clef) {

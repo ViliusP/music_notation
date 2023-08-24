@@ -6,7 +6,7 @@ class NotationContext {
   final double? divisions;
   final Time? time;
 
-  NotationContext({
+  const NotationContext({
     required this.divisions,
     required this.clef,
     required this.time,

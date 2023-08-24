@@ -9,6 +9,7 @@ import 'package:music_notation/src/models/elements/music_data/attributes/key.dar
     as musicxml show Key;
 import 'package:music_notation/src/notation_painter/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
+import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/key_accidental_painter.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart';
@@ -151,18 +152,32 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
   @override
   double get defaultBottomPosition => -16;
 
+  final NotationContext notationContext;
+
   const KeySignature({
     super.key,
     required this.accidentals,
+    required this.notationContext,
   });
 
-  factory KeySignature.fromKeyData({Key? key, required musicxml.Key keyData}) {
+  factory KeySignature.fromKeyData({
+    Key? key,
+    required musicxml.Key keyData,
+    required NotationContext notationContext,
+  }) {
     var accidentals = <({int octave, PitchedKeyAccidental accidental})>[];
 
     switch (keyData) {
       case TraditionalKey _:
         if (keyData.fifths == 0) {
-          return const KeySignature(accidentals: []);
+          return const KeySignature(
+            accidentals: [],
+            notationContext: NotationContext(
+              divisions: null,
+              clef: null,
+              time: null,
+            ),
+          );
         }
         if (kDebugMode && keyData.octaves.isNotEmpty) {
           // ignore: avoid_print
@@ -192,6 +207,7 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
     return KeySignature(
       key: key,
       accidentals: accidentals,
+      notationContext: notationContext,
     );
   }
 
