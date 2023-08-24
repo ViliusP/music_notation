@@ -37,18 +37,19 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
     }
   }
 
-  Offset get measureOffset {
+  @override
+  double get defaultBottomPosition {
     switch (clef.sign) {
       case ClefSign.G:
-        return const Offset(0, -25);
+        return -25;
       case ClefSign.F:
-        return const Offset(0, -22);
+        return -22;
       case ClefSign.C:
         // TODO: adjust
-        return const Offset(0, -26);
+        return -26;
       case ClefSign.percussion:
         // TODO: adjust
-        return const Offset(0, -26);
+        return -26;
       case ClefSign.tab:
         throw UnimplementedError(
           "'${clef.sign}' clef sign is not implemented in renderer yet",
@@ -60,6 +61,7 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
     }
   }
 
+  @override
   ElementPosition get position {
     switch (clef.sign) {
       case ClefSign.G:
@@ -83,6 +85,7 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
 
   const ClefElement({super.key, required this.clef});
 
+  @override
   Size get size {
     switch (clef.sign) {
       case ClefSign.G:

@@ -8,6 +8,10 @@ import 'package:music_notation/src/notation_painter/painters/time_beat_painter.d
 class TimeBeatElement extends StatelessWidget implements MeasureWidget {
   final TimeBeat timeBeat;
 
+  @override
+  double get defaultBottomPosition => -16;
+
+  @override
   ElementPosition get position => const ElementPosition(
         step: Step.B,
         octave: 4,
@@ -59,5 +63,5 @@ class TimeBeatElement extends StatelessWidget implements MeasureWidget {
 
   @override
   // TODO: implement correctly size
-  Size get size => const Size(0, 0);
+  Size get size => const Size(20, 48);
 }

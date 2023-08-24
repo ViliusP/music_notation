@@ -6,6 +6,7 @@ import 'package:music_notation/src/models/elements/music_data/attributes/clef.da
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/music_data/note/notehead.dart';
+import 'package:music_notation/src/notation_painter/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
@@ -14,6 +15,9 @@ import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
 import 'package:music_notation/src/smufl/smufl_glyph.dart';
 
 class Chord extends StatelessWidget implements MeasureWidget {
+  @override
+  double get defaultBottomPosition => 0;
+
   const Chord({
     super.key,
     required this.children,
@@ -109,11 +113,13 @@ class Chord extends StatelessWidget implements MeasureWidget {
     return notesElements;
   }
 
+  @override
   Size get size => _calculateSize(children);
 
   ElementPosition get _lowest => _sortedNotesElements.first.position;
   ElementPosition get _highest => _sortedNotesElements.last.position;
 
+  @override
   ElementPosition get position => _sortedNotesElements.last.position;
 
   @override
@@ -141,7 +147,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
   }
 }
 
-class NoteElement extends StatelessWidget {
+class NoteElement extends StatelessWidget implements MeasureWidget {
   /// Create [NoteElement] from musicXML [note]. Throws exception if divisions of
   /// [notationContext] is null.
   factory NoteElement.fromNote({
@@ -248,10 +254,12 @@ class NoteElement extends StatelessWidget {
     }
   }
 
+  @override
   ElementPosition get position => determinePosition(note, notationContext.clef);
 
   final bool drawLedgerLines = true;
 
+  @override
   Size get size {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
 

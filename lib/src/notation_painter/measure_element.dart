@@ -10,6 +10,7 @@ import 'package:music_notation/src/notation_painter/note_element.dart';
 abstract class MeasureWidget extends Widget {
   ElementPosition get position;
   Size get size;
+  double get defaultBottomPosition;
 
   const MeasureWidget({super.key});
 }

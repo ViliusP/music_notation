@@ -16,6 +16,8 @@ import 'package:music_notation/src/smufl/glyph_class.dart';
 class KeySignatureAccidental extends StatelessWidget {
   final AccidentalValue type;
 
+  // Size for flat.
+  // It should be different for sharp or natural.
   Size get size => const Size(11, 30);
 
   const KeySignatureAccidental({
@@ -104,14 +106,14 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
 
   @override
   Size get size {
+    if (accidentals.isEmpty) {
+      return const Size(0, 0);
+    }
+
     var tallestAccidental = 0.0;
     var width = 0.0;
 
     int range = _range!.highest.numeric - _range!.lowest.numeric;
-
-    if (accidentals.isEmpty) {
-      return const Size(0, 0);
-    }
 
     for (var accidental in accidentals) {
       var accidentalPosition = _accidentalPosition(accidental);
@@ -129,7 +131,7 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
 
     return Size(
       width - _spaceBetweenAccidentals,
-      tallestAccidental * 1.30 + range * _verticalOffsetPerPosition,
+      tallestAccidental + ((range + 1) * _verticalOffsetPerPosition),
     );
   }
 
@@ -145,6 +147,9 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
         step: Step.A,
         octave: 4,
       );
+
+  @override
+  double get defaultBottomPosition => -16;
 
   const KeySignature({
     super.key,
