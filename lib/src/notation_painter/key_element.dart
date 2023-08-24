@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/data_types/accidental_value.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
+import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/key.dart'
     hide Key;
 import 'package:music_notation/src/models/elements/music_data/attributes/key.dart'
@@ -140,14 +141,25 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
       ? _accidentalPosition(accidentals.first)
       : null;
 
-  // TODO: fix
-  @override
-  ElementPosition get position =>
+  int get _transposeInterval {
+    switch (notationContext.clef?.sign) {
+      case ClefSign.F:
+        return -2;
+      default:
+    }
+    return 0;
+  }
+
+  ElementPosition get _position =>
       firstPosition ??
       const ElementPosition(
         step: Step.A,
         octave: 4,
       );
+
+  // TODO: fix
+  @override
+  ElementPosition get position => _position.transpose(_transposeInterval);
 
   @override
   double get defaultBottomPosition => -16;

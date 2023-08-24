@@ -1,11 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
-import 'package:music_notation/src/models/elements/music_data/note/note.dart';
-import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
-import 'package:music_notation/src/notation_painter/note_element.dart';
 
 abstract class MeasureWidget extends Widget {
   ElementPosition get position;
@@ -24,33 +21,8 @@ class MeasureElementWrapper extends StatelessWidget {
 
   final Widget child;
 
-  ElementPosition get position => _position.transpose(_transposeInterval);
+  ElementPosition get position => _position;
   final ElementPosition _position;
-
-  int get _transposeInterval {
-    if (child is NoteElement && (child as NoteElement).note.form is Rest) {
-      return 0;
-    }
-
-    int transpose = 0;
-
-    switch (clef?.sign) {
-      case ClefSign.F:
-        transpose = 12;
-        break;
-      default:
-    }
-    // Different transpose values of key signatures.
-    if (child is KeySignature) {
-      switch (clef?.sign) {
-        case ClefSign.F:
-          transpose = -2;
-          break;
-        default:
-      }
-    }
-    return transpose;
-  }
 
   const MeasureElementWrapper({
     super.key,
