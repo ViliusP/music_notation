@@ -24,12 +24,6 @@ import 'package:music_notation/src/notation_painter/painters/barline_painter.dar
 import 'package:music_notation/src/notation_painter/painters/staff_lines_painter.dart';
 import 'package:music_notation/src/notation_painter/time_beat_element.dart';
 
-typedef _MeasureElementBuilder = MeasureElementWrapper Function(
-  BuildContext context,
-  double leftOffset,
-  double bottom,
-);
-
 class MeasureLayout extends StatelessWidget {
   static const double _minPositionPadding = 4;
 
@@ -308,21 +302,12 @@ class MeasureLayout extends StatelessWidget {
 
     var finalChildren = <Widget>[];
     for (var (index, child) in children.indexed) {
-      Clef? clef;
-
-      if (child is NoteElement) {
-        clef = child.notationContext.clef;
-      }
-      if (child is KeySignature) {
-        clef = child.notationContext.clef;
-      }
-
+      var fromBottom = -child.position.offset.dy + verticalPadding;
+      fromBottom += child.defaultBottomPosition + 5;
       finalChildren.add(
-        MeasureElementWrapper(
-          clef: clef,
-          position: child.position,
-          bottom: verticalPadding + child.defaultBottomPosition,
+        Positioned(
           left: spacings[index],
+          bottom: fromBottom,
           child: child,
         ),
       );
@@ -387,5 +372,30 @@ class StaffLines extends StatelessWidget {
           ),
       ],
     );
+  }
+}
+
+extension ElementPositionOffset on ElementPosition {
+  Offset get offset {
+    double offsetY;
+
+    switch (step) {
+      case Step.B:
+        offsetY = 2;
+      case Step.A:
+        offsetY = 1;
+      case Step.G:
+        offsetY = 0;
+      case Step.F:
+        offsetY = -1;
+      case Step.E:
+        offsetY = -2;
+      case Step.D:
+        offsetY = -3;
+      case Step.C:
+        offsetY = -4;
+    }
+    return Offset(0, -(NotationLayoutProperties.staveSpace / 2) * offsetY) +
+        Offset(0, (octave - 4) * -42);
   }
 }

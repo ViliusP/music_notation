@@ -187,10 +187,22 @@ class ElementPosition implements Comparable<ElementPosition> {
     octave: 4,
   );
 
+  static const ElementPosition staffBottom = ElementPosition(
+    step: Step.F,
+    octave: 4,
+  );
+
   /// Calculates numerical difference from middle (B4). If distance is positive,
   /// note is positioned above staff middle. If it is negative, it is positioned
   /// below middle of staff.
   int get distanceFromMiddle {
     return numeric - ElementPosition.staffMiddle.numeric;
+  }
+
+  /// Calculates numerical difference from middle (F4). If distance is positive,
+  /// note is positioned above staff middle. If it is negative, it is positioned
+  /// below middle of staff.
+  int get distanceFromBottom {
+    return ElementPosition.staffBottom.numeric - numeric;
   }
 }
