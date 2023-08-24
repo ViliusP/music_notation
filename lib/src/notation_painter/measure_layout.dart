@@ -283,37 +283,12 @@ class MeasureLayout extends StatelessWidget {
     ElementPosition highestElementPosition = defaultHighest;
     ElementPosition lowestElementPosition = defaultLowest;
 
-    var childrenBuilders = <_MeasureElementBuilder>[];
-
     for (var child in children) {
-      Clef? clef;
-
-      if (child is NoteElement) {
-        clef = child.notationContext.clef;
+      if (highestElementPosition < child.position) {
+        highestElementPosition = child.position;
       }
-      if (child is KeySignature) {
-        clef = child.notationContext.clef;
-      }
-
-      childrenBuilders.add(
-        (context, leftOffset, bottom) => MeasureElementWrapper(
-          clef: clef,
-          position: child.position,
-          bottom: bottom + child.defaultBottomPosition,
-          left: leftOffset,
-          child: child,
-        ),
-      );
-    }
-
-    for (var (index, builder) in childrenBuilders.indexed) {
-      MeasureElementWrapper e = builder(context, spacings[index], 0);
-
-      if (highestElementPosition < e.position) {
-        highestElementPosition = e.position;
-      }
-      if (lowestElementPosition > e.position) {
-        lowestElementPosition = e.position;
+      if (lowestElementPosition > child.position) {
+        lowestElementPosition = child.position;
       }
     }
 
@@ -331,11 +306,25 @@ class MeasureLayout extends StatelessWidget {
     // This need to done properly.
     verticalPadding += 1;
 
-    var composedChildren = <Widget>[];
+    var finalChildren = <Widget>[];
+    for (var (index, child) in children.indexed) {
+      Clef? clef;
 
-    for (var (index, builder) in childrenBuilders.indexed) {
-      composedChildren.add(
-        builder(context, spacings[index], verticalPadding),
+      if (child is NoteElement) {
+        clef = child.notationContext.clef;
+      }
+      if (child is KeySignature) {
+        clef = child.notationContext.clef;
+      }
+
+      finalChildren.add(
+        MeasureElementWrapper(
+          clef: clef,
+          position: child.position,
+          bottom: verticalPadding + child.defaultBottomPosition,
+          left: spacings[index],
+          child: child,
+        ),
       );
     }
 
@@ -355,7 +344,7 @@ class MeasureLayout extends StatelessWidget {
               child: const StaffLines(),
             ),
           ),
-          ...composedChildren,
+          ...finalChildren,
         ],
       );
     });
