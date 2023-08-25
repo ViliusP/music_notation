@@ -5,6 +5,8 @@ import 'package:music_notation/src/notation_painter/note_element.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 
 class NotePainter extends CustomPainter {
+  static const double _lengthOutside = 3;
+
   final String smufl;
 
   final LedgerLines? ledgerLines;
@@ -26,7 +28,6 @@ class NotePainter extends CustomPainter {
       offset: Offset(0, size.height - 48),
     );
     if (ledgerLines == null || ledgerLines?.count == 0) return;
-    const double lengthOutside = 4;
 
     double level = 0;
     if (ledgerLines!.extendsThroughNote) {
@@ -38,8 +39,8 @@ class NotePainter extends CustomPainter {
 
     for (int i = 0; i < ledgerLines!.count; i++) {
       canvas.drawLine(
-        Offset(-lengthOutside, level),
-        Offset(lengthOutside + size.width, level),
+        Offset(-_lengthOutside, level),
+        Offset(_lengthOutside + size.width, level),
         _ledgerLinePaint,
       );
 
