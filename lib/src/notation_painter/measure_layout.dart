@@ -269,36 +269,39 @@ class MeasureLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
 
-    var defaultLowest = const ElementPosition(step: Step.F, octave: 4);
-    var defaultHighest = const ElementPosition(step: Step.E, octave: 5);
-
     List<double> spacings = _initialSpacings!;
 
-    ElementPosition highestElementPosition = defaultHighest;
-    ElementPosition lowestElementPosition = defaultLowest;
+    ElementPosition lowestElementPosition = const ElementPosition(
+      step: Step.F,
+      octave: 4,
+    );
+
+    double heightToStaffTop = offsetPerPosition;
+    heightToStaffTop *= ElementPosition.staffTop.numeric;
+
+    double paddingToTop = 0;
 
     for (var child in children) {
-      if (highestElementPosition < child.position) {
-        highestElementPosition = child.position;
+      double heightToChildTop = offsetPerPosition;
+      heightToChildTop *= child.position.numeric;
+      heightToChildTop += child.size.height;
+
+      double heightOverStaff = heightToChildTop - heightToStaffTop;
+
+      if (paddingToTop < heightOverStaff) {
+        paddingToTop = heightOverStaff;
       }
       if (lowestElementPosition > child.position) {
         lowestElementPosition = child.position;
       }
     }
-
-    var positionsBelow = defaultLowest.numeric - lowestElementPosition.numeric;
-    var positionsAbove =
-        highestElementPosition.numeric - defaultHighest.numeric;
-
-    double verticalPadding = offsetPerPosition *
+    double paddingToBottom = offsetPerPosition *
         [
-          positionsBelow,
-          positionsAbove,
+          lowestElementPosition.distanceFromBottom,
           _minPositionPadding,
         ].max;
 
-    // This need to done properly.
-    verticalPadding += 1;
+    double verticalPadding = [paddingToBottom, paddingToTop].max;
 
     var finalChildren = <Widget>[];
     for (var (index, child) in children.indexed) {
