@@ -281,6 +281,9 @@ class MeasureLayout extends StatelessWidget {
 
     double paddingToTop = 0;
 
+    // Padding to top currently calculates pretending that whole element is painted
+    // above it's position. Elements like clef, sharps is drawn onto position but
+    // some parts can be drawn below that position.
     for (var child in children) {
       double heightToChildTop = offsetPerPosition;
       heightToChildTop *= child.position.numeric;
@@ -288,8 +291,6 @@ class MeasureLayout extends StatelessWidget {
 
       double heightOverStaff = heightToChildTop - heightToStaffTop;
       heightOverStaff += child.defaultBottomPosition;
-      heightOverStaff -= 5;
-
       if (paddingToTop < heightOverStaff) {
         paddingToTop = heightOverStaff;
       }
