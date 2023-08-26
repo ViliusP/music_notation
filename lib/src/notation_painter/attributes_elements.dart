@@ -41,15 +41,15 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
   double get defaultBottomPosition {
     switch (clef.sign) {
       case ClefSign.G:
-        return -25;
+        return -20;
       case ClefSign.F:
-        return -22;
+        return -17;
       case ClefSign.C:
         // TODO: adjust
-        return -26;
+        return -21;
       case ClefSign.percussion:
         // TODO: adjust
-        return -26;
+        return -21;
       case ClefSign.tab:
         throw UnimplementedError(
           "'${clef.sign}' clef sign is not implemented in renderer yet",

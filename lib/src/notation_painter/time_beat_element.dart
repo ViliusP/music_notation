@@ -9,7 +9,7 @@ class TimeBeatElement extends StatelessWidget implements MeasureWidget {
   final TimeBeat timeBeat;
 
   @override
-  double get defaultBottomPosition => -16;
+  double get defaultBottomPosition => -11;
 
   @override
   ElementPosition get position => const ElementPosition(

@@ -287,6 +287,8 @@ class MeasureLayout extends StatelessWidget {
       heightToChildTop += child.size.height;
 
       double heightOverStaff = heightToChildTop - heightToStaffTop;
+      heightOverStaff += child.defaultBottomPosition;
+      heightOverStaff -= 5;
 
       if (paddingToTop < heightOverStaff) {
         paddingToTop = heightOverStaff;
@@ -302,11 +304,12 @@ class MeasureLayout extends StatelessWidget {
         ].max;
 
     double verticalPadding = [paddingToBottom, paddingToTop].max;
+    verticalPadding += NotationLayoutProperties.staffLineStrokeWidth / 2;
 
     var finalChildren = <Widget>[];
     for (var (index, child) in children.indexed) {
       var fromBottom = -child.position.offset.dy + verticalPadding;
-      fromBottom += child.defaultBottomPosition + 5;
+      fromBottom += child.defaultBottomPosition;
       finalChildren.add(
         Positioned(
           left: spacings[index],

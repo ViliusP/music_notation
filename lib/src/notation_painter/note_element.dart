@@ -16,7 +16,7 @@ import 'package:music_notation/src/smufl/smufl_glyph.dart';
 
 class Chord extends StatelessWidget implements MeasureWidget {
   @override
-  double get defaultBottomPosition => 0;
+  double get defaultBottomPosition => 5;
 
   const Chord({
     super.key,
@@ -203,7 +203,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
   final Note note;
 
   @override
-  double get defaultBottomPosition => 0;
+  double get defaultBottomPosition => 5;
 
   final double duration;
   final double divisions;
