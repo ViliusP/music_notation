@@ -9,6 +9,19 @@ import 'package:music_notation/src/notation_painter/sync_width_column.dart';
 
 class MusicNotationCanvas extends StatelessWidget {
   final ScorePartwise scorePartwise;
+
+  /// Determines if the music notation renderer should use specified beaming
+  /// directly from the musicXML file.
+  ///
+  /// By default, the renderer will rely on the beaming data as it is
+  /// directly provided in the musicXML file, without making any changes or
+  /// assumptions.
+  ///
+  /// Set this property to `false` if the score contains raw or incomplete
+  /// musicXML data, allowing the renderer to determine beaming based on its
+  /// internal logic or algorithms.
+  final bool useExplicitBeaming;
+
   NotationGrid get grid => NotationGrid.fromScoreParts(
         scorePartwise.parts,
       );
@@ -16,6 +29,7 @@ class MusicNotationCanvas extends StatelessWidget {
   const MusicNotationCanvas({
     super.key,
     required this.scorePartwise,
+    this.useExplicitBeaming = true,
   });
 
   @override
@@ -31,7 +45,7 @@ class MusicNotationCanvas extends StatelessWidget {
           staff: grid.staffForRow(i),
           notationContext: j != 0
               ? measures.last.contextAfter
-              : NotationContext(
+              : const NotationContext(
                   divisions: null,
                   clef: null,
                   time: null,

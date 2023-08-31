@@ -27,6 +27,18 @@ import 'package:music_notation/src/notation_painter/time_beat_element.dart';
 class MeasureLayout extends StatelessWidget {
   static const double _minPositionPadding = 4;
 
+  /// Determines if the music notation renderer should use specified beaming
+  /// directly from the musicXML file.
+  ///
+  /// By default, the renderer will rely on the beaming data as it is
+  /// directly provided in the musicXML file, without making any changes or
+  /// assumptions.
+  ///
+  /// Set this property to `false` if the score contains raw or incomplete
+  /// musicXML data, allowing the renderer to determine beaming based on its
+  /// internal logic or algorithms.
+  final bool useExplicitBeaming;
+
   final List<MeasureWidget> children;
 
   final NotationContext notationContext;
@@ -72,6 +84,7 @@ class MeasureLayout extends StatelessWidget {
     required this.children,
     required List<double> initialSpacings,
     required this.notationContext,
+    this.useExplicitBeaming = false,
   }) : _initialSpacings = initialSpacings;
 
   factory MeasureLayout.fromMeasureData({
@@ -79,6 +92,7 @@ class MeasureLayout extends StatelessWidget {
     required Measure measure,
     int? staff,
     required NotationContext notationContext,
+    bool useExplicitBeaming = false,
   }) {
     var children = _computeChildren(
       context: notationContext,
@@ -92,6 +106,7 @@ class MeasureLayout extends StatelessWidget {
       key: key,
       initialSpacings: spacings,
       notationContext: notationContext,
+      useExplicitBeaming: useExplicitBeaming,
       children: children,
     );
   }
@@ -282,7 +297,7 @@ class MeasureLayout extends StatelessWidget {
     double paddingToTop = 0;
 
     // Padding to top currently calculates pretending that whole element is painted
-    // above it's position. Elements like clef, sharps is drawn onto position but
+    // above it's position. Elements like clef, sharps is drawn onto position and
     // some parts can be drawn below that position.
     for (var child in children) {
       double heightToChildTop = offsetPerPosition;
