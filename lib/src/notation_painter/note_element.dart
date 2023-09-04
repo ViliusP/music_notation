@@ -16,7 +16,9 @@ import 'package:music_notation/src/smufl/smufl_glyph.dart';
 
 class Chord extends StatelessWidget implements MeasureWidget {
   @override
-  double get positionalOffset => 5;
+  double get positionalOffset =>
+      -NotationLayoutProperties.staveSpace / 2 -
+      NotationLayoutProperties.staffLineStrokeWidth / 2;
 
   const Chord({
     super.key,
@@ -203,7 +205,9 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
   final Note note;
 
   @override
-  double get positionalOffset => -5;
+  double get positionalOffset =>
+      -NotationLayoutProperties.staveSpace / 2 -
+      NotationLayoutProperties.staffLineStrokeWidth / 2;
 
   final double duration;
   final double divisions;

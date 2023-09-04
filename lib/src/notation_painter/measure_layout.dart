@@ -334,7 +334,7 @@ class MeasureLayout extends StatelessWidget {
       // Then move it by interval.
       int intervalFromStaffBottom = ElementPosition.staffBottom.numeric;
       intervalFromStaffBottom -= child.position.numeric + 1;
-      fromBottom -= intervalFromStaffBottom * offsetPerPosition;
+      fromBottom -= (intervalFromStaffBottom * offsetPerPosition);
 
       // Lastly adjust to it's by positional offset.
       fromBottom += child.positionalOffset;
@@ -406,30 +406,5 @@ class StaffLines extends StatelessWidget {
           ),
       ],
     );
-  }
-}
-
-extension ElementPositionOffset on ElementPosition {
-  Offset get offset {
-    double offsetY;
-
-    switch (step) {
-      case Step.B:
-        offsetY = 2;
-      case Step.A:
-        offsetY = 1;
-      case Step.G:
-        offsetY = 0;
-      case Step.F:
-        offsetY = -1;
-      case Step.E:
-        offsetY = -2;
-      case Step.D:
-        offsetY = -3;
-      case Step.C:
-        offsetY = -4;
-    }
-    return Offset(0, -(NotationLayoutProperties.staveSpace / 2) * offsetY) +
-        Offset(0, (octave - 4) * -42);
   }
 }
