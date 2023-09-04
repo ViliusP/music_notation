@@ -92,7 +92,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
               ),
               Expanded(
-                child: Column(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ExampleScores.apresUnReve,
