@@ -286,31 +286,27 @@ class MeasureLayout extends StatelessWidget {
 
     List<double> spacings = _initialSpacings!;
 
-    double heightToStaffTop = offsetPerPosition;
-    heightToStaffTop *= ElementPosition.staffTop.numeric;
+    double distanceToStaffTop = offsetPerPosition;
+    distanceToStaffTop *= ElementPosition.staffTop.numeric;
 
-    double heightToStaffBottom = offsetPerPosition;
-    heightToStaffBottom *= ElementPosition.staffBottom.numeric;
+    double distanceToStaffBottom = offsetPerPosition;
+    distanceToStaffBottom *= ElementPosition.staffBottom.numeric;
 
     double topPadding = 0;
     double bottomPadding = 0;
 
-    // Padding to top currently calculates pretending that whole element is painted
-    // above it's position. Elements like clef, sharps is drawn onto position and
-    // some parts can be drawn below that position.
     for (var child in children) {
       // The length by which an element extends or protrudes above the staff.
-      double aboveStaffLength = offsetPerPosition;
-      aboveStaffLength *= child.position.numeric;
+      double aboveStaffLength = offsetPerPosition * child.position.numeric;
       aboveStaffLength += child.size.height;
-      aboveStaffLength -= heightToStaffTop;
+      aboveStaffLength += child.positionalOffset;
+      aboveStaffLength -= distanceToStaffTop;
       aboveStaffLength = [0.0, aboveStaffLength].max;
 
       // The length by which an element extends or protrudes below the staff.
-      double belowStaffLength = offsetPerPosition;
-      belowStaffLength *= child.position.numeric;
-      belowStaffLength -= heightToStaffBottom;
-      print("below $belowStaffLength | above $aboveStaffLength");
+      double belowStaffLength = offsetPerPosition * child.position.numeric;
+      belowStaffLength += child.positionalOffset;
+      belowStaffLength -= distanceToStaffBottom;
       belowStaffLength = [0.0, belowStaffLength].min;
       belowStaffLength = belowStaffLength.abs();
 
@@ -321,7 +317,6 @@ class MeasureLayout extends StatelessWidget {
         bottomPadding = belowStaffLength;
       }
     }
-    print("--- bottom: $bottomPadding | top: $topPadding ---");
 
     double verticalPadding = [bottomPadding, topPadding].max;
     verticalPadding += NotationLayoutProperties.staffLineStrokeWidth / 2;
