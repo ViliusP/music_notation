@@ -49,15 +49,15 @@ class TimeBeatElement extends StatelessWidget implements MeasureWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (bottomSmufl != null)
-            CustomPaint(
-              size: smuflSize,
-              painter: TimeBeatPainter(bottomSmufl),
-            ),
           if (topSmufl != null)
             CustomPaint(
               size: smuflSize,
               painter: TimeBeatPainter(topSmufl),
+            ),
+          if (bottomSmufl != null)
+            CustomPaint(
+              size: smuflSize,
+              painter: TimeBeatPainter(bottomSmufl),
             ),
         ],
       ),
