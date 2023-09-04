@@ -84,6 +84,7 @@ class _SyncWidthColumnState extends State<SyncWidthColumn> {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+      shrinkWrap: true,
       itemCount: widget.children.length,
       itemBuilder: (context, rowIndex) {
         return _SyncWidthRow(

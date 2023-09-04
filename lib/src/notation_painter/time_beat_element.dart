@@ -9,7 +9,7 @@ class TimeBeatElement extends StatelessWidget implements MeasureWidget {
   final TimeBeat timeBeat;
 
   @override
-  double get defaultBottomPosition => -11;
+  double get positionalOffset => -size.height / 2;
 
   @override
   ElementPosition get position => const ElementPosition(
@@ -42,26 +42,28 @@ class TimeBeatElement extends StatelessWidget implements MeasureWidget {
       topSmufl = _integerToSmufl(int.parse(signature.beats));
       bottomSmufl = _integerToSmufl(int.parse(signature.beatType));
     }
-    Size size = const Size(20, 24);
+    Size smuflSize = const Size(20, 24);
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (topSmufl != null)
-          CustomPaint(
-            size: size,
-            painter: TimeBeatPainter(topSmufl),
-          ),
-        if (bottomSmufl != null)
-          CustomPaint(
-            size: size,
-            painter: TimeBeatPainter(bottomSmufl),
-          ),
-      ],
+    return SizedBox.fromSize(
+      size: size,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (bottomSmufl != null)
+            CustomPaint(
+              size: smuflSize,
+              painter: TimeBeatPainter(bottomSmufl),
+            ),
+          if (topSmufl != null)
+            CustomPaint(
+              size: smuflSize,
+              painter: TimeBeatPainter(topSmufl),
+            ),
+        ],
+      ),
     );
   }
 
   @override
-  // TODO: implement correctly size
   Size get size => const Size(20, 48);
 }

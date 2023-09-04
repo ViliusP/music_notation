@@ -286,46 +286,58 @@ class MeasureLayout extends StatelessWidget {
 
     List<double> spacings = _initialSpacings!;
 
-    ElementPosition lowestElementPosition = const ElementPosition(
-      step: Step.F,
-      octave: 4,
-    );
-
     double heightToStaffTop = offsetPerPosition;
     heightToStaffTop *= ElementPosition.staffTop.numeric;
 
-    double paddingToTop = 0;
+    double heightToStaffBottom = offsetPerPosition;
+    heightToStaffBottom *= ElementPosition.staffBottom.numeric;
+
+    double topPadding = 0;
+    double bottomPadding = 0;
 
     // Padding to top currently calculates pretending that whole element is painted
     // above it's position. Elements like clef, sharps is drawn onto position and
     // some parts can be drawn below that position.
     for (var child in children) {
-      double heightToChildTop = offsetPerPosition;
-      heightToChildTop *= child.position.numeric;
-      heightToChildTop += child.size.height;
+      // The length by which an element extends or protrudes above the staff.
+      double aboveStaffLength = offsetPerPosition;
+      aboveStaffLength *= child.position.numeric;
+      aboveStaffLength += child.size.height;
+      aboveStaffLength -= heightToStaffTop;
+      aboveStaffLength = [0.0, aboveStaffLength].max;
 
-      double heightOverStaff = heightToChildTop - heightToStaffTop;
-      heightOverStaff += child.defaultBottomPosition;
-      if (paddingToTop < heightOverStaff) {
-        paddingToTop = heightOverStaff;
+      // The length by which an element extends or protrudes below the staff.
+      double belowStaffLength = offsetPerPosition;
+      belowStaffLength *= child.position.numeric;
+      belowStaffLength -= heightToStaffBottom;
+      print("below $belowStaffLength | above $aboveStaffLength");
+      belowStaffLength = [0.0, belowStaffLength].min;
+      belowStaffLength = belowStaffLength.abs();
+
+      if (topPadding < aboveStaffLength) {
+        topPadding = aboveStaffLength;
       }
-      if (lowestElementPosition > child.position) {
-        lowestElementPosition = child.position;
+      if (bottomPadding < belowStaffLength) {
+        bottomPadding = belowStaffLength;
       }
     }
-    double paddingToBottom = offsetPerPosition *
-        [
-          lowestElementPosition.distanceFromBottom,
-          _minPositionPadding,
-        ].max;
+    print("--- bottom: $bottomPadding | top: $topPadding ---");
 
-    double verticalPadding = [paddingToBottom, paddingToTop].max;
+    double verticalPadding = [bottomPadding, topPadding].max;
     verticalPadding += NotationLayoutProperties.staffLineStrokeWidth / 2;
 
     var finalChildren = <Widget>[];
     for (var (index, child) in children.indexed) {
-      var fromBottom = -child.position.offset.dy + verticalPadding;
-      fromBottom += child.defaultBottomPosition;
+      // Firstly move element's bottom to staff bottom.
+      double fromBottom = verticalPadding;
+
+      // Then move it by interval.
+      int intervalFromStaffBottom = ElementPosition.staffBottom.numeric;
+      intervalFromStaffBottom -= child.position.numeric + 1;
+      fromBottom -= intervalFromStaffBottom * offsetPerPosition;
+
+      // Lastly adjust to it's by positional offset.
+      fromBottom += child.positionalOffset;
       finalChildren.add(
         Positioned(
           left: spacings[index],

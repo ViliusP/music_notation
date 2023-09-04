@@ -38,12 +38,12 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
   }
 
   @override
-  double get defaultBottomPosition {
+  double get positionalOffset {
     switch (clef.sign) {
       case ClefSign.G:
-        return -20;
+        return -32;
       case ClefSign.F:
-        return -17;
+        return -29;
       case ClefSign.C:
         // TODO: adjust
         return -21;

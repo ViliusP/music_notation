@@ -80,15 +80,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     style: TextStyle(fontSize: 36),
                   ),
                   const Padding(padding: EdgeInsets.symmetric(vertical: 32)),
-                  SizedBox.fromSize(
-                    size: const Size.fromHeight(120),
-                    child: helloWorldXml != null
-                        ? MusicNotationCanvas(
-                            scorePartwise:
-                                ScorePartwise.fromXml(helloWorldXml!),
-                          )
-                        : const SizedBox.shrink(),
+                  if (helloWorldXml != null)
+                    MusicNotationCanvas(
+                      scorePartwise: ScorePartwise.fromXml(helloWorldXml!),
                   ),
+                  if (helloWorldXml == null) const SizedBox.shrink(),
                 ],
               ),
               Expanded(
