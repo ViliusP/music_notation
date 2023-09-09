@@ -259,7 +259,7 @@ class MeasureLayout extends StatelessWidget {
     return children;
   }
 
-  /// Returns initial list of spacings that do not consider [measure]'s stretching
+  /// Returns initial list of spacings that do not consider measure's stretching
   /// and compression.
   static List<double> _computeSpacings(List<MeasureWidget> children) {
     const horizontalPadding = 8.0;
