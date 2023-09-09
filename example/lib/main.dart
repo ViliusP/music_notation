@@ -1,3 +1,4 @@
+import 'package:example/playground.dart';
 import 'package:example/score_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -79,19 +80,15 @@ class _MyHomePageState extends State<MyHomePage> {
                     style: TextStyle(fontSize: 36),
                   ),
                   const Padding(padding: EdgeInsets.symmetric(vertical: 32)),
-                  SizedBox.fromSize(
-                    size: const Size.fromHeight(120),
-                    child: helloWorldXml != null
-                        ? MusicNotationCanvas(
-                            scorePartwise:
-                                ScorePartwise.fromXml(helloWorldXml!),
-                          )
-                        : const SizedBox.shrink(),
+                  if (helloWorldXml != null)
+                    MusicNotationCanvas(
+                      scorePartwise: ScorePartwise.fromXml(helloWorldXml!),
                   ),
+                  if (helloWorldXml == null) const SizedBox.shrink(),
                 ],
               ),
               Expanded(
-                child: Column(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ExampleScores.apresUnReve,
@@ -111,6 +108,19 @@ class _MyHomePageState extends State<MyHomePage> {
                       )
                       .toList(),
                 ),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  fixedSize: const Size(320, 80),
+                ),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const Playground(),
+                    ),
+                  );
+                },
+                child: const Text("playground"),
               ),
               Column(
                 children: [

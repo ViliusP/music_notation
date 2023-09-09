@@ -1,5 +1,5 @@
 import 'dart:ui';
 
-class Colors {
+class NotationColors {
   static const black = Color(0xFF000000);
 }

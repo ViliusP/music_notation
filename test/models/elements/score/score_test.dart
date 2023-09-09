@@ -6,14 +6,14 @@ import 'package:music_notation/src/models/exceptions.dart';
 import 'package:test/test.dart';
 import 'package:xml/xml.dart';
 
-import '../../test_path.dart';
+import '../../../test_path.dart';
 
 void main() {
   group('ScorePartwise', () {
     // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/group-abbreviation-display-element/
     test('should parse <assess> and <player> example correctly', () {
       final inputFile = File(
-        testPath('models/test_resources/assess_player.xml'),
+        testPath('/test_resources/assess_player.xml'),
       );
 
       var rootElement = XmlDocument.parse(inputFile.readAsStringSync());
@@ -33,7 +33,7 @@ void main() {
     // https://www.w3.org/2021/06/musicxml40/musicxml-reference/examples/concert-score-and-for-part-elements/
     test('should parse <concert-score> and <for-part> example correctly', () {
       final inputFile = File(
-        testPath('models/test_resources/concert_score_and_for_part.xml'),
+        testPath('/test_resources/concert_score_and_for_part.xml'),
       );
 
       var rootElement = XmlDocument.parse(inputFile.readAsStringSync());

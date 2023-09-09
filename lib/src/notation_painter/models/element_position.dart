@@ -1,4 +1,5 @@
 import 'package:music_notation/src/models/data_types/step.dart';
+import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 
 /// The position of a musical element in a diatonic scale.
 ///
@@ -13,7 +14,7 @@ import 'package:music_notation/src/models/data_types/step.dart';
 /// This class is used in the context of generating and manipulating musical
 /// scores and representations, enabling operations that require knowledge of
 /// the position of notes or other musical elements.
-class ElementPosition {
+class ElementPosition implements Comparable<ElementPosition> {
   final Step step;
   final int octave;
 
@@ -51,7 +52,7 @@ class ElementPosition {
   /// Position is calculated from 'C0' because it is the lowest note on standard,
   /// 88-key piano. Also, the frequency of C0 is approximately 16.35 Hz, which
   /// is at the very lower end of the human hearing range.
-  int get numericPosition => (octave * _notesPerOctave) + numericalStep;
+  int get numeric => (octave * _notesPerOctave) + numericalStep;
 
   factory ElementPosition.fromInt(int numericPosition) {
     int octave = numericPosition ~/ _notesPerOctave;
@@ -84,6 +85,39 @@ class ElementPosition {
     }
   }
 
+  ElementPosition transpose(int interval) {
+    return ElementPosition.fromInt(numeric + interval);
+  }
+
+  static int clefTransposeInterval(Clef clef) {
+    switch (clef.sign) {
+      case ClefSign.G:
+        return 0;
+      case ClefSign.F:
+        return 12;
+      case ClefSign.C:
+        throw UnimplementedError(
+          "ClefSign.C is transpose is not implemented yet",
+        );
+      case ClefSign.percussion:
+        throw UnimplementedError(
+          "ClefSign.percussion is transpose is not implemented yet",
+        );
+      case ClefSign.tab:
+        throw UnimplementedError(
+          "ClefSign.tab is transpose is not implemented yet",
+        );
+      case ClefSign.jianpu:
+        throw UnimplementedError(
+          "ClefSign.jianpu is transpose is not implemented yet",
+        );
+      case ClefSign.none:
+        throw UnimplementedError(
+          "ClefSign.none is transpose is not implemented yet",
+        );
+    }
+  }
+
   /// Less-than operator. Compares an [ElementPosition] to another [ElementPosition]
   /// and returns true if the vertical position in staff left-hand-side operand
   /// are lower than the position of the right-hand-side operand respectively.
@@ -91,8 +125,7 @@ class ElementPosition {
   ///
   /// This is a partial ordering. It is possible for two values to be neither
   /// less, nor greater than, nor equal to, another.
-  bool operator <(ElementPosition other) =>
-      numericPosition < other.numericPosition;
+  bool operator <(ElementPosition other) => numeric < other.numeric;
 
   /// Greater-than operator. Compares an [ElementPosition] to another [ElementPosition]
   /// and returns true if the vertical position in staff left-hand-side operand
@@ -101,8 +134,7 @@ class ElementPosition {
   ///
   /// This is a partial ordering. It is possible for two values to be neither
   /// less, nor greater than, nor equal to, another.
-  bool operator >(ElementPosition other) =>
-      numericPosition > other.numericPosition;
+  bool operator >(ElementPosition other) => numeric > other.numeric;
 
   /// Greater-than-or-equal-to operator. Compares an [ElementPosition] to another
   /// [ElementPosition] and returns true if the vertical position in staff
@@ -111,8 +143,7 @@ class ElementPosition {
   ///
   /// This is a partial ordering. It is possible for two values to be neither
   /// less, nor greater than, nor equal to, another.
-  bool operator >=(ElementPosition other) =>
-      numericPosition >= other.numericPosition;
+  bool operator >=(ElementPosition other) => numeric >= other.numeric;
 
   /// Less-than-or-equal-to operator. Compares an [ElementPosition] to another
   /// [ElementPosition] and returns true if the vertical position in staff
@@ -121,8 +152,7 @@ class ElementPosition {
   ///
   /// This is a partial ordering. It is possible for two values to be neither
   /// less, nor greater than, nor equal to, another.
-  bool operator <=(ElementPosition other) =>
-      numericPosition <= other.numericPosition;
+  bool operator <=(ElementPosition other) => numeric <= other.numeric;
 
   /// Equality operator. Compares an [ElementPosition] to another [ElementPosition]
   /// and returns true if the step and octave of the left-hand-side operand are
@@ -139,12 +169,45 @@ class ElementPosition {
   int get hashCode => Object.hash(step, octave);
 
   @override
-  String toString() {
-    return "$step$octave";
+  String toString() => 'ElementPosition  $step$octave';
+
+  @override
+  int compareTo(ElementPosition other) {
+    if (this < other) {
+      return -1;
+    } else if (this > other) {
+      return 1;
+    } else {
+      return 0;
+    }
   }
 
   static const ElementPosition staffMiddle = ElementPosition(
     step: Step.B,
     octave: 4,
   );
+
+  static const ElementPosition staffBottom = ElementPosition(
+    step: Step.F,
+    octave: 4,
+  );
+
+  static const ElementPosition staffTop = ElementPosition(
+    step: Step.F,
+    octave: 5,
+  );
+
+  /// Calculates numerical difference from middle (B4). If distance is positive,
+  /// note is positioned above staff middle. If it is negative, it is positioned
+  /// below middle of staff.
+  int get distanceFromMiddle {
+    return numeric - ElementPosition.staffMiddle.numeric;
+  }
+
+  /// Calculates numerical difference from middle (F4). If distance is positive,
+  /// note is positioned above staff middle. If it is negative, it is positioned
+  /// below middle of staff.
+  int get distanceFromBottom {
+    return ElementPosition.staffBottom.numeric - numeric;
+  }
 }

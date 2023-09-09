@@ -158,6 +158,40 @@ class Note implements MusicDataElement {
   /// Specifies an ID that is unique to the entire document.
   final String? id;
 
+  const Note({
+    // --- Content ---
+    this.chord,
+    required this.form,
+    this.instrument = const [],
+    this.editorialVoice = const EditorialVoice.empty(),
+    this.type,
+    this.dots = const [],
+    this.accidental,
+    this.timeModification,
+    this.stem,
+    this.notehead,
+    this.noteheadText,
+    this.staff,
+    this.beams = const [],
+    this.notations = const [],
+    this.lyrics = const [],
+    this.play,
+    this.listen,
+    // --- Attributes ---
+    this.position,
+    this.font,
+    this.color,
+    this.printout,
+    this.printLeger,
+    this.dynamics,
+    this.endDynamics,
+    this.attack,
+    this.release,
+    this.timeOnly,
+    this.pizzicato,
+    this.id,
+  });
+
   Note._({
     // --- Content ---
     this.chord,
@@ -831,15 +865,43 @@ class RegularNote extends Note {
   /// be represented using the note element's attack and release attributes.
   /// The duration element moves the musical position when used in backup elements,
   /// forward elements, and note elements that do not contain a chord child element.
-  double duration;
+  final double duration;
 
-  List<Tie> ties;
+  final List<Tie> ties;
 
-  // RegularNote({
-  //   required this.duration,
-  //   this.ties = const [],
-  //   required Note note,
-  // }) : super._(form: note.form);
+  const RegularNote({
+    required this.duration,
+    this.ties = const [],
+    super.chord,
+    required super.form,
+    super.instrument,
+    super.editorialVoice,
+    super.type,
+    super.dots,
+    super.accidental,
+    super.timeModification,
+    super.stem,
+    super.notehead,
+    super.noteheadText,
+    super.staff,
+    super.beams,
+    super.notations,
+    super.lyrics,
+    super.play,
+    super.listen,
+    super.position,
+    super.font,
+    super.color,
+    super.printout,
+    super.printLeger,
+    super.dynamics,
+    super.endDynamics,
+    super.attack,
+    super.release,
+    super.timeOnly,
+    super.pizzicato,
+    super.id,
+  });
 
   RegularNote._fromNote({
     required this.duration,
@@ -897,19 +959,19 @@ class Pitch implements NoteForm {
   /// The step is represented by an instance of the [Step] enum,
   /// which includes values from A to G.
   @override
-  Step step;
+  final Step step;
 
   /// The microtonal alteration of the step for this non-traditional key content.
   ///
   /// This is represented as a double, where 1.0 represents a one semitone sharp,
   /// -1.0 represents a one semitone flat, 0.5 represents a quarter tone sharp, etc.
-  double? alter;
+  final double? alter;
 
   /// Octaves are represented by the numbers 0 to 9, where 4 indicates the octave started by middle C.
   @override
-  int octave;
+  final int octave;
 
-  Pitch({
+  const Pitch({
     required this.step,
     this.alter,
     required this.octave,

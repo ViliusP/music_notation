@@ -26,11 +26,11 @@ Our library uses the SMuFL (Standard Music Font Layout) standard for music symbo
 
 |<img src='./docs/images/current_status_apres.png' width='550'>|
 |:--:|
-| *Current rendering of Gabriel Fauré "Après un rêve* |
+| *Current rendering of Gabriel Fauré "Après un rêve"* |
 
 |<img src='./docs/images/target_apres.png' width='550'>|
 |:--:|
-| *Target rendering of Gabriel Fauré "Après un rêve* |
+| *Target rendering of Gabriel Fauré "Après un rêve"* |
 
 **IMPORTANT NOTE:** This library is currently in its early stages of development and not ready for production use. The API is still under active development and can change frequently. We strongly advise not using this library in a production environment as breaking changes may occur.
 
@@ -77,13 +77,13 @@ Here are some features and improvements we are considering (but not guaranteed):
 - Support for additional XML validation rules and constraints (e.g. 'token' type validation);
 - Enhanced error handling and error reporting;
 - Improved documentation and examples;
-- Simple classes remake with upcoming [inline classes](https://github.com/dart-lang/language/blob/main/accepted/future-releases/inline-classes/feature-specification.md);
+- Simple classes remake with upcoming [extension types](https://github.com/dart-lang/language/issues/2727);
 
 ## Contributing
 
 Contributions and feedback are always welcome. If you encounter any issues or have suggestions for improvements, feel free to open an issue or submit a pull request. However, please understand that the development and maintenance of this package depend on the availability and interests of the contributors.
 
-*We might pretend to care and even consider your suggestions. Just keep in mind that we're not here to cater to your every desire.*
+*Just keep in mind that we're not here to cater to your every desire. We might pretend to care and even consider your suggestions.*
 
 ## License
 

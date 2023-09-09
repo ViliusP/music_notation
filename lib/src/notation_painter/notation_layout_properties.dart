@@ -3,6 +3,11 @@ class NotationLayoutProperties {
 
   /// The height of a stave-space determines the size of all noteheads.
   static const staveSpace = staveHeight / (staffLines - 1);
+
+  /// Noteheads height is sum of stave space and staff line stroke width.
+  static const noteheadHeight = NotationLayoutProperties.staveSpace +
+      NotationLayoutProperties.staffLineStrokeWidth;
+
   static const int staffLines = 5;
   static const double staffLineStrokeWidth = 2;
   static const double ledgerLineWidth = 26;

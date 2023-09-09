@@ -1,4 +1,26 @@
 {
-    "code-runner.runInTerminal": true
+    "code-runner.runInTerminal": true,
+    "cSpell.words": [
+        "après",
+        "codepoint",
+        "jianpu",
+        "locrian",
+        "microtonal",
+        "Misura",
+        "mixolydian",
+        "musicxml",
+        "notehead",
+        "noteheads",
+        "Partwise",
+        "precompute",
+        "precomputes",
+        "rêve",
+        "RGBO",
+        "Senza",
+        "Smufl",
+        "Strikethrough",
+        "sublist",
+        "Unpitched"
+    ]
     
 }

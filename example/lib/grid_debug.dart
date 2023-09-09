@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:example/measure_grid_debug.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -28,51 +27,51 @@ class GridDebug extends StatelessWidget {
             PointerDeviceKind.unknown
           },
         ),
-        child: Column(
-          children: notationGrid.data
-              .mapIndexed((partIndex, part) => SizedBox(
-                    height: 120,
-                    child: ListView(
-                      // This next line does the trick.
-                      scrollDirection: Axis.horizontal,
-                      children: part
-                          .mapIndexed((index, measureGrid) => Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: SizedBox(
-                                  height: 120,
-                                  width: 120,
-                                  child: _MeasureGrid(
-                                    measure: measureGrid,
-                                    partIndex: partIndex,
-                                    measureIndex: index,
-                                  ),
-                                ),
-                              ))
-                          .toList(),
-                    ),
-                  ))
-              .toList(),
-        ),
+        child: Column(),
+        // child: Column(
+        //   children: notationGrid.data
+        //       .mapIndexed((partIndex, part) => SizedBox(
+        //             height: 120,
+        //             child: ListView(
+        //               // This next line does the trick.
+        //               scrollDirection: Axis.horizontal,
+        //               children: part
+        //                   .mapIndexed((index, measure) => Padding(
+        //                         padding: const EdgeInsets.all(8.0),
+        //                         child: SizedBox(
+        //                           height: 120,
+        //                           width: 120,
+        //                           child: _MeasureGrid(
+        //                             sequence: MeasureSequence.fromMeasure(
+        //                               measure: measure,
+        //                             ),
+        //                             partIndex: partIndex,
+        //                             measureIndex: index,
+        //                           ),
+        //                         ),
+        //                       ))
+        //                   .toList(),
+        //             ),
+        //           ))
+        //       .toList(),
+        // ),
       ),
     );
   }
 }
 
 class _MeasureGrid extends StatelessWidget {
-  final MeasureGrid measure;
   final int measureIndex;
   final int partIndex;
 
   const _MeasureGrid({
     super.key,
-    required this.measure,
     required this.measureIndex,
     required this.partIndex,
   });
 
   @override
   Widget build(BuildContext context) {
-    print("$partIndex");
     return Material(
       clipBehavior: Clip.antiAlias,
       color: Colors.amber,
@@ -86,7 +85,6 @@ class _MeasureGrid extends StatelessWidget {
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => MeasureGridDebug(
-                measure: measure,
                 measureNumber: measureIndex,
                 partNumber: partIndex,
               ),
