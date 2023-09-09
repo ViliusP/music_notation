@@ -6,6 +6,7 @@ import 'package:music_notation/src/models/elements/music_data/attributes/clef.da
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/music_data/note/notehead.dart';
+import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
 import 'package:music_notation/src/notation_painter/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
@@ -105,7 +106,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
     const heightPerPosition = NotationLayoutProperties.staveSpace / 2;
 
     double stemLength = positionDifference * heightPerPosition;
-    stemLength += Stem.defaultLength;
+    stemLength += StemElement.defaultLength;
 
     for (var (index, note) in sortedNotes.indexed) {
       bool isLowest = index == 0;
@@ -178,7 +179,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     double? calculatedLength;
 
     if (stemLength == null && note.type?.value.stemmed == true) {
-      calculatedLength = Stem.defaultLength;
+      calculatedLength = StemElement.defaultLength;
     }
 
     return NoteElement._(
@@ -189,6 +190,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       showLedger: showLedger,
       duration: _determineDuration(note),
       divisions: notationContext.divisions!,
+      stem: note.stem,
     );
   }
 
@@ -196,18 +198,25 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     super.key,
     required this.note,
     required this.notationContext,
-    this.stemLength = Stem.defaultLength,
+    this.stemLength = StemElement.defaultLength,
     this.showLedger = true,
     required this.duration,
     required this.divisions,
+    this.stem,
   });
 
   final Note note;
+  final Stem? stem;
 
   @override
-  double get positionalOffset =>
-      -NotationLayoutProperties.staveSpace / 2 -
-      NotationLayoutProperties.staffLineStrokeWidth / 2;
+  double get positionalOffset {
+    if (_stemmed && stem?.value == StemValue.down) {
+      return -stemLength;
+    }
+
+    return -NotationLayoutProperties.staveSpace / 2 -
+        NotationLayoutProperties.staffLineStrokeWidth / 2;
+  }
 
   final double duration;
   final double divisions;
@@ -319,9 +328,9 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     if (note.type?.value.stemmed ?? false) {
       width = width - NotationLayoutProperties.stemStrokeWidth;
 
-      var stemSize = Stem(type: type).size;
+      var stemSize = StemElement(type: type).size;
 
-      width += Stem(type: type).size.width;
+      width += StemElement(type: type).size.width;
       height += stemSize.height - noteheadSize.height / 2;
     }
 
@@ -333,46 +342,61 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
 
     LedgerLines? ledgerLines;
-
     if (showLedger) {
       ledgerLines = LedgerLines.fromElementPosition(position);
     }
-
     var notehead = NoteheadElement(
       note: note,
       ledgerLines: ledgerLines,
     );
 
-    double? noteheadWidth;
-
-    if (_stemmed) {
-      noteheadWidth =
-          notehead.size.width - NotationLayoutProperties.stemStrokeWidth;
-    }
-
     if (_isRest) {
       return RestElement.fromNote(note, notationContext.divisions!);
     }
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        SizedBox(
-          width: noteheadWidth,
-          child: notehead,
-        ),
-        if (_stemmed)
-          Padding(
-            padding: const EdgeInsets.only(
-              bottom: NotationLayoutProperties.noteheadHeight / 2,
+    var stemLeftPadding = NotationLayoutProperties.stemStrokeWidth / 1.5;
+    var stemTopPadding = NotationLayoutProperties.noteheadHeight / 2;
+    var stemBottomPadding = 0.0;
+
+    if (stem?.value == StemValue.up) {
+      stemLeftPadding = notehead.size.width;
+      stemLeftPadding -= NotationLayoutProperties.stemStrokeWidth;
+      stemTopPadding = 0;
+      stemBottomPadding = NotationLayoutProperties.noteheadHeight / 2;
+    }
+
+    StemDirection stemDirection = StemDirection.up;
+    if (stem?.value == StemValue.down) {
+      stemDirection = StemDirection.down;
+    }
+
+    return SizedBox.fromSize(
+      size: size,
+      child: Stack(
+        children: [
+          Positioned(
+            bottom: stem?.value == StemValue.up ? 0 : null,
+            top: stem?.value == StemValue.up ? null : 0,
+            child: SizedBox(
+              width: notehead.size.width,
+              child: notehead,
             ),
-            child: Stem(
-              length: stemLength,
-              type: type,
+          ),
+          if (_stemmed)
+            Padding(
+              padding: EdgeInsets.only(
+                bottom: stemBottomPadding,
+                top: stemTopPadding,
+                left: stemLeftPadding,
+              ),
+              child: StemElement(
+                length: stemLength,
+                type: type,
+                direction: stemDirection,
+              ),
             ),
-          )
-      ],
+        ],
+      ),
     );
   }
 }
@@ -630,16 +654,25 @@ class RestElement extends StatelessWidget {
   }
 }
 
-class Stem extends StatelessWidget {
-  const Stem({
+enum StemDirection {
+  up,
+  down;
+}
+
+class StemElement extends StatelessWidget {
+  const StemElement({
     super.key,
     required this.type,
     this.length = defaultLength,
+    this.direction = StemDirection.up,
   });
 
   static const defaultLength = NotationLayoutProperties.standardStemLength;
 
   final NoteTypeValue type;
+
+  /// By default value is up.
+  final StemDirection direction;
   final double length;
 
   Size get size {
@@ -651,10 +684,16 @@ class Stem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String? flagSmufl = type.upwardFlag;
+
+    if (direction == StemDirection.down) {
+      flagSmufl = type.downwardFlag;
+    }
     return CustomPaint(
       size: size,
       painter: StemPainter(
-        flagSmufl: type.upwardFlag,
+        flagSmufl: flagSmufl,
+        direction: direction,
       ),
     );
   }
