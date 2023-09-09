@@ -180,13 +180,16 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     double width = noteheadSize.width;
     double height = noteheadSize.height;
 
-    if (note.type?.value.stemmed ?? false) {
+    if (_stemmed) {
       width = width - NotationLayoutProperties.stemStrokeWidth;
 
-      var stemSize = StemElement(type: type).size;
+      var stemElement = StemElement(
+        type: type,
+        length: stemLength,
+      );
 
-      width += StemElement(type: type).size.width;
-      height += stemSize.height - noteheadSize.height / 2;
+      width += stemElement.size.width;
+      height += stemElement.size.height - noteheadSize.height / 2;
     }
 
     return Size(width, height);
@@ -381,8 +384,9 @@ class Chord extends StatelessWidget implements MeasureWidget {
     int positionDifference = highestPosition - lowestPosition;
 
     const heightPerPosition = NotationLayoutProperties.staveSpace / 2;
-    double height = positionDifference * heightPerPosition;
+    double height = (positionDifference - 1) * heightPerPosition;
     height += sortedNotesElements.last.size.height;
+    height += StemElement.defaultLength;
 
     double width = sortedNotesElements.map((e) => e.size.width).max;
 
@@ -461,7 +465,6 @@ class Chord extends StatelessWidget implements MeasureWidget {
     return SizedBox.fromSize(
       size: size,
       child: Stack(
-        // mainAxisSize: MainAxisSize.min,
         children: children,
       ),
     );
