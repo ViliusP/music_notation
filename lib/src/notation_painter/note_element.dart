@@ -15,6 +15,30 @@ import 'package:music_notation/src/notation_painter/painters/note_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
 import 'package:music_notation/src/smufl/smufl_glyph.dart';
 
+/// Notes below line 3 have up stems on the right side of the notehead.
+///
+/// Notes on or above line 3 have down stems on the left side of the notehead.
+///
+/// The stem is always placed between the two notes of an interval of a 2nd,
+/// with the upper note always to the right, the lower note always to the left.
+///
+/// When two notes share a stem:
+/// - If the interval above the middle line is greater, the stem goes down;
+/// - If the interval below the middle line is greater, the stem goes up;
+/// - If the intervals above and below the middle ine are equidistant, the stem
+/// goes down;
+///
+/// When more than two notes share a stem, the direction is determined by the
+/// highest and the lowest notes:
+/// - If the interval from the highest note to the middle line is greater,
+/// the stem goes down;
+/// - If the interval from the lowest note to the middle line is greater, the
+/// stem goes up;
+/// - If equidistant the stem goes down.
+///
+/// TODO: need to take account of different voices on the same staff:
+/// If you are writing two voices on the same staff, the stems for the upper
+/// voice will go up, and the stems for the lower voice will go down.
 class NoteElement extends StatelessWidget implements MeasureWidget {
   /// Create [NoteElement] from musicXML [note]. Throws exception if divisions of
   /// [notationContext] is null.
@@ -662,30 +686,6 @@ enum StemDirection {
   down;
 }
 
-/// Notes below line 3 have up stems on the right side of the notehead.
-///
-/// Notes on or above line 3 have down stems on the left side of the notehead.
-///
-/// The stem is always placed between the two notes of an interval of a 2nd,
-/// with the upper note always to the right, the lower note always to the left.
-///
-/// When two notes share a stem:
-/// - If the interval above the middle line is greater, the stem goes down;
-/// - If the interval below the middle line is greater, the stem goes up;
-/// - If the intervals above and below the middle ine are equidistant, the stem
-/// goes down;
-///
-/// When more than two notes share a stem, the direction is determined by the
-/// highest and the lowest notes:
-/// - If the interval from the highest note to the middle line is greater,
-/// the stem goes down;
-/// - If the interval from the lowest note to the middle line is greater, the
-/// stem goes up;
-/// - If equidistant the stem goes down.
-///
-/// TODO: need to take account of different voices on the same staff:
-/// If you are writing two voices on the same staff, the stems for the upper
-/// voice will go up, and the stems for the lower voice will go down.
 class StemElement extends StatelessWidget {
   const StemElement({
     super.key,
