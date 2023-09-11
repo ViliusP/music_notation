@@ -194,7 +194,12 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
   final bool drawLedgerLines = true;
 
   @override
-  Size get size {
+  Size get size => calculateSize(note: note, stemLength: stemLength);
+
+  static Size calculateSize({
+    required Note note,
+    required double stemLength,
+  }) {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
 
     var noteheadSize = NoteheadElement(
@@ -204,7 +209,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     double width = noteheadSize.width;
     double height = noteheadSize.height;
 
-    if (_stemmed) {
+    if (stemLength != 0) {
       width = width - NotationLayoutProperties.stemStrokeWidth;
 
       var stemElement = StemElement(
@@ -351,15 +356,13 @@ class NoteheadElement extends StatelessWidget {
 }
 
 class Chord extends StatelessWidget implements MeasureWidget {
-  @override
-  double get positionalOffset =>
-      -NotationLayoutProperties.staveSpace / 2 -
-      NotationLayoutProperties.staffLineStrokeWidth / 2;
-
-  const Chord({
+  const Chord._({
     super.key,
-    required this.children,
+    required this.notes,
+    required this.notationContext,
     required this.divisions,
+    required this.stemLength,
+    this.stem,
   });
 
   /// **IMPORTANT**: [notes] cannot be empty.
@@ -378,71 +381,167 @@ class Chord extends StatelessWidget implements MeasureWidget {
       );
     }
 
-    var children = _notesToChildren(
-      notes: notes,
-      notationContext: notationContext,
-    );
-
-    return Chord(
+    return Chord._(
       key: key,
+      notationContext: notationContext,
       divisions: notationContext.divisions!,
-      children: children,
+      stemLength: _calculateStemLength(notes),
+      stem: notes.first.stem,
+      notes: notes,
     );
   }
 
-  final List<NoteElement> children;
-  List<NoteElement> get _sortedNotesElements =>
-      children.sortedBy((element) => element.position).reversed.toList();
+  final List<Note> notes;
+  final NotationContext notationContext;
 
   final double divisions;
 
-  /// Calculates chord widget size from provided [notes].
-  static Size _calculateSize(List<NoteElement> notes) {
-    // Sorts from lowest to highest note. First being lowest.
-    List<NoteElement> sortedNotesElements = notes.sortedBy(
-      (element) => element.position,
+  final double stemLength;
+  bool get _stemmed => stemLength != 0;
+
+  final Stem? stem;
+
+  @override
+  double get positionalOffset {
+    if (stem?.value == StemValue.down) {
+      const heightPerPosition = NotationLayoutProperties.staveSpace / 2;
+      double height = positionsDifference * heightPerPosition;
+      return -_calculateStemLength(notes) + height;
+    }
+
+    return -NotationLayoutProperties.staveSpace / 2 -
+        NotationLayoutProperties.staffLineStrokeWidth / 2;
+  }
+
+  /// Difference between lowest and highest notes' positions;
+  int get positionsDifference {
+    List<Note> sortedNotes = notes.sortedBy(
+      (note) => NoteElement.determinePosition(note, null),
     );
 
-    int lowestPosition = sortedNotesElements.first.position.numeric;
-    int highestPosition = sortedNotesElements.last.position.numeric;
+    int lowestPosition = NoteElement.determinePosition(
+      sortedNotes.first,
+      null,
+    ).numeric;
+    int highestPosition = NoteElement.determinePosition(
+      sortedNotes.last,
+      null,
+    ).numeric;
+    return highestPosition - lowestPosition;
+  }
+
+  /// Calculates chord widget size from provided [notes].
+  static Size _calculateSize({
+    required List<Note> notes,
+    required double stemLength,
+    required NotationContext notationContext,
+  }) {
+    // Sorts from lowest to highest note. First being lowest.
+    List<Note> sortedNotes = notes.sortedBy(
+      (note) => NoteElement.determinePosition(note, null),
+    );
+
+    StemValue? stemType = sortedNotes.first.stem?.value;
+
+    if (stemType == StemValue.up) {
+      return NoteElement.calculateSize(
+        note: sortedNotes.first,
+        stemLength: _calculateStemLength(notes),
+      );
+    }
+
+    if (stemType == StemValue.down) {
+      return NoteElement.calculateSize(
+        note: sortedNotes.last,
+        stemLength: _calculateStemLength(notes),
+      );
+    }
+
+    int lowestPosition = NoteElement.determinePosition(
+      sortedNotes.first,
+      null,
+    ).numeric;
+    int highestPosition = NoteElement.determinePosition(
+      sortedNotes.last,
+      null,
+    ).numeric;
     int positionDifference = highestPosition - lowestPosition;
 
     const heightPerPosition = NotationLayoutProperties.staveSpace / 2;
-    double height = (positionDifference - 1) * heightPerPosition;
-    height += sortedNotesElements.last.size.height;
-    height += StemElement.defaultLength;
+    double height = positionDifference * heightPerPosition;
+    if (stemLength == 0) {
+      height += NoteElement.calculateSize(
+            note: sortedNotes.last,
+            stemLength: 0,
+          ).height /
+          2;
 
-    double width = sortedNotesElements.map((e) => e.size.width).max;
+      height += (NoteElement.calculateSize(
+            note: sortedNotes.first,
+            stemLength: 0,
+          ).height /
+          2);
+    }
+    height += stemLength;
+
+    double width = sortedNotes
+        .map((e) => NoteElement.calculateSize(note: e, stemLength: 0).width)
+        .max;
 
     return Size(width, height);
   }
 
-  static List<NoteElement> _notesToChildren({
-    required List<Note> notes,
-    required NotationContext notationContext,
-  }) {
-    // Sorts from lowest to highest note. First being lowest.
+  static double _calculateStemLength(
+    List<Note> notes,
+  ) {
     var sortedNotes = notes.sortedBy(
-      (note) => NoteElement.determinePosition(note, notationContext.clef),
+      (note) => NoteElement.determinePosition(note, null),
     );
 
-    List<NoteElement> notesElements = [];
-
     int lowestPosition = NoteElement.determinePosition(
-      notes.first,
-      notationContext.clef,
+      sortedNotes.last,
+      null,
     ).numeric;
 
     int highestPosition = NoteElement.determinePosition(
-      notes.last,
-      notationContext.clef,
+      sortedNotes.first,
+      null,
     ).numeric;
 
     int positionDifference = highestPosition - lowestPosition;
     const heightPerPosition = NotationLayoutProperties.staveSpace / 2;
 
-    double stemLength = positionDifference * heightPerPosition;
+    double stemLength = positionDifference.abs() * heightPerPosition;
     stemLength += StemElement.defaultLength;
+
+    return stemLength;
+  }
+
+  @override
+  Size get size => _calculateSize(
+        notes: notes,
+        notationContext: notationContext,
+        stemLength: stemLength,
+      );
+
+  @override
+  ElementPosition get position {
+    return notes
+        .map((note) => NoteElement.determinePosition(
+              note,
+              notationContext.clef,
+            ))
+        .first;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var children = <Widget>[];
+    var sortedNotes = notes.sortedBy(
+      (note) => NoteElement.determinePosition(note, null),
+    );
+
+    double calculatedStemLength = _calculateStemLength(notes);
 
     for (var (index, note) in sortedNotes.indexed) {
       bool isLowest = index == 0;
@@ -450,37 +549,40 @@ class Chord extends StatelessWidget implements MeasureWidget {
 
       bool showLedger = isLowest || isHighest;
 
-      var noteElement = NoteElement.fromNote(
+      ElementPosition notePosition = NoteElement.determinePosition(
+        note,
+        notationContext.clef,
+      );
+
+      double bottom = (notePosition.numeric - position.numeric).toDouble();
+      bottom *= NotationLayoutProperties.staveSpace / 2;
+
+      double stemLength = 0;
+
+      if (stem?.value == StemValue.up && isLowest) {
+        stemLength = calculatedStemLength;
+      }
+
+      if (stem?.value == StemValue.down && isHighest) {
+        stemLength = calculatedStemLength;
+        bottom = 0;
+      }
+
+      NoteElement element = NoteElement.fromNote(
         note: note,
         notationContext: notationContext,
         showLedger: showLedger,
-        stemLength: isLowest ? stemLength : 0,
+        stemLength: stemLength,
       );
 
-      notesElements.add(noteElement);
-    }
-    return notesElements;
-  }
-
-  @override
-  Size get size => _calculateSize(children);
-
-  ElementPosition get _lowest => _sortedNotesElements.first.position;
-  ElementPosition get _highest => _sortedNotesElements.last.position;
-
-  @override
-  ElementPosition get position => _sortedNotesElements.last.position;
-
-  @override
-  Widget build(BuildContext context) {
-    var children = <Widget>[];
-
-    for (var element in _sortedNotesElements) {
-      var positionsDifference = element.position.numeric - position.numeric;
+      if (stem?.value == StemValue.down && !isHighest) {
+        bottom += 35; // This is magic number that just works, need to fix it.
+        // bottom += element.positionalOffset;
+      }
 
       children.add(
         Positioned(
-          bottom: positionsDifference * NotationLayoutProperties.staveSpace / 2,
+          bottom: bottom,
           child: element,
         ),
       );
