@@ -115,6 +115,18 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     return note.form is Rest;
   }
 
+  Offset get offsetForBeam {
+    if (stem?.value == StemValue.down) {
+      return Offset(0, 0);
+    }
+
+    var noteheadSize = NoteheadElement(
+      note: note,
+    ).size;
+
+    return Offset(noteheadSize.width, size.height);
+  }
+
   static double _determineDuration(Note note) {
     switch (note) {
       case GraceTieNote _:
@@ -400,6 +412,21 @@ class Chord extends StatelessWidget implements MeasureWidget {
   bool get _stemmed => stemLength != 0;
 
   final Stem? stem;
+
+  Offset get offsetForBeam {
+    if (stem?.value == StemValue.down) {
+      return Offset(0, 0);
+    }
+
+    double width = notes
+        .map((e) => NoteElement.calculateSize(note: e, stemLength: 0).width)
+        .max;
+
+    return Offset(
+      width - NotationLayoutProperties.beamThickness / 3,
+      size.height,
+    );
+  }
 
   @override
   double get positionalOffset {
