@@ -423,7 +423,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
         .max;
 
     return Offset(
-      width - NotationLayoutProperties.beamThickness / 3,
+      width,
       size.height,
     );
   }
