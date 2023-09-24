@@ -292,6 +292,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
                 length: stemLength,
                 type: type,
                 direction: stemDirection,
+                showFlag: note.beams.isEmpty,
               ),
             ),
         ],
@@ -821,6 +822,7 @@ class StemElement extends StatelessWidget {
     required this.type,
     this.length = defaultLength,
     this.direction = StemDirection.up,
+    this.showFlag = true,
   });
 
   static const defaultLength = NotationLayoutProperties.standardStemLength;
@@ -830,6 +832,9 @@ class StemElement extends StatelessWidget {
   /// By default value is up.
   final StemDirection direction;
   final double length;
+
+  /// Determines if flag should be shown with stem. By default it is true;
+  final bool showFlag;
 
   Size get size {
     return Size(
@@ -845,6 +850,11 @@ class StemElement extends StatelessWidget {
     if (direction == StemDirection.down) {
       flagSmufl = type.downwardFlag;
     }
+
+    if (!showFlag) {
+      flagSmufl = null;
+    }
+
     return CustomPaint(
       size: size,
       painter: StemPainter(
