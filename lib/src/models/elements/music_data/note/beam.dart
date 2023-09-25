@@ -7,7 +7,8 @@ import 'package:xml/xml.dart';
 
 /// Beam values include begin, continue, end, forward hook, and backward hook.
 ///
-/// Each beam in a note is represented with a separate <beam> element with a different number attribute, starting with the eighth note beam using a value of 1.
+/// Each beam in a note is represented with a separate `<beam>` element with a
+/// different number attribute, starting with the eighth note beam using a value of 1.
 class Beam {
   /// Specifies an ID that is unique to the entire document.
   String? id;
@@ -19,30 +20,34 @@ class Beam {
 
   /// Deprecated as of Version 3.0. Formerly used for tremolos,
   ///
-  /// it needs to be specified with a "yes" value for each <beam> using it.
-  bool repeater;
+  /// it needs to be specified with a "yes" value for each `<beam>` using it.
+  bool? repeater;
 
-  /// Beams that have a begin value may also have a fan attribute to indicate accelerandos and ritardandos using fanned beams.
+  /// Beams that have a begin value may also have a fan attribute to indicate
+  /// accelerandos and ritardandos using fanned beams.
   ///
-  /// The fan attribute may also be used with a continue value if the fanning direction changes on that note.
+  /// The fan attribute may also be used with a continue value if the fanning
+  /// direction changes on that note.
   ///
   /// The value is none if not specified.
-  Fan fan;
+  Fan? fan;
 
   /// Indicates eighth note through 1024th note beams using number values 1 thru 8 respectively.
   ///
   /// The default value is 1.
   ///
-  /// Note that this attribute does not distinguish sets of beams that overlap, as it does for <slur> and other elements.
-  /// Beaming groups are distinguished by being in different voices, and/or the presence or absence of <grace> and <cue> elements.
+  /// Note that this attribute does not distinguish sets of beams that overlap,
+  /// as it does for <slur> and other elements. Beaming groups are distinguished
+  /// by being in different voices, and/or the presence or absence of `<grace>`
+  /// and `<cue> `elements.
   int number;
 
   Beam({
     this.id,
     required this.value,
     required this.color,
-    this.repeater = false,
-    this.fan = Fan.none,
+    this.repeater,
+    this.fan,
     this.number = 1,
   });
 
@@ -50,7 +55,7 @@ class Beam {
     BeamValue? beamValue = BeamValue.fromString(xmlElement.innerText);
 
     if (beamValue == null) {
-      throw XmlElementContentException(
+      throw MusicXmlTypeException(
         message: "Valid beam value is required: ${xmlElement.innerText}",
         xmlElement: xmlElement,
       );
@@ -65,7 +70,7 @@ class Beam {
         "repeater",
         repeaterAttribute,
       );
-      throw XmlElementContentException(
+      throw MusicXmlTypeException(
         message: message,
         xmlElement: xmlElement,
       );
@@ -76,7 +81,7 @@ class Beam {
     if (fanAttribute != null && fan == null) {
       final String message =
           "Bad fan attribute value was provided: $fanAttribute";
-      throw XmlElementContentException(
+      throw MusicXmlTypeException(
         message: message,
         xmlElement: xmlElement,
       );
@@ -87,7 +92,7 @@ class Beam {
     if (numberAttribute != null && number == null) {
       final String message =
           "Bad number attribute value was provided: $fanAttribute";
-      throw XmlElementContentException(
+      throw MusicXmlTypeException(
         message: message,
         xmlElement: xmlElement,
       );
@@ -97,14 +102,15 @@ class Beam {
       value: beamValue,
       id: xmlElement.getAttribute("id"),
       color: Color.fromXml(xmlElement),
-      repeater: repeater ?? false,
-      fan: fan ?? Fan.none,
+      repeater: repeater,
+      fan: fan,
       number: number ?? 1,
     );
   }
 }
 
-/// The beam-value type represents the type of beam associated with each of 8 beam levels (up to 1024th notes) available for each note.
+/// The beam-value type represents the type of beam associated with each of 8
+/// beam levels (up to 1024th notes) available for each note.
 enum BeamValue {
   begin,
 
@@ -117,7 +123,7 @@ enum BeamValue {
   static const _map = {
     'begin': begin,
     'continue': bContinue,
-    'diamond': end,
+    'end': end,
     'forward hook': forwardHook,
     'backward hook': backwardHook,
   };

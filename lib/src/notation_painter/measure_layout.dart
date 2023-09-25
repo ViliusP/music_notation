@@ -1,6 +1,5 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
-import 'package:music_notation/src/models/data_types/step.dart';
 
 import 'package:music_notation/src/models/elements/music_data/attributes/attributes.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
@@ -11,6 +10,7 @@ import 'package:music_notation/src/models/elements/music_data/attributes/time.da
 import 'package:music_notation/src/models/elements/music_data/backup.dart';
 import 'package:music_notation/src/models/elements/music_data/direction/direction.dart';
 import 'package:music_notation/src/models/elements/music_data/forward.dart';
+import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
 import 'package:music_notation/src/notation_painter/attributes_elements.dart';
@@ -21,6 +21,7 @@ import 'package:music_notation/src/notation_painter/models/notation_context.dart
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/note_element.dart';
 import 'package:music_notation/src/notation_painter/painters/barline_painter.dart';
+import 'package:music_notation/src/notation_painter/painters/beam_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/staff_lines_painter.dart';
 import 'package:music_notation/src/notation_painter/time_beat_element.dart';
 
@@ -321,6 +322,10 @@ class MeasureLayout extends StatelessWidget {
     double verticalPadding = [bottomPadding, topPadding].max;
     verticalPadding += NotationLayoutProperties.staffLineStrokeWidth / 2;
 
+    List<Widget> beams = [];
+    (double x, double y)? beamStartPosition;
+    (double x, double y)? beamEndPosition;
+
     var finalChildren = <Widget>[];
     for (var (index, child) in children.indexed) {
       // Firstly move element's bottom to staff bottom.
@@ -333,6 +338,83 @@ class MeasureLayout extends StatelessWidget {
 
       // Lastly adjust to it's by positional offset.
       fromBottom += child.positionalOffset;
+
+      if (child is Chord &&
+          child.notes
+              .map((e) => e.beams)
+              .flattened
+              .any((element) => element.value == BeamValue.begin)) {
+        beamStartPosition = (
+          child.offsetForBeam.dx +
+              spacings[index] -
+              NotationLayoutProperties.stemStrokeWidth * 0.5,
+          fromBottom + child.offsetForBeam.dy,
+        );
+      }
+      if (child is Chord &&
+          child.notes
+              .map((e) => e.beams)
+              .flattened
+              .any((element) => element.value == BeamValue.end)) {
+        beamEndPosition = (
+          child.offsetForBeam.dx +
+              spacings[index] +
+              NotationLayoutProperties.stemStrokeWidth * 0.5,
+          fromBottom + child.offsetForBeam.dy,
+        );
+      }
+
+      if (child is NoteElement &&
+          child.note.beams.firstOrNull?.value == BeamValue.begin) {
+        beamStartPosition = (
+          child.offsetForBeam.dx +
+              spacings[index] -
+              NotationLayoutProperties.stemStrokeWidth * 0.5,
+          fromBottom + child.offsetForBeam.dy,
+        );
+      }
+
+      if (child is NoteElement &&
+          child.note.beams.firstOrNull?.value == BeamValue.end) {
+        beamEndPosition = (
+          child.offsetForBeam.dx +
+              spacings[index] +
+              NotationLayoutProperties.stemStrokeWidth * 0.5,
+          fromBottom + child.offsetForBeam.dy,
+        );
+      }
+
+      if (beamStartPosition != null && beamEndPosition != null) {
+        beams.add(
+          Positioned(
+            left: beamStartPosition.$1,
+            bottom: beamStartPosition.$2,
+            child: CustomPaint(
+              painter: BeamPainter(
+                secondPoint: Offset(
+                  beamEndPosition.$1 - beamStartPosition.$1,
+                  beamStartPosition.$2 - beamEndPosition.$2,
+                ),
+              ),
+            ),
+          ),
+        );
+        // beams.add(
+        //   Positioned(
+        //     left: beamEndPosition.$1,
+        //     bottom: beamEndPosition.$2,
+        //     child: SizedBox.fromSize(
+        //       size: const Size.square(10),
+        //       child: const ColoredBox(
+        //         color: Color.fromRGBO(165, 8, 113, 1),
+        //       ),
+        //     ),
+        //   ),
+        // );
+        beamStartPosition = null;
+        beamEndPosition = null;
+      }
+
       finalChildren.add(
         Positioned(
           left: spacings[index],
@@ -358,6 +440,7 @@ class MeasureLayout extends StatelessWidget {
               child: const StaffLines(),
             ),
           ),
+          ...beams,
           ...finalChildren,
         ],
       );

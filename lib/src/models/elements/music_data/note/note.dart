@@ -350,8 +350,9 @@ class Note implements MusicDataElement {
       );
     }
 
-    // Iterable<XmlElement> beamElements = xmlElement.findElements("beam");
-    // List<Beam> beams = beamElements.map((e) => Beam.fromXml(e)).toList();
+    // ---- Beams ----
+    Iterable<XmlElement> beamElements = xmlElement.findElements("beam");
+    List<Beam> beams = beamElements.map((e) => Beam.fromXml(e)).toList();
 
     // ---- lyrics ----
     var lyricsElements = xmlElement.findElements("lyrics");
@@ -393,7 +394,7 @@ class Note implements MusicDataElement {
       // notehead: notehead,
       // noteheadText: noteheadText,
       staff: staff,
-      // beams: beams,
+      beams: beams,
       lyrics: lyrics,
       // play: play,
       // listen: listen,
