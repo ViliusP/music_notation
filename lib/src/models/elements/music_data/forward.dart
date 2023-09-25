@@ -2,39 +2,46 @@ import 'package:music_notation/src/models/elements/editorial.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 import 'package:xml/xml.dart';
 
-/// The backup and forward elements are required to coordinate multiple voices in one part,
-/// including music on multiple staves.
+/// Represents a forward movement in musical time without specifying the actual note
+/// or rest content. This can denote the duration of music that isn't notated and can
+/// be useful in specific musical contexts or applications.
 ///
-/// The forward element is generally used within voices and staves.
+/// For example, consider a MusicXML document depicting only a specific voice
+/// or part from a larger score. If that voice has silent gaps, the [Forward]
+/// class can be used to indicate the duration of those gaps, ensuring accurate timing
+/// relative to the complete piece.
 ///
-/// Duration values should always be positive,
-/// and should not cross measure boundaries or mid-measure changes in the divisions value.
+/// The [duration] value must always be positive and shouldn't exceed measure
+/// boundaries or adjust with mid-measure changes in the divisions value.
 class Forward implements MusicDataElement {
-  /// The duration element is defined within a group due to its uses within the note, figured-bass, backup, and forward elements.
-  double duration;
+  /// Defines the duration, which is used within multiple musical elements such as
+  /// notes, figured-bass, backup, and forward.
+  final double duration;
 
-  EditorialVoice editorialVoice;
+  final EditorialVoice editorialVoice;
 
-  /// The staff element is defined within a group due to its use by both notes and direction elements.
-  int staff;
+  /// Staff assignment is required only for music notated on multiple staves.
+  /// Staff values are integers, where 1 refers to the top-most staff in a part.
+  final int? staff;
 
-  Forward({
+  const Forward({
     required this.duration,
-    required this.staff,
-    required this.editorialVoice,
+    this.staff,
+    this.editorialVoice = const EditorialVoice.empty(),
   });
 
+  /// Constructs a [Forward] instance from the given XML element.
   factory Forward.fromXml(XmlElement xmlElement) {
     return Forward(
-      duration: 1,
-      staff: 1,
+      duration: 1, // TODO: Update with correct parsing logic from xmlElement
+      staff: null, // TODO: Update with correct parsing logic from xmlElement
       editorialVoice: EditorialVoice.fromXml(xmlElement),
     );
   }
 
   @override
   XmlElement toXml() {
-    // TODO: implement toXml
+    // TODO: Implement the conversion to XML
     throw UnimplementedError();
   }
 }
