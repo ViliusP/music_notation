@@ -277,7 +277,7 @@ class MeasureLayout extends StatelessWidget {
       leftOffset += spacingBetweenElements + child.size.width;
     }
 
-    spacings.add(leftOffset + horizontalPadding + lastElementWidth);
+    spacings.add(leftOffset + horizontalPadding);
     return spacings;
   }
 
