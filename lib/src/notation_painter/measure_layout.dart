@@ -264,21 +264,98 @@ class MeasureLayout extends StatelessWidget {
   /// and compression.
   static List<double> _computeSpacings(List<MeasureWidget> children) {
     const horizontalPadding = 8.0;
-    double leftOffset = horizontalPadding;
     // Will be change in future.
-    const spacingBetweenElements = 8;
-    double lastElementWidth = 0;
+    const spacingBetweenElements = 8.0;
 
-    final List<double> spacings = [];
+    final List<double> spacingsByChildren = [];
+
+    List<String> voices = children
+        .map((e) {
+          if (e is NoteElement) {
+            return e.note.editorialVoice.voice;
+          }
+          if (e is Chord) {
+            return e.notes.firstOrNull?.editorialVoice.voice;
+          }
+          return null;
+        })
+        .whereType<String>()
+        .toList();
+
+    if (voices.isEmpty) {
+      voices = ["1"];
+    }
+    voices.add("0");
+
+    // Zeroth (index == 0) list reserved for generic element.
+    // nth lists are used for spacings of specific staff notes and chords.
+    Map<String, List<double>> spacingsByStaff = {for (var e in voices) e: []};
+
+    Map<String, Size> lastStaffElementSize = {
+      for (var e in voices) e: Size.zero
+    };
 
     for (var child in children) {
-      spacings.add(leftOffset);
-      lastElementWidth = child.size.width;
-      leftOffset += spacingBetweenElements + child.size.width;
+      if (child is NoteElement) {
+        String voice = child.note.editorialVoice.voice ?? "1";
+
+        double startingOffset = horizontalPadding;
+        startingOffset += spacingsByStaff["0"]!.lastOrNull ?? 0;
+        startingOffset += lastStaffElementSize["0"]!.width;
+        startingOffset += spacingBetweenElements;
+
+        double noteLeftOffset =
+            spacingsByStaff[voice]!.lastOrNull ?? startingOffset;
+
+        if (spacingsByStaff[voice]!.isNotEmpty) {
+          noteLeftOffset += spacingBetweenElements;
+          noteLeftOffset += lastStaffElementSize[voice]!.width;
+        }
+
+        spacingsByStaff[voice]!.add(noteLeftOffset);
+        spacingsByChildren.add(noteLeftOffset);
+
+        lastStaffElementSize[voice] = child.size;
+      }
+
+      if (child is Chord) {
+        String voice = child.notes.firstOrNull?.editorialVoice.voice ?? "1";
+
+        double startingOffset = horizontalPadding;
+        startingOffset += spacingsByStaff["0"]!.lastOrNull ?? 0;
+        startingOffset += lastStaffElementSize["0"]!.width;
+        startingOffset += spacingBetweenElements;
+
+        double noteLeftOffset =
+            spacingsByStaff[voice]!.lastOrNull ?? startingOffset;
+
+        if (spacingsByStaff[voice]!.isNotEmpty) {
+          noteLeftOffset += spacingBetweenElements;
+          noteLeftOffset += lastStaffElementSize[voice]!.width;
+        }
+
+        spacingsByStaff[voice]!.add(noteLeftOffset);
+        spacingsByChildren.add(noteLeftOffset);
+
+        lastStaffElementSize[voice] = child.size;
+      }
+      if (child is! NoteElement && child is! Chord) {
+        double leftOffset = spacingsByChildren.lastOrNull ?? horizontalPadding;
+        leftOffset += spacingBetweenElements;
+        leftOffset += lastStaffElementSize["0"]!.width;
+        spacingsByChildren.add(leftOffset);
+
+        spacingsByStaff["0"]!.add(leftOffset);
+        lastStaffElementSize["0"] = child.size;
+      }
     }
 
-    spacings.add(leftOffset + horizontalPadding);
-    return spacings;
+    spacingsByChildren.add(spacingsByChildren.max +
+        children[spacingsByChildren.indexOf(spacingsByChildren.max)]
+            .size
+            .width +
+        horizontalPadding);
+    return spacingsByChildren;
   }
 
   @override
