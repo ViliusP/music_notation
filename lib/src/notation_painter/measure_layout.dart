@@ -194,22 +194,6 @@ class MeasureLayout extends StatelessWidget {
             children.add(ClefElement(clef: clef));
           }
           // -----------------------------
-          // Time
-          // -----------------------------
-
-          for (var times in element.times) {
-            switch (times) {
-              case TimeBeat _:
-                var timeBeatWidget = TimeBeatElement(timeBeat: times);
-                children.add(timeBeatWidget);
-                break;
-              case SenzaMisura _:
-                throw UnimplementedError(
-                  "Senza misura is not implemented in renderer yet",
-                );
-            }
-          }
-          // -----------------------------
           // Keys
           // -----------------------------
           var keys = element.keys;
@@ -235,6 +219,24 @@ class MeasureLayout extends StatelessWidget {
           if (keySignature.firstPosition != null) {
             children.add(keySignature);
           }
+          // -----------------------------
+          // Time
+          // -----------------------------
+
+          for (var times in element.times) {
+            switch (times) {
+              case TimeBeat _:
+                var timeBeatWidget = TimeBeatElement(timeBeat: times);
+                children.add(timeBeatWidget);
+                break;
+              case SenzaMisura _:
+                throw UnimplementedError(
+                  "Senza misura is not implemented in renderer yet",
+                );
+            }
+          }
+
+          /// BREAK
           break;
         // case Harmony _:
         //   break;
