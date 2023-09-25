@@ -399,18 +399,7 @@ class MeasureLayout extends StatelessWidget {
             ),
           ),
         );
-        // beams.add(
-        //   Positioned(
-        //     left: beamEndPosition.$1,
-        //     bottom: beamEndPosition.$2,
-        //     child: SizedBox.fromSize(
-        //       size: const Size.square(10),
-        //       child: const ColoredBox(
-        //         color: Color.fromRGBO(165, 8, 113, 1),
-        //       ),
-        //     ),
-        //   ),
-        // );
+
         beamStartPosition = null;
         beamEndPosition = null;
       }
