@@ -124,7 +124,10 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       note: note,
     ).size;
 
-    return Offset(noteheadSize.width, size.height);
+    return Offset(
+      noteheadSize.width - NotationLayoutProperties.stemStrokeWidth,
+      size.height,
+    );
   }
 
   static double _determineDuration(Note note) {
@@ -424,7 +427,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
         .max;
 
     return Offset(
-      width,
+      width - NotationLayoutProperties.stemStrokeWidth,
       size.height,
     );
   }

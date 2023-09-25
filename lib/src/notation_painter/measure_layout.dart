@@ -347,7 +347,7 @@ class MeasureLayout extends StatelessWidget {
         beamStartPosition = (
           child.offsetForBeam.dx +
               spacings[index] -
-              NotationLayoutProperties.stemStrokeWidth * 1.5,
+              NotationLayoutProperties.stemStrokeWidth * 0.5,
           fromBottom + child.offsetForBeam.dy,
         );
       }
@@ -357,7 +357,9 @@ class MeasureLayout extends StatelessWidget {
               .flattened
               .any((element) => element.value == BeamValue.end)) {
         beamEndPosition = (
-          child.offsetForBeam.dx + spacings[index],
+          child.offsetForBeam.dx +
+              spacings[index] +
+              NotationLayoutProperties.stemStrokeWidth * 0.5,
           fromBottom + child.offsetForBeam.dy,
         );
       }
@@ -367,7 +369,7 @@ class MeasureLayout extends StatelessWidget {
         beamStartPosition = (
           child.offsetForBeam.dx +
               spacings[index] -
-              NotationLayoutProperties.stemStrokeWidth * 1.5,
+              NotationLayoutProperties.stemStrokeWidth * 0.5,
           fromBottom + child.offsetForBeam.dy,
         );
       }
@@ -375,7 +377,9 @@ class MeasureLayout extends StatelessWidget {
       if (child is NoteElement &&
           child.note.beams.firstOrNull?.value == BeamValue.end) {
         beamEndPosition = (
-          child.offsetForBeam.dx + spacings[index],
+          child.offsetForBeam.dx +
+              spacings[index] +
+              NotationLayoutProperties.stemStrokeWidth * 0.5,
           fromBottom + child.offsetForBeam.dy,
         );
       }
