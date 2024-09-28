@@ -30,6 +30,11 @@ class Editorial {
         level = null;
 
   static Editorial fromXml(XmlElement xmlElement) {
+    // ignore: unused_local_variable
+    var footElement = xmlElement.getElement("footnote");
+    // ignore: unused_local_variable
+    var levelElement = xmlElement.getElement("level");
+
     return Editorial();
   }
 }
@@ -144,8 +149,8 @@ class EditorialVoice extends Editorial {
 
     return EditorialVoice(
       voice: xmlElement.getElement("voice")?.innerText,
-      footnote: editorial.footnote,
-      level: editorial.level,
+      footnote: editorial?.footnote,
+      level: editorial?.level,
     );
   }
 }
