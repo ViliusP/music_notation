@@ -378,6 +378,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
     required this.notationContext,
     required this.divisions,
     required this.stemLength,
+    required this.duration,
     this.stem,
   });
 
@@ -402,6 +403,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
       notationContext: notationContext,
       divisions: notationContext.divisions!,
       stemLength: _calculateStemLength(notes),
+      duration: NoteElement._determineDuration(notes.first),
       stem: notes.first.stem,
       notes: notes,
     );
@@ -411,6 +413,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
   final NotationContext notationContext;
 
   final double divisions;
+  final double duration;
 
   final double stemLength;
   bool get _stemmed => stemLength != 0;
