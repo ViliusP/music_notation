@@ -12,7 +12,7 @@ import 'package:music_notation/src/models/elements/music_data/direction/directio
 import 'package:music_notation/src/models/elements/music_data/forward.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
-import 'package:music_notation/src/models/elements/music_data/note/note.dart';
+\import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
 import 'package:music_notation/src/notation_painter/attributes_elements.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
@@ -153,6 +153,92 @@ class MeasureLayout extends StatelessWidget {
     return null;
   }
 
+  static List<MeasureWidget> _processAttributes(
+    Attributes element,
+    int? staff,
+    NotationContext notationContext,
+  ) {
+    List<MeasureWidget> widgets = [];
+    // -----------------------------
+    // Clef
+    // -----------------------------
+    if (element.clefs.isNotEmpty) {
+      if (element.clefs.length > 1 && staff == null) {
+        throw UnimplementedError(
+          "Multiple clef signs is not implemented in renderer yet",
+        );
+      }
+
+      Clef clef = element.clefs.firstWhere(
+        (element) => staff != null ? element.number == staff : true,
+      );
+
+      notationContext = notationContext.copyWith(
+        clef: clef,
+        divisions: element.divisions,
+      );
+      widgets.add(ClefElement(clef: clef));
+    }
+    // -----------------------------
+    // Keys
+    // -----------------------------
+    var keys = element.keys;
+    if (keys.isEmpty) return widgets;
+    musicxml.Key? musicKey;
+    if (keys.length == 1 && keys.first.number == null) {
+      musicKey = keys.first;
+    }
+    if (staff != null && keys.length > 1) {
+      musicKey = keys.firstWhereOrNull(
+        (element) => element.number == staff,
+      );
+    }
+    if (musicKey == null) {
+      throw ArgumentError(
+        "There are multiple keys elements in attributes, therefore correct staff must be provided",
+      );
+    }
+    var keySignature = KeySignature.fromKeyData(
+      keyData: musicKey,
+      notationContext: notationContext,
+    );
+    if (keySignature.firstPosition != null) {
+      widgets.add(keySignature);
+    }
+    // -----------------------------
+    // Time
+    // -----------------------------
+
+    for (var times in element.times) {
+      switch (times) {
+        case TimeBeat _:
+          var timeBeatWidget = TimeBeatElement(timeBeat: times);
+          widgets.add(timeBeatWidget);
+          break;
+        case SenzaMisura _:
+          throw UnimplementedError(
+            "Senza misura is not implemented in renderer yet",
+          );
+      }
+    }
+    return widgets;
+  }
+
+  static NotationContext _contextAfterAttributes(
+    Attributes element,
+    int? staff,
+    NotationContext notationContext,
+  ) {
+    Clef clef = element.clefs.firstWhere(
+      (element) => staff != null ? element.number == staff : true,
+    );
+
+    return notationContext.copyWith(
+      clef: clef,
+      divisions: element.divisions,
+    );
+  }
+
   static List<MeasureWidget> _computeChildren({
     required NotationContext context,
     required int? staff,
@@ -186,70 +272,13 @@ class MeasureLayout extends StatelessWidget {
         case Direction _:
           break;
         case Attributes _:
-          // -----------------------------
-          // Clef
-          // -----------------------------
-          if (element.clefs.isNotEmpty) {
-            if (element.clefs.length > 1 && staff == null) {
-              throw UnimplementedError(
-                "Multiple clef signs is not implemented in renderer yet",
-              );
-            }
-
-            Clef clef = element.clefs.firstWhere(
-              (element) => staff != null ? element.number == staff : true,
-            );
-
-            contextAfter = contextAfter.copyWith(
-              clef: clef,
-              divisions: element.divisions,
-            );
-            children.add(ClefElement(clef: clef));
-          }
-          // -----------------------------
-          // Keys
-          // -----------------------------
-          var keys = element.keys;
-          if (keys.isEmpty) break;
-          musicxml.Key? musicKey;
-          if (keys.length == 1 && keys.first.number == null) {
-            musicKey = keys.first;
-          }
-          if (staff != null && keys.length > 1) {
-            musicKey = keys.firstWhereOrNull(
-              (element) => element.number == staff,
-            );
-          }
-          if (musicKey == null) {
-            throw ArgumentError(
-              "There are multiple keys elements in attributes, therefore correct staff must be provided",
-            );
-          }
-          var keySignature = KeySignature.fromKeyData(
-            keyData: musicKey,
-            notationContext: contextAfter,
+          var attributesWidgets = _processAttributes(
+            element,
+            staff,
+            contextAfter,
           );
-          if (keySignature.firstPosition != null) {
-            children.add(keySignature);
-          }
-          // -----------------------------
-          // Time
-          // -----------------------------
-
-          for (var times in element.times) {
-            switch (times) {
-              case TimeBeat _:
-                var timeBeatWidget = TimeBeatElement(timeBeat: times);
-                children.add(timeBeatWidget);
-                break;
-              case SenzaMisura _:
-                throw UnimplementedError(
-                  "Senza misura is not implemented in renderer yet",
-                );
-            }
-          }
-
-          /// BREAK
+          contextAfter = _contextAfterAttributes(element, staff, contextAfter);
+          children.addAll(attributesWidgets);
           break;
         // case Harmony _:
         //   break;
