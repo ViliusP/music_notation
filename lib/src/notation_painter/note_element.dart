@@ -244,6 +244,22 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
   }
 
   @override
+  double get alignmentOffset => _calculateAlignmentOffset();
+
+  double _calculateAlignmentOffset() {
+    var noteheadSize = NoteheadElement(
+      note: note,
+    ).size;
+
+    var width = noteheadSize.width;
+    if (_stemmed) {
+      width += NotationLayoutProperties.stemStrokeWidth;
+    }
+
+    return width / 2;
+  }
+
+  @override
   Widget build(BuildContext context) {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
 
@@ -306,10 +322,6 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       ),
     );
   }
-
-  @override
-  // TODO: implement alignmentOffset
-  double get alignmentOffset => throw UnimplementedError();
 }
 
 /// Painting noteheads, it should fill the space between two lines, touching
@@ -567,6 +579,22 @@ class Chord extends StatelessWidget implements MeasureWidget {
       );
 
   @override
+  double get alignmentOffset => _calculateAlignmentOffset();
+
+  double _calculateAlignmentOffset() {
+    var noteheadSize = NoteheadElement(
+      note: notes.first,
+    ).size;
+
+    var width = noteheadSize.width;
+    if (_stemmed) {
+      width += NotationLayoutProperties.stemStrokeWidth;
+    }
+
+    return width / 2;
+  }
+
+  @override
   ElementPosition get position {
     return notes
         .map((note) => NoteElement.determinePosition(
@@ -637,10 +665,6 @@ class Chord extends StatelessWidget implements MeasureWidget {
       ),
     );
   }
-
-  @override
-  // TODO: implement alignmentOffset
-  double get alignmentOffset => throw UnimplementedError();
 }
 
 class RestElement extends StatelessWidget {
