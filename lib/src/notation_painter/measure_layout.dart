@@ -126,25 +126,20 @@ class MeasureLayout extends StatelessWidget {
         "Context or measure must have divisions in attributes element",
       );
     }
-    if (staff != note.staff && staff != null) return null;
-    List<Note> notes = [];
-    notes.add(note);
-    for (int i = 0; i < measureData.length; i++) {
+    if (staff != null && staff != note.staff) return null;
+
+    List<Note> notes = [note];
+    int i = 0;
+    while (i < measureData.length) {
       var nextElement = measureData[i];
-      if (nextElement is! Note || nextElement.chord == null) {
+      if (nextElement is Note &&
+          nextElement.chord != null &&
+          (staff == null || staff == nextElement.staff)) {
+        notes.add(nextElement);
+        i++;
+      } else {
         break;
       }
-      if (staff == nextElement.staff || staff == null) {
-        notes.add(nextElement);
-        continue;
-      }
-      break;
-    }
-    if (notes.length == 1) {
-      return NoteElement.fromNote(
-        note: note,
-        notationContext: context,
-      );
     }
     if (notes.length > 1) {
       return Chord.fromNotes(
@@ -152,7 +147,10 @@ class MeasureLayout extends StatelessWidget {
         notationContext: context,
       );
     }
-    return null;
+    return NoteElement.fromNote(
+      note: note,
+      notationContext: context,
+    );
   }
 
   static List<MeasureWidget> _processAttributes(
@@ -168,7 +166,7 @@ class MeasureLayout extends StatelessWidget {
       // TODO: Implement handling for multiple clefs per staff.
       if (element.clefs.length > 1 && staff == null) {
         throw UnimplementedError(
-          "Multiple clef signs is not implemented in renderer yet",
+          "Multiple clef signs are not implemented in renderer yet",
         );
       }
 
@@ -461,84 +459,38 @@ class MeasureLayout extends StatelessWidget {
 
     var positionedElements = <Widget>[];
     for (var (index, child) in children.indexed) {
-      // Firstly move element's bottom to staff bottom.
+      // Calculate bottomOffset for the current child.
       double bottomOffset = verticalPadding;
 
-      // Then move it by interval.
+      // Calculate the interval from staff bottom to the child's position.
       int intervalFromStaffBottom = ElementPosition.staffBottom.numeric;
       intervalFromStaffBottom -= child.position.numeric + 1;
       bottomOffset -= (intervalFromStaffBottom * offsetPerPosition);
 
-      // Lastly adjust to it's by positional offset.
+      // Adjust by the child's positional offset.
       bottomOffset += child.positionalOffset;
 
-      if (child is Chord &&
-          child.notes
-              .map((e) => e.beams)
-              .flattened
-              .any((element) => element.value == BeamValue.begin)) {
-        beamStartOffset = (
-          child.offsetForBeam.dx +
-              spacings[index] -
-              NotationLayoutProperties.stemStrokeWidth * 0.5,
-          bottomOffset + child.offsetForBeam.dy,
-        );
-      }
-      if (child is Chord &&
-          child.notes
-              .map((e) => e.beams)
-              .flattened
-              .any((element) => element.value == BeamValue.end)) {
-        beamEndOffset = (
-          child.offsetForBeam.dx +
-              spacings[index] +
-              NotationLayoutProperties.stemStrokeWidth * 0.5,
-          bottomOffset + child.offsetForBeam.dy,
-        );
-      }
+      // Process beam for the current child
+      var beamResult = BeamProcessingResult.processBeam(
+        child: child,
+        index: index,
+        bottomOffset: bottomOffset,
+        spacings: spacings,
+        beamStartOffset: beamStartOffset,
+        beamEndOffset: beamEndOffset,
+      );
 
-      if (child is NoteElement &&
-          child.note.beams.firstOrNull?.value == BeamValue.begin) {
-        beamStartOffset = (
-          child.offsetForBeam.dx +
-              spacings[index] -
-              NotationLayoutProperties.stemStrokeWidth * 0.5,
-          bottomOffset + child.offsetForBeam.dy,
-        );
-      }
-
-      if (child is NoteElement &&
-          child.note.beams.firstOrNull?.value == BeamValue.end) {
-        beamEndOffset = (
-          [
-            child.offsetForBeam.dx,
-            spacings[index],
-            NotationLayoutProperties.stemStrokeWidth * 0.5
-          ].sum,
-          bottomOffset + child.offsetForBeam.dy,
-        );
-      }
-
-      if (beamStartOffset != null && beamEndOffset != null) {
-        beams.add(
-          Positioned(
-            left: beamStartOffset.$1,
-            bottom: beamStartOffset.$2,
-            child: CustomPaint(
-              painter: BeamPainter(
-                secondPoint: Offset(
-                  beamEndOffset.$1 - beamStartOffset.$1,
-                  beamStartOffset.$2 - beamEndOffset.$2,
-                ),
-              ),
-            ),
-          ),
-        );
-
+      // Update beam offsets and beams if necessary
+      beamStartOffset = beamResult.beamStartOffset;
+      beamEndOffset = beamResult.beamEndOffset;
+      if (beamResult.beamWidget != null) {
+        beams.add(beamResult.beamWidget!);
+        // Reset the beam offsets
         beamStartOffset = null;
         beamEndOffset = null;
       }
 
+      // Add the positioned child to the list.
       positionedElements.add(
         Positioned(
           left: spacings[index],
@@ -607,6 +559,92 @@ class StaffLines extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+class BeamProcessingResult {
+  final (double x, double y)? beamStartOffset;
+  final (double x, double y)? beamEndOffset;
+  final Widget? beamWidget;
+
+  BeamProcessingResult({
+    this.beamStartOffset,
+    this.beamEndOffset,
+    this.beamWidget,
+  });
+
+  static BeamProcessingResult processBeam({
+    required MeasureWidget child,
+    required int index,
+    required double bottomOffset,
+    required List<double> spacings,
+    (double x, double y)? beamStartOffset,
+    (double x, double y)? beamEndOffset,
+  }) {
+    bool isBeamStart = false;
+    bool isBeamEnd = false;
+    double? offsetX;
+    double? offsetY;
+
+    // Check if the child has an offsetForBeam property
+    if (child is NoteElement) {
+      var beamValue = child.note.beams.firstOrNull?.value;
+      if (beamValue != null) {
+        isBeamStart = beamValue == BeamValue.begin;
+        isBeamEnd = beamValue == BeamValue.end;
+      }
+      offsetX = child.offsetForBeam.dx;
+      offsetY = child.offsetForBeam.dy;
+    } else if (child is Chord) {
+      var beamsList = child.notes.expand((note) => note.beams);
+      isBeamStart = beamsList.any((beam) => beam.value == BeamValue.begin);
+      isBeamEnd = beamsList.any((beam) => beam.value == BeamValue.end);
+      offsetX = child.offsetForBeam.dx;
+      offsetY = child.offsetForBeam.dy;
+    }
+
+    // Update beam offsets
+    if (isBeamStart && offsetX != null && offsetY != null) {
+      beamStartOffset = (
+        offsetX +
+            spacings[index] -
+            NotationLayoutProperties.stemStrokeWidth * 0.5,
+        bottomOffset + offsetY,
+      );
+    }
+
+    if (isBeamEnd && offsetX != null && offsetY != null) {
+      beamEndOffset = (
+        offsetX +
+            spacings[index] +
+            NotationLayoutProperties.stemStrokeWidth * 0.5,
+        bottomOffset + offsetY,
+      );
+    }
+
+    // If both beam offsets are defined, create the beam widget
+    if (beamStartOffset != null && beamEndOffset != null) {
+      Widget beamWidget = Positioned(
+        left: beamStartOffset.$1,
+        bottom: beamStartOffset.$2,
+        child: CustomPaint(
+          painter: BeamPainter(
+            secondPoint: Offset(
+              beamEndOffset.$1 - beamStartOffset.$1,
+              beamStartOffset.$2 - beamEndOffset.$2,
+            ),
+          ),
+        ),
+      );
+      return BeamProcessingResult(
+        beamWidget: beamWidget,
+      );
+    }
+
+    return BeamProcessingResult(
+      beamStartOffset: beamStartOffset,
+      beamEndOffset: beamEndOffset,
     );
   }
 }
