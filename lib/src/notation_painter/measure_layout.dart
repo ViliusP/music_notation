@@ -26,6 +26,7 @@ import 'package:music_notation/src/notation_painter/painters/beam_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/staff_lines_painter.dart';
 import 'package:music_notation/src/notation_painter/time_beat_element.dart';
 
+/// A widget that lays out musical measures with notes, chords, beams, and staff lines.
 class MeasureLayout extends StatelessWidget {
   static const double _minPositionPadding = 4;
 
@@ -113,6 +114,7 @@ class MeasureLayout extends StatelessWidget {
     );
   }
 
+  /// Processes a note and determines if it should be rendered as a single note or part of a chord.
   static MeasureWidget? _processNote(
     Note note,
     NotationContext context,
@@ -163,6 +165,7 @@ class MeasureLayout extends StatelessWidget {
     // Clef
     // -----------------------------
     if (element.clefs.isNotEmpty) {
+      // TODO: Implement handling for multiple clefs per staff.
       if (element.clefs.length > 1 && staff == null) {
         throw UnimplementedError(
           "Multiple clef signs is not implemented in renderer yet",
@@ -316,7 +319,7 @@ class MeasureLayout extends StatelessWidget {
     // Will be change in future.
     const spacingBetweenElements = 8.0;
 
-    final List<double> spacingsByChildren = [];
+    final List<double> childSpacings = [];
 
     List<String> voices = children
         .map((e) {
@@ -338,9 +341,9 @@ class MeasureLayout extends StatelessWidget {
 
     // Zeroth (index == 0) list reserved for generic element.
     // nth lists are used for spacings of specific staff notes and chords.
-    Map<String, List<double>> spacingsByStaff = {for (var e in voices) e: []};
+    Map<String, List<double>> spacingsByVoice = {for (var e in voices) e: []};
 
-    Map<String, Size> lastStaffElementSize = {
+    Map<String, Size> lastElementSizeByVoice = {
       for (var e in voices) e: Size.zero
     };
 
@@ -351,64 +354,63 @@ class MeasureLayout extends StatelessWidget {
         // Calculate the starting horizontal offset by adding padding, last generic spacing,
         // the width of the last generic element, and the standard spacing between elements.
         double startingOffset = horizontalPadding;
-        startingOffset += spacingsByStaff["0"]!.lastOrNull ?? 0;
-        startingOffset += lastStaffElementSize["0"]!.width;
+        startingOffset += spacingsByVoice["0"]!.lastOrNull ?? 0;
+        startingOffset += lastElementSizeByVoice["0"]!.width;
         startingOffset += spacingBetweenElements;
 
         double noteLeftOffset =
-            spacingsByStaff[voice]!.lastOrNull ?? startingOffset;
+            spacingsByVoice[voice]!.lastOrNull ?? startingOffset;
 
-        if (spacingsByStaff[voice]!.isNotEmpty) {
+        if (spacingsByVoice[voice]!.isNotEmpty) {
           noteLeftOffset += spacingBetweenElements;
-          noteLeftOffset += lastStaffElementSize[voice]!.width;
+          noteLeftOffset += lastElementSizeByVoice[voice]!.width;
         }
 
-        spacingsByStaff[voice]!.add(noteLeftOffset);
-        spacingsByChildren.add(noteLeftOffset);
+        spacingsByVoice[voice]!.add(noteLeftOffset);
+        childSpacings.add(noteLeftOffset);
 
-        lastStaffElementSize[voice] = child.size;
+        lastElementSizeByVoice[voice] = child.size;
       }
 
       if (child is Chord) {
         String voice = child.notes.firstOrNull?.editorialVoice.voice ?? "1";
 
         double startingOffset = horizontalPadding;
-        startingOffset += spacingsByStaff["0"]!.lastOrNull ?? 0;
-        startingOffset += lastStaffElementSize["0"]!.width;
+        startingOffset += spacingsByVoice["0"]!.lastOrNull ?? 0;
+        startingOffset += lastElementSizeByVoice["0"]!.width;
         startingOffset += spacingBetweenElements;
 
         double noteLeftOffset =
-            spacingsByStaff[voice]!.lastOrNull ?? startingOffset;
+            spacingsByVoice[voice]!.lastOrNull ?? startingOffset;
 
-        if (spacingsByStaff[voice]!.isNotEmpty) {
+        if (spacingsByVoice[voice]!.isNotEmpty) {
           noteLeftOffset += spacingBetweenElements;
-          noteLeftOffset += lastStaffElementSize[voice]!.width;
+          noteLeftOffset += lastElementSizeByVoice[voice]!.width;
         }
 
-        spacingsByStaff[voice]!.add(noteLeftOffset);
-        spacingsByChildren.add(noteLeftOffset);
+        spacingsByVoice[voice]!.add(noteLeftOffset);
+        childSpacings.add(noteLeftOffset);
 
-        lastStaffElementSize[voice] = child.size;
+        lastElementSizeByVoice[voice] = child.size;
       }
       if (child is! NoteElement && child is! Chord) {
-        double leftOffset = spacingsByChildren.lastOrNull ?? horizontalPadding;
+        double leftOffset = childSpacings.lastOrNull ?? horizontalPadding;
         leftOffset += spacingBetweenElements;
-        leftOffset += lastStaffElementSize["0"]!.width;
-        spacingsByChildren.add(leftOffset);
+        leftOffset += lastElementSizeByVoice["0"]!.width;
+        childSpacings.add(leftOffset);
 
-        spacingsByStaff["0"]!.add(leftOffset);
-        lastStaffElementSize["0"] = child.size;
+        spacingsByVoice["0"]!.add(leftOffset);
+        lastElementSizeByVoice["0"] = child.size;
       }
     }
 
-    spacingsByChildren.add(spacingsByChildren.max +
-        children[spacingsByChildren.indexOf(spacingsByChildren.max)]
-            .size
-            .width +
+    childSpacings.add(childSpacings.max +
+        children[childSpacings.indexOf(childSpacings.max)].size.width +
         horizontalPadding);
-    return spacingsByChildren;
+    return childSpacings;
   }
 
+  // Calculate the vertical padding based on the highest note above and below the staff.
   double _calculateVerticalPadding() {
     const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
 
@@ -454,32 +456,32 @@ class MeasureLayout extends StatelessWidget {
     double verticalPadding = _calculateVerticalPadding();
 
     List<Widget> beams = [];
-    (double x, double y)? beamStartPosition;
-    (double x, double y)? beamEndPosition;
+    (double x, double y)? beamStartOffset;
+    (double x, double y)? beamEndOffset;
 
-    var finalChildren = <Widget>[];
+    var positionedElements = <Widget>[];
     for (var (index, child) in children.indexed) {
       // Firstly move element's bottom to staff bottom.
-      double fromBottom = verticalPadding;
+      double bottomOffset = verticalPadding;
 
       // Then move it by interval.
       int intervalFromStaffBottom = ElementPosition.staffBottom.numeric;
       intervalFromStaffBottom -= child.position.numeric + 1;
-      fromBottom -= (intervalFromStaffBottom * offsetPerPosition);
+      bottomOffset -= (intervalFromStaffBottom * offsetPerPosition);
 
       // Lastly adjust to it's by positional offset.
-      fromBottom += child.positionalOffset;
+      bottomOffset += child.positionalOffset;
 
       if (child is Chord &&
           child.notes
               .map((e) => e.beams)
               .flattened
               .any((element) => element.value == BeamValue.begin)) {
-        beamStartPosition = (
+        beamStartOffset = (
           child.offsetForBeam.dx +
               spacings[index] -
               NotationLayoutProperties.stemStrokeWidth * 0.5,
-          fromBottom + child.offsetForBeam.dy,
+          bottomOffset + child.offsetForBeam.dy,
         );
       }
       if (child is Chord &&
@@ -487,58 +489,60 @@ class MeasureLayout extends StatelessWidget {
               .map((e) => e.beams)
               .flattened
               .any((element) => element.value == BeamValue.end)) {
-        beamEndPosition = (
+        beamEndOffset = (
           child.offsetForBeam.dx +
               spacings[index] +
               NotationLayoutProperties.stemStrokeWidth * 0.5,
-          fromBottom + child.offsetForBeam.dy,
+          bottomOffset + child.offsetForBeam.dy,
         );
       }
 
       if (child is NoteElement &&
           child.note.beams.firstOrNull?.value == BeamValue.begin) {
-        beamStartPosition = (
+        beamStartOffset = (
           child.offsetForBeam.dx +
               spacings[index] -
               NotationLayoutProperties.stemStrokeWidth * 0.5,
-          fromBottom + child.offsetForBeam.dy,
+          bottomOffset + child.offsetForBeam.dy,
         );
       }
 
       if (child is NoteElement &&
           child.note.beams.firstOrNull?.value == BeamValue.end) {
-        beamEndPosition = (
-          child.offsetForBeam.dx +
-              spacings[index] +
-              NotationLayoutProperties.stemStrokeWidth * 0.5,
-          fromBottom + child.offsetForBeam.dy,
+        beamEndOffset = (
+          [
+            child.offsetForBeam.dx,
+            spacings[index],
+            NotationLayoutProperties.stemStrokeWidth * 0.5
+          ].sum,
+          bottomOffset + child.offsetForBeam.dy,
         );
       }
 
-      if (beamStartPosition != null && beamEndPosition != null) {
+      if (beamStartOffset != null && beamEndOffset != null) {
         beams.add(
           Positioned(
-            left: beamStartPosition.$1,
-            bottom: beamStartPosition.$2,
+            left: beamStartOffset.$1,
+            bottom: beamStartOffset.$2,
             child: CustomPaint(
               painter: BeamPainter(
                 secondPoint: Offset(
-                  beamEndPosition.$1 - beamStartPosition.$1,
-                  beamStartPosition.$2 - beamEndPosition.$2,
+                  beamEndOffset.$1 - beamStartOffset.$1,
+                  beamStartOffset.$2 - beamEndOffset.$2,
                 ),
               ),
             ),
           ),
         );
 
-        beamStartPosition = null;
-        beamEndPosition = null;
+        beamStartOffset = null;
+        beamEndOffset = null;
       }
 
-      finalChildren.add(
+      positionedElements.add(
         Positioned(
           left: spacings[index],
-          bottom: fromBottom,
+          bottom: bottomOffset,
           child: child,
         ),
       );
@@ -561,7 +565,7 @@ class MeasureLayout extends StatelessWidget {
             ),
           ),
           ...beams,
-          ...finalChildren,
+          ...positionedElements,
         ],
       );
     });
@@ -569,13 +573,13 @@ class MeasureLayout extends StatelessWidget {
 }
 
 class StaffLines extends StatelessWidget {
-  final bool startBarline;
-  final bool endBarline;
+  final bool hasStartBarline;
+  final bool hasEndBarline;
 
   const StaffLines({
     super.key,
-    this.startBarline = false,
-    this.endBarline = true,
+    this.hasStartBarline = false,
+    this.hasEndBarline = true,
   });
 
   @override
@@ -583,7 +587,7 @@ class StaffLines extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        if (startBarline)
+        if (hasStartBarline)
           Align(
             alignment: Alignment.centerLeft,
             child: CustomPaint(
@@ -594,7 +598,7 @@ class StaffLines extends StatelessWidget {
         CustomPaint(
           painter: StaffLinesPainter(),
         ),
-        if (endBarline)
+        if (hasEndBarline)
           Align(
             alignment: Alignment.centerRight,
             child: CustomPaint(
