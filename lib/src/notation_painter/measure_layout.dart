@@ -15,6 +15,7 @@ import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
 import 'package:music_notation/src/notation_painter/attributes_elements.dart';
+import 'package:music_notation/src/notation_painter/cursor_element.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
@@ -49,9 +50,9 @@ class MeasureLayout extends StatelessWidget {
     NotationContext contextAfter = notationContext.copyWith();
     for (var measureElement in children) {
       switch (measureElement) {
-        case ClefElement _:
+        case ClefElement clefElement:
           contextAfter = contextAfter.copyWith(
-            clef: measureElement.clef,
+            clef: clefElement.clef,
           );
           break;
         case NoteElement _:
@@ -102,7 +103,6 @@ class MeasureLayout extends StatelessWidget {
       measure: measure,
       staff: staff,
     );
-
     var spacings = _computeSpacings(children);
 
     return MeasureLayout._(
@@ -310,9 +310,24 @@ class MeasureLayout extends StatelessWidget {
     return children;
   }
 
-  static List<double> _computeSpacings(List<MeasureWidget> children) {
-    const double horizontalPadding = 8.0;
-    const double spacingBetweenElements = 8.0;
+  static List<double> _computeSpacings(
+    List<MeasureWidget> children,
+  ) {
+    const double horizontalPadding = 12.0;
+
+    double divisions = 1;
+    for (var child in children.reversed) {
+      if (child is NoteElement) {
+        divisions = child.divisions;
+        break;
+      }
+      if (child is Chord) {
+        divisions = child.divisions;
+        break;
+      }
+    }
+
+    double fullDurationSize = 54;
 
     final List<double> childSpacings = [];
 
@@ -338,32 +353,35 @@ class MeasureLayout extends StatelessWidget {
       for (var voice in voices) voice: []
     };
 
-    final Map<String, Size> lastElementSizeByVoice = {
-      for (var voice in voices) voice: Size.zero
+    final Map<String, MeasureWidget?> lastElementByVoice = {
+      for (var voice in voices) voice: null
     };
 
     // Helper function to process NoteElement or Chord.
     void processNoteOrChord(MeasureWidget child, String voice) {
+      double lastNoteDuration = 0;
+      var lastElement = lastElementByVoice[voice];
+      if (lastElement is NoteElement) lastNoteDuration = lastElement.duration;
+      if (lastElement is Chord) lastNoteDuration = lastElement.duration;
+
       // Calculate the starting horizontal offset.
       double startingOffset = [
         horizontalPadding,
-        (spacingsByVoice["0"]!.lastOrNull ?? 0),
-        lastElementSizeByVoice["0"]!.width,
-        spacingBetweenElements
+        (spacingsByVoice["0"]?.lastOrNull ?? 0),
+        (lastElementByVoice["0"]?.size.width ?? 0),
       ].sum;
 
       double noteLeftOffset =
-          spacingsByVoice[voice]!.lastOrNull ?? startingOffset;
+          spacingsByVoice[voice]?.lastOrNull ?? startingOffset;
 
       if (spacingsByVoice[voice]!.isNotEmpty) {
-        noteLeftOffset += spacingBetweenElements;
-        noteLeftOffset += lastElementSizeByVoice[voice]!.width;
+        noteLeftOffset += (lastNoteDuration / divisions) * fullDurationSize;
       }
 
       spacingsByVoice[voice]!.add(noteLeftOffset);
       childSpacings.add(noteLeftOffset);
 
-      lastElementSizeByVoice[voice] = child.size;
+      lastElementByVoice[voice] = child;
     }
 
     for (var child in children) {
@@ -380,14 +398,13 @@ class MeasureLayout extends StatelessWidget {
       // Non-note elements.
       double leftOffset = [
         childSpacings.lastOrNull ?? horizontalPadding,
-        spacingBetweenElements,
-        lastElementSizeByVoice["0"]!.width,
+        lastElementByVoice["0"]?.size.width ?? 0,
       ].sum;
 
       childSpacings.add(leftOffset);
 
       spacingsByVoice["0"]!.add(leftOffset);
-      lastElementSizeByVoice["0"] = child.size;
+      lastElementByVoice["0"] = child;
     }
 
     // Add final spacing.
@@ -398,7 +415,6 @@ class MeasureLayout extends StatelessWidget {
     final double lastChildWidth = children[maxIndex].size.width;
 
     childSpacings.add(maxSpacing + lastChildWidth + horizontalPadding);
-
     return childSpacings;
   }
 
