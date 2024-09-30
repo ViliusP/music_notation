@@ -255,4 +255,8 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
       ),
     );
   }
+
+  @override
+  // TODO: implement alignmentOffset
+  double get alignmentOffset => throw UnimplementedError();
 }

@@ -48,4 +48,7 @@ class CursorElement extends StatelessWidget implements MeasureWidget {
     );
     */
   }
+
+  @override
+  double get alignmentOffset => 0;
 }

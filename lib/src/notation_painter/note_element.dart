@@ -306,6 +306,10 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       ),
     );
   }
+
+  @override
+  // TODO: implement alignmentOffset
+  double get alignmentOffset => throw UnimplementedError();
 }
 
 /// Painting noteheads, it should fill the space between two lines, touching
@@ -633,6 +637,10 @@ class Chord extends StatelessWidget implements MeasureWidget {
       ),
     );
   }
+
+  @override
+  // TODO: implement alignmentOffset
+  double get alignmentOffset => throw UnimplementedError();
 }
 
 class RestElement extends StatelessWidget {
