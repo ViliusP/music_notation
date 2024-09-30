@@ -409,35 +409,28 @@ class MeasureLayout extends StatelessWidget {
     return spacingsByChildren;
   }
 
-  @override
-  Widget build(BuildContext context) {
+  double _calculateVerticalPadding() {
     const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
 
-    List<double> spacings = _initialSpacings!;
-
-    double distanceToStaffTop = offsetPerPosition;
-    distanceToStaffTop *= ElementPosition.staffTop.numeric;
-
-    double distanceToStaffBottom = offsetPerPosition;
-    distanceToStaffBottom *= ElementPosition.staffBottom.numeric;
+    double distanceToStaffTop =
+        offsetPerPosition * ElementPosition.staffTop.numeric;
+    double distanceToStaffBottom =
+        offsetPerPosition * ElementPosition.staffBottom.numeric;
 
     double topPadding = 0;
     double bottomPadding = 0;
 
     for (var child in children) {
-      // The length by which an element extends or protrudes above the staff.
-      double aboveStaffLength = offsetPerPosition * child.position.numeric;
-      aboveStaffLength += child.size.height;
-      aboveStaffLength += child.positionalOffset;
-      aboveStaffLength -= distanceToStaffTop;
+      double aboveStaffLength = offsetPerPosition * child.position.numeric +
+          child.size.height +
+          child.positionalOffset -
+          distanceToStaffTop;
       aboveStaffLength = [0.0, aboveStaffLength].max;
 
-      // The length by which an element extends or protrudes below the staff.
-      double belowStaffLength = offsetPerPosition * child.position.numeric;
-      belowStaffLength += child.positionalOffset;
-      belowStaffLength -= distanceToStaffBottom;
-      belowStaffLength = [0.0, belowStaffLength].min;
-      belowStaffLength = belowStaffLength.abs();
+      double belowStaffLength = offsetPerPosition * child.position.numeric +
+          child.positionalOffset -
+          distanceToStaffBottom;
+      belowStaffLength = [0.0, belowStaffLength].min.abs();
 
       if (topPadding < aboveStaffLength) {
         topPadding = aboveStaffLength;
@@ -449,6 +442,16 @@ class MeasureLayout extends StatelessWidget {
 
     double verticalPadding = [bottomPadding, topPadding].max;
     verticalPadding += NotationLayoutProperties.staffLineStrokeWidth / 2;
+
+    return verticalPadding;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    List<double> spacings = _initialSpacings!;
+
+    const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
+    double verticalPadding = _calculateVerticalPadding();
 
     List<Widget> beams = [];
     (double x, double y)? beamStartPosition;
