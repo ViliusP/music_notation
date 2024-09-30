@@ -12,7 +12,7 @@ import 'package:music_notation/src/models/elements/music_data/direction/directio
 import 'package:music_notation/src/models/elements/music_data/forward.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
-\import 'package:music_notation/src/models/elements/music_data/note/note.dart';
+import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
 import 'package:music_notation/src/notation_painter/attributes_elements.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
@@ -247,8 +247,7 @@ class MeasureLayout extends StatelessWidget {
     NotationContext contextAfter = context.copyWith();
 
     final children = <MeasureWidget>[];
-    int i = 0;
-    while (i < measure.data.length) {
+    for (int i = 0; i < measure.data.length; i++) {
       var element = measure.data[i];
       switch (element) {
         case Note note:
@@ -299,7 +298,6 @@ class MeasureLayout extends StatelessWidget {
         // case Bookmark _:
         //   break;
       }
-      i++;
     }
     return children;
   }
