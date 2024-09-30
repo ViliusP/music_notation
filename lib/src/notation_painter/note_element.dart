@@ -209,7 +209,10 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
   final bool drawLedgerLines = true;
 
   @override
-  Size get size => calculateSize(note: note, stemLength: stemLength);
+  Size get size => calculateSize(
+        note: note,
+        stemLength: stemLength,
+      );
 
   static Size calculateSize({
     required Note note,
@@ -230,6 +233,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       var stemElement = StemElement(
         type: type,
         length: stemLength,
+        showFlag: note.beams.isEmpty,
       );
 
       width += stemElement.size.width;
@@ -844,7 +848,7 @@ class StemElement extends StatelessWidget {
 
   Size get size {
     return Size(
-      StemPainter.strokeWidth + type.flagWidth,
+      StemPainter.strokeWidth + (showFlag ? type.flagWidth : 0),
       length,
     );
   }
