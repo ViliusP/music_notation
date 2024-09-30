@@ -239,6 +239,13 @@ class MeasureLayout extends StatelessWidget {
     );
   }
 
+  /// Builds a list of [MeasureWidget]s based on the provided measure data and notation context.
+  ///
+  /// - [context]: The current notation context.
+  /// - [staff]: The staff number to filter elements (optional).
+  /// - [measure]: The measure data containing musical elements.
+  ///
+  /// Returns a list of [MeasureWidget]s representing the musical elements within the measure.
   static List<MeasureWidget> _computeChildren({
     required NotationContext context,
     required int? staff,
@@ -341,6 +348,8 @@ class MeasureLayout extends StatelessWidget {
       if (child is NoteElement) {
         String voice = child.note.editorialVoice.voice ?? "1";
 
+        // Calculate the starting horizontal offset by adding padding, last generic spacing,
+        // the width of the last generic element, and the standard spacing between elements.
         double startingOffset = horizontalPadding;
         startingOffset += spacingsByStaff["0"]!.lastOrNull ?? 0;
         startingOffset += lastStaffElementSize["0"]!.width;
