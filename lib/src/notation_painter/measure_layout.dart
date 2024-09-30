@@ -312,101 +312,95 @@ class MeasureLayout extends StatelessWidget {
     return children;
   }
 
-  /// Returns initial list of spacings that do not consider measure's stretching
-  /// and compression.
   static List<double> _computeSpacings(List<MeasureWidget> children) {
-    const horizontalPadding = 8.0;
-    // Will be change in future.
-    const spacingBetweenElements = 8.0;
+    const double horizontalPadding = 8.0;
+    const double spacingBetweenElements = 8.0;
 
     final List<double> childSpacings = [];
 
-    List<String> voices = children
-        .map((e) {
-          if (e is NoteElement) {
-            return e.note.editorialVoice.voice;
-          }
-          if (e is Chord) {
-            return e.notes.firstOrNull?.editorialVoice.voice;
-          }
-          return null;
-        })
-        .whereType<String>()
-        .toList();
+    // Collect all voices from the children.
+    final Set<String> voices = {
+      for (final child in children)
+        if (child is NoteElement)
+          child.note.editorialVoice.voice ?? "1"
+        else if (child is Chord)
+          child.notes.firstOrNull?.editorialVoice.voice ?? "1"
+    };
 
+    // Ensure there is at least one voice.
     if (voices.isEmpty) {
-      voices = ["1"];
+      voices.add("1");
     }
+
+    // Add "0" for generic elements.
     voices.add("0");
 
-    // Zeroth (index == 0) list reserved for generic element.
-    // nth lists are used for spacings of specific staff notes and chords.
-    Map<String, List<double>> spacingsByVoice = {for (var e in voices) e: []};
-
-    Map<String, Size> lastElementSizeByVoice = {
-      for (var e in voices) e: Size.zero
+    // Initialize spacings and sizes for each voice.
+    final Map<String, List<double>> spacingsByVoice = {
+      for (var voice in voices) voice: []
     };
+
+    final Map<String, Size> lastElementSizeByVoice = {
+      for (var voice in voices) voice: Size.zero
+    };
+
+    // Helper function to process NoteElement or Chord.
+    void processNoteOrChord(MeasureWidget child, String voice) {
+      // Calculate the starting horizontal offset.
+      double startingOffset = [
+        horizontalPadding,
+        (spacingsByVoice["0"]!.lastOrNull ?? 0),
+        lastElementSizeByVoice["0"]!.width,
+        spacingBetweenElements
+      ].sum;
+
+      double noteLeftOffset =
+          spacingsByVoice[voice]!.lastOrNull ?? startingOffset;
+
+      if (spacingsByVoice[voice]!.isNotEmpty) {
+        noteLeftOffset += spacingBetweenElements;
+        noteLeftOffset += lastElementSizeByVoice[voice]!.width;
+      }
+
+      spacingsByVoice[voice]!.add(noteLeftOffset);
+      childSpacings.add(noteLeftOffset);
+
+      lastElementSizeByVoice[voice] = child.size;
+    }
 
     for (var child in children) {
       if (child is NoteElement) {
         String voice = child.note.editorialVoice.voice ?? "1";
-
-        // Calculate the starting horizontal offset by adding padding, last generic spacing,
-        // the width of the last generic element, and the standard spacing between elements.
-        double startingOffset = horizontalPadding;
-        startingOffset += spacingsByVoice["0"]!.lastOrNull ?? 0;
-        startingOffset += lastElementSizeByVoice["0"]!.width;
-        startingOffset += spacingBetweenElements;
-
-        double noteLeftOffset =
-            spacingsByVoice[voice]!.lastOrNull ?? startingOffset;
-
-        if (spacingsByVoice[voice]!.isNotEmpty) {
-          noteLeftOffset += spacingBetweenElements;
-          noteLeftOffset += lastElementSizeByVoice[voice]!.width;
-        }
-
-        spacingsByVoice[voice]!.add(noteLeftOffset);
-        childSpacings.add(noteLeftOffset);
-
-        lastElementSizeByVoice[voice] = child.size;
+        processNoteOrChord(child, voice);
+        continue;
       }
-
       if (child is Chord) {
         String voice = child.notes.firstOrNull?.editorialVoice.voice ?? "1";
-
-        double startingOffset = horizontalPadding;
-        startingOffset += spacingsByVoice["0"]!.lastOrNull ?? 0;
-        startingOffset += lastElementSizeByVoice["0"]!.width;
-        startingOffset += spacingBetweenElements;
-
-        double noteLeftOffset =
-            spacingsByVoice[voice]!.lastOrNull ?? startingOffset;
-
-        if (spacingsByVoice[voice]!.isNotEmpty) {
-          noteLeftOffset += spacingBetweenElements;
-          noteLeftOffset += lastElementSizeByVoice[voice]!.width;
-        }
-
-        spacingsByVoice[voice]!.add(noteLeftOffset);
-        childSpacings.add(noteLeftOffset);
-
-        lastElementSizeByVoice[voice] = child.size;
+        processNoteOrChord(child, voice);
+        continue;
       }
-      if (child is! NoteElement && child is! Chord) {
-        double leftOffset = childSpacings.lastOrNull ?? horizontalPadding;
-        leftOffset += spacingBetweenElements;
-        leftOffset += lastElementSizeByVoice["0"]!.width;
-        childSpacings.add(leftOffset);
+      // Non-note elements.
+      double leftOffset = [
+        childSpacings.lastOrNull ?? horizontalPadding,
+        spacingBetweenElements,
+        lastElementSizeByVoice["0"]!.width,
+      ].sum;
 
-        spacingsByVoice["0"]!.add(leftOffset);
-        lastElementSizeByVoice["0"] = child.size;
-      }
+      childSpacings.add(leftOffset);
+
+      spacingsByVoice["0"]!.add(leftOffset);
+      lastElementSizeByVoice["0"] = child.size;
     }
 
-    childSpacings.add(childSpacings.max +
-        children[childSpacings.indexOf(childSpacings.max)].size.width +
-        horizontalPadding);
+    // Add final spacing.
+    final double maxSpacing = childSpacings.isNotEmpty
+        ? childSpacings.reduce((a, b) => a > b ? a : b)
+        : 0.0;
+    final int maxIndex = childSpacings.indexOf(maxSpacing);
+    final double lastChildWidth = children[maxIndex].size.width;
+
+    childSpacings.add(maxSpacing + lastChildWidth + horizontalPadding);
+
     return childSpacings;
   }
 
