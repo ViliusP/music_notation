@@ -417,15 +417,21 @@ class MeasureLayout extends StatelessWidget {
     double bottomPadding = 0;
 
     for (var child in children) {
-      double aboveStaffLength = offsetPerPosition * child.position.numeric +
-          child.size.height +
-          child.positionalOffset -
-          distanceToStaffTop;
+      double aboveStaffLength = [
+        offsetPerPosition * child.position.numeric,
+        child.size.height,
+        child.positionalOffset,
+        -distanceToStaffTop
+      ].sum;
+
       aboveStaffLength = [0.0, aboveStaffLength].max;
 
-      double belowStaffLength = offsetPerPosition * child.position.numeric +
-          child.positionalOffset -
-          distanceToStaffBottom;
+      double belowStaffLength = [
+        offsetPerPosition * child.position.numeric,
+        child.positionalOffset,
+        -distanceToStaffBottom,
+      ].sum;
+
       belowStaffLength = [0.0, belowStaffLength].min.abs();
 
       if (topPadding < aboveStaffLength) {
