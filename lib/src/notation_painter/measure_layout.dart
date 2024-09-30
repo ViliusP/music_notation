@@ -10,6 +10,7 @@ import 'package:music_notation/src/models/elements/music_data/attributes/time.da
 import 'package:music_notation/src/models/elements/music_data/backup.dart';
 import 'package:music_notation/src/models/elements/music_data/direction/direction.dart';
 import 'package:music_notation/src/models/elements/music_data/forward.dart';
+import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
@@ -112,6 +113,46 @@ class MeasureLayout extends StatelessWidget {
     );
   }
 
+  static MeasureWidget? _processNote(
+    Note note,
+    NotationContext context,
+    List<MusicDataElement> measureData,
+    int? staff,
+  ) {
+    if (context.divisions == null) {
+      throw ArgumentError(
+        "Context or measure must have divisions in attributes element",
+      );
+    }
+    if (staff != note.staff && staff != null) return null;
+    List<Note> notes = [];
+    notes.add(note);
+    for (int i = 0; i < measureData.length; i++) {
+      var nextElement = measureData[i];
+      if (nextElement is! Note || nextElement.chord == null) {
+        break;
+      }
+      if (staff == nextElement.staff || staff == null) {
+        notes.add(nextElement);
+        continue;
+      }
+      break;
+    }
+    if (notes.length == 1) {
+      return NoteElement.fromNote(
+        note: note,
+        notationContext: context,
+      );
+    }
+    if (notes.length > 1) {
+      return Chord.fromNotes(
+        notes: notes,
+        notationContext: context,
+      );
+    }
+    return null;
+  }
+
   static List<MeasureWidget> _computeChildren({
     required NotationContext context,
     required int? staff,
@@ -124,48 +165,20 @@ class MeasureLayout extends StatelessWidget {
     while (i < measure.data.length) {
       var element = measure.data[i];
       switch (element) {
-        case Note _:
-          if (contextAfter.divisions == null) {
-            throw ArgumentError(
-              "Context or measure must have divisions in attributes element",
-            );
+        case Note note:
+          var noteWidget = _processNote(
+            note,
+            contextAfter,
+            measure.data.sublist(i + 1),
+            staff,
+          );
+          if (noteWidget != null) {
+            children.add(noteWidget);
           }
-
-          if (staff == element.staff || staff == null) {
-            List<Note> notes = [];
-            notes.add(element);
-            int j = i + 1;
-            for (; j < measure.data.length; j++) {
-              var nextElement = measure.data[j];
-              if (nextElement is! Note || nextElement.chord == null) {
-                break;
-              }
-              if (staff == nextElement.staff || staff == null) {
-                notes.add(nextElement);
-                continue;
-              }
-              break;
-            }
-            i = j - 1;
-            if (notes.length == 1) {
-              var noteElement = NoteElement.fromNote(
-                note: element,
-                notationContext: contextAfter,
-              );
-
-              children.add(noteElement);
-            }
-            if (notes.length > 1) {
-              var chordElement = Chord.fromNotes(
-                notes: notes,
-                notationContext: contextAfter,
-              );
-
-              children.add(chordElement);
-            }
+          if (noteWidget is Chord) {
+            i += noteWidget.notes.length - 1;
           }
           break;
-
         case Backup _:
           break;
         case Forward _:
