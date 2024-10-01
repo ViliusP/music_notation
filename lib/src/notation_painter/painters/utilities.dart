@@ -5,11 +5,12 @@ class PainterUtilities {
     Canvas canvas,
     String symbol, {
     Offset offset = Offset.zero,
+    Color color = const Color.fromRGBO(0, 0, 0, 1.0),
   }) {
-    const textStyle = TextStyle(
+    TextStyle textStyle = TextStyle(
       fontFamily: 'Sebastian',
       fontSize: 48,
-      color: Color.fromRGBO(0, 0, 0, 1.0),
+      color: color,
     );
     final textPainter = TextPainter(
       text: TextSpan(text: symbol, style: textStyle),
