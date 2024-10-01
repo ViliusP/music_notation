@@ -10,10 +10,16 @@ class CursorElement extends StatelessWidget implements MeasureWidget {
   /// duration and the positives represents `<forward>` duration.
   final double duration;
 
+  final String? voice;
+
+  final int? staff;
+
   /// Creates a [CursorElement] with the given [duration] data.
   const CursorElement({
     super.key,
     required this.duration,
+    this.voice,
+    this.staff,
   });
 
   /// No positional offset is needed for `<forward>`.
