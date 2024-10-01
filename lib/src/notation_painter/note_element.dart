@@ -15,6 +15,13 @@ import 'package:music_notation/src/notation_painter/painters/note_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
 import 'package:music_notation/src/smufl/smufl_glyph.dart';
 
+const Map<String, Color> _voiceColors = {
+  "0": Color.fromRGBO(0, 0, 0, 1),
+  "1": Color.fromRGBO(121, 0, 0, 1),
+  "2": Color.fromRGBO(0, 133, 40, 1),
+  "3": Color.fromRGBO(206, 192, 0, 1),
+};
+
 /// Notes below line 3 have up stems on the right side of the notehead.
 ///
 /// Notes on or above line 3 have down stems on the left side of the notehead.
@@ -270,6 +277,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     var notehead = NoteheadElement(
       note: note,
       ledgerLines: ledgerLines,
+      // color: _voiceColors[note.editorialVoice.voice ?? "0"]!, // Colors by voice
     );
 
     if (_isRest) {
@@ -335,6 +343,8 @@ class NoteheadElement extends StatelessWidget {
 
   final LedgerLines? ledgerLines;
 
+  final Color color;
+
   /// Size of notehead symbol.
   ///
   /// The minim is usually slightly larger than the black notehead.
@@ -377,6 +387,7 @@ class NoteheadElement extends StatelessWidget {
     super.key,
     required this.note,
     this.ledgerLines,
+    this.color = const Color.fromRGBO(0, 0, 0, 1),
   });
 
   @override
@@ -386,6 +397,7 @@ class NoteheadElement extends StatelessWidget {
       painter: NotePainter(
         smufl: _smufl,
         ledgerLines: ledgerLines,
+        color: color,
       ),
     );
   }
