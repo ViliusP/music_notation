@@ -20,6 +20,7 @@ import 'package:music_notation/src/notation_painter/time_beat_element.dart';
 /// ```dart
 /// Timeline timeline = Timeline(divisions: 4.0);
 /// timeline.compute(measureWidgets);
+/// List<double> spacings = timeline.toList(10.0);
 /// print(timeline);
 /// ```
 class Timeline {
@@ -154,13 +155,27 @@ class Timeline {
     }
   }
 
-  /// Converts the timeline into a list of time-based values.
+  /// Converts the timeline into a list of time-based spatial values.
+  ///
+  /// This method translates the internal timeline data into a list of double
+  /// values representing the spatial distribution of musical elements. Each value
+  /// corresponds to a specific position on the timeline, calculated based on the
+  /// provided [spacePerTimeUnit], which defines the spatial representation of each
+  /// time unit (e.g., pixels per beat).
   ///
   /// ### Parameters:
   /// - [spacePerTimeUnit]: The spatial representation of each time unit, used for rendering.
   ///
   /// ### Returns:
   /// A list of double values representing the timeline's spatial distribution.
+  ///
+  /// ### Example:
+  /// ```dart
+  /// Timeline timeline = Timeline(divisions: 4.0);
+  /// // Assume timeline.compute(...) has been called to populate _value
+  /// List<double> spacings = timeline.toList(10.0);
+  /// // spacings now contains spatial positions for each _TimelineValue
+  /// ```
   List<double> toList(double spacePerTimeUnit) {
     int totalLength = _value.values.fold(0, (sum, list) => sum + list.length);
     List<double> spacings = List.generate(totalLength, (_) => 0);
@@ -262,6 +277,25 @@ class Timeline {
   }
 }
 
+/// Represents a value within the timeline, associated with a specific time position.
+///
+/// The [_TimelineValue] class encapsulates information about a musical element's
+/// occurrence in the timeline, including its voice, name, index within the measure,
+/// duration, and any additional offset required after the element.
+///
+/// This class is used internally by the [Timeline] class to organize and retrieve
+/// musical elements based on their temporal positioning.
+///
+/// ### Example:
+/// ```dart
+/// _TimelineValue timelineValue = _TimelineValue(
+///   index: 5,
+///   duration: 2.0,
+///   voice: "1",
+///   name: "CPosition",
+///   offsetAfter: 1.0,
+/// );
+/// ```
 class _TimelineValue {
   final String voice;
   final String name;
