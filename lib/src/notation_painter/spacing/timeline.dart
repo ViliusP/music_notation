@@ -167,11 +167,11 @@ class Timeline {
   /// This method translates the internal timeline data into a list of double
   /// values representing the spatial distribution of musical elements. Each value
   /// corresponds to a specific position on the timeline, calculated based on the
-  /// provided [spacePerTimeUnit], which defines the spatial representation of each
+  /// provided [spacePerFullDivision], which defines the spatial representation of each
   /// time unit (e.g., pixels per beat).
   ///
   /// ### Parameters:
-  /// - [spacePerTimeUnit]: The spatial representation of each time unit, used for rendering.
+  /// - [spacePerFullDivision]: The spatial representation of each time unit, used for rendering.
   ///
   /// ### Returns:
   /// A list of double values representing the timeline's spatial distribution.
