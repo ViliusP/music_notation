@@ -6,30 +6,72 @@ import 'package:music_notation/src/notation_painter/cursor_element.dart';
 import 'package:music_notation/src/notation_painter/measure_element.dart';
 import 'package:music_notation/src/notation_painter/note_element.dart';
 
+/// Represents a timeline for musical elements within a score.
+///
+/// The [Timeline] class processes a list of [MeasureWidget] instances, categorizing
+/// them based on their position in time and associating them with specific voices.
+/// This is particularly useful for rendering musical notation, analyzing score structure,
+/// or synchronizing musical events with other media.
+///
+/// ### Example:
+/// ```dart
+/// Timeline timeline = Timeline(divisions: 4.0);
+/// timeline.compute(measureWidgets);
+/// print(timeline);
+/// ```
 class Timeline {
+  /// The number of divisions per measure.
+  ///
+  /// This value typically corresponds to the musical notation's time signature,
+  /// indicating how many subdivisions exist within each measure.
   final double divisions;
 
+  /// Internal storage mapping time positions to their respective timeline values.
+  ///
+  /// The key represents the cursor's position in time (e.g., beats or subdivisions),
+  /// and the value is a list of [_TimelineValue] instances that occur at that position.
   final Map<int, List<_TimelineValue>> _value = {};
+
+  /// Tracks the furthest point in time reached by the timeline.
+  ///
+  /// This is useful for determining the overall length of the timeline and for
+  /// generating visual representations or performing analyses.
   int maxCursor = 0;
 
-  Set<String> get uniqueVoices => _value.values
+  /// A set of unique voice identifiers present in the timeline.
+  ///
+  /// Voices represent different musical lines or parts within a score.
+  /// This getter extracts all unique voices from the internal [_value] map,
+  /// ensuring that each voice is only listed once.
+  Set<String> get _uniqueVoices => _value.values
       .expand((list) => list) // Flatten all lists into a single iterable
       .map((timelineValue) => timelineValue.voice) // Extract the voice property
       .whereType<String>() // Filter out null values and cast to String
       .toSet(); // Convert to a set to remove duplicates
 
+  /// Creates a [Timeline] instance with the specified number of divisions.
+  ///
+  /// ### Parameters:
+  /// - [divisions]: The number of divisions per measure, typically based on the time signature.
   Timeline({required this.divisions});
 
+  /// Processes a list of [MeasureWidget] instances to populate the timeline.
+  ///
+  /// This method iterates through each [MeasureWidget], categorizing them based
+  /// on their type (e.g., [NoteElement], [Chord], [CursorElement]) and associating
+  /// them with the appropriate time positions and voices. It updates the internal
+  /// [_value] map and tracks the maximum cursor position.
+  ///
+  /// ### Parameters:
+  /// - [children]: A list of [MeasureWidget] instances representing musical elements.
   void compute(List<MeasureWidget> children) {
     int cursor = 0;
-    // _value[cursor] = [];
     for (final (index, child) in children.indexed) {
+      _value[cursor] ??= [];
+      _value[cursor] = [];
       switch (child) {
         case NoteElement _:
           String voice = child.note.editorialVoice.voice ?? "1";
-          if (_value[cursor] == null) {
-            _value[cursor] = [];
-          }
           _value[cursor]!.add(_TimelineValue(
             index,
             child.duration,
@@ -41,9 +83,6 @@ class Timeline {
           break;
         case Chord _:
           String voice = child.notes.firstOrNull?.editorialVoice.voice ?? "1";
-          if (_value[cursor] == null) {
-            _value[cursor] = [];
-          }
           _value[cursor]!.add(_TimelineValue(
             index,
             child.duration,
@@ -54,14 +93,11 @@ class Timeline {
           cursor += child.duration.toInt();
           break;
         case CursorElement _:
-          if (_value[cursor] == null) {
-            _value[cursor] = [];
-          }
           _value[cursor]!.add(
             _TimelineValue(
               index,
               child.duration,
-              voice: child.duration > 0 ? "8" : "9",
+              voice: child.duration > 0 ? "F" : "B",
               name: child.duration > 0
                   ? "${child.duration.toInt()}>"
                   : "<${child.duration.toInt().abs()}",
@@ -74,10 +110,26 @@ class Timeline {
     }
   }
 
-  List<double> toList(double spacePerTimeUnit) {
-    return [];
+  /// Converts the timeline into a list of time-based values.
+  ///
+  /// ### Parameters:
+  /// - [spacePerTimeUnit]: The spatial representation of each time unit, used for rendering.
+  ///
+  /// ### Returns:
+  /// A list of double values representing the timeline's spatial distribution.
+  Map<int, double> toList(double spacePerTimeUnit) {
+    Map<int, double> spacings = {};
+    return spacings;
   }
 
+  /// Generates a string representation of the timeline for debugging purposes.
+  ///
+  /// When in debug mode (`kDebugMode` is `true`) and the timeline has recorded values,
+  /// this method constructs a formatted string that visualizes the timeline's structure,
+  /// including time labels and voice-specific elements.
+  ///
+  /// ### Returns:
+  /// A string representation of the timeline if in debug mode; otherwise, the default `toString` implementation.
   @override
   String toString() {
     if (kDebugMode && _value.keys.isNotEmpty) {
@@ -99,13 +151,13 @@ class Timeline {
 
       // Create a map with voices as keys and empty strings as values
       Map<String, String> voicesOutputRow = {
-        for (var voice in uniqueVoices.sorted())
+        for (var voice in _uniqueVoices.sorted())
           voice: "| ${'Voice $voice'.padRight(labelPad)} ||"
       };
 
       for (final i in times) {
         List<_TimelineValue> values = _value[i] ?? [];
-        for (var voice in uniqueVoices) {
+        for (var voice in _uniqueVoices) {
           String voiceOutput = voicesOutputRow[voice]!;
           final voiceElements = values.where((x) => x.voice == voice);
           String cell = voiceElements.firstOrNull?.name ?? "";
