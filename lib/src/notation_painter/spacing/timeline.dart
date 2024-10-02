@@ -133,7 +133,7 @@ class Timeline {
   @override
   String toString() {
     if (kDebugMode && _value.keys.isNotEmpty) {
-      int labelPad = 7;
+      int labelPad = 8;
       String row1 = "| ${'Time'.padRight(labelPad)} ||";
 
       final times = Iterable.generate(
@@ -154,20 +154,22 @@ class Timeline {
         for (var voice in _uniqueVoices.sorted())
           voice: "| ${'Voice $voice'.padRight(labelPad)} ||"
       };
-
+      int elementCount = 0;
       for (final i in times) {
         List<_TimelineValue> values = _value[i] ?? [];
         for (var voice in _uniqueVoices) {
           String voiceOutput = voicesOutputRow[voice]!;
           final voiceElements = values.where((x) => x.voice == voice);
+          elementCount += voiceElements.length;
           String cell = voiceElements.firstOrNull?.name ?? "";
-          if (voiceElements.length > 1) cell = "MLP";
+          if (voiceElements.length > 1) cell = "MP${voiceElements.length}";
           voiceOutput += "${_centerPad((cell).toString(), 3)}|";
           voicesOutputRow[voice] = voiceOutput;
         }
       }
 
-      String output = "| ${'Divisions: $divisions'.padRight(row1.length - 3)}|";
+      String output = 'Divisions: $divisions | Length: $elementCount';
+      output = "| ${output.padRight(row1.length - 4)} |";
       String divider = '=' * output.length;
       output = "\n$divider\n$output\n$divider\n$row1\n$divider";
 
