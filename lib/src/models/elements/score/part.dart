@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/attributes.dart';
 import 'package:music_notation/src/models/elements/music_data/backup.dart';
 import 'package:music_notation/src/models/elements/music_data/forward.dart';
@@ -6,7 +5,6 @@ import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/utilities/type_parsers.dart';
 import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
-import 'package:music_notation/src/notation_painter/note_element.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
@@ -157,29 +155,25 @@ class Measure {
     );
 
     // Keeps track of the cumulative duration for timing adjustments.
-    double durationSeek = 0;
     int? lastStaff;
 
     for (MusicDataElement e in data) {
       // Flag for checking if that element is common for both staves.
       bool commonElement = false;
       int? staff;
-      double elementDuration = 0;
 
       switch (e) {
         case Note note:
           staff = note.staff ?? 1;
-          if (!note.isChord) {
-            elementDuration = NoteElement.determineDuration(note);
-          }
+          // if (!note.isChord) {
+          //   elementDuration = NoteElement.determineDuration(note);
+          // }
           break;
-        case Backup backup:
-          elementDuration = -backup.duration;
+        case Backup _:
           commonElement = true;
           break;
         case Forward forward:
           staff = forward.staff;
-          elementDuration = forward.duration;
           break;
         case Attributes _:
           commonElement = true;
@@ -196,7 +190,6 @@ class Measure {
       if (!commonElement && staff != null) {
         measures[staff - 1].data.add(e);
       }
-      durationSeek += elementDuration;
       lastStaff = staff ?? lastStaff;
     }
     return measures;
