@@ -168,7 +168,7 @@ class Measure {
 
       switch (e) {
         case Note note:
-          staff = note.staff;
+          staff = note.staff ?? 1;
           if (!note.isChord) {
             elementDuration = NoteElement.determineDuration(note);
           }

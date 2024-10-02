@@ -79,6 +79,7 @@ class Timeline {
             index,
             child.duration,
             voice: voice,
+            widgetType: NoteElement,
             name:
                 "C${child.position.toString().replaceFirst("ElementPosition  ", "")}",
           ));
@@ -90,6 +91,7 @@ class Timeline {
             index,
             child.duration,
             voice: voice,
+            widgetType: Chord,
             name:
                 "C${child.position.toString().replaceFirst("ElementPosition  ", "")}",
           ));
@@ -104,6 +106,7 @@ class Timeline {
               name: cursorElement.duration > 0
                   ? "${cursorElement.duration.toInt()}>"
                   : "<${cursorElement.duration.toInt().abs()}",
+              widgetType: CursorElement,
             ),
           );
           cursor += child.duration.toInt();
@@ -113,9 +116,10 @@ class Timeline {
             _TimelineValue(
               index,
               0,
-              offsetAfter: timeBeatElement.size.width + 12,
+              offsetAfter: timeBeatElement.size.width + 16,
               voice: "-1", // The "-1" indicates attributes sector
               name: "TB",
+              widgetType: TimeBeatElement,
             ),
           );
           break;
@@ -127,6 +131,7 @@ class Timeline {
               offsetAfter: clefElement.size.width + 12,
               voice: "-1", // The "-1" indicates attributes sector
               name: "CLF",
+              widgetType: ClefElement,
             ),
           );
           break;
@@ -138,6 +143,7 @@ class Timeline {
               offsetAfter: keyElement.size.width + 12,
               voice: "-1", // The "-1" indicates attributes sector
               name: "KeS",
+              widgetType: KeySignature,
             ),
           );
           break;
@@ -180,6 +186,8 @@ class Timeline {
     int totalLength = _value.values.fold(0, (sum, list) => sum + list.length);
     List<double> spacings = List.generate(totalLength, (_) => 0);
     double attributeOffset = 0;
+    double biggestOffset = 0;
+    _TimelineValue? biggestOffsetElement;
     // List<String> names = List.generate(totalLength, (_) => "");
     for (var entry in _value.entries) {
       List<_TimelineValue> beatCol = entry.value.sorted(
@@ -198,7 +206,18 @@ class Timeline {
           spacings[val.index] = attributeOffset;
           attributeOffset += val.offsetAfter;
         }
+        if (biggestOffset < spacings[val.index]) {
+          biggestOffset = spacings[val.index];
+          biggestOffsetElement = val;
+        }
       }
+    }
+    // Last item processing:
+    // If there is no empty last item like backup or forward. It should have last
+    // additional spacing which indicates how much space should be after last element.
+    if ([NoteElement, Chord].contains(biggestOffsetElement?.widgetType)) {
+      spacings.add(
+          biggestOffset + (biggestOffsetElement!.duration * spacePerTimeUnit));
     }
     // print(names);
     return spacings;
@@ -303,11 +322,18 @@ class _TimelineValue {
   final double duration;
   final double offsetAfter;
 
+  /// The runtime type of the [MeasureWidget] this timeline value represents.
+  ///
+  /// This property captures the specific class type (e.g., [NoteElement], [Chord], [CursorElement])
+  /// of the associated [MeasureWidget], enabling type-specific processing or rendering.
+  final Type? widgetType;
+
   _TimelineValue(
     this.index,
     this.duration, {
     required this.name,
     this.offsetAfter = 0,
+    this.widgetType,
     required this.voice,
   });
 }
