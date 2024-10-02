@@ -74,7 +74,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       notationContext: notationContext,
       stemLength: stemLength ?? calculatedLength ?? 0,
       showLedger: showLedger,
-      duration: _determineDuration(note),
+      duration: determineDuration(note),
       divisions: notationContext.divisions!,
       stem: note.stem,
     );
@@ -137,7 +137,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     );
   }
 
-  static double _determineDuration(Note note) {
+  static double determineDuration(Note note) {
     switch (note) {
       case GraceTieNote _:
         throw UnimplementedError(
@@ -435,7 +435,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
       notationContext: notationContext,
       divisions: notationContext.divisions!,
       stemLength: _calculateStemLength(notes),
-      duration: NoteElement._determineDuration(notes.first),
+      duration: NoteElement.determineDuration(notes.first),
       stem: notes.first.stem,
       notes: notes,
     );
