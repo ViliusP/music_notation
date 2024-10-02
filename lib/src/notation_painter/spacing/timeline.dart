@@ -182,7 +182,8 @@ class Timeline {
   /// List<double> spacings = timeline.toList(10.0);
   /// // spacings now contains spatial positions for each _TimelineValue
   /// ```
-  List<double> toList(double spacePerTimeUnit) {
+  List<double> toList(double spacePerFullDivision) {
+    double spacePerBeat = spacePerFullDivision / divisions;
     int totalLength = _value.values.fold(0, (sum, list) => sum + list.length);
     List<double> spacings = List.generate(totalLength, (_) => 0);
     double attributeOffset = 0;
@@ -199,7 +200,7 @@ class Timeline {
       for (_TimelineValue val in beatCol) {
         // names[val.index] = val.name;
         if (val.duration != 0) {
-          double leftOffset = attributeOffset + (beat * spacePerTimeUnit);
+          double leftOffset = attributeOffset + (beat * spacePerBeat);
           spacings[val.index] = leftOffset;
         }
         if (val.duration == 0) {
@@ -216,8 +217,8 @@ class Timeline {
     // If there is no empty last item like backup or forward. It should have last
     // additional spacing which indicates how much space should be after last element.
     if ([NoteElement, Chord].contains(biggestOffsetElement?.widgetType)) {
-      spacings.add(
-          biggestOffset + (biggestOffsetElement!.duration * spacePerTimeUnit));
+      spacings
+          .add(biggestOffset + (biggestOffsetElement!.duration * spacePerBeat));
     }
     // print(names);
     return spacings;
