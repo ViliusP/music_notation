@@ -81,7 +81,7 @@ class Timeline {
             voice: voice,
             widgetType: NoteElement,
             name:
-                "C${child.position.toString().replaceFirst("ElementPosition  ", "")}",
+                child.position.toString().replaceFirst("ElementPosition  ", ""),
           ));
           cursor += child.duration.toInt();
           break;
@@ -110,7 +110,8 @@ class Timeline {
             ),
           );
           cursor += child.duration.toInt();
-          continue;
+          cursor = cursor.clamp(0, double.maxFinite).toInt();
+          break;
         case TimeBeatElement timeBeatElement:
           _value[cursor]!.add(
             _TimelineValue(

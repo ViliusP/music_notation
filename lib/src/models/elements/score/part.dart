@@ -175,7 +175,7 @@ class Measure {
           break;
         case Backup backup:
           elementDuration = -backup.duration;
-          staff = lastStaff;
+          commonElement = true;
           break;
         case Forward forward:
           staff = forward.staff;
@@ -194,19 +194,6 @@ class Measure {
         }
       }
       if (!commonElement && staff != null) {
-        bool staffChanged = staff != lastStaff && lastStaff != null;
-        if (staffChanged && kDebugMode && durationSeek != 0) {
-          print("IMPORTANT: $durationSeek");
-        }
-        if (staffChanged) {
-          if (durationSeek > 0) {
-            measures[staff - 1].data.add(Forward(duration: durationSeek));
-          }
-          if (durationSeek < 0) {
-            measures[staff - 1].data.add(Backup(duration: durationSeek));
-          }
-        }
-
         measures[staff - 1].data.add(e);
       }
       durationSeek += elementDuration;
