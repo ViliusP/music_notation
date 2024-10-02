@@ -48,6 +48,8 @@ class Note implements MusicDataElement {
   /// However it can be shorter in situations such as multiple stops for string instruments.
   final Empty? chord;
 
+  bool get isChord => chord != null;
+
   /// The common note elements between cue/grace notes and regular (full) notes:
   /// [RegularNote] and [Rest] information, but not duration (cue and grace
   /// notes do not have duration encoded). [Unpitched] elements are used for
