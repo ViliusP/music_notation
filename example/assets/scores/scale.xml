@@ -25,7 +25,7 @@
                     <step>C</step>
                     <octave>4</octave>
                 </pitch>
-                <duration>1</duration>
+                <duration>4</duration>
                 <type>whole</type>
                 <stem>none</stem>
             </note>
@@ -34,7 +34,7 @@
                     <step>D</step>
                     <octave>4</octave>
                 </pitch>
-                <duration>1</duration>
+                <duration>4</duration>
                 <type>whole</type>
                 <stem>none</stem>
             </note>
@@ -43,7 +43,7 @@
                     <step>E</step>
                     <octave>4</octave>
                 </pitch>
-                <duration>1</duration>
+                <duration>4</duration>
                 <type>whole</type>
                 <stem>none</stem>
             </note>
@@ -52,7 +52,7 @@
                     <step>F</step>
                     <octave>4</octave>
                 </pitch>
-                <duration>1</duration>
+                <duration>4</duration>
                 <type>whole</type>
                 <stem>none</stem>
             </note>
@@ -61,7 +61,7 @@
                     <step>G</step>
                     <octave>4</octave>
                 </pitch>
-                <duration>1</duration>
+                <duration>4</duration>
                 <type>whole</type>
                 <stem>none</stem>
             </note>
@@ -70,7 +70,7 @@
                     <step>A</step>
                     <octave>4</octave>
                 </pitch>
-                <duration>1</duration>
+                <duration>4</duration>
                 <type>whole</type>
                 <stem>none</stem>
             </note>
@@ -79,7 +79,7 @@
                     <step>B</step>
                     <octave>4</octave>
                 </pitch>
-                <duration>1</duration>
+                <duration>4</duration>
                 <type>whole</type>
                 <stem>none</stem>
             </note>
@@ -88,7 +88,7 @@
                     <step>C</step>
                     <octave>5</octave>
                 </pitch>
-                <duration>1</duration>
+                <duration>4</duration>
                 <type>whole</type>
                 <stem>none</stem>
             </note>
@@ -97,7 +97,7 @@
                     <step>D</step>
                     <octave>5</octave>
                 </pitch>
-                <duration>1</duration>
+                <duration>4</duration>
                 <type>whole</type>
                 <stem>none</stem>
             </note>
@@ -106,7 +106,7 @@
                     <step>E</step>
                     <octave>5</octave>
                 </pitch>
-                <duration>1</duration>
+                <duration>4</duration>
                 <type>whole</type>
                 <stem>none</stem>
             </note>
@@ -115,7 +115,7 @@
                     <step>F</step>
                     <octave>5</octave>
                 </pitch>
-                <duration>1</duration>
+                <duration>4</duration>
                 <type>whole</type>
                 <stem>none</stem>
             </note>
@@ -124,7 +124,7 @@
                     <step>G</step>
                     <octave>5</octave>
                 </pitch>
-                <duration>1</duration>
+                <duration>4</duration>
                 <type>whole</type>
                 <stem>none</stem>
             </note>
@@ -133,7 +133,7 @@
                     <step>A</step>
                     <octave>5</octave>
                 </pitch>
-                <duration>1</duration>
+                <duration>4</duration>
                 <type>whole</type>
                 <stem>none</stem>
             </note>
@@ -142,7 +142,7 @@
                     <step>B</step>
                     <octave>5</octave>
                 </pitch>
-                <duration>1</duration>
+                <duration>4</duration>
                 <type>whole</type>
                 <stem>none</stem>
             </note>
