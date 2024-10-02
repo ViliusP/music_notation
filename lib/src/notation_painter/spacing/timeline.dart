@@ -187,7 +187,7 @@ class Timeline {
     double spacePerBeat = spacePerFullDivision / divisions;
     int totalLength = _value.values.fold(0, (sum, list) => sum + list.length);
     List<double> spacings = List.generate(totalLength, (_) => 0);
-    double attributeOffset = 0;
+    double offsetForNotes = (divisions / 8) * spacePerBeat;
     double biggestOffset = 0;
     _TimelineValue? biggestOffsetElement;
     // List<String> names = List.generate(totalLength, (_) => "");
@@ -201,12 +201,12 @@ class Timeline {
       for (_TimelineValue val in beatCol) {
         // names[val.index] = val.name;
         if (val.duration != 0) {
-          double leftOffset = attributeOffset + (beat * spacePerBeat);
+          double leftOffset = offsetForNotes + (beat * spacePerBeat);
           spacings[val.index] = leftOffset;
         }
         if (val.duration == 0) {
-          spacings[val.index] = attributeOffset;
-          attributeOffset += val.offsetAfter;
+          spacings[val.index] = offsetForNotes;
+          offsetForNotes += val.offsetAfter;
         }
         if (biggestOffset < spacings[val.index]) {
           biggestOffset = spacings[val.index];
