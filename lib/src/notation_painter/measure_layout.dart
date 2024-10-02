@@ -272,9 +272,15 @@ class MeasureLayout extends StatelessWidget {
             i += noteWidget.notes.length - 1;
           }
           break;
-        case Backup _:
+        case Backup backup:
+          children.add(CursorElement(duration: -backup.duration));
           break;
-        case Forward _:
+        case Forward forward:
+          children.add(CursorElement(
+            duration: forward.duration,
+            voice: forward.editorialVoice.voice,
+            staff: forward.staff,
+          ));
           break;
         case Direction _:
           break;
@@ -326,6 +332,10 @@ class MeasureLayout extends StatelessWidget {
         break;
       }
     }
+
+    final Timeline timeline = Timeline(divisions: divisions);
+    timeline.compute(children);
+    print(timeline);
 
     double fullDurationSize = 54;
 
