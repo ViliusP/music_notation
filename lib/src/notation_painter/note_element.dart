@@ -15,6 +15,13 @@ import 'package:music_notation/src/notation_painter/painters/note_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
 import 'package:music_notation/src/smufl/smufl_glyph.dart';
 
+const Map<String, Color> _voiceColors = {
+  "0": Color.fromRGBO(0, 0, 0, 1),
+  "1": Color.fromRGBO(121, 0, 0, 1),
+  "2": Color.fromRGBO(0, 133, 40, 1),
+  "3": Color.fromRGBO(206, 192, 0, 1),
+};
+
 /// Notes below line 3 have up stems on the right side of the notehead.
 ///
 /// Notes on or above line 3 have down stems on the left side of the notehead.
@@ -67,7 +74,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       notationContext: notationContext,
       stemLength: stemLength ?? calculatedLength ?? 0,
       showLedger: showLedger,
-      duration: _determineDuration(note),
+      duration: determineDuration(note),
       divisions: notationContext.divisions!,
       stem: note.stem,
     );
@@ -130,7 +137,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     );
   }
 
-  static double _determineDuration(Note note) {
+  static double determineDuration(Note note) {
     switch (note) {
       case GraceTieNote _:
         throw UnimplementedError(
@@ -209,7 +216,10 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
   final bool drawLedgerLines = true;
 
   @override
-  Size get size => calculateSize(note: note, stemLength: stemLength);
+  Size get size => calculateSize(
+        note: note,
+        stemLength: stemLength,
+      );
 
   static Size calculateSize({
     required Note note,
@@ -230,6 +240,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       var stemElement = StemElement(
         type: type,
         length: stemLength,
+        showFlag: note.beams.isEmpty,
       );
 
       width += stemElement.size.width;
@@ -237,6 +248,22 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     }
 
     return Size(width, height);
+  }
+
+  @override
+  double get alignmentOffset => _calculateAlignmentOffset();
+
+  double _calculateAlignmentOffset() {
+    var noteheadSize = NoteheadElement(
+      note: note,
+    ).size;
+
+    var width = noteheadSize.width;
+    if (_stemmed) {
+      width += NotationLayoutProperties.stemStrokeWidth;
+    }
+
+    return width / 2;
   }
 
   @override
@@ -250,6 +277,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     var notehead = NoteheadElement(
       note: note,
       ledgerLines: ledgerLines,
+      // color: _voiceColors[note.editorialVoice.voice ?? "0"]!, // Colors by voice
     );
 
     if (_isRest) {
@@ -315,6 +343,8 @@ class NoteheadElement extends StatelessWidget {
 
   final LedgerLines? ledgerLines;
 
+  final Color color;
+
   /// Size of notehead symbol.
   ///
   /// The minim is usually slightly larger than the black notehead.
@@ -357,6 +387,7 @@ class NoteheadElement extends StatelessWidget {
     super.key,
     required this.note,
     this.ledgerLines,
+    this.color = const Color.fromRGBO(0, 0, 0, 1),
   });
 
   @override
@@ -366,6 +397,7 @@ class NoteheadElement extends StatelessWidget {
       painter: NotePainter(
         smufl: _smufl,
         ledgerLines: ledgerLines,
+        color: color,
       ),
     );
   }
@@ -378,6 +410,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
     required this.notationContext,
     required this.divisions,
     required this.stemLength,
+    required this.duration,
     this.stem,
   });
 
@@ -402,6 +435,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
       notationContext: notationContext,
       divisions: notationContext.divisions!,
       stemLength: _calculateStemLength(notes),
+      duration: NoteElement.determineDuration(notes.first),
       stem: notes.first.stem,
       notes: notes,
     );
@@ -411,6 +445,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
   final NotationContext notationContext;
 
   final double divisions;
+  final double duration;
 
   final double stemLength;
   bool get _stemmed => stemLength != 0;
@@ -554,6 +589,22 @@ class Chord extends StatelessWidget implements MeasureWidget {
         notationContext: notationContext,
         stemLength: stemLength,
       );
+
+  @override
+  double get alignmentOffset => _calculateAlignmentOffset();
+
+  double _calculateAlignmentOffset() {
+    var noteheadSize = NoteheadElement(
+      note: notes.first,
+    ).size;
+
+    var width = noteheadSize.width;
+    if (_stemmed) {
+      width += NotationLayoutProperties.stemStrokeWidth;
+    }
+
+    return width / 2;
+  }
 
   @override
   ElementPosition get position {
@@ -841,7 +892,7 @@ class StemElement extends StatelessWidget {
 
   Size get size {
     return Size(
-      StemPainter.strokeWidth + type.flagWidth,
+      StemPainter.strokeWidth + (showFlag ? type.flagWidth : 0),
       length,
     );
   }

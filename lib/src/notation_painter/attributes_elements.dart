@@ -137,4 +137,8 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
       painter: ClefPainter(_symbol, _paintingOffset),
     );
   }
+
+  @override
+  // TODO: implement alignmentOffset
+  double get alignmentOffset => throw UnimplementedError();
 }

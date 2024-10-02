@@ -1,4 +1,4 @@
-library music_notation;
+library;
 
 export 'src/notation_painter/music_notation_canvas.dart'
     show MusicNotationCanvas;

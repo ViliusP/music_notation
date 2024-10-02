@@ -11,9 +11,12 @@ class NotePainter extends CustomPainter {
 
   final LedgerLines? ledgerLines;
 
+  final Color color;
+
   NotePainter({
     required this.smufl,
     this.ledgerLines,
+    this.color = const Color.fromRGBO(0, 0, 0, 1),
   });
 
   final Paint _ledgerLinePaint = Paint()
@@ -26,6 +29,7 @@ class NotePainter extends CustomPainter {
       canvas,
       smufl,
       offset: Offset(0, size.height - 48),
+      color: color,
     );
     if (ledgerLines == null || ledgerLines?.count == 0) return;
 

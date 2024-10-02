@@ -10,10 +10,12 @@ import 'package:music_notation/src/models/elements/music_data/attributes/time.da
 import 'package:music_notation/src/models/elements/music_data/backup.dart';
 import 'package:music_notation/src/models/elements/music_data/direction/direction.dart';
 import 'package:music_notation/src/models/elements/music_data/forward.dart';
+import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
 import 'package:music_notation/src/notation_painter/attributes_elements.dart';
+import 'package:music_notation/src/notation_painter/cursor_element.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
@@ -23,8 +25,10 @@ import 'package:music_notation/src/notation_painter/note_element.dart';
 import 'package:music_notation/src/notation_painter/painters/barline_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/beam_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/staff_lines_painter.dart';
+import 'package:music_notation/src/notation_painter/spacing/timeline.dart';
 import 'package:music_notation/src/notation_painter/time_beat_element.dart';
 
+/// A widget that lays out musical measures with notes, chords, beams, and staff lines.
 class MeasureLayout extends StatelessWidget {
   static const double _minPositionPadding = 4;
 
@@ -47,9 +51,9 @@ class MeasureLayout extends StatelessWidget {
     NotationContext contextAfter = notationContext.copyWith();
     for (var measureElement in children) {
       switch (measureElement) {
-        case ClefElement _:
+        case ClefElement clefElement:
           contextAfter = contextAfter.copyWith(
-            clef: measureElement.clef,
+            clef: clefElement.clef,
           );
           break;
         case NoteElement _:
@@ -100,7 +104,6 @@ class MeasureLayout extends StatelessWidget {
       measure: measure,
       staff: staff,
     );
-
     var spacings = _computeSpacings(children);
 
     return MeasureLayout._(
@@ -112,6 +115,139 @@ class MeasureLayout extends StatelessWidget {
     );
   }
 
+  /// Processes a note and determines if it should be rendered as a single note or part of a chord.
+  static MeasureWidget? _processNote(
+    Note note,
+    NotationContext context,
+    List<MusicDataElement> measureData,
+    int? staff,
+  ) {
+    if (context.divisions == null) {
+      throw ArgumentError(
+        "Context or measure must have divisions in attributes element",
+      );
+    }
+    if (staff != null && staff != note.staff) return null;
+
+    List<Note> notes = [note];
+    int i = 0;
+    while (i < measureData.length) {
+      var nextElement = measureData[i];
+      if (nextElement is Note &&
+          nextElement.chord != null &&
+          (staff == null || staff == nextElement.staff)) {
+        notes.add(nextElement);
+        i++;
+      } else {
+        break;
+      }
+    }
+    if (notes.length > 1) {
+      return Chord.fromNotes(
+        notes: notes,
+        notationContext: context,
+      );
+    }
+    return NoteElement.fromNote(
+      note: note,
+      notationContext: context,
+    );
+  }
+
+  static List<MeasureWidget> _processAttributes(
+    Attributes element,
+    int? staff,
+    NotationContext notationContext,
+  ) {
+    List<MeasureWidget> widgets = [];
+    // -----------------------------
+    // Clef
+    // -----------------------------
+    if (element.clefs.isNotEmpty) {
+      // TODO: Implement handling for multiple clefs per staff.
+      if (element.clefs.length > 1 && staff == null) {
+        throw UnimplementedError(
+          "Multiple clef signs are not implemented in renderer yet",
+        );
+      }
+
+      Clef clef = element.clefs.firstWhere(
+        (element) => staff != null ? element.number == staff : true,
+      );
+
+      notationContext = notationContext.copyWith(
+        clef: clef,
+        divisions: element.divisions,
+      );
+      widgets.add(ClefElement(clef: clef));
+    }
+    // -----------------------------
+    // Keys
+    // -----------------------------
+    var keys = element.keys;
+    if (keys.isEmpty) return widgets;
+    musicxml.Key? musicKey;
+    if (keys.length == 1 && keys.first.number == null) {
+      musicKey = keys.first;
+    }
+    if (staff != null && keys.length > 1) {
+      musicKey = keys.firstWhereOrNull(
+        (element) => element.number == staff,
+      );
+    }
+    if (musicKey == null) {
+      throw ArgumentError(
+        "There are multiple keys elements in attributes, therefore correct staff must be provided",
+      );
+    }
+    var keySignature = KeySignature.fromKeyData(
+      keyData: musicKey,
+      notationContext: notationContext,
+    );
+    if (keySignature.firstPosition != null) {
+      widgets.add(keySignature);
+    }
+    // -----------------------------
+    // Time
+    // -----------------------------
+
+    for (var times in element.times) {
+      switch (times) {
+        case TimeBeat _:
+          var timeBeatWidget = TimeBeatElement(timeBeat: times);
+          widgets.add(timeBeatWidget);
+          break;
+        case SenzaMisura _:
+          throw UnimplementedError(
+            "Senza misura is not implemented in renderer yet",
+          );
+      }
+    }
+    return widgets;
+  }
+
+  static NotationContext _contextAfterAttributes(
+    Attributes element,
+    int? staff,
+    NotationContext notationContext,
+  ) {
+    Clef clef = element.clefs.firstWhere(
+      (element) => staff != null ? element.number == staff : true,
+    );
+
+    return notationContext.copyWith(
+      clef: clef,
+      divisions: element.divisions,
+    );
+  }
+
+  /// Builds a list of [MeasureWidget]s based on the provided measure data and notation context.
+  ///
+  /// - [context]: The current notation context.
+  /// - [staff]: The staff number to filter elements (optional).
+  /// - [measure]: The measure data containing musical elements.
+  ///
+  /// Returns a list of [MeasureWidget]s representing the musical elements within the measure.
   static List<MeasureWidget> _computeChildren({
     required NotationContext context,
     required int? staff,
@@ -120,123 +256,43 @@ class MeasureLayout extends StatelessWidget {
     NotationContext contextAfter = context.copyWith();
 
     final children = <MeasureWidget>[];
-    int i = 0;
-    while (i < measure.data.length) {
+    for (int i = 0; i < measure.data.length; i++) {
       var element = measure.data[i];
       switch (element) {
-        case Note _:
-          if (contextAfter.divisions == null) {
-            throw ArgumentError(
-              "Context or measure must have divisions in attributes element",
-            );
+        case Note note:
+          var noteWidget = _processNote(
+            note,
+            contextAfter,
+            measure.data.sublist(i + 1),
+            staff,
+          );
+          if (noteWidget != null) {
+            children.add(noteWidget);
           }
-
-          if (staff == element.staff || staff == null) {
-            List<Note> notes = [];
-            notes.add(element);
-            int j = i + 1;
-            for (; j < measure.data.length; j++) {
-              var nextElement = measure.data[j];
-              if (nextElement is! Note || nextElement.chord == null) {
-                break;
-              }
-              if (staff == nextElement.staff || staff == null) {
-                notes.add(nextElement);
-                continue;
-              }
-              break;
-            }
-            i = j - 1;
-            if (notes.length == 1) {
-              var noteElement = NoteElement.fromNote(
-                note: element,
-                notationContext: contextAfter,
-              );
-
-              children.add(noteElement);
-            }
-            if (notes.length > 1) {
-              var chordElement = Chord.fromNotes(
-                notes: notes,
-                notationContext: contextAfter,
-              );
-
-              children.add(chordElement);
-            }
+          if (noteWidget is Chord) {
+            i += noteWidget.notes.length - 1;
           }
           break;
-
-        case Backup _:
+        case Backup backup:
+          children.add(CursorElement(duration: -backup.duration));
           break;
-        case Forward _:
+        case Forward forward:
+          children.add(CursorElement(
+            duration: forward.duration,
+            voice: forward.editorialVoice.voice,
+            staff: forward.staff,
+          ));
           break;
         case Direction _:
           break;
         case Attributes _:
-          // -----------------------------
-          // Clef
-          // -----------------------------
-          if (element.clefs.isNotEmpty) {
-            if (element.clefs.length > 1 && staff == null) {
-              throw UnimplementedError(
-                "Multiple clef signs is not implemented in renderer yet",
-              );
-            }
-
-            Clef clef = element.clefs.firstWhere(
-              (element) => staff != null ? element.number == staff : true,
-            );
-
-            contextAfter = contextAfter.copyWith(
-              clef: clef,
-              divisions: element.divisions,
-            );
-            children.add(ClefElement(clef: clef));
-          }
-          // -----------------------------
-          // Keys
-          // -----------------------------
-          var keys = element.keys;
-          if (keys.isEmpty) break;
-          musicxml.Key? musicKey;
-          if (keys.length == 1 && keys.first.number == null) {
-            musicKey = keys.first;
-          }
-          if (staff != null && keys.length > 1) {
-            musicKey = keys.firstWhereOrNull(
-              (element) => element.number == staff,
-            );
-          }
-          if (musicKey == null) {
-            throw ArgumentError(
-              "There are multiple keys elements in attributes, therefore correct staff must be provided",
-            );
-          }
-          var keySignature = KeySignature.fromKeyData(
-            keyData: musicKey,
-            notationContext: contextAfter,
+          var attributesWidgets = _processAttributes(
+            element,
+            staff,
+            contextAfter,
           );
-          if (keySignature.firstPosition != null) {
-            children.add(keySignature);
-          }
-          // -----------------------------
-          // Time
-          // -----------------------------
-
-          for (var times in element.times) {
-            switch (times) {
-              case TimeBeat _:
-                var timeBeatWidget = TimeBeatElement(timeBeat: times);
-                children.add(timeBeatWidget);
-                break;
-              case SenzaMisura _:
-                throw UnimplementedError(
-                  "Senza misura is not implemented in renderer yet",
-                );
-            }
-          }
-
-          /// BREAK
+          contextAfter = _contextAfterAttributes(element, staff, contextAfter);
+          children.addAll(attributesWidgets);
           break;
         // case Harmony _:
         //   break;
@@ -257,61 +313,58 @@ class MeasureLayout extends StatelessWidget {
         // case Bookmark _:
         //   break;
       }
-      i++;
     }
     return children;
   }
 
-  /// Returns initial list of spacings that do not consider measure's stretching
-  /// and compression.
-  static List<double> _computeSpacings(List<MeasureWidget> children) {
-    const horizontalPadding = 8.0;
-    double leftOffset = horizontalPadding;
-    // Will be change in future.
-    const spacingBetweenElements = 8;
-    double lastElementWidth = 0;
-
-    final List<double> spacings = [];
-
-    for (var child in children) {
-      spacings.add(leftOffset);
-      lastElementWidth = child.size.width;
-      leftOffset += spacingBetweenElements + child.size.width;
+  static List<double> _computeSpacings(
+    List<MeasureWidget> children,
+  ) {
+    double divisions = 1;
+    for (var child in children.reversed) {
+      if (child is NoteElement) {
+        divisions = child.divisions;
+        break;
+      }
+      if (child is Chord) {
+        divisions = child.divisions;
+        break;
+      }
     }
 
-    spacings.add(leftOffset + horizontalPadding + lastElementWidth);
-    return spacings;
+    final Timeline timeline = Timeline(divisions: divisions)..compute(children);
+    return timeline.toList(54);
   }
 
-  @override
-  Widget build(BuildContext context) {
+  // Calculate the vertical padding based on the highest note above and below the staff.
+  double _calculateVerticalPadding() {
     const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
 
-    List<double> spacings = _initialSpacings!;
-
-    double distanceToStaffTop = offsetPerPosition;
-    distanceToStaffTop *= ElementPosition.staffTop.numeric;
-
-    double distanceToStaffBottom = offsetPerPosition;
-    distanceToStaffBottom *= ElementPosition.staffBottom.numeric;
+    double distanceToStaffTop =
+        offsetPerPosition * ElementPosition.staffTop.numeric;
+    double distanceToStaffBottom =
+        offsetPerPosition * ElementPosition.staffBottom.numeric;
 
     double topPadding = 0;
     double bottomPadding = 0;
 
     for (var child in children) {
-      // The length by which an element extends or protrudes above the staff.
-      double aboveStaffLength = offsetPerPosition * child.position.numeric;
-      aboveStaffLength += child.size.height;
-      aboveStaffLength += child.positionalOffset;
-      aboveStaffLength -= distanceToStaffTop;
+      double aboveStaffLength = [
+        offsetPerPosition * child.position.numeric,
+        child.size.height,
+        child.positionalOffset,
+        -distanceToStaffTop
+      ].sum;
+
       aboveStaffLength = [0.0, aboveStaffLength].max;
 
-      // The length by which an element extends or protrudes below the staff.
-      double belowStaffLength = offsetPerPosition * child.position.numeric;
-      belowStaffLength += child.positionalOffset;
-      belowStaffLength -= distanceToStaffBottom;
-      belowStaffLength = [0.0, belowStaffLength].min;
-      belowStaffLength = belowStaffLength.abs();
+      double belowStaffLength = [
+        offsetPerPosition * child.position.numeric,
+        child.positionalOffset,
+        -distanceToStaffBottom,
+      ].sum;
+
+      belowStaffLength = [0.0, belowStaffLength].min.abs();
 
       if (topPadding < aboveStaffLength) {
         topPadding = aboveStaffLength;
@@ -324,103 +377,58 @@ class MeasureLayout extends StatelessWidget {
     double verticalPadding = [bottomPadding, topPadding].max;
     verticalPadding += NotationLayoutProperties.staffLineStrokeWidth / 2;
 
+    return verticalPadding;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    List<double> spacings = _initialSpacings!;
+
+    const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
+    double verticalPadding = _calculateVerticalPadding();
+
     List<Widget> beams = [];
-    (double x, double y)? beamStartPosition;
-    (double x, double y)? beamEndPosition;
+    (double x, double y)? beamStartOffset;
+    (double x, double y)? beamEndOffset;
 
-    var finalChildren = <Widget>[];
+    var positionedElements = <Widget>[];
     for (var (index, child) in children.indexed) {
-      // Firstly move element's bottom to staff bottom.
-      double fromBottom = verticalPadding;
+      // Calculate bottomOffset for the current child.
+      double bottomOffset = verticalPadding;
 
-      // Then move it by interval.
+      // Calculate the interval from staff bottom to the child's position.
       int intervalFromStaffBottom = ElementPosition.staffBottom.numeric;
       intervalFromStaffBottom -= child.position.numeric + 1;
-      fromBottom -= (intervalFromStaffBottom * offsetPerPosition);
+      bottomOffset -= (intervalFromStaffBottom * offsetPerPosition);
 
-      // Lastly adjust to it's by positional offset.
-      fromBottom += child.positionalOffset;
+      // Adjust by the child's positional offset.
+      bottomOffset += child.positionalOffset;
 
-      if (child is Chord &&
-          child.notes
-              .map((e) => e.beams)
-              .flattened
-              .any((element) => element.value == BeamValue.begin)) {
-        beamStartPosition = (
-          child.offsetForBeam.dx +
-              spacings[index] -
-              NotationLayoutProperties.stemStrokeWidth * 0.5,
-          fromBottom + child.offsetForBeam.dy,
-        );
-      }
-      if (child is Chord &&
-          child.notes
-              .map((e) => e.beams)
-              .flattened
-              .any((element) => element.value == BeamValue.end)) {
-        beamEndPosition = (
-          child.offsetForBeam.dx +
-              spacings[index] +
-              NotationLayoutProperties.stemStrokeWidth * 0.5,
-          fromBottom + child.offsetForBeam.dy,
-        );
+      // Process beam for the current child
+      var beamResult = BeamProcessingResult.processBeam(
+        child: child,
+        index: index,
+        bottomOffset: bottomOffset,
+        spacings: spacings,
+        beamStartOffset: beamStartOffset,
+        beamEndOffset: beamEndOffset,
+      );
+
+      // Update beam offsets and beams if necessary
+      beamStartOffset = beamResult.beamStartOffset;
+      beamEndOffset = beamResult.beamEndOffset;
+      if (beamResult.beamWidget != null) {
+        beams.add(beamResult.beamWidget!);
+        // Reset the beam offsets
+        beamStartOffset = null;
+        beamEndOffset = null;
       }
 
-      if (child is NoteElement &&
-          child.note.beams.firstOrNull?.value == BeamValue.begin) {
-        beamStartPosition = (
-          child.offsetForBeam.dx +
-              spacings[index] -
-              NotationLayoutProperties.stemStrokeWidth * 0.5,
-          fromBottom + child.offsetForBeam.dy,
-        );
-      }
-
-      if (child is NoteElement &&
-          child.note.beams.firstOrNull?.value == BeamValue.end) {
-        beamEndPosition = (
-          child.offsetForBeam.dx +
-              spacings[index] +
-              NotationLayoutProperties.stemStrokeWidth * 0.5,
-          fromBottom + child.offsetForBeam.dy,
-        );
-      }
-
-      if (beamStartPosition != null && beamEndPosition != null) {
-        beams.add(
-          Positioned(
-            left: beamStartPosition.$1,
-            bottom: beamStartPosition.$2,
-            child: CustomPaint(
-              painter: BeamPainter(
-                secondPoint: Offset(
-                  beamEndPosition.$1 - beamStartPosition.$1,
-                  beamStartPosition.$2 - beamEndPosition.$2,
-                ),
-              ),
-            ),
-          ),
-        );
-        // beams.add(
-        //   Positioned(
-        //     left: beamEndPosition.$1,
-        //     bottom: beamEndPosition.$2,
-        //     child: SizedBox.fromSize(
-        //       size: const Size.square(10),
-        //       child: const ColoredBox(
-        //         color: Color.fromRGBO(165, 8, 113, 1),
-        //       ),
-        //     ),
-        //   ),
-        // );
-        beamStartPosition = null;
-        beamEndPosition = null;
-      }
-
-      finalChildren.add(
+      // Add the positioned child to the list.
+      positionedElements.add(
         Positioned(
           left: spacings[index],
-          bottom: fromBottom,
+          bottom: bottomOffset,
           child: child,
         ),
       );
@@ -443,7 +451,7 @@ class MeasureLayout extends StatelessWidget {
             ),
           ),
           ...beams,
-          ...finalChildren,
+          ...positionedElements,
         ],
       );
     });
@@ -451,13 +459,13 @@ class MeasureLayout extends StatelessWidget {
 }
 
 class StaffLines extends StatelessWidget {
-  final bool startBarline;
-  final bool endBarline;
+  final bool hasStartBarline;
+  final bool hasEndBarline;
 
   const StaffLines({
     super.key,
-    this.startBarline = false,
-    this.endBarline = true,
+    this.hasStartBarline = false,
+    this.hasEndBarline = true,
   });
 
   @override
@@ -465,7 +473,7 @@ class StaffLines extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        if (startBarline)
+        if (hasStartBarline)
           Align(
             alignment: Alignment.centerLeft,
             child: CustomPaint(
@@ -476,7 +484,7 @@ class StaffLines extends StatelessWidget {
         CustomPaint(
           painter: StaffLinesPainter(),
         ),
-        if (endBarline)
+        if (hasEndBarline)
           Align(
             alignment: Alignment.centerRight,
             child: CustomPaint(
@@ -485,6 +493,92 @@ class StaffLines extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+class BeamProcessingResult {
+  final (double x, double y)? beamStartOffset;
+  final (double x, double y)? beamEndOffset;
+  final Widget? beamWidget;
+
+  BeamProcessingResult({
+    this.beamStartOffset,
+    this.beamEndOffset,
+    this.beamWidget,
+  });
+
+  static BeamProcessingResult processBeam({
+    required MeasureWidget child,
+    required int index,
+    required double bottomOffset,
+    required List<double> spacings,
+    (double x, double y)? beamStartOffset,
+    (double x, double y)? beamEndOffset,
+  }) {
+    bool isBeamStart = false;
+    bool isBeamEnd = false;
+    double? offsetX;
+    double? offsetY;
+
+    // Check if the child has an offsetForBeam property
+    if (child is NoteElement) {
+      var beamValue = child.note.beams.firstOrNull?.value;
+      if (beamValue != null) {
+        isBeamStart = beamValue == BeamValue.begin;
+        isBeamEnd = beamValue == BeamValue.end;
+      }
+      offsetX = child.offsetForBeam.dx;
+      offsetY = child.offsetForBeam.dy;
+    } else if (child is Chord) {
+      var beamsList = child.notes.expand((note) => note.beams);
+      isBeamStart = beamsList.any((beam) => beam.value == BeamValue.begin);
+      isBeamEnd = beamsList.any((beam) => beam.value == BeamValue.end);
+      offsetX = child.offsetForBeam.dx;
+      offsetY = child.offsetForBeam.dy;
+    }
+
+    // Update beam offsets
+    if (isBeamStart && offsetX != null && offsetY != null) {
+      beamStartOffset = (
+        offsetX +
+            spacings[index] -
+            NotationLayoutProperties.stemStrokeWidth * 0.5,
+        bottomOffset + offsetY,
+      );
+    }
+
+    if (isBeamEnd && offsetX != null && offsetY != null) {
+      beamEndOffset = (
+        offsetX +
+            spacings[index] +
+            NotationLayoutProperties.stemStrokeWidth * 0.5,
+        bottomOffset + offsetY,
+      );
+    }
+
+    // If both beam offsets are defined, create the beam widget
+    if (beamStartOffset != null && beamEndOffset != null) {
+      Widget beamWidget = Positioned(
+        left: beamStartOffset.$1,
+        bottom: beamStartOffset.$2,
+        child: CustomPaint(
+          painter: BeamPainter(
+            secondPoint: Offset(
+              beamEndOffset.$1 - beamStartOffset.$1,
+              beamStartOffset.$2 - beamEndOffset.$2,
+            ),
+          ),
+        ),
+      );
+      return BeamProcessingResult(
+        beamWidget: beamWidget,
+      );
+    }
+
+    return BeamProcessingResult(
+      beamStartOffset: beamStartOffset,
+      beamEndOffset: beamEndOffset,
     );
   }
 }

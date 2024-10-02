@@ -66,4 +66,7 @@ class TimeBeatElement extends StatelessWidget implements MeasureWidget {
 
   @override
   Size get size => const Size(20, 48);
+
+  @override
+  double get alignmentOffset => throw UnimplementedError();
 }

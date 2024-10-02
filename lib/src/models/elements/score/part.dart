@@ -1,4 +1,6 @@
 import 'package:music_notation/src/models/elements/music_data/attributes/attributes.dart';
+import 'package:music_notation/src/models/elements/music_data/backup.dart';
+import 'package:music_notation/src/models/elements/music_data/forward.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/utilities/type_parsers.dart';
@@ -81,7 +83,11 @@ class Part {
   }
 }
 
-/// The basic musical data such as notes within a score partwise.
+/// Represents a single measure in a musical score, containing various musical data elements.
+///
+/// The `Measure` class holds a list of `MusicDataElement` instances, such as notes,
+/// directions, attributes, and more, along with measure-specific attributes like
+/// key signature and time signature.
 class Measure {
   final List<MusicDataElement> data;
 
