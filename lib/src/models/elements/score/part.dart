@@ -1,8 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/attributes.dart';
+import 'package:music_notation/src/models/elements/music_data/backup.dart';
+import 'package:music_notation/src/models/elements/music_data/forward.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/utilities/type_parsers.dart';
 import 'package:music_notation/src/models/utilities/xml_sequence_validator.dart';
+import 'package:music_notation/src/notation_painter/note_element.dart';
 import 'package:xml/xml.dart';
 
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
@@ -81,7 +85,11 @@ class Part {
   }
 }
 
-/// The basic musical data such as notes within a score partwise.
+/// Represents a single measure in a musical score, containing various musical data elements.
+///
+/// The `Measure` class holds a list of `MusicDataElement` instances, such as notes,
+/// directions, attributes, and more, along with measure-specific attributes like
+/// key signature and time signature.
 class Measure {
   final List<MusicDataElement> data;
 
@@ -119,6 +127,92 @@ class Measure {
     }
     // builder.attribute('measure-attributes', attributes.toXml());
     return builder.buildDocument().rootElement;
+  }
+
+  /// Splits the current measure into multiple measures, each corresponding to a different staff.
+  ///
+  /// This method is particularly useful for handling multi-staff scores, ensuring that
+  /// each staff's musical data is isolated into its own measure. Common elements that apply
+  /// to all staves (such as attributes like key signatures) are duplicated across all
+  /// resulting measures, while staff-specific elements are assigned to their respective measures.
+  ///
+  /// ### Parameters:
+  /// - [staves]: The number of staves in the score. Determines how many separate measures
+  ///            will be created.
+  ///
+  /// ### Returns:
+  /// A list of [Measure] instances, each representing the musical data for a single staff.
+  ///
+  /// ### Example:
+  /// ```dart
+  /// Measure originalMeasure = // ... obtain or create a Measure instance
+  /// List<Measure> perStaffMeasures = originalMeasure.splitPerStaff(2);
+  /// // Now, perStaffMeasures[0] contains data for the first staff,
+  /// // and perStaffMeasures[1] contains data for the second staff.
+  /// ```
+  List<Measure> splitPerStaff(int staves) {
+    List<Measure> measures = List.generate(
+      staves,
+      (index) => Measure(data: [], attributes: attributes),
+    );
+
+    // Keeps track of the cumulative duration for timing adjustments.
+    double durationSeek = 0;
+    int? lastStaff;
+
+    for (MusicDataElement e in data) {
+      // Flag for checking if that element is common for both staves.
+      bool commonElement = false;
+      int? staff;
+      double elementDuration = 0;
+
+      switch (e) {
+        case Note note:
+          staff = note.staff;
+          if (!note.isChord) {
+            elementDuration = NoteElement.determineDuration(note);
+          }
+          break;
+        case Backup backup:
+          elementDuration = -backup.duration;
+          staff = lastStaff;
+          break;
+        case Forward forward:
+          staff = forward.staff;
+          elementDuration = forward.duration;
+          break;
+        case Attributes _:
+          commonElement = true;
+          break;
+        default:
+          commonElement = true;
+      }
+
+      if (commonElement) {
+        for (var m in measures) {
+          m.data.add(e);
+        }
+      }
+      if (!commonElement && staff != null) {
+        bool staffChanged = staff != lastStaff && lastStaff != null;
+        if (staffChanged && kDebugMode && durationSeek != 0) {
+          print("IMPORTANT: $durationSeek");
+        }
+        if (staffChanged) {
+          if (durationSeek > 0) {
+            measures[staff - 1].data.add(Forward(duration: durationSeek));
+          }
+          if (durationSeek < 0) {
+            measures[staff - 1].data.add(Backup(duration: durationSeek));
+          }
+        }
+
+        measures[staff - 1].data.add(e);
+      }
+      durationSeek += elementDuration;
+      lastStaff = staff ?? lastStaff;
+    }
+    return measures;
   }
 }
 
