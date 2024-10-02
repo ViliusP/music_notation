@@ -2,9 +2,12 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:music_notation/src/notation_painter/attributes_elements.dart';
 import 'package:music_notation/src/notation_painter/cursor_element.dart';
+import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure_element.dart';
 import 'package:music_notation/src/notation_painter/note_element.dart';
+import 'package:music_notation/src/notation_painter/time_beat_element.dart';
 
 /// Represents a timeline for musical elements within a score.
 ///
@@ -68,7 +71,6 @@ class Timeline {
     int cursor = 0;
     for (final (index, child) in children.indexed) {
       _value[cursor] ??= [];
-      _value[cursor] = [];
       switch (child) {
         case NoteElement _:
           String voice = child.note.editorialVoice.voice ?? "1";
@@ -92,19 +94,61 @@ class Timeline {
           ));
           cursor += child.duration.toInt();
           break;
-        case CursorElement _:
+        case CursorElement cursorElement:
           _value[cursor]!.add(
             _TimelineValue(
               index,
-              child.duration,
-              voice: child.duration > 0 ? "F" : "B",
-              name: child.duration > 0
-                  ? "${child.duration.toInt()}>"
-                  : "<${child.duration.toInt().abs()}",
+              cursorElement.duration,
+              voice: cursorElement.duration > 0 ? "F" : "B",
+              name: cursorElement.duration > 0
+                  ? "${cursorElement.duration.toInt()}>"
+                  : "<${cursorElement.duration.toInt().abs()}",
             ),
           );
           cursor += child.duration.toInt();
           continue;
+        case TimeBeatElement timeBeatElement:
+          _value[cursor]!.add(
+            _TimelineValue(
+              index,
+              0,
+              offsetAfter: timeBeatElement.size.width + 12,
+              voice: "-1", // The "-1" indicates attributes sector
+              name: "TB",
+            ),
+          );
+          break;
+        case ClefElement clefElement:
+          _value[cursor]!.add(
+            _TimelineValue(
+              index,
+              0,
+              offsetAfter: clefElement.size.width + 12,
+              voice: "-1", // The "-1" indicates attributes sector
+              name: "CLF",
+            ),
+          );
+          break;
+        case KeySignature keyElement:
+          _value[cursor]!.add(
+            _TimelineValue(
+              index,
+              0,
+              offsetAfter: keyElement.size.width + 12,
+              voice: "-1", // The "-1" indicates attributes sector
+              name: "KeS",
+            ),
+          );
+          break;
+        default:
+          _value[cursor]!.add(
+            _TimelineValue(
+              index,
+              0,
+              voice: "-1", // The "-1" indicates attributes sector
+              name: child.runtimeType.toString().substring(0, 2),
+            ),
+          );
       }
       maxCursor = max(maxCursor, cursor);
     }
@@ -117,8 +161,31 @@ class Timeline {
   ///
   /// ### Returns:
   /// A list of double values representing the timeline's spatial distribution.
-  Map<int, double> toList(double spacePerTimeUnit) {
-    Map<int, double> spacings = {};
+  List<double> toList(double spacePerTimeUnit) {
+    int totalLength = _value.values.fold(0, (sum, list) => sum + list.length);
+    List<double> spacings = List.generate(totalLength, (_) => 0);
+    double attributeOffset = 0;
+    // List<String> names = List.generate(totalLength, (_) => "");
+    for (var entry in _value.entries) {
+      List<_TimelineValue> beatCol = entry.value.sorted(
+        (a, b) => a.voice.compareTo(b.voice),
+      );
+
+      int beat = entry.key;
+
+      for (_TimelineValue val in beatCol) {
+        // names[val.index] = val.name;
+        if (val.duration != 0) {
+          double leftOffset = attributeOffset + (beat * spacePerTimeUnit);
+          spacings[val.index] = leftOffset;
+        }
+        if (val.duration == 0) {
+          spacings[val.index] = attributeOffset;
+          attributeOffset += val.offsetAfter;
+        }
+      }
+    }
+    // print(names);
     return spacings;
   }
 
@@ -196,15 +263,17 @@ class Timeline {
 }
 
 class _TimelineValue {
-  final String? voice;
-  final String? name;
+  final String voice;
+  final String name;
   final int index;
   final double duration;
+  final double offsetAfter;
 
   _TimelineValue(
     this.index,
     this.duration, {
-    this.name,
-    this.voice,
+    required this.name,
+    this.offsetAfter = 0,
+    required this.voice,
   });
 }
