@@ -199,12 +199,11 @@ class NotationGrid {
       for (var i = 0; i < staves; i++) {
         data.addRow();
       }
-      for (Measure measure in part.measures) {
-        for (var (i, staffMeasure) in measure.splitPerStaff(staves).indexed) {
-          int rowIndex = data.rowCount - staves + i;
+      for (var measure in part.measures) {
+        for (var i = 0; i < staves; i++) {
           data.addToRow(
-            rowIndex,
-            staffMeasure,
+            data.rowCount - staves + i,
+            measure,
           );
         }
       }
