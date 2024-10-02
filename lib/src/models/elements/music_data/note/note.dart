@@ -407,7 +407,7 @@ class Note implements MusicDataElement {
     );
 
     switch (specificNoteType) {
-      case GraceTieNote:
+      case const (GraceTieNote):
         return GraceTieNote._fromNote(
           grace: Grace.fromXml(xmlElement.getElement("grace")!),
           note: noteBase,
@@ -416,13 +416,13 @@ class Note implements MusicDataElement {
               .map((e) => Tie.fromXml(e))
               .toList(),
         );
-      case GraceCueNote:
+      case const (GraceCueNote):
         return GraceCueNote._fromNote(
           note: noteBase,
           grace: Grace.fromXml(xmlElement.getElement("grace")!),
         );
 
-      case CueNote:
+      case const (CueNote):
         final XmlElement durationElement = xmlElement.getElement("duration")!;
         validateTextContent(durationElement);
         double? duration = double.tryParse(durationElement.innerText);
@@ -438,7 +438,7 @@ class Note implements MusicDataElement {
           note: noteBase,
           duration: duration,
         );
-      case RegularNote:
+      case const (RegularNote):
         final XmlElement durationElement = xmlElement.getElement("duration")!;
         validateTextContent(durationElement);
         double? duration = double.tryParse(durationElement.innerText);
