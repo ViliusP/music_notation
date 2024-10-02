@@ -25,6 +25,7 @@ import 'package:music_notation/src/notation_painter/note_element.dart';
 import 'package:music_notation/src/notation_painter/painters/barline_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/beam_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/staff_lines_painter.dart';
+import 'package:music_notation/src/notation_painter/spacing/timeline.dart';
 import 'package:music_notation/src/notation_painter/time_beat_element.dart';
 
 /// A widget that lays out musical measures with notes, chords, beams, and staff lines.
@@ -319,8 +320,6 @@ class MeasureLayout extends StatelessWidget {
   static List<double> _computeSpacings(
     List<MeasureWidget> children,
   ) {
-    const double horizontalPadding = 12.0;
-
     double divisions = 1;
     for (var child in children.reversed) {
       if (child is NoteElement) {
@@ -333,99 +332,8 @@ class MeasureLayout extends StatelessWidget {
       }
     }
 
-    final Timeline timeline = Timeline(divisions: divisions);
-    timeline.compute(children);
-    print(timeline);
-
-    double fullDurationSize = 54;
-
-    final List<double> childSpacings = [];
-
-    // Collect all voices from the children.
-    final Set<String> voices = {
-      for (final child in children)
-        if (child is NoteElement)
-          child.note.editorialVoice.voice ?? "1"
-        else if (child is Chord)
-          child.notes.firstOrNull?.editorialVoice.voice ?? "1"
-    };
-
-    // Ensure there is at least one voice.
-    if (voices.isEmpty) {
-      voices.add("1");
-    }
-
-    // Add "0" for generic elements.
-    voices.add("0");
-
-    // Initialize spacings and sizes for each voice.
-    final Map<String, List<double>> spacingsByVoice = {
-      for (var voice in voices) voice: []
-    };
-
-    final Map<String, MeasureWidget?> lastElementByVoice = {
-      for (var voice in voices) voice: null
-    };
-
-    // Helper function to process NoteElement or Chord.
-    void processNoteOrChord(MeasureWidget child, String voice) {
-      double lastNoteDuration = 0;
-      var lastElement = lastElementByVoice[voice];
-      if (lastElement is NoteElement) lastNoteDuration = lastElement.duration;
-      if (lastElement is Chord) lastNoteDuration = lastElement.duration;
-
-      // Calculate the starting horizontal offset.
-      double startingOffset = [
-        horizontalPadding,
-        (spacingsByVoice["0"]?.lastOrNull ?? 0),
-        (lastElementByVoice["0"]?.size.width ?? 0),
-      ].sum;
-
-      double noteLeftOffset =
-          spacingsByVoice[voice]?.lastOrNull ?? startingOffset;
-
-      if (spacingsByVoice[voice]!.isNotEmpty) {
-        noteLeftOffset += (lastNoteDuration / divisions) * fullDurationSize;
-      }
-
-      spacingsByVoice[voice]!.add(noteLeftOffset);
-      childSpacings.add(noteLeftOffset);
-
-      lastElementByVoice[voice] = child;
-    }
-
-    for (var child in children) {
-      if (child is NoteElement) {
-        String voice = child.note.editorialVoice.voice ?? "1";
-        processNoteOrChord(child, voice);
-        continue;
-      }
-      if (child is Chord) {
-        String voice = child.notes.firstOrNull?.editorialVoice.voice ?? "1";
-        processNoteOrChord(child, voice);
-        continue;
-      }
-      // Non-note elements.
-      double leftOffset = [
-        childSpacings.lastOrNull ?? horizontalPadding,
-        lastElementByVoice["0"]?.size.width ?? 0,
-      ].sum;
-
-      childSpacings.add(leftOffset);
-
-      spacingsByVoice["0"]!.add(leftOffset);
-      lastElementByVoice["0"] = child;
-    }
-
-    // Add final spacing.
-    final double maxSpacing = childSpacings.isNotEmpty
-        ? childSpacings.reduce((a, b) => a > b ? a : b)
-        : 0.0;
-    final int maxIndex = childSpacings.indexOf(maxSpacing);
-    final double lastChildWidth = children[maxIndex].size.width;
-
-    childSpacings.add(maxSpacing + lastChildWidth + horizontalPadding);
-    return childSpacings;
+    final Timeline timeline = Timeline(divisions: divisions)..compute(children);
+    return timeline.toList(16);
   }
 
   // Calculate the vertical padding based on the highest note above and below the staff.
