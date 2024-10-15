@@ -3,7 +3,7 @@ import 'package:music_notation/src/notation_painter/notation_layout_properties.d
 
 class BarlinePainter extends CustomPainter {
   static const double strokeWidth =
-      NotationLayoutProperties.staffLineStrokeWidth;
+      NotationLayoutProperties.staffLineStrokeWidth * 1.5;
 
   final Paint _linePainter = Paint()
     ..color = const Color.fromRGBO(0, 0, 0, 1.0)

@@ -9,7 +9,7 @@ class NotationLayoutProperties {
       NotationLayoutProperties.staffLineStrokeWidth;
 
   static const int staffLines = 5;
-  static const double staffLineStrokeWidth = 2;
+  static const double staffLineStrokeWidth = 1.2;
   static const double ledgerLineWidth = 26;
 
   /// The standard length of a stem is one octave (3.5 stave-spaces) from the
