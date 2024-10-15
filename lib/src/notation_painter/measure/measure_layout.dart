@@ -74,7 +74,6 @@ class MeasureLayout extends StatelessWidget {
     return contextAfter;
   }
 
-  // final int? staff;
   double? get _cachedWidth => _initialSpacings?.last;
   double get _height {
     return 0;
@@ -82,12 +81,17 @@ class MeasureLayout extends StatelessWidget {
 
   final List<double>? _initialSpacings;
 
+  final int? staff;
+  final String? number;
+
   const MeasureLayout._({
     super.key,
     required this.children,
     required List<double> initialSpacings,
     required this.notationContext,
     this.useExplicitBeaming = false,
+    this.staff,
+    this.number,
   }) : _initialSpacings = initialSpacings;
 
   factory MeasureLayout.fromMeasureData({
@@ -109,6 +113,8 @@ class MeasureLayout extends StatelessWidget {
       initialSpacings: spacings,
       notationContext: notationContext,
       useExplicitBeaming: useExplicitBeaming,
+      staff: staff,
+      number: measure.attributes.number,
       children: children,
     );
   }
@@ -459,11 +465,13 @@ class MeasureLayout extends StatelessWidget {
 class StaffLines extends StatelessWidget {
   final bool hasStartBarline;
   final bool hasEndBarline;
+  final GlobalKey? endBarlineKey;
 
   const StaffLines({
     super.key,
     this.hasStartBarline = false,
     this.hasEndBarline = true,
+    this.endBarlineKey,
   });
 
   @override
@@ -486,6 +494,7 @@ class StaffLines extends StatelessWidget {
           Align(
             alignment: Alignment.centerRight,
             child: CustomPaint(
+              key: endBarlineKey,
               size: BarlinePainter.size,
               painter: BarlinePainter(),
             ),
