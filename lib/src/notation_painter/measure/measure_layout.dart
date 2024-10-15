@@ -493,7 +493,7 @@ class StaffLines extends StatelessWidget {
       BarlineExtension.top: Color.fromRGBO(4, 0, 255, 1),
     };
 
-    double calculatedStartPadding = 0;
+    double calculatedStartOffset = 0;
     double calculatedStartHeight = BarlinePainter.size.height;
     if (startExtension == BarlineExtension.bottom) {
       calculatedStartHeight += measurePadding;
@@ -501,11 +501,26 @@ class StaffLines extends StatelessWidget {
 
     if (startExtension == BarlineExtension.both) {
       calculatedStartHeight += measurePadding;
-      calculatedStartPadding -= measurePadding;
+      calculatedStartOffset -= measurePadding;
     }
 
     if (startExtension == BarlineExtension.top) {
-      calculatedStartPadding -= measurePadding;
+      calculatedStartOffset -= measurePadding;
+    }
+
+    double calculatedEndOffset = 0;
+    double calculatedEndHeight = BarlinePainter.size.height;
+    if (endExtension == BarlineExtension.bottom) {
+      calculatedEndHeight += measurePadding;
+    }
+
+    if (endExtension == BarlineExtension.both) {
+      calculatedEndHeight += measurePadding;
+      calculatedEndOffset -= measurePadding;
+    }
+
+    if (endExtension == BarlineExtension.top) {
+      calculatedEndOffset -= measurePadding;
     }
 
     return Stack(
@@ -518,7 +533,7 @@ class StaffLines extends StatelessWidget {
               size: Size.fromWidth(BarlinePainter.size.width),
               painter: BarlinePainter(
                 color: colors[startExtension]!,
-                offset: calculatedStartPadding,
+                offset: calculatedStartOffset,
                 height: calculatedStartHeight,
               ),
             ),
@@ -531,8 +546,9 @@ class StaffLines extends StatelessWidget {
           child: CustomPaint(
             size: Size.fromWidth(BarlinePainter.size.width),
             painter: BarlinePainter(
-              offset: 0,
-              height: BarlinePainter.size.height,
+              color: colors[endExtension]!,
+              offset: calculatedEndOffset,
+              height: calculatedEndHeight,
             ),
           ),
         ),

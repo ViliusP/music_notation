@@ -42,6 +42,12 @@ class BarlineSettings {
       }
     }
 
+    if (staffCount > 1) {
+      if (staff == 1) endExtension = BarlineExtension.bottom;
+      if (staff > 1 && staff < staffCount) endExtension = BarlineExtension.both;
+      if (staff == staffCount) endExtension = BarlineExtension.top;
+    }
+
     return BarlineSettings(
       startExtension: startExtension,
       endExtension: endExtension,
