@@ -30,8 +30,6 @@ import 'package:music_notation/src/notation_painter/time_beat_element.dart';
 
 /// A widget that lays out musical measures with notes, chords, beams, and staff lines.
 class MeasureLayout extends StatelessWidget {
-  static const double _minPositionPadding = 4;
-
   /// Determines if the music notation renderer should use specified beaming
   /// directly from the musicXML file.
   ///
