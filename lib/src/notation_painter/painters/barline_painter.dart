@@ -5,9 +5,17 @@ class BarlinePainter extends CustomPainter {
   static const double strokeWidth =
       NotationLayoutProperties.staffLineStrokeWidth * 1.6;
 
-  final Paint _linePainter = Paint()
-    ..color = const Color.fromRGBO(0, 0, 0, 1.0)
-    ..strokeWidth = strokeWidth;
+  final Color color;
+
+  final double offset;
+
+  final double height;
+
+  BarlinePainter({
+    this.color = const Color.fromRGBO(0, 0, 0, 1.0),
+    required this.offset,
+    required this.height,
+  });
 
   static const Size size = Size(
     strokeWidth,
@@ -16,10 +24,14 @@ class BarlinePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    final Paint linePainter = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth;
+
     canvas.drawLine(
-      const Offset(strokeWidth / 2, 0),
-      const Offset(strokeWidth / 2, NotationLayoutProperties.staveHeight),
-      _linePainter,
+      Offset(strokeWidth / 2, offset),
+      Offset(strokeWidth / 2, height),
+      linePainter,
     );
   }
 

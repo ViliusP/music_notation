@@ -17,6 +17,7 @@ import 'package:music_notation/src/models/elements/score/part.dart';
 import 'package:music_notation/src/notation_painter/attributes_elements.dart';
 import 'package:music_notation/src/notation_painter/cursor_element.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
+import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
 import 'package:music_notation/src/notation_painter/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
@@ -84,6 +85,8 @@ class MeasureLayout extends StatelessWidget {
   final int? staff;
   final String? number;
 
+  final BarlineSettings barlineSettings;
+
   const MeasureLayout._({
     super.key,
     required this.children,
@@ -92,6 +95,7 @@ class MeasureLayout extends StatelessWidget {
     this.useExplicitBeaming = false,
     this.staff,
     this.number,
+    this.barlineSettings = const BarlineSettings(),
   }) : _initialSpacings = initialSpacings;
 
   factory MeasureLayout.fromMeasureData({
@@ -100,6 +104,7 @@ class MeasureLayout extends StatelessWidget {
     int? staff,
     required NotationContext notationContext,
     bool useExplicitBeaming = false,
+    BarlineSettings barlineSettings = const BarlineSettings(),
   }) {
     var children = _computeChildren(
       context: notationContext,
@@ -115,6 +120,7 @@ class MeasureLayout extends StatelessWidget {
       useExplicitBeaming: useExplicitBeaming,
       staff: staff,
       number: measure.attributes.number,
+      barlineSettings: barlineSettings,
       children: children,
     );
   }
@@ -451,7 +457,11 @@ class MeasureLayout extends StatelessWidget {
                 constraints.maxWidth.isFinite ? constraints.maxWidth : width,
                 NotationLayoutProperties.staveHeight,
               ),
-              child: const StaffLines(),
+              child: StaffLines(
+                startExtension: barlineSettings.startExtension,
+                endExtension: barlineSettings.endExtension,
+                measurePadding: verticalPadding,
+              ),
             ),
           ),
           ...beams,
@@ -463,42 +473,69 @@ class MeasureLayout extends StatelessWidget {
 }
 
 class StaffLines extends StatelessWidget {
-  final bool hasStartBarline;
-  final bool hasEndBarline;
-  final GlobalKey? endBarlineKey;
+  final BarlineExtension startExtension;
+  final BarlineExtension endExtension;
+  final double measurePadding;
 
   const StaffLines({
     super.key,
-    this.hasStartBarline = false,
-    this.hasEndBarline = true,
-    this.endBarlineKey,
+    required this.startExtension,
+    required this.endExtension,
+    required this.measurePadding,
   });
 
   @override
   Widget build(BuildContext context) {
+    Map<BarlineExtension, Color> colors = {
+      BarlineExtension.both: Color.fromRGBO(27, 114, 0, 1),
+      BarlineExtension.bottom: Color.fromRGBO(255, 0, 0, 1),
+      BarlineExtension.none: Color.fromRGBO(195, 0, 255, 1),
+      BarlineExtension.top: Color.fromRGBO(4, 0, 255, 1),
+    };
+
+    double calculatedStartPadding = 0;
+    double calculatedStartHeight = BarlinePainter.size.height;
+    if (startExtension == BarlineExtension.bottom) {
+      calculatedStartHeight += measurePadding;
+    }
+
+    if (startExtension == BarlineExtension.both) {
+      calculatedStartHeight += measurePadding;
+      calculatedStartPadding -= measurePadding;
+    }
+
+    if (startExtension == BarlineExtension.top) {
+      calculatedStartPadding -= measurePadding;
+    }
+
     return Stack(
       fit: StackFit.expand,
       children: [
-        if (hasStartBarline)
+        if (startExtension != BarlineExtension.none)
           Align(
             alignment: Alignment.centerLeft,
             child: CustomPaint(
-              size: BarlinePainter.size,
-              painter: BarlinePainter(),
+              size: Size.fromWidth(BarlinePainter.size.width),
+              painter: BarlinePainter(
+                color: colors[startExtension]!,
+                offset: calculatedStartPadding,
+                height: calculatedStartHeight,
+              ),
             ),
           ),
         CustomPaint(
           painter: StaffLinesPainter(),
         ),
-        if (hasEndBarline)
-          Align(
-            alignment: Alignment.centerRight,
-            child: CustomPaint(
-              key: endBarlineKey,
-              size: BarlinePainter.size,
-              painter: BarlinePainter(),
+        Align(
+          alignment: Alignment.centerRight,
+          child: CustomPaint(
+            size: Size.fromWidth(BarlinePainter.size.width),
+            painter: BarlinePainter(
+              offset: 0,
+              height: BarlinePainter.size.height,
             ),
           ),
+        ),
       ],
     );
   }
