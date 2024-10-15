@@ -41,7 +41,7 @@ import 'package:flutter/widgets.dart';
 class SyncWidthColumn extends StatefulWidget {
   final List<Row> children;
 
-  const SyncWidthColumn({Key? key, required this.children}) : super(key: key);
+  const SyncWidthColumn({super.key, required this.children});
 
   @override
   State createState() => _SyncWidthColumnState();
