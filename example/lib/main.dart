@@ -43,6 +43,8 @@ class _MyHomePageState extends State<MyHomePage> {
   XmlDocument? octaveXml;
   bool loading = false;
 
+  final ScrollController scaleNotationController = ScrollController();
+
   @override
   void initState() {
     ExampleScores.helloWorld.read().then((value) {
@@ -70,25 +72,26 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Stack(
         children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Column(
-                children: [
-                  const Text(
-                    "Tutorial: Hello, World",
-                    style: TextStyle(fontSize: 36),
-                  ),
-                  const Padding(padding: EdgeInsets.symmetric(vertical: 32)),
-                  if (helloWorldXml != null)
-                    MusicNotationCanvas(
-                      scorePartwise: ScorePartwise.fromXml(helloWorldXml!),
-                  ),
-                  if (helloWorldXml == null) const SizedBox.shrink(),
-                ],
-              ),
-              Expanded(
-                child: Row(
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 12),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Column(
+                  children: [
+                    const Text(
+                      "Tutorial: Hello, World",
+                      style: TextStyle(fontSize: 36),
+                    ),
+                    const Padding(padding: EdgeInsets.symmetric(vertical: 6)),
+                    if (helloWorldXml != null)
+                      MusicNotationCanvas(
+                        scorePartwise: ScorePartwise.fromXml(helloWorldXml!),
+                      ),
+                    if (helloWorldXml == null) const SizedBox.shrink(),
+                  ],
+                ),
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ExampleScores.apresUnReve,
@@ -108,38 +111,47 @@ class _MyHomePageState extends State<MyHomePage> {
                       )
                       .toList(),
                 ),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  fixedSize: const Size(320, 80),
-                ),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const Playground(),
+                Center(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      fixedSize: const Size(320, 80),
                     ),
-                  );
-                },
-                child: const Text("playground"),
-              ),
-              Column(
-                children: [
-                  const Text(
-                    "Scale",
-                    style: TextStyle(fontSize: 36),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const Playground(),
+                        ),
+                      );
+                    },
+                    child: const Text("playground"),
                   ),
-                  const Padding(padding: EdgeInsets.symmetric(vertical: 32)),
-                  SizedBox.fromSize(
-                    size: const Size.fromHeight(120),
-                    child: octaveXml != null
-                        ? MusicNotationCanvas(
-                            scorePartwise: ScorePartwise.fromXml(octaveXml!),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                ],
-              )
-            ],
+                ),
+                Column(
+                  children: [
+                    const Text(
+                      "Scale",
+                      style: TextStyle(fontSize: 36),
+                    ),
+                    const Padding(padding: EdgeInsets.symmetric(vertical: 6)),
+                    Scrollbar(
+                      thumbVisibility: true,
+                      controller: scaleNotationController,
+                      child: SingleChildScrollView(
+                          controller: scaleNotationController,
+                          scrollDirection: Axis.horizontal,
+                          child: SizedBox(
+                              height: 120,
+                              child: octaveXml != null
+                                  ? MusicNotationCanvas(
+                                      scorePartwise:
+                                          ScorePartwise.fromXml(octaveXml!),
+                                    )
+                                  : const SizedBox.shrink())),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
           loading
               ? Opacity(
