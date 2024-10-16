@@ -26,14 +26,14 @@ class _ScorePageState extends State<ScorePage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
-        child: Scrollbar(
+      body: Scrollbar(
+        controller: scorePageScrollController,
+        thumbVisibility: true,
+        child: SingleChildScrollView(
           controller: scorePageScrollController,
-          thumbVisibility: true,
-          child: SingleChildScrollView(
-            controller: scorePageScrollController,
-            scrollDirection: Axis.horizontal,
+          scrollDirection: Axis.horizontal,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
             child: MusicNotationCanvas(
               scorePartwise: widget.scorePartwise,
             ),
