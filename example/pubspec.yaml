@@ -40,6 +40,12 @@ dependencies:
   # Collections and utilities functions and classes related to collections.
   collection: ^1.18.0
 
+  # An implementation of the popular fuzzywuzzy package in Dart, to suit all your fuzzy string matching/searching needs!
+  fuzzywuzzy: ^1.2.0
+
+  # A Markdown renderer for Flutter. Create rich text output, including text styles, tables, links, and more, from plain text data formatted with simple Markdown tags.
+  flutter_markdown: ^0.7.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
