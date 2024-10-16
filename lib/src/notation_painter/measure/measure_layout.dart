@@ -76,8 +76,14 @@ class MeasureLayout extends StatelessWidget {
   }
 
   double? get _cachedWidth => _initialSpacings?.last;
-  double get _height {
-    return 0;
+
+  EdgeInsets get verticalPadding {
+    return _calculateVerticalPadding();
+  }
+
+  double get height {
+    EdgeInsets verticalPadding = _calculateVerticalPadding();
+    return verticalPadding.vertical + 48;
   }
 
   final List<double>? _initialSpacings;
@@ -347,7 +353,7 @@ class MeasureLayout extends StatelessWidget {
   }
 
   // Calculate the vertical padding based on the highest note above and below the staff.
-  double _calculateVerticalPadding() {
+  EdgeInsets _calculateVerticalPadding() {
     const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
 
     double distanceToStaffTop =
@@ -384,10 +390,13 @@ class MeasureLayout extends StatelessWidget {
       }
     }
 
-    double verticalPadding = [bottomPadding, topPadding].max;
-    verticalPadding += NotationLayoutProperties.staffLineStrokeWidth / 2;
+    bottomPadding += NotationLayoutProperties.staffLineStrokeWidth / 2;
+    topPadding += NotationLayoutProperties.staffLineStrokeWidth / 2;
 
-    return verticalPadding;
+    return EdgeInsets.only(
+      bottom: bottomPadding,
+      top: topPadding,
+    );
   }
 
   @override
@@ -395,63 +404,64 @@ class MeasureLayout extends StatelessWidget {
     List<double> spacings = _initialSpacings!;
 
     const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
-    double verticalPadding = _calculateVerticalPadding();
-
-    List<Widget> beams = [];
-    (double x, double y)? beamStartOffset;
-    (double x, double y)? beamEndOffset;
-
-    var positionedElements = <Widget>[];
-    for (var (index, child) in children.indexed) {
-      // Calculate bottomOffset for the current child.
-      double bottomOffset = verticalPadding;
-
-      // Calculate the interval from staff bottom to the child's position.
-      int intervalFromStaffBottom = ElementPosition.staffBottom.numeric;
-      intervalFromStaffBottom -= child.position.numeric + 1;
-      bottomOffset -= (intervalFromStaffBottom * offsetPerPosition);
-
-      // Adjust by the child's positional offset.
-      bottomOffset += child.positionalOffset;
-
-      // Process beam for the current child
-      var beamResult = BeamProcessingResult.processBeam(
-        child: child,
-        index: index,
-        bottomOffset: bottomOffset,
-        spacings: spacings,
-        beamStartOffset: beamStartOffset,
-        beamEndOffset: beamEndOffset,
-      );
-
-      // Update beam offsets and beams if necessary
-      beamStartOffset = beamResult.beamStartOffset;
-      beamEndOffset = beamResult.beamEndOffset;
-      if (beamResult.beamWidget != null) {
-        beams.add(beamResult.beamWidget!);
-        // Reset the beam offsets
-        beamStartOffset = null;
-        beamEndOffset = null;
-      }
-
-      // Add the positioned child to the list.
-      positionedElements.add(
-        Positioned(
-          left: spacings[index],
-          bottom: bottomOffset,
-          child: child,
-        ),
-      );
-    }
 
     double width = _cachedWidth ?? spacings.last;
 
     return LayoutBuilder(builder: (context, constraints) {
+      double verticalOffset = (constraints.maxHeight - 48) / 2;
+
+      List<Widget> beams = [];
+      (double x, double y)? beamStartOffset;
+      (double x, double y)? beamEndOffset;
+
+      var positionedElements = <Widget>[];
+      for (var (index, child) in children.indexed) {
+        // Calculate bottomOffset for the current child.
+        double bottomOffset = verticalOffset;
+
+        // Calculate the interval from staff bottom to the child's position.
+        int intervalFromStaffBottom = ElementPosition.staffBottom.numeric;
+        intervalFromStaffBottom -= child.position.numeric + 1;
+        bottomOffset -= (intervalFromStaffBottom * offsetPerPosition);
+
+        // Adjust by the child's positional offset.
+        bottomOffset += child.positionalOffset;
+
+        // Process beam for the current child
+        var beamResult = BeamProcessingResult.processBeam(
+          child: child,
+          index: index,
+          bottomOffset: bottomOffset,
+          spacings: spacings,
+          beamStartOffset: beamStartOffset,
+          beamEndOffset: beamEndOffset,
+        );
+
+        // Update beam offsets and beams if necessary
+        beamStartOffset = beamResult.beamStartOffset;
+        beamEndOffset = beamResult.beamEndOffset;
+        if (beamResult.beamWidget != null) {
+          beams.add(beamResult.beamWidget!);
+          // Reset the beam offsets
+          beamStartOffset = null;
+          beamEndOffset = null;
+        }
+
+        // Add the positioned child to the list.
+        positionedElements.add(
+          Positioned(
+            left: spacings[index],
+            bottom: bottomOffset,
+            child: child,
+          ),
+        );
+      }
+
       return Stack(
         fit: StackFit.loose,
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(vertical: verticalPadding),
+            padding: EdgeInsets.symmetric(vertical: verticalOffset),
             child: SizedBox.fromSize(
               size: Size(
                 constraints.maxWidth.isFinite ? constraints.maxWidth : width,
@@ -460,7 +470,7 @@ class MeasureLayout extends StatelessWidget {
               child: StaffLines(
                 startExtension: barlineSettings.startExtension,
                 endExtension: barlineSettings.endExtension,
-                measurePadding: verticalPadding,
+                measurePadding: verticalOffset,
               ),
             ),
           ),

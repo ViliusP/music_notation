@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
 import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_layout.dart';
@@ -39,7 +40,8 @@ class MusicNotationCanvas extends StatelessWidget {
 
     for (int i = 0; i < grid.data.rowCount; i++) {
       var measures = <MeasureLayout>[];
-
+      double maxTopPadding = 0;
+      double maxBottomPadding = 0;
       for (var j = 0; j < grid.data.columnCount; j++) {
         var barlineSettings = BarlineSettings.fromGridData(
           gridX: j,
@@ -62,6 +64,14 @@ class MusicNotationCanvas extends StatelessWidget {
                   time: null,
                 ),
         );
+        maxTopPadding = [
+          maxTopPadding,
+          measure.verticalPadding.top,
+        ].max;
+        maxBottomPadding = [
+          maxBottomPadding,
+          measure.verticalPadding.bottom,
+        ].max;
 
         measures.add(measure);
       }
@@ -70,7 +80,12 @@ class MusicNotationCanvas extends StatelessWidget {
         // mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
-        children: measures,
+        children: measures
+            .map((e) => SizedBox(
+                  height: maxTopPadding + maxBottomPadding + 48,
+                  child: e,
+                ))
+            .toList(),
       ));
     }
     return SyncWidthColumn(
