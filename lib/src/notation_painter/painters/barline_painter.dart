@@ -29,8 +29,8 @@ class BarlinePainter extends CustomPainter {
       ..strokeWidth = strokeWidth;
 
     canvas.drawLine(
-      Offset(strokeWidth / 2, offset),
       Offset(strokeWidth / 2, height),
+      Offset(strokeWidth / 2, offset),
       linePainter,
     );
   }

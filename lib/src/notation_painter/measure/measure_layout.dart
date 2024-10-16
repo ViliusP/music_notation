@@ -18,6 +18,7 @@ import 'package:music_notation/src/notation_painter/attributes_elements.dart';
 import 'package:music_notation/src/notation_painter/cursor_element.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
+import 'package:music_notation/src/notation_painter/measure/inherited_padding.dart';
 import 'package:music_notation/src/notation_painter/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
@@ -79,11 +80,6 @@ class MeasureLayout extends StatelessWidget {
 
   EdgeInsets get verticalPadding {
     return _calculateVerticalPadding();
-  }
-
-  double get height {
-    EdgeInsets verticalPadding = _calculateVerticalPadding();
-    return verticalPadding.vertical + 48;
   }
 
   final List<double>? _initialSpacings;
@@ -407,9 +403,10 @@ class MeasureLayout extends StatelessWidget {
 
     double width = _cachedWidth ?? spacings.last;
 
-    return LayoutBuilder(builder: (context, constraints) {
-      double verticalOffset = (constraints.maxHeight - 48) / 2;
+    final inheritedPadding = InheritedPadding.of(context);
+    if (inheritedPadding == null) return SizedBox.shrink();
 
+    return LayoutBuilder(builder: (context, constraints) {
       List<Widget> beams = [];
       (double x, double y)? beamStartOffset;
       (double x, double y)? beamEndOffset;
@@ -417,7 +414,7 @@ class MeasureLayout extends StatelessWidget {
       var positionedElements = <Widget>[];
       for (var (index, child) in children.indexed) {
         // Calculate bottomOffset for the current child.
-        double bottomOffset = verticalOffset;
+        double bottomOffset = inheritedPadding.bottom;
 
         // Calculate the interval from staff bottom to the child's position.
         int intervalFromStaffBottom = ElementPosition.staffBottom.numeric;
@@ -457,11 +454,16 @@ class MeasureLayout extends StatelessWidget {
         );
       }
 
+      EdgeInsets measurePadding = EdgeInsets.only(
+        top: inheritedPadding.top,
+        bottom: inheritedPadding.bottom,
+      );
+
       return Stack(
         fit: StackFit.loose,
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(vertical: verticalOffset),
+            padding: measurePadding,
             child: SizedBox.fromSize(
               size: Size(
                 constraints.maxWidth.isFinite ? constraints.maxWidth : width,
@@ -470,7 +472,7 @@ class MeasureLayout extends StatelessWidget {
               child: StaffLines(
                 startExtension: barlineSettings.startExtension,
                 endExtension: barlineSettings.endExtension,
-                measurePadding: verticalOffset,
+                measurePadding: measurePadding,
               ),
             ),
           ),
@@ -485,7 +487,7 @@ class MeasureLayout extends StatelessWidget {
 class StaffLines extends StatelessWidget {
   final BarlineExtension startExtension;
   final BarlineExtension endExtension;
-  final double measurePadding;
+  final EdgeInsets measurePadding;
 
   const StaffLines({
     super.key,
@@ -496,41 +498,41 @@ class StaffLines extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Map<BarlineExtension, Color> colors = {
-    //   BarlineExtension.both: Color.fromRGBO(27, 114, 0, 1),
-    //   BarlineExtension.bottom: Color.fromRGBO(255, 0, 0, 1),
-    //   BarlineExtension.none: Color.fromRGBO(195, 0, 255, 1),
-    //   BarlineExtension.top: Color.fromRGBO(4, 0, 255, 1),
-    // };
+    Map<BarlineExtension, Color> colors = {
+      BarlineExtension.both: Color.fromRGBO(27, 114, 0, .5),
+      BarlineExtension.bottom: Color.fromRGBO(255, 0, 0, .5),
+      BarlineExtension.none: Color.fromRGBO(195, 0, 255, .5),
+      BarlineExtension.top: Color.fromRGBO(4, 0, 255, .5),
+    };
 
     double calculatedStartOffset = 0;
     double calculatedStartHeight = BarlinePainter.size.height;
     if (startExtension == BarlineExtension.bottom) {
-      calculatedStartHeight += measurePadding;
+      calculatedStartHeight += measurePadding.bottom;
     }
 
     if (startExtension == BarlineExtension.both) {
-      calculatedStartHeight += measurePadding;
-      calculatedStartOffset -= measurePadding;
+      calculatedStartHeight += measurePadding.bottom;
+      calculatedStartOffset -= measurePadding.top;
     }
 
     if (startExtension == BarlineExtension.top) {
-      calculatedStartOffset -= measurePadding;
+      calculatedStartOffset -= measurePadding.top;
     }
 
     double calculatedEndOffset = 0;
     double calculatedEndHeight = BarlinePainter.size.height;
     if (endExtension == BarlineExtension.bottom) {
-      calculatedEndHeight += measurePadding;
+      calculatedEndHeight += measurePadding.bottom;
     }
 
     if (endExtension == BarlineExtension.both) {
-      calculatedEndHeight += measurePadding;
-      calculatedEndOffset -= measurePadding;
+      calculatedEndHeight += measurePadding.bottom;
+      calculatedEndOffset -= measurePadding.top;
     }
 
     if (endExtension == BarlineExtension.top) {
-      calculatedEndOffset -= measurePadding;
+      calculatedEndOffset -= measurePadding.top;
     }
 
     return Stack(
