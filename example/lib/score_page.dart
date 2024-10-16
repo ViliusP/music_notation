@@ -24,7 +24,9 @@ class _ScorePageState extends State<ScorePage> {
     String title = "${creator ?? 'No creator'}: ${movementTitle ?? 'unnamed'}";
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         title: Text(title),
         actions: [
           IconButton(
