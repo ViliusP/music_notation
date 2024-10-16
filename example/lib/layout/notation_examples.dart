@@ -18,6 +18,10 @@ enum NotationExample {
   chopinPrelude(
     displayName: "Tutorial: Chopin Prelude",
     path: "assets/scores/chopin_prelude.xml",
+  ),
+  dots(
+    displayName: "Dot(s) rendering",
+    path: "assets/scores/dot(s)_examples.musicxml",
   );
 
   const NotationExample({

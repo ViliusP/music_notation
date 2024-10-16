@@ -197,7 +197,7 @@ class Work {
   factory Work.fromXml(XmlElement xmlElement) {
     validateSequence(xmlElement, _xmlExpectedOrder);
 
-    XmlNode? workNumberNode = xmlElement.getElement('work-number')!.firstChild;
+    XmlNode? workNumberNode = xmlElement.getElement('work-number')?.firstChild;
     if (workNumberNode != null && workNumberNode.nodeType != XmlNodeType.TEXT) {
       throw XmlElementContentException(
         message: "'work-number' content must be string",
@@ -205,7 +205,7 @@ class Work {
       );
     }
 
-    XmlNode? workTitleNode = xmlElement.getElement('work-title')!.firstChild;
+    XmlNode? workTitleNode = xmlElement.getElement('work-title')?.firstChild;
     if (workTitleNode != null && workTitleNode.nodeType != XmlNodeType.TEXT) {
       throw XmlElementContentException(
         message: "'work-number' content must be string",
