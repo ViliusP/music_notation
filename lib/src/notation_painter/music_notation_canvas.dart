@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
-import 'package:music_notation/src/notation_painter/measure_layout.dart';
+import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
+import 'package:music_notation/src/notation_painter/measure/inherited_padding.dart';
+import 'package:music_notation/src/notation_painter/measure/measure_layout.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
 
@@ -34,15 +37,25 @@ class MusicNotationCanvas extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var parts = <Row>[];
-
+    var parts = <SyncWidthRowBuilder>[];
     for (int i = 0; i < grid.data.rowCount; i++) {
       var measures = <MeasureLayout>[];
-
+      double maxTopPadding = 0;
+      double maxBottomPadding = 0;
       for (var j = 0; j < grid.data.columnCount; j++) {
+        var barlineSettings = BarlineSettings.fromGridData(
+          gridX: j,
+          gridY: i,
+          maxX: grid.data.columnCount,
+          maxY: grid.data.rowCount,
+          staff: grid.staffForRow(i) ?? 1,
+          staffCount: grid.staffCount(i) ?? 1,
+        );
+
         var measure = MeasureLayout.fromMeasureData(
           measure: grid.data.getValue(i, j),
           staff: grid.staffForRow(i),
+          barlineSettings: barlineSettings,
           notationContext: j != 0
               ? measures.last.contextAfter
               : const NotationContext(
@@ -51,21 +64,39 @@ class MusicNotationCanvas extends StatelessWidget {
                   time: null,
                 ),
         );
+        maxTopPadding = [
+          maxTopPadding,
+          measure.verticalPadding.top,
+        ].max;
+        maxBottomPadding = [
+          maxBottomPadding,
+          measure.verticalPadding.bottom,
+        ].max;
 
         measures.add(measure);
       }
-
-      parts.add(Row(
-        // mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: measures,
+      parts.add(SyncWidthRowBuilder(
+        builder: (context, child) {
+          return InheritedPadding(
+            top: maxTopPadding,
+            bottom: maxBottomPadding,
+            child: SizedBox(
+              height: maxTopPadding + maxBottomPadding + 48,
+              child: child,
+            ),
+          );
+        },
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: measures,
+        ),
       ));
     }
     return SyncWidthColumn(
       // mainAxisSize: MainAxisSize.min,
       // crossAxisAlignment: CrossAxisAlignment.start,
-      children: parts,
+      builders: parts,
     );
   }
 }

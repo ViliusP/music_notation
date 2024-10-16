@@ -175,6 +175,10 @@ class NotationGrid {
     return index + 1;
   }
 
+  int? staffCount(int row) {
+    return _commonStavesMap[row]?.length;
+  }
+
   /// Private constructor used to initialize an instance with required properties.
   NotationGrid._({
     required this.data,

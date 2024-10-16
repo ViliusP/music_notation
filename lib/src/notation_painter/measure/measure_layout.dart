@@ -17,6 +17,8 @@ import 'package:music_notation/src/models/elements/score/part.dart';
 import 'package:music_notation/src/notation_painter/attributes_elements.dart';
 import 'package:music_notation/src/notation_painter/cursor_element.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
+import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
+import 'package:music_notation/src/notation_painter/measure/inherited_padding.dart';
 import 'package:music_notation/src/notation_painter/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
@@ -30,8 +32,6 @@ import 'package:music_notation/src/notation_painter/time_beat_element.dart';
 
 /// A widget that lays out musical measures with notes, chords, beams, and staff lines.
 class MeasureLayout extends StatelessWidget {
-  static const double _minPositionPadding = 4;
-
   /// Determines if the music notation renderer should use specified beaming
   /// directly from the musicXML file.
   ///
@@ -76,13 +76,18 @@ class MeasureLayout extends StatelessWidget {
     return contextAfter;
   }
 
-  // final int? staff;
   double? get _cachedWidth => _initialSpacings?.last;
-  double get _height {
-    return 0;
+
+  EdgeInsets get verticalPadding {
+    return _calculateVerticalPadding();
   }
 
   final List<double>? _initialSpacings;
+
+  final int? staff;
+  final String? number;
+
+  final BarlineSettings barlineSettings;
 
   const MeasureLayout._({
     super.key,
@@ -90,6 +95,9 @@ class MeasureLayout extends StatelessWidget {
     required List<double> initialSpacings,
     required this.notationContext,
     this.useExplicitBeaming = false,
+    this.staff,
+    this.number,
+    this.barlineSettings = const BarlineSettings(),
   }) : _initialSpacings = initialSpacings;
 
   factory MeasureLayout.fromMeasureData({
@@ -98,6 +106,7 @@ class MeasureLayout extends StatelessWidget {
     int? staff,
     required NotationContext notationContext,
     bool useExplicitBeaming = false,
+    BarlineSettings barlineSettings = const BarlineSettings(),
   }) {
     var children = _computeChildren(
       context: notationContext,
@@ -111,6 +120,9 @@ class MeasureLayout extends StatelessWidget {
       initialSpacings: spacings,
       notationContext: notationContext,
       useExplicitBeaming: useExplicitBeaming,
+      staff: staff,
+      number: measure.attributes.number,
+      barlineSettings: barlineSettings,
       children: children,
     );
   }
@@ -337,7 +349,7 @@ class MeasureLayout extends StatelessWidget {
   }
 
   // Calculate the vertical padding based on the highest note above and below the staff.
-  double _calculateVerticalPadding() {
+  EdgeInsets _calculateVerticalPadding() {
     const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
 
     double distanceToStaffTop =
@@ -374,10 +386,13 @@ class MeasureLayout extends StatelessWidget {
       }
     }
 
-    double verticalPadding = [bottomPadding, topPadding].max;
-    verticalPadding += NotationLayoutProperties.staffLineStrokeWidth / 2;
+    bottomPadding += NotationLayoutProperties.staffLineStrokeWidth / 2;
+    topPadding += NotationLayoutProperties.staffLineStrokeWidth / 2;
 
-    return verticalPadding;
+    return EdgeInsets.only(
+      bottom: bottomPadding,
+      top: topPadding,
+    );
   }
 
   @override
@@ -385,69 +400,80 @@ class MeasureLayout extends StatelessWidget {
     List<double> spacings = _initialSpacings!;
 
     const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
-    double verticalPadding = _calculateVerticalPadding();
-
-    List<Widget> beams = [];
-    (double x, double y)? beamStartOffset;
-    (double x, double y)? beamEndOffset;
-
-    var positionedElements = <Widget>[];
-    for (var (index, child) in children.indexed) {
-      // Calculate bottomOffset for the current child.
-      double bottomOffset = verticalPadding;
-
-      // Calculate the interval from staff bottom to the child's position.
-      int intervalFromStaffBottom = ElementPosition.staffBottom.numeric;
-      intervalFromStaffBottom -= child.position.numeric + 1;
-      bottomOffset -= (intervalFromStaffBottom * offsetPerPosition);
-
-      // Adjust by the child's positional offset.
-      bottomOffset += child.positionalOffset;
-
-      // Process beam for the current child
-      var beamResult = BeamProcessingResult.processBeam(
-        child: child,
-        index: index,
-        bottomOffset: bottomOffset,
-        spacings: spacings,
-        beamStartOffset: beamStartOffset,
-        beamEndOffset: beamEndOffset,
-      );
-
-      // Update beam offsets and beams if necessary
-      beamStartOffset = beamResult.beamStartOffset;
-      beamEndOffset = beamResult.beamEndOffset;
-      if (beamResult.beamWidget != null) {
-        beams.add(beamResult.beamWidget!);
-        // Reset the beam offsets
-        beamStartOffset = null;
-        beamEndOffset = null;
-      }
-
-      // Add the positioned child to the list.
-      positionedElements.add(
-        Positioned(
-          left: spacings[index],
-          bottom: bottomOffset,
-          child: child,
-        ),
-      );
-    }
 
     double width = _cachedWidth ?? spacings.last;
 
+    final inheritedPadding = InheritedPadding.of(context);
+    if (inheritedPadding == null) return SizedBox.shrink();
+
     return LayoutBuilder(builder: (context, constraints) {
+      List<Widget> beams = [];
+      (double x, double y)? beamStartOffset;
+      (double x, double y)? beamEndOffset;
+
+      var positionedElements = <Widget>[];
+      for (var (index, child) in children.indexed) {
+        // Calculate bottomOffset for the current child.
+        double bottomOffset = inheritedPadding.bottom;
+
+        // Calculate the interval from staff bottom to the child's position.
+        int intervalFromStaffBottom = ElementPosition.staffBottom.numeric;
+        intervalFromStaffBottom -= child.position.numeric + 1;
+        bottomOffset -= (intervalFromStaffBottom * offsetPerPosition);
+
+        // Adjust by the child's positional offset.
+        bottomOffset += child.positionalOffset;
+
+        // Process beam for the current child
+        var beamResult = BeamProcessingResult.processBeam(
+          child: child,
+          index: index,
+          bottomOffset: bottomOffset,
+          spacings: spacings,
+          beamStartOffset: beamStartOffset,
+          beamEndOffset: beamEndOffset,
+        );
+
+        // Update beam offsets and beams if necessary
+        beamStartOffset = beamResult.beamStartOffset;
+        beamEndOffset = beamResult.beamEndOffset;
+        if (beamResult.beamWidget != null) {
+          beams.add(beamResult.beamWidget!);
+          // Reset the beam offsets
+          beamStartOffset = null;
+          beamEndOffset = null;
+        }
+
+        // Add the positioned child to the list.
+        positionedElements.add(
+          Positioned(
+            left: spacings[index],
+            bottom: bottomOffset,
+            child: child,
+          ),
+        );
+      }
+
+      EdgeInsets measurePadding = EdgeInsets.only(
+        top: inheritedPadding.top,
+        bottom: inheritedPadding.bottom,
+      );
+
       return Stack(
         fit: StackFit.loose,
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(vertical: verticalPadding),
+            padding: measurePadding,
             child: SizedBox.fromSize(
               size: Size(
                 constraints.maxWidth.isFinite ? constraints.maxWidth : width,
                 NotationLayoutProperties.staveHeight,
               ),
-              child: const StaffLines(),
+              child: StaffLines(
+                startExtension: barlineSettings.startExtension,
+                endExtension: barlineSettings.endExtension,
+                measurePadding: measurePadding,
+              ),
             ),
           ),
           ...beams,
@@ -459,39 +485,85 @@ class MeasureLayout extends StatelessWidget {
 }
 
 class StaffLines extends StatelessWidget {
-  final bool hasStartBarline;
-  final bool hasEndBarline;
+  final BarlineExtension startExtension;
+  final BarlineExtension endExtension;
+  final EdgeInsets measurePadding;
 
   const StaffLines({
     super.key,
-    this.hasStartBarline = false,
-    this.hasEndBarline = true,
+    required this.startExtension,
+    required this.endExtension,
+    required this.measurePadding,
   });
 
   @override
   Widget build(BuildContext context) {
+    Map<BarlineExtension, Color> colors = {
+      BarlineExtension.both: Color.fromRGBO(27, 114, 0, .5),
+      BarlineExtension.bottom: Color.fromRGBO(255, 0, 0, .5),
+      BarlineExtension.none: Color.fromRGBO(195, 0, 255, .5),
+      BarlineExtension.top: Color.fromRGBO(4, 0, 255, .5),
+    };
+
+    double calculatedStartOffset = 0;
+    double calculatedStartHeight = BarlinePainter.size.height;
+    if (startExtension == BarlineExtension.bottom) {
+      calculatedStartHeight += measurePadding.bottom;
+    }
+
+    if (startExtension == BarlineExtension.both) {
+      calculatedStartHeight += measurePadding.bottom;
+      calculatedStartOffset -= measurePadding.top;
+    }
+
+    if (startExtension == BarlineExtension.top) {
+      calculatedStartOffset -= measurePadding.top;
+    }
+
+    double calculatedEndOffset = 0;
+    double calculatedEndHeight = BarlinePainter.size.height;
+    if (endExtension == BarlineExtension.bottom) {
+      calculatedEndHeight += measurePadding.bottom;
+    }
+
+    if (endExtension == BarlineExtension.both) {
+      calculatedEndHeight += measurePadding.bottom;
+      calculatedEndOffset -= measurePadding.top;
+    }
+
+    if (endExtension == BarlineExtension.top) {
+      calculatedEndOffset -= measurePadding.top;
+    }
+
     return Stack(
       fit: StackFit.expand,
       children: [
-        if (hasStartBarline)
+        if (startExtension != BarlineExtension.none)
           Align(
             alignment: Alignment.centerLeft,
             child: CustomPaint(
-              size: BarlinePainter.size,
-              painter: BarlinePainter(),
+              size: Size.fromWidth(BarlinePainter.size.width),
+              painter: BarlinePainter(
+                // color: colors[startExtension]!,
+                offset: calculatedStartOffset,
+                height: calculatedStartHeight,
+              ),
             ),
           ),
         CustomPaint(
           painter: StaffLinesPainter(),
         ),
-        if (hasEndBarline)
-          Align(
-            alignment: Alignment.centerRight,
-            child: CustomPaint(
-              size: BarlinePainter.size,
-              painter: BarlinePainter(),
+        Align(
+          alignment: Alignment.centerRight,
+          child: CustomPaint(
+            size: Size.fromWidth(BarlinePainter.size.width),
+            painter: BarlinePainter(
+              // color: colors[endExtension]!,
+              offset: calculatedEndOffset,
+              height: calculatedEndHeight,
             ),
           ),
+        ),
       ],
     );
   }
