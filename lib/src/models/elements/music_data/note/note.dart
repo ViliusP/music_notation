@@ -308,6 +308,11 @@ class Note implements MusicDataElement {
     var typeElement = xmlElement.getElement("type");
     var type = typeElement != null ? NoteType.fromXml(typeElement) : null;
 
+    // ---- Type ----
+    Iterable<XmlElement> dotElements = xmlElement.findElements("dot");
+    List<EmptyPlacement> dots =
+        dotElements.map((e) => EmptyPlacement.fromXml(e)).toList();
+
     // ---- Accidental ----
     var accidentalElement = xmlElement.getElement("accidental");
     var accidental = accidentalElement != null
@@ -321,6 +326,7 @@ class Note implements MusicDataElement {
     var timeModification = timeModificationElement != null
         ? TimeModification.fromXml(timeModificationElement)
         : null;
+
     // ---- Stem ----
     var maybeStemElement = xmlElement.getElement("stem");
     var stem = maybeStemElement != null ? Stem.fromXml(maybeStemElement) : null;
@@ -390,6 +396,7 @@ class Note implements MusicDataElement {
       chord: chordElement != null ? const Empty() : null,
       editorialVoice: EditorialVoice.fromXml(xmlElement),
       type: type,
+      dots: dots,
       accidental: accidental,
       timeModification: timeModification,
       stem: stem,

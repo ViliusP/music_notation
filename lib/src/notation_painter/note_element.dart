@@ -11,6 +11,7 @@ import 'package:music_notation/src/notation_painter/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/painters/dots_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/note_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
 import 'package:music_notation/src/smufl/smufl_glyph.dart';
@@ -97,11 +98,11 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
   @override
   double get positionalOffset {
     if (_stemmed && stem?.value == StemValue.down) {
-      return -stemLength;
+      return -stemLength - NotationLayoutProperties.staffLineStrokeWidth / 2;
     }
 
-    return -NotationLayoutProperties.staveSpace / 2 -
-        NotationLayoutProperties.staffLineStrokeWidth / 2;
+    return (-NotationLayoutProperties.staveSpace / 2 -
+        NotationLayoutProperties.staffLineStrokeWidth / 2);
   }
 
   final double duration;
@@ -135,6 +136,10 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       noteheadSize.width - NotationLayoutProperties.stemStrokeWidth,
       size.height,
     );
+  }
+
+  int get _dots {
+    return note.dots.length;
   }
 
   static double determineDuration(Note note) {
@@ -300,18 +305,35 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       stemDirection = StemDirection.down;
     }
 
+    double dotsTopPadding =
+        stem?.value == StemValue.up ? stemLength : notehead.size.height / 2;
+
+    if (position.numeric % 2 == 0) {
+      dotsTopPadding -= notehead.size.height / 2.4;
+    }
+
     return SizedBox.fromSize(
       size: size,
       child: Stack(
         children: [
           Positioned(
             bottom: stem?.value == StemValue.up ? 0 : null,
-            top: stem?.value == StemValue.up ? null : 0,
             child: SizedBox(
+              height: notehead.size.height,
               width: notehead.size.width,
               child: notehead,
             ),
           ),
+          if (_dots > 0)
+            Padding(
+              padding: EdgeInsets.only(
+                left: notehead.size.width * 1.35,
+                top: dotsTopPadding,
+              ),
+              child: CustomPaint(
+                painter: DotsPainter(_dots),
+              ),
+            ),
           if (_stemmed)
             Padding(
               padding: EdgeInsets.only(

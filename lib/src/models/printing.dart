@@ -112,6 +112,17 @@ class EmptyPlacement extends PrintStyle {
     required super.font,
     required super.color,
   });
+
+  factory EmptyPlacement.fromXml(XmlElement xmlElement) {
+    PrintStyle printStyle = PrintStyle.fromXml(xmlElement);
+
+    return EmptyPlacement(
+      placement: Placement.fromXml(xmlElement),
+      position: printStyle.position,
+      font: printStyle.font,
+      color: printStyle.color,
+    );
+  }
 }
 
 /// For most elements, any program will compute a default x and y position.
@@ -211,14 +222,14 @@ class Position {
 
   factory Position.fromXml(XmlElement xmlElement) {
     return Position(
-      defaultX: _positionAttributeFromXml(xmlElement, 'default-x'),
-      defaultY: _positionAttributeFromXml(xmlElement, 'default-y'),
-      relativeX: _positionAttributeFromXml(xmlElement, 'relative-x'),
-      relativeY: _positionAttributeFromXml(xmlElement, 'relative-y'),
+      defaultX: _attributeFromXml(xmlElement, 'default-x'),
+      defaultY: _attributeFromXml(xmlElement, 'default-y'),
+      relativeX: _attributeFromXml(xmlElement, 'relative-x'),
+      relativeY: _attributeFromXml(xmlElement, 'relative-y'),
     );
   }
 
-  static double? _positionAttributeFromXml(
+  static double? _attributeFromXml(
     XmlElement xmlElement,
     String attribute,
   ) {

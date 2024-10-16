@@ -6,7 +6,7 @@ class NotationLayoutProperties {
 
   /// Noteheads height is sum of stave space and staff line stroke width.
   static const noteheadHeight = NotationLayoutProperties.staveSpace +
-      NotationLayoutProperties.staffLineStrokeWidth;
+      NotationLayoutProperties.staffLineStrokeWidth * 1.5;
 
   static const int staffLines = 5;
   static const double staffLineStrokeWidth = 1.2;
