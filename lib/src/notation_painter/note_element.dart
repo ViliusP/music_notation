@@ -304,12 +304,12 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     if (stem?.value == StemValue.down) {
       stemDirection = StemDirection.down;
     }
+    double dotsTopPadding = position.numeric % 2 != 0
+        ? notehead.size.height / 2 // Between lines
+        : notehead.size.height / 8; // On the line
 
-    double dotsTopPadding =
-        stem?.value == StemValue.up ? stemLength : notehead.size.height / 2;
-
-    if (position.numeric % 2 == 0) {
-      dotsTopPadding -= notehead.size.height / 2.4;
+    if (_stemmed && stem?.value == StemValue.up) {
+      dotsTopPadding += stemLength - notehead.size.height / 2;
     }
 
     return SizedBox.fromSize(
