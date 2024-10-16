@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
 import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
+import 'package:music_notation/src/notation_painter/measure/inherited_padding.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_layout.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
@@ -36,8 +37,7 @@ class MusicNotationCanvas extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var parts = <Row>[];
-
+    var parts = <SyncWidthRowBuilder>[];
     for (int i = 0; i < grid.data.rowCount; i++) {
       var measures = <MeasureLayout>[];
       double maxTopPadding = 0;
@@ -75,23 +75,28 @@ class MusicNotationCanvas extends StatelessWidget {
 
         measures.add(measure);
       }
-
-      parts.add(Row(
-        // mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: measures
-            .map((e) => SizedBox(
-                  height: maxTopPadding + maxBottomPadding + 48,
-                  child: e,
-                ))
-            .toList(),
+      parts.add(SyncWidthRowBuilder(
+        builder: (context, child) {
+          return InheritedPadding(
+            top: maxTopPadding,
+            bottom: maxBottomPadding,
+            child: SizedBox(
+              height: maxTopPadding + maxBottomPadding + 48,
+              child: child,
+            ),
+          );
+        },
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: measures,
+        ),
       ));
     }
     return SyncWidthColumn(
       // mainAxisSize: MainAxisSize.min,
       // crossAxisAlignment: CrossAxisAlignment.start,
-      children: parts,
+      builders: parts,
     );
   }
 }

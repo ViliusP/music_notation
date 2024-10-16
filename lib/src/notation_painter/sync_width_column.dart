@@ -39,9 +39,12 @@ import 'package:flutter/widgets.dart';
 ///       (measure and layout) can be afforded. For dynamic content or high-frequency layout changes,
 ///       consider an alternative approach or ensure performance benchmarks are satisfactory.
 class SyncWidthColumn extends StatefulWidget {
-  final List<Row> children;
+  final List<SyncWidthRowBuilder> builders;
 
-  const SyncWidthColumn({super.key, required this.children});
+  const SyncWidthColumn({
+    super.key,
+    required this.builders,
+  });
 
   @override
   State createState() => _SyncWidthColumnState();
@@ -60,14 +63,17 @@ class _SyncWidthColumnState extends State<SyncWidthColumn> {
   }
 
   void initializeRowAndColumnData() {
-    int maxColumns = widget.children.fold<int>(
+    List<Row> rows = widget.builders.map((b) => b.child).toList();
+    int maxColumns = rows.fold<int>(
       0,
       (prev, row) => max(prev, row.children.length),
     );
 
     maxColumnWidths = List.filled(maxColumns, null);
-    rowKeys = List.generate(widget.children.length,
-        (_) => List.generate(maxColumns, (_) => GlobalKey()));
+    rowKeys = List.generate(
+      rows.length,
+      (_) => List.generate(maxColumns, (_) => GlobalKey()),
+    );
   }
 
   void scheduleMaxWidthsUpdate() {
@@ -83,24 +89,31 @@ class _SyncWidthColumnState extends State<SyncWidthColumn> {
 
   @override
   Widget build(BuildContext context) {
+    List<Row> rows = widget.builders.map((b) => b.child).toList();
+
     return ListView.builder(
       shrinkWrap: true,
-      itemCount: widget.children.length,
-      itemBuilder: (context, rowIndex) {
-        return _SyncWidthRow(
-          maxColumnWidths: maxColumnWidths,
-          rowKeys: rowKeys[rowIndex],
-          inMeasurementPass: inMeasurementPass,
-          children: widget.children[rowIndex].children,
+      itemCount: widget.builders.length,
+      itemBuilder: (context, i) {
+        return widget.builders[i].builder(
+          context,
+          _SyncWidthRow(
+            maxColumnWidths: maxColumnWidths,
+            rowKeys: rowKeys[i],
+            inMeasurementPass: inMeasurementPass,
+            children: rows[i].children,
+          ),
         );
       },
     );
   }
 
   void updateMaxWidths() {
-    for (int rowIndex = 0; rowIndex < widget.children.length; rowIndex++) {
+    List<Row> rows = widget.builders.map((b) => b.child).toList();
+
+    for (int rowIndex = 0; rowIndex < rows.length; rowIndex++) {
       for (int colIndex = 0;
-          colIndex < widget.children[rowIndex].children.length;
+          colIndex < rows[rowIndex].children.length;
           colIndex++) {
         final size = _getWidgetSize(rowKeys[rowIndex][colIndex]);
         if (size != null) {
@@ -149,5 +162,21 @@ class _SyncWidthRow extends StatelessWidget {
     return [
       SizedBox(width: maxColumnWidths[colIndex], child: children[colIndex])
     ];
+  }
+}
+
+class SyncWidthRowBuilder extends StatelessWidget {
+  final Row child;
+  final Widget Function(BuildContext, Widget) builder;
+
+  const SyncWidthRowBuilder({
+    super.key,
+    required this.builder,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return builder(context, child);
   }
 }
