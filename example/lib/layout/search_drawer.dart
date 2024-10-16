@@ -124,11 +124,14 @@ class _SearchDrawerState extends State<SearchDrawer> {
       if (mounted) {
         Navigator.of(MyApp.navigatorKey.currentContext!).push(
           PageRouteBuilder(
-            pageBuilder: (_, __, ___) =>
-                ScorePage(scorePartwise: scorePartwise),
-            transitionDuration: Duration(milliseconds: 150),
-            transitionsBuilder: (_, a, __, c) =>
-                FadeTransition(opacity: a, child: c),
+            pageBuilder: (_, __, ___) => ScorePage(
+              scorePartwise: scorePartwise,
+            ),
+            transitionDuration: Duration(milliseconds: 100),
+            transitionsBuilder: (_, a, __, c) => FadeTransition(
+              opacity: a,
+              child: c,
+            ),
           ),
         );
       }
