@@ -94,7 +94,7 @@ class _SearchDrawerState extends State<SearchDrawer> {
               itemCount: searchResults.length,
               itemBuilder: (context, index) {
                 return ListTile(
-                  onTap: () => onListTileTap(index),
+                  onTap: () => onListTileTap(searchResults[index].index),
                   title: Text(NotationExample
                       .values[searchResults[index].index].displayName),
                 );
