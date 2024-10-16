@@ -496,12 +496,12 @@ class StaffLines extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Map<BarlineExtension, Color> colors = {
-      BarlineExtension.both: Color.fromRGBO(27, 114, 0, 1),
-      BarlineExtension.bottom: Color.fromRGBO(255, 0, 0, 1),
-      BarlineExtension.none: Color.fromRGBO(195, 0, 255, 1),
-      BarlineExtension.top: Color.fromRGBO(4, 0, 255, 1),
-    };
+    // Map<BarlineExtension, Color> colors = {
+    //   BarlineExtension.both: Color.fromRGBO(27, 114, 0, 1),
+    //   BarlineExtension.bottom: Color.fromRGBO(255, 0, 0, 1),
+    //   BarlineExtension.none: Color.fromRGBO(195, 0, 255, 1),
+    //   BarlineExtension.top: Color.fromRGBO(4, 0, 255, 1),
+    // };
 
     double calculatedStartOffset = 0;
     double calculatedStartHeight = BarlinePainter.size.height;
@@ -542,7 +542,7 @@ class StaffLines extends StatelessWidget {
             child: CustomPaint(
               size: Size.fromWidth(BarlinePainter.size.width),
               painter: BarlinePainter(
-                color: colors[startExtension]!,
+                // color: colors[startExtension]!,
                 offset: calculatedStartOffset,
                 height: calculatedStartHeight,
               ),
@@ -556,7 +556,7 @@ class StaffLines extends StatelessWidget {
           child: CustomPaint(
             size: Size.fromWidth(BarlinePainter.size.width),
             painter: BarlinePainter(
-              color: colors[endExtension]!,
+              // color: colors[endExtension]!,
               offset: calculatedEndOffset,
               height: calculatedEndHeight,
             ),
