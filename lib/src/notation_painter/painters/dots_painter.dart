@@ -2,6 +2,8 @@ import 'package:flutter/rendering.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 import 'package:music_notation/src/smufl/smufl_glyph.dart';
 
+/// Paints [count] duration dots as SMUFL symbol.
+/// A duration dot that is larger than a staccato dot — often twice the size.
 class DotsPainter extends CustomPainter {
   final int count;
 
