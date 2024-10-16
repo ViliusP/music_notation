@@ -68,6 +68,8 @@ flutter:
     - assets/scores/chopin_prelude.xml
     - assets/scores/scale.xml
     - assets/scores/hello_world.xml
+    - assets/scores/dot(s)_examples.musicxml
+
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
