@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:music_notation/music_notation.dart';
-import 'package:collection/collection.dart';
 
 class ScorePage extends StatefulWidget {
   final ScorePartwise scorePartwise;
