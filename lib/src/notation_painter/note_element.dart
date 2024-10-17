@@ -271,6 +271,20 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     return width / 2;
   }
 
+  double _dotsRightOffset(notehead) {
+    NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
+    double defaultOffset = notehead.size.width * 1.4;
+
+    // For upstemmed notes with tails
+    if (_stemmed &&
+        type.compareTo(NoteTypeValue.eighth) != 1 &&
+        stem?.value == StemValue.up &&
+        note.beams.isEmpty) {
+      defaultOffset *= 1.35;
+    }
+    return defaultOffset;
+  }
+
   @override
   Widget build(BuildContext context) {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
@@ -327,7 +341,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
           if (_dots > 0)
             Padding(
               padding: EdgeInsets.only(
-                left: notehead.size.width * 1.35,
+                left: _dotsRightOffset(notehead),
                 top: dotsTopPadding,
               ),
               child: CustomPaint(
