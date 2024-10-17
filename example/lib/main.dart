@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: navigatorKey,
-      title: 'Flutter Demo',
+      title: 'Library\'s music_notation demo',
       theme: ThemeData.from(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.pink,
@@ -34,27 +34,6 @@ class MyApp extends StatelessWidget {
         );
       },
       home: Placeholder(),
-    );
-  }
-}
-
-class LoadingWidget extends StatelessWidget {
-  const LoadingWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: SizedBox(
-        height: 120,
-        width: 120,
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(
-            Theme.of(context).colorScheme.primary,
-          ),
-          backgroundColor: Colors.white,
-          strokeWidth: 8.0,
-        ),
-      ),
     );
   }
 }

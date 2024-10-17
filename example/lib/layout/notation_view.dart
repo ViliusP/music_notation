@@ -10,14 +10,21 @@ class NotationViewLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text("Library music_notation example"),
-      ),
-      body: Row(
+      body: Stack(
         children: [
-          Drawer(child: SearchDrawer()),
-          Expanded(child: body),
+          Row(
+            children: [
+              Material(
+                color: Theme.of(context).drawerTheme.surfaceTintColor,
+                elevation: 6,
+                child: SizedBox(
+                  width: 300,
+                  child: SearchDrawer(),
+                ),
+              ),
+              Expanded(child: body),
+            ],
+          ),
         ],
       ),
     );
