@@ -22,6 +22,7 @@ class _SearchDrawerState extends State<SearchDrawer> {
 
   bool loading = false;
   Timer? _checkTypingTimer;
+  int? selectedIndex;
 
   final List<ExtractedResult<NotationExample>> _defaultSearchResults =
       NotationExample.values
@@ -89,16 +90,27 @@ class _SearchDrawerState extends State<SearchDrawer> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: searchResults.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  onTap: () => onListTileTap(searchResults[index].index),
-                  title: Text(NotationExample
-                      .values[searchResults[index].index].displayName),
-                );
-              },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: searchResults.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    selectedTileColor: Theme.of(context)
+                        .colorScheme
+                        .inversePrimary
+                        .withOpacity(.40),
+                    selected: searchResults[index].index == selectedIndex,
+                    onTap: () => onListTileTap(searchResults[index].index),
+                    title: Text(NotationExample
+                        .values[searchResults[index].index].displayName),
+                  );
+                },
+              ),
             ),
           ),
         ],
@@ -110,6 +122,7 @@ class _SearchDrawerState extends State<SearchDrawer> {
     NotationExample score = NotationExample.values[index];
 
     setState(() {
+      selectedIndex = index;
       loading = true;
     });
     XmlDocument? document = await score.read();
@@ -127,8 +140,9 @@ class _SearchDrawerState extends State<SearchDrawer> {
             pageBuilder: (_, __, ___) => ScorePage(
               scorePartwise: scorePartwise,
             ),
-            transitionDuration: Duration(milliseconds: 100),
+            transitionDuration: Duration(milliseconds: 0),
             transitionsBuilder: (_, a, __, c) => FadeTransition(
+              key: ValueKey(score.displayName),
               opacity: a,
               child: c,
             ),
@@ -136,6 +150,7 @@ class _SearchDrawerState extends State<SearchDrawer> {
         );
       }
     } catch (e) {
+      selectedIndex = null;
       if (mounted) {
         ScaffoldMessenger.of(MyApp.navigatorKey.currentContext!).showSnackBar(
           SnackBar(content: Text(e.toString())),
