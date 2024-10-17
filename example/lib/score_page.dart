@@ -24,19 +24,16 @@ class _ScorePageState extends State<ScorePage> {
 
     // String title = "${creator ?? 'No creator'}: ${movementTitle ?? 'unnamed'}";
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Scrollbar(
+    return Scrollbar(
+      controller: scorePageScrollController,
+      thumbVisibility: true,
+      child: SingleChildScrollView(
         controller: scorePageScrollController,
-        thumbVisibility: true,
-        child: SingleChildScrollView(
-          controller: scorePageScrollController,
-          scrollDirection: Axis.horizontal,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
-            child: MusicNotationCanvas(
-              scorePartwise: widget.scorePartwise,
-            ),
+        scrollDirection: Axis.horizontal,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+          child: MusicNotationCanvas(
+            scorePartwise: widget.scorePartwise,
           ),
         ),
       ),
