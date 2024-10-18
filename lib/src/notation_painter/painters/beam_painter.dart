@@ -1,4 +1,5 @@
 import 'package:flutter/rendering.dart';
+import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 
 class BeamPainter extends CustomPainter {
   final Offset secondPoint;
@@ -9,12 +10,19 @@ class BeamPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    const p1 = Offset(0, 0);
+    double beamWidth = NotationLayoutProperties.beamThickness;
+
     final p2 = secondPoint;
+    final Path path = Path();
+    path.moveTo(0, 0);
+    path.relativeLineTo(0, beamWidth);
+    path.lineTo(p2.dx, p2.dy + beamWidth);
+    path.lineTo(p2.dx, p2.dy);
+    path.close();
     final paint = Paint()
-      ..color = Color.fromRGBO(0, 0, 0, 1)
-      ..strokeWidth = 4;
-    canvas.drawLine(p1, p2, paint);
+      ..color = Color.fromRGBO(129, 0, 0, .5)
+      ..strokeWidth = 0;
+    canvas.drawPath(path, paint);
   }
 
   @override
