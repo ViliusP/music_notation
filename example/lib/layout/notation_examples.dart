@@ -22,6 +22,10 @@ enum NotationExample {
   dots(
     displayName: "Dot(s) rendering",
     path: "assets/scores/dot(s)_examples.musicxml",
+  ),
+  singleVoiceBeaming(
+    displayName: "Single voice beaming",
+    path: "assets/scores/single_voice_beaming.musicxml",
   );
 
   const NotationExample({
