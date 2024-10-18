@@ -59,7 +59,7 @@ class NoteType {
 ///
 /// For more details, please refer to:
 /// [note-type-value data type | MusicXML 4.0](https://www.w3.org/2021/06/musicxml40/musicxml-reference/data-types/note-type-value/).
-enum NoteTypeValue {
+enum NoteTypeValue implements Comparable<NoteTypeValue> {
   n1024th,
   n512th,
   n256th,
@@ -101,4 +101,9 @@ enum NoteTypeValue {
 
   @override
   String toString() => _map[this]!;
+
+  @override
+  int compareTo(NoteTypeValue other) {
+    return index.compareTo(other.index);
+  }
 }

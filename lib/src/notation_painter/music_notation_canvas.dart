@@ -76,26 +76,23 @@ class MusicNotationCanvas extends StatelessWidget {
         measures.add(measure);
       }
       parts.add(SyncWidthRowBuilder(
-        builder: (context, child) {
+        builder: (context, children) {
           return InheritedPadding(
             top: maxTopPadding,
             bottom: maxBottomPadding,
             child: SizedBox(
               height: maxTopPadding + maxBottomPadding + 48,
-              child: child,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: children,
+              ),
             ),
           );
         },
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: measures,
-        ),
+        children: measures,
       ));
     }
     return SyncWidthColumn(
-      // mainAxisSize: MainAxisSize.min,
-      // crossAxisAlignment: CrossAxisAlignment.start,
       builders: parts,
     );
   }

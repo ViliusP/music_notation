@@ -11,6 +11,7 @@ import 'package:music_notation/src/notation_painter/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/painters/dots_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/note_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
 import 'package:music_notation/src/smufl/smufl_glyph.dart';
@@ -97,11 +98,11 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
   @override
   double get positionalOffset {
     if (_stemmed && stem?.value == StemValue.down) {
-      return -stemLength;
+      return -stemLength - NotationLayoutProperties.staffLineStrokeWidth / 2;
     }
 
-    return -NotationLayoutProperties.staveSpace / 2 -
-        NotationLayoutProperties.staffLineStrokeWidth / 2;
+    return (-NotationLayoutProperties.staveSpace / 2 -
+        NotationLayoutProperties.staffLineStrokeWidth / 2);
   }
 
   final double duration;
@@ -135,6 +136,10 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       noteheadSize.width - NotationLayoutProperties.stemStrokeWidth,
       size.height,
     );
+  }
+
+  int get _dots {
+    return note.dots.length;
   }
 
   static double determineDuration(Note note) {
@@ -266,6 +271,20 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     return width / 2;
   }
 
+  double _dotsRightOffset(notehead) {
+    NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
+    double defaultOffset = notehead.size.width * 1.4;
+
+    // For upstemmed notes with tails
+    if (_stemmed &&
+        type.compareTo(NoteTypeValue.eighth) != 1 &&
+        stem?.value == StemValue.up &&
+        note.beams.isEmpty) {
+      defaultOffset *= 1.35;
+    }
+    return defaultOffset;
+  }
+
   @override
   Widget build(BuildContext context) {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
@@ -299,6 +318,13 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     if (stem?.value == StemValue.down) {
       stemDirection = StemDirection.down;
     }
+    double dotsTopPadding = position.numeric % 2 != 0
+        ? notehead.size.height / 2 // Between lines
+        : notehead.size.height / 8; // On the line
+
+    if (_stemmed && stem?.value == StemValue.up) {
+      dotsTopPadding += stemLength - notehead.size.height / 2;
+    }
 
     return SizedBox.fromSize(
       size: size,
@@ -306,12 +332,22 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
         children: [
           Positioned(
             bottom: stem?.value == StemValue.up ? 0 : null,
-            top: stem?.value == StemValue.up ? null : 0,
             child: SizedBox(
+              height: notehead.size.height,
               width: notehead.size.width,
               child: notehead,
             ),
           ),
+          if (_dots > 0)
+            Padding(
+              padding: EdgeInsets.only(
+                left: _dotsRightOffset(notehead),
+                top: dotsTopPadding,
+              ),
+              child: CustomPaint(
+                painter: DotsPainter(_dots),
+              ),
+            ),
           if (_stemmed)
             Padding(
               padding: EdgeInsets.only(
