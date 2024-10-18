@@ -63,17 +63,11 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       );
     }
 
-    double? calculatedLength;
-
-    if (stemLength == null && note.type?.value.stemmed == true) {
-      calculatedLength = StemElement.defaultLength;
-    }
-
     return NoteElement._(
       key: key,
       note: note,
       notationContext: notationContext,
-      stemLength: stemLength ?? calculatedLength ?? 0,
+      stemLength: stemLength ?? _calculateStemLength(note, notationContext),
       showLedger: showLedger,
       duration: determineDuration(note),
       divisions: notationContext.divisions!,
@@ -143,6 +137,30 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
 
   int get _dots {
     return note.dots.length;
+  }
+
+  static double _calculateStemLength(Note note, NotationContext context) {
+    if (note.type?.value.stemmed != true) {
+      return 0.0;
+    }
+
+    double stemLength = StemElement.defaultLength;
+
+    var position = determinePosition(note, context.clef);
+
+    int distance = 0;
+
+    if (position >= ElementPosition.secondLedgerAbove) {
+      distance = position.distance(ElementPosition.secondLedgerAbove) + 1;
+    }
+
+    if (position <= ElementPosition.secondLedgerBelow) {
+      distance = position.distance(ElementPosition.secondLedgerBelow) + 1;
+    }
+
+    stemLength += distance * NotationLayoutProperties.noteheadHeight / 2;
+    stemLength -= distance * NotationLayoutProperties.staffLineStrokeWidth / 2;
+    return stemLength;
   }
 
   static double determineDuration(Note note) {

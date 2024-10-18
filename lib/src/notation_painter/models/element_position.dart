@@ -197,6 +197,21 @@ class ElementPosition implements Comparable<ElementPosition> {
     octave: 5,
   );
 
+  static const ElementPosition secondLedgerAbove = ElementPosition(
+    step: Step.C,
+    octave: 6,
+  );
+
+  static const ElementPosition secondLedgerBelow = ElementPosition(
+    step: Step.A,
+    octave: 3,
+  );
+
+  /// Calculates absolute numerical difference between two notes.
+  int distance(ElementPosition other) {
+    return (numeric - other.numeric).abs();
+  }
+
   /// Calculates numerical difference from middle (B4). If distance is positive,
   /// note is positioned above staff middle. If it is negative, it is positioned
   /// below middle of staff.
