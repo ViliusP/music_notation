@@ -501,12 +501,12 @@ class StaffLines extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Map<BarlineExtension, Color> colors = {
-      BarlineExtension.both: Color.fromRGBO(27, 114, 0, .5),
-      BarlineExtension.bottom: Color.fromRGBO(255, 0, 0, .5),
-      BarlineExtension.none: Color.fromRGBO(195, 0, 255, .5),
-      BarlineExtension.top: Color.fromRGBO(4, 0, 255, .5),
-    };
+    // Map<BarlineExtension, Color> colors = {
+    //   BarlineExtension.both: Color.fromRGBO(27, 114, 0, .5),
+    //   BarlineExtension.bottom: Color.fromRGBO(255, 0, 0, .5),
+    //   BarlineExtension.none: Color.fromRGBO(195, 0, 255, .5),
+    //   BarlineExtension.top: Color.fromRGBO(4, 0, 255, .5),
+    // };
 
     double calculatedStartOffset = 0;
     double calculatedStartHeight = BarlinePainter.size.height;
