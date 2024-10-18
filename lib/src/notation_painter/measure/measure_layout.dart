@@ -243,12 +243,13 @@ class MeasureLayout extends StatelessWidget {
     int? staff,
     NotationContext notationContext,
   ) {
-    Clef clef = element.clefs.firstWhere(
+    Clef? clef = element.clefs.firstWhereOrNull(
       (element) => staff != null ? element.number == staff : true,
     );
 
     return notationContext.copyWith(
       clef: clef,
+      time: element.times.firstOrNull,
       divisions: element.divisions,
     );
   }
@@ -298,6 +299,8 @@ class MeasureLayout extends StatelessWidget {
         case Direction _:
           break;
         case Attributes _:
+          // TODO: test attributes parsing and context change.
+          // For example, time beat mid score change should be seen in new context.
           var attributesWidgets = _processAttributes(
             element,
             staff,
