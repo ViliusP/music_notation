@@ -15,6 +15,7 @@ import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
 import 'package:music_notation/src/notation_painter/attributes_elements.dart';
+import 'package:music_notation/src/notation_painter/chord_element.dart';
 import 'package:music_notation/src/notation_painter/cursor_element.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
@@ -428,7 +429,7 @@ class MeasureLayout extends StatelessWidget {
         bottomOffset += child.positionalOffset;
 
         // Process beam for the current child
-        var beamResult = BeamProcessingResult.processBeam(
+        var beamResult = BeamProcessing.evaluate(
           child: child,
           index: index,
           bottomOffset: bottomOffset,
@@ -572,18 +573,18 @@ class StaffLines extends StatelessWidget {
   }
 }
 
-class BeamProcessingResult {
+class BeamProcessing {
   final (double x, double y)? beamStartOffset;
   final (double x, double y)? beamEndOffset;
   final Widget? beamWidget;
 
-  BeamProcessingResult({
+  BeamProcessing({
     this.beamStartOffset,
     this.beamEndOffset,
     this.beamWidget,
   });
 
-  static BeamProcessingResult processBeam({
+  static BeamProcessing evaluate({
     required MeasureWidget child,
     required int index,
     required double bottomOffset,
@@ -646,12 +647,12 @@ class BeamProcessingResult {
           ),
         ),
       );
-      return BeamProcessingResult(
+      return BeamProcessing(
         beamWidget: beamWidget,
       );
     }
 
-    return BeamProcessingResult(
+    return BeamProcessing(
       beamStartOffset: beamStartOffset,
       beamEndOffset: beamEndOffset,
     );
