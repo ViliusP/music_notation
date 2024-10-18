@@ -125,7 +125,10 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
 
   Offset get offsetForBeam {
     if (stem?.value == StemValue.down) {
-      return Offset(0, 0);
+      return Offset(
+        NotationLayoutProperties.stemStrokeWidth / 1.5,
+        NotationLayoutProperties.staveSpace / 2,
+      );
     }
 
     var noteheadSize = NoteheadElement(
@@ -490,7 +493,10 @@ class Chord extends StatelessWidget implements MeasureWidget {
 
   Offset get offsetForBeam {
     if (stem?.value == StemValue.down) {
-      return Offset(0, 0);
+      return Offset(
+        NotationLayoutProperties.stemStrokeWidth / 1.5,
+        NotationLayoutProperties.staveSpace / 2,
+      );
     }
 
     double width = notes
