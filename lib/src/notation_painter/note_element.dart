@@ -139,6 +139,9 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     return note.dots.length;
   }
 
+  /// Default stem length: `3.5*stave_space`.
+  ///
+  /// Stems for notes on more than one ledger line extend to the middle stave-line
   static double _calculateStemLength(Note note, NotationContext context) {
     if (note.type?.value.stemmed != true) {
       return 0.0;
