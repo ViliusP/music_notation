@@ -201,11 +201,17 @@ class EngravingDefaults {
 
 /// Represents a bounding box for a glyph, defined by its north-east and south-west corners.
 class GlyphBBox {
-  /// North-east corner coordinates of the bounding box.
-  final List<double> bBoxNE;
+  /// North-east (top-right) corner coordinates of the bounding box.
+  final Coordinates bBoxNE;
 
-  /// South-west corner coordinates of the bounding box.
-  final List<double> bBoxSW;
+  /// South-west (bottom-left) corner coordinates of the bounding box.
+  final Coordinates bBoxSW;
+
+  /// Top-right (north-east) corner coordinates of the bounding box.
+  Coordinates get topRight => bBoxNE;
+
+  /// Bottom-left (south-west) corner coordinates of the bounding box.
+  Coordinates get bottomLeft => bBoxSW;
 
   /// Creates an instance of [GlyphBBox].
   ///
@@ -233,9 +239,14 @@ class GlyphBBox {
   /// ```
   factory GlyphBBox.fromJson(Map<String, dynamic> json) {
     return GlyphBBox(
-      bBoxNE: List<double>.from(json['bBoxNE']),
-      bBoxSW: List<double>.from(json['bBoxSW']),
+      bBoxNE: Coordinates.fromList(List<double>.from(json['bBoxNE'])),
+      bBoxSW: Coordinates.fromList(List<double>.from(json['bBoxSW'])),
     );
+  }
+
+  @override
+  String toString() {
+    return "NE: $bBoxNE, SW: $bBoxSW";
   }
 }
 
@@ -245,7 +256,7 @@ class GlyphAnchor {
   final String name;
 
   /// Coordinates of the anchor point.
-  final List<double> coordinates;
+  final Coordinates coordinates;
 
   /// Creates an instance of [GlyphAnchor].
   ///
@@ -274,7 +285,7 @@ class GlyphAnchor {
   factory GlyphAnchor.fromJson(Map<String, dynamic> json) {
     return GlyphAnchor(
       name: json['name'],
-      coordinates: List<double>.from(json['coordinates']),
+      coordinates: Coordinates.fromList(List<double>.from(json['coordinates'])),
     );
   }
 }
@@ -571,5 +582,21 @@ class FontMetadata {
       glyphBBoxes: bBoxes,
       glyphsWithAnchors: glyphsWithAnchors,
     );
+  }
+}
+
+class Coordinates {
+  final double x;
+  final double y;
+
+  Coordinates({required this.x, required this.y});
+
+  factory Coordinates.fromList(List<double> coordinates) {
+    return Coordinates(x: coordinates[0], y: coordinates[1]);
+  }
+
+  @override
+  String toString() {
+    return "($x, $y)";
   }
 }
