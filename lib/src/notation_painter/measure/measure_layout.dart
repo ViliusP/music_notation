@@ -402,9 +402,6 @@ class MeasureLayout extends StatelessWidget {
       }
     }
 
-    // bottomPadding += NotationLayoutProperties.staffLineStrokeWidth / 2;
-    // topPadding += NotationLayoutProperties.staffLineStrokeWidth / 2;
-
     return EdgeInsets.only(
       bottom: bottomPadding,
       top: topPadding,
@@ -563,6 +560,7 @@ class StaffLines extends StatelessWidget {
                 // color: colors[startExtension]!,
                 offset: calculatedStartOffset,
                 height: calculatedStartHeight,
+                end: false,
               ),
             ),
           ),

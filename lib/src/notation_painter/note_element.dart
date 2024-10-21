@@ -125,7 +125,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
   Offset get offsetForBeam {
     if (stem?.value == StemValue.down) {
       return Offset(
-        NotationLayoutProperties.stemStrokeWidth / 1.5,
+        NotationLayoutProperties.stemStrokeWidth / 2,
         NotationLayoutProperties.staveSpace / 2,
       );
     }
@@ -135,7 +135,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     ).size(font);
 
     return Offset(
-      noteheadSize.width - NotationLayoutProperties.stemStrokeWidth,
+      noteheadSize.width - NotationLayoutProperties.stemStrokeWidth / 2,
       size.height,
     );
   }
@@ -439,7 +439,7 @@ class NoteheadElement extends StatelessWidget {
       case NoteTypeValue.quarter:
       case NoteTypeValue.half:
         Rect headRect = font.glyphBBoxes['noteheadBlack']!.toRect();
-        return Size(16, headRect.height);
+        return Size(headRect.width, headRect.height);
       case NoteTypeValue.whole:
         return const Size(21.2, height);
       case NoteTypeValue.breve:
