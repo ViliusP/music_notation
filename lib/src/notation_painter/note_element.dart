@@ -98,7 +98,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
   @override
   double get positionalOffset {
     if (_stemmed && stem?.value == StemValue.down) {
-      return -stemLength;
+      return -stemLength + NotationLayoutProperties.staveSpace / 2;
     }
     return 0;
   }
