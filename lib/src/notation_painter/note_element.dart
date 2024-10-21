@@ -304,9 +304,9 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     return width / 2;
   }
 
-  double _dotsRightOffset(notehead) {
+  double _dotsRightOffset() {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
-    double defaultOffset = notehead.size(font).width * 1.4;
+    double defaultOffset = NotationLayoutProperties.staveSpace * 1.75;
 
     // For upstemmed notes with tails
     if (_stemmed &&
@@ -370,7 +370,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
           if (_dots > 0)
             Padding(
               padding: EdgeInsets.only(
-                left: _dotsRightOffset(notehead),
+                left: _dotsRightOffset(),
                 top: dotsTopPadding,
               ),
               child: CustomPaint(

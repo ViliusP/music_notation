@@ -88,11 +88,11 @@ class Chord extends StatelessWidget implements MeasureWidget {
   double get positionalOffset {
     if (stem?.value == StemValue.down) {
       const heightPerPosition = NotationLayoutProperties.staveSpace / 2;
-      double height = positionsDifference * heightPerPosition;
+      double height = (positionsDifference + 1) * heightPerPosition;
       return -_calculateStemLength(notes) + height;
     }
 
-    return -NoteheadElement(note: notes.first).size(font).height / 2;
+    return 0;
   }
 
   /// Difference between lowest and highest notes' positions;
@@ -271,6 +271,14 @@ class Chord extends StatelessWidget implements MeasureWidget {
         stemLength = calculatedStemLength;
       }
 
+      if (isLowest != (stem?.value == StemValue.up)) {
+        bottom += 0;
+      }
+
+      if (isHighest != (stem?.value == StemValue.down)) {
+        bottom += 0;
+      }
+
       if (stem?.value == StemValue.down && isHighest) {
         stemLength = calculatedStemLength;
         bottom = 0;
@@ -285,8 +293,8 @@ class Chord extends StatelessWidget implements MeasureWidget {
       );
 
       if (stem?.value == StemValue.down && !isHighest) {
-        bottom += 35; // This is magic number that just works, need to fix it.
-        // bottom += element.positionalOffset;
+        // This is a magic number that just works, need to fix it.
+        bottom += NotationLayoutProperties.staveSpace * 3;
       }
 
       children.add(
