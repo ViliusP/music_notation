@@ -12,10 +12,13 @@ class BarlinePainter extends CustomPainter {
 
   final double height;
 
+  final bool end;
+
   BarlinePainter({
     this.color = const Color.fromRGBO(0, 0, 0, 1.0),
     required this.offset,
     required this.height,
+    this.end = true,
   });
 
   static const Size size = Size(
@@ -29,9 +32,11 @@ class BarlinePainter extends CustomPainter {
       ..color = color
       ..strokeWidth = strokeWidth;
 
+    double x = end ? size.width : 0;
+
     canvas.drawLine(
-      Offset(strokeWidth, height),
-      Offset(strokeWidth, offset),
+      Offset(x, height),
+      Offset(x, offset),
       linePainter,
     );
   }
