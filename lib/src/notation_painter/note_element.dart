@@ -100,9 +100,8 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     if (_stemmed && stem?.value == StemValue.down) {
       return -stemLength;
     }
-    // Manually set offset for better looking notes with steam of direction up.
-    const visualOffset = -0.5;
-    return (-NotationLayoutProperties.staveSpace / 2) + visualOffset;
+
+    return (-noteheadSize.height / 2);
   }
 
   final double duration;
@@ -130,10 +129,6 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
         NotationLayoutProperties.staveSpace / 2,
       );
     }
-
-    var noteheadSize = NoteheadElement(
-      note: note,
-    ).size(font);
 
     return Offset(
       noteheadSize.width,
@@ -260,6 +255,10 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
         font: font,
       );
 
+  Size get noteheadSize => NoteheadElement(
+        note: note,
+      ).size(font);
+
   static Size calculateSize({
     required Note note,
     required double stemLength,
@@ -333,8 +332,6 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       ledgerLines: ledgerLines,
       // color: _voiceColors[note.editorialVoice.voice ?? "0"]!, // Colors by voice
     );
-
-    Size noteheadSize = notehead.size(font);
 
     if (_isRest) {
       return RestElement.fromNote(note, notationContext.divisions!);
@@ -439,11 +436,15 @@ class NoteheadElement extends StatelessWidget {
       case NoteTypeValue.n16th:
       case NoteTypeValue.eighth:
       case NoteTypeValue.quarter:
-      case NoteTypeValue.half:
         Rect headRect = font.glyphBBoxes['noteheadBlack']!.toRect();
         return Size(headRect.width, headRect.height);
+      case NoteTypeValue.half:
+        Rect headRect = font.glyphBBoxes['noteheadHalf']!.toRect();
+        return Size(headRect.width, headRect.height);
       case NoteTypeValue.whole:
-        return const Size(21.2, height);
+        Rect headRect = font.glyphBBoxes['noteheadWhole']!.toRect();
+        // Old value: const Size(21.2, height)
+        return Size(headRect.width, headRect.height);
       case NoteTypeValue.breve:
         return const Size(30, height); // Need to be adjusted in future.
       case NoteTypeValue.long:
