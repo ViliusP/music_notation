@@ -91,8 +91,9 @@ class Chord extends StatelessWidget implements MeasureWidget {
       double height = positionsDifference * heightPerPosition;
       return -_calculateStemLength(notes) + height;
     }
-
-    return -NotationLayoutProperties.staveSpace / 2;
+    // Manually set offset for better looking notes with steam of direction up.
+    const visualOffset = -0.5;
+    return -NotationLayoutProperties.staveSpace / 2 + visualOffset;
   }
 
   /// Difference between lowest and highest notes' positions;

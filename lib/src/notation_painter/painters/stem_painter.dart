@@ -24,6 +24,7 @@ class StemPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     canvas.drawLine(Offset.zero, Offset(0, size.height), _paint);
 
+    // TODO: fix magic number
     Offset paintingOffset = const Offset(0, -40);
 
     if (direction == StemDirection.down) {

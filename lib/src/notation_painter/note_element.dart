@@ -100,8 +100,9 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     if (_stemmed && stem?.value == StemValue.down) {
       return -stemLength;
     }
-
-    return (-NotationLayoutProperties.staveSpace / 2);
+    // Manually set offset for better looking notes with steam of direction up.
+    const visualOffset = -0.5;
+    return (-NotationLayoutProperties.staveSpace / 2) + visualOffset;
   }
 
   final double duration;
@@ -135,7 +136,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     ).size(font);
 
     return Offset(
-      noteheadSize.width - NotationLayoutProperties.stemStrokeWidth / 2,
+      noteheadSize.width,
       size.height,
     );
   }
@@ -167,7 +168,6 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     }
 
     stemLength += distance * NotationLayoutProperties.staveSpace / 2;
-    // stemLength -= distance * NotationLayoutProperties.staffLineStrokeWidth / 2;
     return stemLength;
   }
 
@@ -213,6 +213,8 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
         int? octave;
         switch (noteForm) {
           case Pitch _:
+            // step = Step.F;
+            // octave = 4;
             step = noteForm.step;
             octave = noteForm.octave;
             break;
@@ -338,13 +340,13 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       return RestElement.fromNote(note, notationContext.divisions!);
     }
 
-    var stemLeftPadding = NotationLayoutProperties.stemStrokeWidth / 1.5;
+    var stemLeftPadding = NotationLayoutProperties.stemStrokeWidth / 2;
     var stemTopPadding = NotationLayoutProperties.defaultNoteheadHeight / 2;
     var stemBottomPadding = 0.0;
 
     if (stem?.value == StemValue.up) {
       stemLeftPadding = noteheadSize.width;
-      stemLeftPadding -= NotationLayoutProperties.stemStrokeWidth;
+      stemLeftPadding -= NotationLayoutProperties.stemStrokeWidth / 2;
       stemTopPadding = 0;
       stemBottomPadding = NotationLayoutProperties.defaultNoteheadHeight / 2;
     }

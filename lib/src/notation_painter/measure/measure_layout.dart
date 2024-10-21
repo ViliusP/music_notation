@@ -431,7 +431,7 @@ class MeasureLayout extends StatelessWidget {
 
         // Calculate the interval from staff bottom to the child's position.
         int intervalFromStaffBottom = ElementPosition.staffBottom.numeric;
-        intervalFromStaffBottom -= child.position.numeric + 1;
+        intervalFromStaffBottom -= (child.position.numeric + 1);
         bottomOffset -= (intervalFromStaffBottom * offsetPerPosition);
 
         // Adjust by the child's positional offset.
