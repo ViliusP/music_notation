@@ -487,7 +487,7 @@ class FontMetadata {
   final String fontName;
 
   /// The version of the font (e.g., 1.07).
-  final double fontVersion;
+  final String fontVersion;
 
   /// Default engraving settings for the font, defining thicknesses and spacings.
   ///
@@ -577,7 +577,7 @@ class FontMetadata {
 
     return FontMetadata(
       fontName: json['fontName'],
-      fontVersion: json['fontVersion'].toDouble(),
+      fontVersion: json['fontVersion'].toString(),
       engravingDefaults: EngravingDefaults.fromJson(json['engravingDefaults']),
       glyphBBoxes: bBoxes,
       glyphsWithAnchors: glyphsWithAnchors,
