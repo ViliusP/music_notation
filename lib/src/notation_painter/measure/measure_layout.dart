@@ -20,7 +20,7 @@ import 'package:music_notation/src/notation_painter/cursor_element.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
 import 'package:music_notation/src/notation_painter/measure/inherited_padding.dart';
-import 'package:music_notation/src/notation_painter/measure_element.dart';
+import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
@@ -402,8 +402,8 @@ class MeasureLayout extends StatelessWidget {
       }
     }
 
-    bottomPadding += NotationLayoutProperties.staffLineStrokeWidth / 2;
-    topPadding += NotationLayoutProperties.staffLineStrokeWidth / 2;
+    // bottomPadding += NotationLayoutProperties.staffLineStrokeWidth / 2;
+    // topPadding += NotationLayoutProperties.staffLineStrokeWidth / 2;
 
     return EdgeInsets.only(
       bottom: bottomPadding,
