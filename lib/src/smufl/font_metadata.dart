@@ -165,7 +165,7 @@ class EngravingDefaults {
   /// ```
   factory EngravingDefaults.fromJson(Map<String, dynamic> json) {
     return EngravingDefaults(
-      textFontFamily: List<String>.from(json['textFontFamily']),
+      textFontFamily: List<String>.from(json['textFontFamily'] ?? []),
       arrowShaftThickness: json['arrowShaftThickness'],
       barlineSeparation: json['barlineSeparation'],
       beamSpacing: json['beamSpacing'],

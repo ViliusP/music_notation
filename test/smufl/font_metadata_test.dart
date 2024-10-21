@@ -24,6 +24,17 @@ void main() {
       expect(engravingDefaults.beamThickness, 0.5);
     });
 
+    test('fromJson no textFontFamily', () {
+      final json = {
+        'tupletBracketThickness': 1.01,
+      };
+
+      final engravingDefaults = EngravingDefaults.fromJson(json);
+
+      expect(engravingDefaults.textFontFamily, []);
+      expect(engravingDefaults.tupletBracketThickness, 1.01);
+    });
+
     test('fromJson constructs a valid object with Bravura defaults', () {
       final json = {
         "arrowShaftThickness": 0.16,
