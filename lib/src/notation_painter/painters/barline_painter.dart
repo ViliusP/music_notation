@@ -2,6 +2,7 @@ import 'package:flutter/rendering.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 
 class BarlinePainter extends CustomPainter {
+  // TODO: adjust correctly, currently it is magic number
   static const double strokeWidth =
       NotationLayoutProperties.staffLineStrokeWidth * 1.6;
 
@@ -29,8 +30,8 @@ class BarlinePainter extends CustomPainter {
       ..strokeWidth = strokeWidth;
 
     canvas.drawLine(
-      Offset(strokeWidth / 2, height),
-      Offset(strokeWidth / 2, offset),
+      Offset(strokeWidth, height),
+      Offset(strokeWidth, offset),
       linePainter,
     );
   }

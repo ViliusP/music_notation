@@ -92,8 +92,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
       return -_calculateStemLength(notes) + height;
     }
 
-    return -NotationLayoutProperties.staveSpace / 2 -
-        NotationLayoutProperties.staffLineStrokeWidth / 2;
+    return -NotationLayoutProperties.staveSpace / 2;
   }
 
   /// Difference between lowest and highest notes' positions;
