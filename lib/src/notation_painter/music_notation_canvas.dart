@@ -58,6 +58,7 @@ class MusicNotationCanvas extends StatelessWidget {
         );
 
         var measure = MeasureLayout.fromMeasureData(
+          font: font,
           measure: grid.data.getValue(i, j),
           staff: grid.staffForRow(i),
           barlineSettings: barlineSettings,

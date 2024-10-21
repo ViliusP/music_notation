@@ -7,12 +7,14 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/note_element.dart';
+import 'package:music_notation/src/smufl/font_metadata.dart';
 
 class Chord extends StatelessWidget implements MeasureWidget {
   const Chord._({
     super.key,
     required this.notes,
     required this.notationContext,
+    required this.font,
     required this.divisions,
     required this.stemLength,
     required this.duration,
@@ -24,6 +26,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
     Key? key,
     required List<Note> notes,
     required NotationContext notationContext,
+    required FontMetadata font,
   }) {
     if (notes.isEmpty) {
       throw ArgumentError('notes list is empty');
@@ -37,17 +40,19 @@ class Chord extends StatelessWidget implements MeasureWidget {
 
     return Chord._(
       key: key,
+      notes: notes,
       notationContext: notationContext,
+      font: font,
       divisions: notationContext.divisions!,
       stemLength: _calculateStemLength(notes),
       duration: NoteElement.determineDuration(notes.first),
       stem: notes.first.stem,
-      notes: notes,
     );
   }
 
   final List<Note> notes;
   final NotationContext notationContext;
+  final FontMetadata font;
 
   final double divisions;
   final double duration;
@@ -66,7 +71,11 @@ class Chord extends StatelessWidget implements MeasureWidget {
     }
 
     double width = notes
-        .map((e) => NoteElement.calculateSize(note: e, stemLength: 0).width)
+        .map((e) => NoteElement.calculateSize(
+              note: e,
+              stemLength: 0,
+              font: font,
+            ).width)
         .max;
 
     return Offset(
@@ -109,6 +118,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
     required List<Note> notes,
     required double stemLength,
     required NotationContext notationContext,
+    required FontMetadata font,
   }) {
     // Sorts from lowest to highest note. First being lowest.
     List<Note> sortedNotes = notes.sortedBy(
@@ -121,6 +131,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
       return NoteElement.calculateSize(
         note: sortedNotes.first,
         stemLength: _calculateStemLength(notes),
+        font: font,
       );
     }
 
@@ -128,6 +139,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
       return NoteElement.calculateSize(
         note: sortedNotes.last,
         stemLength: _calculateStemLength(notes),
+        font: font,
       );
     }
 
@@ -147,19 +159,25 @@ class Chord extends StatelessWidget implements MeasureWidget {
       height += NoteElement.calculateSize(
             note: sortedNotes.last,
             stemLength: 0,
+            font: font,
           ).height /
           2;
 
       height += (NoteElement.calculateSize(
             note: sortedNotes.first,
             stemLength: 0,
+            font: font,
           ).height /
           2);
     }
     height += stemLength;
 
     double width = sortedNotes
-        .map((e) => NoteElement.calculateSize(note: e, stemLength: 0).width)
+        .map((e) => NoteElement.calculateSize(
+              note: e,
+              stemLength: 0,
+              font: font,
+            ).width)
         .max;
 
     return Size(width, height);
@@ -196,15 +214,16 @@ class Chord extends StatelessWidget implements MeasureWidget {
         notes: notes,
         notationContext: notationContext,
         stemLength: stemLength,
+        font: font,
       );
 
   @override
-  double get alignmentOffset => _calculateAlignmentOffset();
+  double get alignmentOffset => _calculateAlignmentOffset(font);
 
-  double _calculateAlignmentOffset() {
+  double _calculateAlignmentOffset(FontMetadata font) {
     var noteheadSize = NoteheadElement(
       note: notes.first,
-    ).size;
+    ).size(font);
 
     var width = noteheadSize.width;
     if (_stemmed) {
@@ -260,6 +279,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
 
       NoteElement element = NoteElement.fromNote(
         note: note,
+        font: font,
         notationContext: notationContext,
         showLedger: showLedger,
         stemLength: stemLength,

@@ -14,7 +14,9 @@ import 'package:music_notation/src/notation_painter/notation_layout_properties.d
 import 'package:music_notation/src/notation_painter/painters/dots_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/note_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
+import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 import 'package:music_notation/src/notation_painter/utilities/notation_rendering_exception.dart';
+import 'package:music_notation/src/smufl/font_metadata.dart';
 import 'package:music_notation/src/smufl/smufl_glyph.dart';
 
 const Map<String, Color> _voiceColors = {
@@ -54,6 +56,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
   factory NoteElement.fromNote({
     Key? key,
     required Note note,
+    required FontMetadata font,
     required NotationContext notationContext,
     double? stemLength,
     bool showLedger = true,
@@ -68,6 +71,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       key: key,
       note: note,
       notationContext: notationContext,
+      font: font,
       stemLength: stemLength ?? _calculateStemLength(note, notationContext),
       showLedger: showLedger,
       duration: determineDuration(note),
@@ -85,6 +89,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     required this.duration,
     required this.divisions,
     this.stem,
+    required this.font,
   });
 
   final Note note;
@@ -127,7 +132,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
 
     var noteheadSize = NoteheadElement(
       note: note,
-    ).size;
+    ).size(font);
 
     return Offset(
       noteheadSize.width - NotationLayoutProperties.stemStrokeWidth,
@@ -161,8 +166,8 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       distance = position.distance(ElementPosition.secondLedgerBelow) + 1;
     }
 
-    stemLength += distance * NotationLayoutProperties.noteheadHeight / 2;
-    stemLength -= distance * NotationLayoutProperties.staffLineStrokeWidth / 2;
+    stemLength += distance * NotationLayoutProperties.staveSpace / 2;
+    // stemLength -= distance * NotationLayoutProperties.staffLineStrokeWidth / 2;
     return stemLength;
   }
 
@@ -244,21 +249,25 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
 
   final bool drawLedgerLines = true;
 
+  final FontMetadata font;
+
   @override
   Size get size => calculateSize(
         note: note,
         stemLength: stemLength,
+        font: font,
       );
 
   static Size calculateSize({
     required Note note,
     required double stemLength,
+    required FontMetadata font,
   }) {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
 
     var noteheadSize = NoteheadElement(
       note: note,
-    ).size;
+    ).size(font);
 
     double width = noteheadSize.width;
     double height = noteheadSize.height;
@@ -280,12 +289,12 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
   }
 
   @override
-  double get alignmentOffset => _calculateAlignmentOffset();
+  double get alignmentOffset => _calculateAlignmentOffset(font);
 
-  double _calculateAlignmentOffset() {
+  double _calculateAlignmentOffset(FontMetadata font) {
     var noteheadSize = NoteheadElement(
       note: note,
-    ).size;
+    ).size(font);
 
     var width = noteheadSize.width;
     if (_stemmed) {
@@ -297,7 +306,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
 
   double _dotsRightOffset(notehead) {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
-    double defaultOffset = notehead.size.width * 1.4;
+    double defaultOffset = notehead.size(font).width * 1.4;
 
     // For upstemmed notes with tails
     if (_stemmed &&
@@ -312,8 +321,8 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
   @override
   Widget build(BuildContext context) {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
-
     LedgerLines? ledgerLines;
+
     if (showLedger) {
       ledgerLines = LedgerLines.fromElementPosition(position);
     }
@@ -323,19 +332,21 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       // color: _voiceColors[note.editorialVoice.voice ?? "0"]!, // Colors by voice
     );
 
+    Size noteheadSize = notehead.size(font);
+
     if (_isRest) {
       return RestElement.fromNote(note, notationContext.divisions!);
     }
 
     var stemLeftPadding = NotationLayoutProperties.stemStrokeWidth / 1.5;
-    var stemTopPadding = NotationLayoutProperties.noteheadHeight / 2;
+    var stemTopPadding = NotationLayoutProperties.defaultNoteheadHeight / 2;
     var stemBottomPadding = 0.0;
 
     if (stem?.value == StemValue.up) {
-      stemLeftPadding = notehead.size.width;
+      stemLeftPadding = noteheadSize.width;
       stemLeftPadding -= NotationLayoutProperties.stemStrokeWidth;
       stemTopPadding = 0;
-      stemBottomPadding = NotationLayoutProperties.noteheadHeight / 2;
+      stemBottomPadding = NotationLayoutProperties.defaultNoteheadHeight / 2;
     }
 
     StemDirection stemDirection = StemDirection.up;
@@ -343,11 +354,11 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       stemDirection = StemDirection.down;
     }
     double dotsTopPadding = position.numeric % 2 != 0
-        ? notehead.size.height / 2 // Between lines
-        : notehead.size.height / 8; // On the line
+        ? noteheadSize.height / 2 // Between lines
+        : noteheadSize.height / 8; // On the line
 
     if (_stemmed && stem?.value == StemValue.up) {
-      dotsTopPadding += stemLength - notehead.size.height / 2;
+      dotsTopPadding += stemLength - noteheadSize.height / 2;
     }
 
     return SizedBox.fromSize(
@@ -357,8 +368,8 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
           Positioned(
             bottom: stem?.value == StemValue.up ? 0 : null,
             child: SizedBox(
-              height: notehead.size.height,
-              width: notehead.size.width,
+              height: noteheadSize.height,
+              width: noteheadSize.width,
               child: notehead,
             ),
           ),
@@ -413,8 +424,8 @@ class NoteheadElement extends StatelessWidget {
   ///
   /// The height of all notehead types is same and equal to the sum of the staff
   /// line stroke width and stave space.
-  Size get size {
-    const height = NotationLayoutProperties.noteheadHeight;
+  Size size(FontMetadata font) {
+    const height = NotationLayoutProperties.defaultNoteheadHeight;
 
     switch (_noteType) {
       case NoteTypeValue.n1024th:
@@ -427,7 +438,8 @@ class NoteheadElement extends StatelessWidget {
       case NoteTypeValue.eighth:
       case NoteTypeValue.quarter:
       case NoteTypeValue.half:
-        return const Size(16, height);
+        Rect headRect = font.glyphBBoxes['noteheadBlack']!.toRect();
+        return Size(16, headRect.height);
       case NoteTypeValue.whole:
         return const Size(21.2, height);
       case NoteTypeValue.breve:
@@ -457,9 +469,8 @@ class NoteheadElement extends StatelessWidget {
     if (font == null) {
       throw NotationRenderingException.noFont(widget: this);
     }
-
     return CustomPaint(
-      size: size,
+      size: size(font),
       painter: NotePainter(
         smufl: _smufl,
         ledgerLines: ledgerLines,
@@ -626,7 +637,7 @@ class RestElement extends StatelessWidget {
       case NoteTypeValue.whole:
         return const Size(
           17,
-          NotationLayoutProperties.noteheadHeight / 2,
+          NotationLayoutProperties.defaultNoteheadHeight / 2,
         ); // Need to be adjusted in future.
       case NoteTypeValue.breve:
         return const Size(30, 14); // Need to be adjusted in future.

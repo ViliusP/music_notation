@@ -1,4 +1,6 @@
 import 'package:flutter/rendering.dart';
+import 'package:music_notation/music_notation.dart';
+import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 
 class PainterUtilities {
   static void drawSmuflSymbol(
@@ -9,7 +11,7 @@ class PainterUtilities {
   }) {
     TextStyle textStyle = TextStyle(
       fontFamily: 'Sebastian',
-      fontSize: 48,
+      fontSize: NotationLayoutProperties.staveHeight,
       color: color,
     );
     final textPainter = TextPainter(
@@ -21,6 +23,18 @@ class PainterUtilities {
     textPainter.paint(
       canvas,
       offset,
+    );
+  }
+}
+
+extension FontPainting on GlyphBBox {
+  Rect toRect([double staveSpace = NotationLayoutProperties.staveSpace]) {
+    return Rect.fromPoints(
+      Offset(
+        topRight.x * staveSpace,
+        48 - staveSpace * (topRight.y - bottomLeft.y),
+      ),
+      Offset(bottomLeft.x * staveSpace, 48),
     );
   }
 }

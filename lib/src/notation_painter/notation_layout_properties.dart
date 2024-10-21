@@ -5,11 +5,10 @@ class NotationLayoutProperties {
   static const staveSpace = staveHeight / (staffLines - 1);
 
   /// Noteheads height is sum of stave space and staff line stroke width.
-  static const noteheadHeight = NotationLayoutProperties.staveSpace +
-      NotationLayoutProperties.staffLineStrokeWidth * 1.5;
+  static const defaultNoteheadHeight = NotationLayoutProperties.staveSpace;
 
   static const int staffLines = 5;
-  static const double staffLineStrokeWidth = 1.2;
+  static const double staffLineStrokeWidth = 1;
   static const double ledgerLineWidth = 26;
 
   /// The standard length of a stem is one octave (3.5 stave-spaces) from the

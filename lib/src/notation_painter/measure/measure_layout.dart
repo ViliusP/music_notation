@@ -30,6 +30,7 @@ import 'package:music_notation/src/notation_painter/painters/beam_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/staff_lines_painter.dart';
 import 'package:music_notation/src/notation_painter/spacing/timeline.dart';
 import 'package:music_notation/src/notation_painter/time_beat_element.dart';
+import 'package:music_notation/src/smufl/font_metadata.dart';
 
 /// A widget that lays out musical measures with notes, chords, beams, and staff lines.
 class MeasureLayout extends StatelessWidget {
@@ -90,9 +91,12 @@ class MeasureLayout extends StatelessWidget {
 
   final BarlineSettings barlineSettings;
 
+  final FontMetadata font;
+
   const MeasureLayout._({
     super.key,
     required this.children,
+    required this.font,
     required List<double> initialSpacings,
     required this.notationContext,
     this.useExplicitBeaming = false,
@@ -104,6 +108,7 @@ class MeasureLayout extends StatelessWidget {
   factory MeasureLayout.fromMeasureData({
     Key? key,
     required Measure measure,
+    required FontMetadata font,
     int? staff,
     required NotationContext notationContext,
     bool useExplicitBeaming = false,
@@ -112,6 +117,7 @@ class MeasureLayout extends StatelessWidget {
     var children = _computeChildren(
       context: notationContext,
       measure: measure,
+      font: font,
       staff: staff,
     );
     var spacings = _computeSpacings(children);
@@ -119,6 +125,7 @@ class MeasureLayout extends StatelessWidget {
     return MeasureLayout._(
       key: key,
       initialSpacings: spacings,
+      font: font,
       notationContext: notationContext,
       useExplicitBeaming: useExplicitBeaming,
       staff: staff,
@@ -133,6 +140,7 @@ class MeasureLayout extends StatelessWidget {
     Note note,
     NotationContext context,
     List<MusicDataElement> measureData,
+    FontMetadata font,
     int? staff,
   ) {
     if (context.divisions == null) {
@@ -159,11 +167,13 @@ class MeasureLayout extends StatelessWidget {
       return Chord.fromNotes(
         notes: notes,
         notationContext: context,
+        font: font,
       );
     }
     return NoteElement.fromNote(
       note: note,
       notationContext: context,
+      font: font,
     );
   }
 
@@ -266,6 +276,7 @@ class MeasureLayout extends StatelessWidget {
     required NotationContext context,
     required int? staff,
     required Measure measure,
+    required FontMetadata font,
   }) {
     NotationContext contextAfter = context.copyWith();
 
@@ -278,6 +289,7 @@ class MeasureLayout extends StatelessWidget {
             note,
             contextAfter,
             measure.data.sublist(i + 1),
+            font,
             staff,
           );
           if (noteWidget != null) {

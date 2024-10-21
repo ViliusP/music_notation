@@ -35,9 +35,9 @@ class NotePainter extends CustomPainter {
 
     double level = 0;
     if (ledgerLines!.extendsThroughNote) {
-      level = NotationLayoutProperties.noteheadHeight / 2;
+      level = NotationLayoutProperties.staveSpace / 2;
     } else if (ledgerLines!.placement == LedgerPlacement.above) {
-      level = NotationLayoutProperties.noteheadHeight;
+      level = NotationLayoutProperties.staveSpace;
       level -= NotationLayoutProperties.stemStrokeWidth / 1.5;
     }
 
@@ -49,11 +49,11 @@ class NotePainter extends CustomPainter {
       );
 
       if (ledgerLines!.placement == LedgerPlacement.below) {
-        level -= NotationLayoutProperties.noteheadHeight;
+        level -= NotationLayoutProperties.staveSpace;
         level += NotationLayoutProperties.stemStrokeWidth / 0.75;
       }
       if (ledgerLines!.placement == LedgerPlacement.above) {
-        level += NotationLayoutProperties.noteheadHeight;
+        level += NotationLayoutProperties.staveSpace;
         level -= NotationLayoutProperties.stemStrokeWidth / 0.75;
       }
     }
