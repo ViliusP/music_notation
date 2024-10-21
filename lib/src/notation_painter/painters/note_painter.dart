@@ -28,16 +28,14 @@ class NotePainter extends CustomPainter {
     PainterUtilities.drawSmuflSymbol(
       canvas,
       smufl,
-      offset: Offset(0, size.height - 48),
       color: color,
     );
     if (ledgerLines == null || ledgerLines?.count == 0) return;
 
     double level = 0;
+    if (ledgerLines!.placement == LedgerPlacement.above) level = size.height;
     if (ledgerLines!.extendsThroughNote) {
-      level = NotationLayoutProperties.staveSpace / 2;
-    } else if (ledgerLines!.placement == LedgerPlacement.above) {
-      level = NotationLayoutProperties.staveSpace;
+      level = size.height / 2;
     }
 
     for (int i = 0; i < ledgerLines!.count; i++) {

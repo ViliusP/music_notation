@@ -100,8 +100,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     if (_stemmed && stem?.value == StemValue.down) {
       return -stemLength;
     }
-
-    return (-noteheadSize.height / 2);
+    return 0;
   }
 
   final double duration;
@@ -208,10 +207,10 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
         int? octave;
         switch (noteForm) {
           case Pitch _:
-            // step = Step.F;
-            // octave = 4;
             step = noteForm.step;
             octave = noteForm.octave;
+            // step = Step.F;
+            // octave = 4;
             break;
           case Unpitched _:
             step = noteForm.displayStep;
@@ -366,11 +365,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
         children: [
           Positioned(
             bottom: stem?.value == StemValue.up ? 0 : null,
-            child: SizedBox(
-              height: noteheadSize.height,
-              width: noteheadSize.width,
-              child: notehead,
-            ),
+            child: notehead,
           ),
           if (_dots > 0)
             Padding(
@@ -735,11 +730,11 @@ extension NoteVisualInformation on NoteTypeValue {
       case NoteTypeValue.n16th:
       case NoteTypeValue.eighth:
       case NoteTypeValue.quarter:
-        return '\uE0A4'; // black note head.
+        return SmuflGlyph.noteheadBlack.codepoint; // black note head.
       case NoteTypeValue.half:
-        return '\uE0A3'; // minim.
+        return SmuflGlyph.noteheadHalf.codepoint; // minim.
       case NoteTypeValue.whole:
-        return '\uE0A2'; // semibreve.
+        return SmuflGlyph.noteheadWhole.codepoint; // semibreve.
       case NoteTypeValue.breve:
         return '\uE0A0';
       case NoteTypeValue.long:

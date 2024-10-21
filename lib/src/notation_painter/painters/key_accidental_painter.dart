@@ -1,4 +1,5 @@
 import 'package:flutter/rendering.dart';
+import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 
 class KeyAccidentalPainter extends CustomPainter {
@@ -11,7 +12,7 @@ class KeyAccidentalPainter extends CustomPainter {
     PainterUtilities.drawSmuflSymbol(
       canvas,
       smufl,
-      offset: Offset(0, size.height - 49),
+      offset: const Offset(0, -NotationLayoutProperties.staveSpace * .25),
     );
   }
 

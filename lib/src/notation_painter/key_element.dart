@@ -162,7 +162,7 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
   ElementPosition get position => _position.transpose(_transposeInterval);
 
   @override
-  double get positionalOffset => -23;
+  double get positionalOffset => -18.5;
 
   final NotationContext notationContext;
 

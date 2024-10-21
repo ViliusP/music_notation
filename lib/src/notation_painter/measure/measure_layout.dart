@@ -14,7 +14,7 @@ import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
-import 'package:music_notation/src/notation_painter/attributes_elements.dart';
+import 'package:music_notation/src/notation_painter/clef_element.dart';
 import 'package:music_notation/src/notation_painter/chord_element.dart';
 import 'package:music_notation/src/notation_painter/cursor_element.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
@@ -431,7 +431,7 @@ class MeasureLayout extends StatelessWidget {
 
         // Calculate the interval from staff bottom to the child's position.
         int intervalFromStaffBottom = ElementPosition.staffBottom.numeric;
-        intervalFromStaffBottom -= (child.position.numeric + 1);
+        intervalFromStaffBottom -= (child.position.numeric);
         bottomOffset -= (intervalFromStaffBottom * offsetPerPosition);
 
         // Adjust by the child's positional offset.

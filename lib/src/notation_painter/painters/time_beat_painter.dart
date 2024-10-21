@@ -11,7 +11,6 @@ class TimeBeatPainter extends CustomPainter {
     PainterUtilities.drawSmuflSymbol(
       canvas,
       smufl,
-      offset: Offset(0, size.height - 53),
     );
   }
 
