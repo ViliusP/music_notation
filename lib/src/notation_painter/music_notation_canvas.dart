@@ -9,6 +9,7 @@ import 'package:music_notation/src/notation_painter/models/notation_context.dart
 import 'package:music_notation/src/notation_painter/music_grid.dart';
 
 import 'package:music_notation/src/notation_painter/sync_width_column.dart';
+import 'package:music_notation/src/smufl/font_metadata.dart';
 
 class MusicNotationCanvas extends StatelessWidget {
   final ScorePartwise scorePartwise;
@@ -25,6 +26,8 @@ class MusicNotationCanvas extends StatelessWidget {
   /// internal logic or algorithms.
   final bool useExplicitBeaming;
 
+  final FontMetadata font;
+
   NotationGrid get grid => NotationGrid.fromScoreParts(
         scorePartwise.parts,
       );
@@ -33,6 +36,7 @@ class MusicNotationCanvas extends StatelessWidget {
     super.key,
     required this.scorePartwise,
     this.useExplicitBeaming = true,
+    required this.font,
   });
 
   @override
