@@ -118,7 +118,7 @@ class EngravingDefaults {
   ///   // other parameters...
   /// );
   /// ```
-  EngravingDefaults({
+  const EngravingDefaults({
     this.textFontFamily = const [],
     this.arrowShaftThickness,
     this.barlineSeparation,
@@ -524,12 +524,20 @@ class FontMetadata {
   ///   ],
   /// );
   /// ```
-  FontMetadata({
+  const FontMetadata({
     required this.fontName,
     required this.fontVersion,
     required this.engravingDefaults,
     required this.glyphBBoxes,
     required this.glyphsWithAnchors,
+  });
+
+  const FontMetadata.empty({
+    this.fontName = "",
+    this.fontVersion = "",
+    this.engravingDefaults = const EngravingDefaults(),
+    this.glyphBBoxes = const {},
+    this.glyphsWithAnchors = const [],
   });
 
   /// Creates a [FontMetadata] object from a JSON map.
