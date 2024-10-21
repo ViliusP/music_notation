@@ -14,7 +14,7 @@ class PainterUtilities {
       fontFamily: 'Bravura',
       fontSize: NotationLayoutProperties.staveHeight,
       color: color,
-      backgroundColor: Color.fromRGBO(124, 100, 0, 0.2),
+      // backgroundColor: Color.fromRGBO(124, 100, 0, 0.2),
       height: 1,
     );
     final textPainter = TextPainter(
