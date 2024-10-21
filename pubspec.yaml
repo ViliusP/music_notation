@@ -31,9 +31,9 @@ dev_dependencies:
 flutter:
 
   fonts:
-    - family: Sebastian
+    - family: Bravura
       fonts:
-        - asset: lib/smufl_fonts/Sebastian/Sebastian.otf
-    - family: SebastianText
+        - asset: lib/smufl_fonts/Bravura/Bravura.otf
+    - family: BravuraText
       fonts:
-        - asset: lib/smufl_fonts/Sebastian/SebastianText.otf 
+        - asset: lib/smufl_fonts/Bravura/BravuraText.otf 

@@ -10,7 +10,7 @@ class PainterUtilities {
     Color color = const Color.fromRGBO(0, 0, 0, 1.0),
   }) {
     TextStyle textStyle = TextStyle(
-      fontFamily: 'Sebastian',
+      fontFamily: 'Bravura',
       fontSize: NotationLayoutProperties.staveHeight,
       color: color,
     );
