@@ -7,6 +7,7 @@ import 'package:music_notation/src/notation_painter/measure/inherited_padding.da
 import 'package:music_notation/src/notation_painter/measure/measure_layout.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
+import 'package:music_notation/src/notation_painter/notation_font.dart';
 
 import 'package:music_notation/src/notation_painter/sync_width_column.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
@@ -96,8 +97,11 @@ class MusicNotationCanvas extends StatelessWidget {
         children: measures,
       ));
     }
-    return SyncWidthColumn(
-      builders: parts,
+    return NotationFont(
+      value: font,
+      child: SyncWidthColumn(
+        builders: parts,
+      ),
     );
   }
 }
