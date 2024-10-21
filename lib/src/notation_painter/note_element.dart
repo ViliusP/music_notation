@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:music_notation/src/models/data_types/step.dart';
@@ -10,10 +9,12 @@ import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
 import 'package:music_notation/src/notation_painter/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
+import 'package:music_notation/src/notation_painter/notation_font.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/dots_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/note_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
+import 'package:music_notation/src/notation_painter/utilities/notation_rendering_exception.dart';
 import 'package:music_notation/src/smufl/smufl_glyph.dart';
 
 const Map<String, Color> _voiceColors = {
@@ -92,11 +93,10 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
   @override
   double get positionalOffset {
     if (_stemmed && stem?.value == StemValue.down) {
-      return -stemLength - NotationLayoutProperties.staffLineStrokeWidth / 2;
+      return -stemLength;
     }
 
-    return (-NotationLayoutProperties.staveSpace / 2 -
-        NotationLayoutProperties.staffLineStrokeWidth / 2);
+    return (-NotationLayoutProperties.staveSpace / 2);
   }
 
   final double duration;
@@ -452,6 +452,12 @@ class NoteheadElement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var font = NotationFont.of(context)?.value;
+
+    if (font == null) {
+      throw NotationRenderingException.noFont(widget: this);
+    }
+
     return CustomPaint(
       size: size,
       painter: NotePainter(
