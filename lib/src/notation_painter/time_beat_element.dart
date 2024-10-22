@@ -11,7 +11,7 @@ class TimeBeatElement extends StatelessWidget implements MeasureWidget {
 
   @override
   double get verticalAlignmentAxisOffset =>
-      NotationLayoutProperties.staveSpace * 1.5;
+      NotationLayoutProperties.staveSpace * 2;
 
   @override
   ElementPosition get position => const ElementPosition(
