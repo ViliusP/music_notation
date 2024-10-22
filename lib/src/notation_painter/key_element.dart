@@ -8,7 +8,6 @@ import 'package:music_notation/src/models/elements/music_data/attributes/key.dar
     hide Key;
 import 'package:music_notation/src/models/elements/music_data/attributes/key.dart'
     as musicxml show Key;
-import 'package:music_notation/src/models/elements/music_data/note/notations/notation.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
