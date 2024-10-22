@@ -448,9 +448,6 @@ class MeasureLayout extends StatelessWidget {
         beamEndOffset = beamResult.beamEndOffset;
         if (beamResult.beam != null) {
           beams.add(beamResult.beam!);
-          // Reset the beam offsets
-          beamStartOffset = null;
-          beamEndOffset = null;
         }
 
         // Add the positioned child to the list.
@@ -646,21 +643,45 @@ class BeamProcessing {
       if (direction == StemValue.up) {
         beamEndOffset = beamEndOffset.translate(
           0,
-          -NotationLayoutProperties.beamThickness,
+          NotationLayoutProperties.beamThickness,
         );
       }
     }
 
     // If both beam offsets are defined, create the beam widget
     if (beamStartOffset != null && beamEndOffset != null) {
+      Color? color;
+
+      if (beamStartOffset.dy > beamEndOffset.dy) {
+        beamStartOffset = beamStartOffset.translate(
+          0,
+          NotationLayoutProperties.beamThickness,
+        );
+        beamEndOffset = beamEndOffset.translate(
+          0,
+          -NotationLayoutProperties.beamThickness,
+        );
+        color = Color.fromRGBO(255, 0, 0, 0.5);
+      }
+
+      Rect beamRect = Rect.fromPoints(beamStartOffset, beamEndOffset);
+
+      double top = beamStartOffset.dy < beamEndOffset.dy
+          ? beamStartOffset.dy
+          : beamEndOffset.dy;
+
       Widget beam = Positioned(
         left: beamStartOffset.dx,
-        top: beamStartOffset.dy,
+        top: top,
         child: CustomPaint(
-          size: Rect.fromPoints(beamStartOffset, beamEndOffset).size,
-          painter: BeamPainter(),
+          size: beamRect.size,
+          painter: BeamPainter(
+            color: color,
+            flip: beamStartOffset.dy > beamEndOffset.dy,
+          ),
         ),
       );
+
       return BeamProcessing(
         beam: beam,
       );
