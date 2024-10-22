@@ -24,7 +24,7 @@ class CursorElement extends StatelessWidget implements MeasureWidget {
 
   /// No positional offset is needed for `<forward>`.
   @override
-  double get positionalOffset => 0.0;
+  double get verticalAlignmentAxisOffset => 0.0;
 
   /// Generic position as `<forward>` does not correspond to a specific musical position.
   @override

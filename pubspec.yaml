@@ -31,9 +31,9 @@ dev_dependencies:
 flutter:
 
   fonts:
-    - family: Bravura
+    - family: Leland
       fonts:
-        - asset: lib/smufl_fonts/Bravura/Bravura.otf
-    - family: BravuraText
+        - asset: lib/smufl_fonts/Leland/Leland.otf
+    - family: LelandText
       fonts:
-        - asset: lib/smufl_fonts/Bravura/BravuraText.otf 
+        - asset: lib/smufl_fonts/Leland/LelandText.otf 

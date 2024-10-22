@@ -85,14 +85,12 @@ class Chord extends StatelessWidget implements MeasureWidget {
   }
 
   @override
-  double get positionalOffset {
-    if (stem?.value == StemValue.down) {
-      const heightPerPosition = NotationLayoutProperties.staveSpace / 2;
-      double height = (positionsDifference + 1) * heightPerPosition;
-      return -_calculateStemLength(notes) + height;
+  double get verticalAlignmentAxisOffset {
+    if (stem?.value == StemValue.up) {
+      return _calculateStemLength(notes);
     }
 
-    return 0;
+    return NotationLayoutProperties.staveSpace / 2;
   }
 
   /// Difference between lowest and highest notes' positions;
@@ -234,12 +232,16 @@ class Chord extends StatelessWidget implements MeasureWidget {
 
   @override
   ElementPosition get position {
-    return notes
-        .map((note) => NoteElement.determinePosition(
-              note,
-              notationContext.clef,
-            ))
-        .first;
+    var notesPositions = notes.map((note) => NoteElement.determinePosition(
+          note,
+          notationContext.clef,
+        ));
+
+    if (_stemmed && stem?.value == StemValue.up) {
+      return notesPositions.first;
+    }
+
+    return notesPositions.last;
   }
 
   @override
@@ -254,7 +256,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
     for (var (index, note) in sortedNotes.indexed) {
       bool isLowest = index == 0;
       bool isHighest = index == notes.length - 1;
-
+      bool isStemmedUpward = _stemmed && stem?.value == StemValue.up;
       bool showLedger = isLowest || isHighest;
 
       ElementPosition notePosition = NoteElement.determinePosition(
@@ -262,8 +264,11 @@ class Chord extends StatelessWidget implements MeasureWidget {
         notationContext.clef,
       );
 
-      double bottom = (notePosition.numeric - position.numeric).toDouble();
-      bottom *= NotationLayoutProperties.staveSpace / 2;
+      // Interval between reference (position of highest or lowest note) and chord note.
+      double interval = ((notePosition.numeric - position.numeric)).toDouble();
+
+      double distanceFromRef =
+          interval * NotationLayoutProperties.staveSpace / 2;
 
       double stemLength = 0;
 
@@ -271,17 +276,8 @@ class Chord extends StatelessWidget implements MeasureWidget {
         stemLength = calculatedStemLength;
       }
 
-      if (isLowest != (stem?.value == StemValue.up)) {
-        bottom += 0;
-      }
-
-      if (isHighest != (stem?.value == StemValue.down)) {
-        bottom += 0;
-      }
-
       if (stem?.value == StemValue.down && isHighest) {
         stemLength = calculatedStemLength;
-        bottom = 0;
       }
 
       NoteElement element = NoteElement.fromNote(
@@ -292,14 +288,10 @@ class Chord extends StatelessWidget implements MeasureWidget {
         stemLength: stemLength,
       );
 
-      if (stem?.value == StemValue.down && !isHighest) {
-        // This is a magic number that just works, need to fix it.
-        bottom += NotationLayoutProperties.staveSpace * 3;
-      }
-
       children.add(
         Positioned(
-          bottom: bottom,
+          bottom: isStemmedUpward ? distanceFromRef : 0,
+          top: !isStemmedUpward ? distanceFromRef.abs() : 0,
           child: element,
         ),
       );

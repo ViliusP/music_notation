@@ -3,6 +3,7 @@ import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
+import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/clef_painter.dart';
 
 class ClefElement extends StatelessWidget implements MeasureWidget {
@@ -31,12 +32,13 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
   }
 
   @override
-  double get positionalOffset {
+  double get verticalAlignmentAxisOffset {
     switch (clef.sign) {
       case ClefSign.G:
-        return -10;
+        return (NotationLayoutProperties.staveHeight - 8) +
+            NotationLayoutProperties.staveSpace;
       case ClefSign.F:
-        return 35;
+        return NotationLayoutProperties.staveSpace + 1;
       case ClefSign.C:
         // TODO: adjust
         return -21;
@@ -82,9 +84,9 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
   Size get size {
     switch (clef.sign) {
       case ClefSign.G:
-        return const Size(32, 88);
+        return const Size(32, 85);
       case ClefSign.F:
-        return const Size(34, 51);
+        return const Size(34, 44);
       case ClefSign.C:
         // TODO: adjust
         return const Size(33, 42);
@@ -104,9 +106,9 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
   Offset get _paintingOffset {
     switch (clef.sign) {
       case ClefSign.G:
-        return const Offset(0, 65.5);
+        return const Offset(0, 29);
       case ClefSign.F:
-        return const Offset(0, 74);
+        return const Offset(0, -12);
       case ClefSign.C:
         // TODO: adjust
         return const Offset(0, 65);

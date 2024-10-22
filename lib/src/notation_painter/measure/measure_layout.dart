@@ -368,6 +368,7 @@ class MeasureLayout extends StatelessWidget {
   EdgeInsets _calculateVerticalPadding() {
     const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
 
+    // Distance from absolute bottom C0.
     double distanceToStaffTop =
         offsetPerPosition * ElementPosition.staffTop.numeric;
     double distanceToStaffBottom =
@@ -379,8 +380,7 @@ class MeasureLayout extends StatelessWidget {
     for (var child in children) {
       double aboveStaffLength = [
         offsetPerPosition * child.position.numeric,
-        child.size.height,
-        child.positionalOffset,
+        child.verticalAlignmentAxisOffset,
         -distanceToStaffTop
       ].sum;
 
@@ -388,11 +388,12 @@ class MeasureLayout extends StatelessWidget {
 
       double belowStaffLength = [
         offsetPerPosition * child.position.numeric,
-        child.positionalOffset,
+        child.size.height,
+        // -child.verticalAlignmentAxisOffset,
         -distanceToStaffBottom,
       ].sum;
 
-      belowStaffLength = [0.0, belowStaffLength].min.abs();
+      belowStaffLength = [0.0, belowStaffLength.abs()].max;
 
       if (topPadding < aboveStaffLength) {
         topPadding = aboveStaffLength;
@@ -401,7 +402,6 @@ class MeasureLayout extends StatelessWidget {
         bottomPadding = belowStaffLength;
       }
     }
-
     return EdgeInsets.only(
       bottom: bottomPadding,
       top: topPadding,
@@ -426,22 +426,18 @@ class MeasureLayout extends StatelessWidget {
 
       var positionedElements = <Widget>[];
       for (var (index, child) in children.indexed) {
-        // Calculate bottomOffset for the current child.
-        double bottomOffset = inheritedPadding.bottom;
+        double topOffset = -child.verticalAlignmentAxisOffset;
 
         // Calculate the interval from staff bottom to the child's position.
-        int intervalFromStaffBottom = ElementPosition.staffBottom.numeric;
-        intervalFromStaffBottom -= (child.position.numeric);
-        bottomOffset -= (intervalFromStaffBottom * offsetPerPosition);
-
-        // Adjust by the child's positional offset.
-        bottomOffset += child.positionalOffset;
+        int intervalFromTheTop = ElementPosition.staffTop.numeric;
+        intervalFromTheTop -= (child.position.numeric);
+        topOffset += intervalFromTheTop * offsetPerPosition;
 
         // Process beam for the current child
         var beamResult = BeamProcessing.evaluate(
           child: child,
           index: index,
-          bottomOffset: bottomOffset,
+          bottomOffset: topOffset,
           spacings: spacings,
           beamStartOffset: beamStartOffset,
           beamEndOffset: beamEndOffset,
@@ -461,7 +457,7 @@ class MeasureLayout extends StatelessWidget {
         positionedElements.add(
           Positioned(
             left: spacings[index],
-            bottom: bottomOffset,
+            top: inheritedPadding.top + topOffset,
             child: child,
           ),
         );

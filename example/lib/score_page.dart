@@ -16,7 +16,7 @@ class ScorePage extends StatefulWidget {
 class _ScorePageState extends State<ScorePage> {
   FontMetadata? font;
   static const _fontPath =
-      'packages/music_notation/smufl_fonts/Bravura/bravura_metadata.json';
+      'packages/music_notation/smufl_fonts/Leland/leland_metadata.json';
 
   @override
   void initState() {

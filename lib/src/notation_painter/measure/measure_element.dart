@@ -15,7 +15,9 @@ abstract class MeasureWidget extends Widget {
 
   /// The offset of the element's position within its parent container or measure.
   /// This defines how much the element is shifted vertically from its default position.
-  double get positionalOffset;
+  ///
+  /// Measurement is defined from the element bounding box top.
+  double get verticalAlignmentAxisOffset;
 
   /// The alignment offset from the left side of the element's rectangle.
   /// It represents the axis point for aligning the element with others,

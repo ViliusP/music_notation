@@ -96,11 +96,11 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
   final Stem? stem;
 
   @override
-  double get positionalOffset {
-    if (_stemmed && stem?.value == StemValue.down) {
-      return -stemLength + NotationLayoutProperties.staveSpace / 2;
+  double get verticalAlignmentAxisOffset {
+    if (_stemmed && stem?.value == StemValue.up) {
+      return stemLength;
     }
-    return 0;
+    return NotationLayoutProperties.staveSpace / 2;
   }
 
   final double duration;
@@ -209,7 +209,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
           case Pitch _:
             step = noteForm.step;
             octave = noteForm.octave;
-            // step = Step.F;
+            // step = Step.B;
             // octave = 4;
             break;
           case Unpitched _:

@@ -188,7 +188,7 @@ class ElementPosition implements Comparable<ElementPosition> {
   );
 
   static const ElementPosition staffBottom = ElementPosition(
-    step: Step.F,
+    step: Step.E,
     octave: 4,
   );
 

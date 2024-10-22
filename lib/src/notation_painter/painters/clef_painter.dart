@@ -1,5 +1,4 @@
 import 'package:flutter/rendering.dart';
-import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 
@@ -14,7 +13,7 @@ class ClefPainter extends CustomPainter {
     PainterUtilities.drawSmuflSymbol(
       canvas,
       smufl,
-      offset: Offset(0, -NotationLayoutProperties.staveSpace * 1.5) + offset,
+      offset: offset,
     );
   }
 
