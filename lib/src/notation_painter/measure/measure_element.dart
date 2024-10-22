@@ -1,5 +1,7 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
+import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 
 /// An abstract base class for a measure widget that represents a musical element
 /// with properties related to its positioning, size, and alignment within a measure.
@@ -27,4 +29,45 @@ abstract class MeasureWidget extends Widget {
   /// A constant constructor for the [MeasureWidget] to ensure that subclasses can be instantiated
   /// with constant expressions if all their fields are constant.
   const MeasureWidget({super.key});
+}
+
+/// A mixin that provides methods related to element dimensions and positioning on the musical staff.
+/// This mixin can be applied to any class that extends [MeasureWidget] and provides the necessary properties.
+extension MeasureElemenetDimensions on MeasureWidget {
+  /// Calculates the rectangular box below the staff where the element might be positioned.
+  /// This is particularly useful for elements that extend below the musical staff, like ledger lines.
+  Rect boxBelowStaff() {
+    const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
+
+    double distanceToStaffBottom =
+        offsetPerPosition * ElementPosition.staffBottom.numeric;
+
+    double belowStaffLength = [
+      -offsetPerPosition * position.numeric,
+      distanceToStaffBottom,
+      size.height,
+      -verticalAlignmentAxisOffset,
+    ].sum;
+
+    belowStaffLength = [0.0, belowStaffLength].max;
+
+    return Rect.fromPoints(Offset(0, 0), Offset(size.width, belowStaffLength));
+  }
+
+  Rect boxAboveStaff() {
+    const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
+
+    double distanceToStaffTop =
+        offsetPerPosition * ElementPosition.staffTop.numeric;
+
+    double aboveStaffLength = [
+      offsetPerPosition * position.numeric,
+      verticalAlignmentAxisOffset,
+      -distanceToStaffTop
+    ].sum;
+
+    aboveStaffLength = [0.0, aboveStaffLength].max;
+
+    return Rect.fromPoints(Offset(0, 0), Offset(size.width, aboveStaffLength));
+  }
 }

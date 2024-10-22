@@ -8,6 +8,7 @@ import 'package:music_notation/src/notation_painter/measure/measure_layout.dart'
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
 import 'package:music_notation/src/notation_painter/notation_font.dart';
+import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 
 import 'package:music_notation/src/notation_painter/sync_width_column.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
@@ -87,7 +88,11 @@ class MusicNotationCanvas extends StatelessWidget {
             top: maxTopPadding,
             bottom: maxBottomPadding,
             child: SizedBox(
-              height: maxTopPadding + maxBottomPadding + 48,
+              height: [
+                maxTopPadding,
+                maxBottomPadding,
+                NotationLayoutProperties.staveHeight,
+              ].sum,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: children,

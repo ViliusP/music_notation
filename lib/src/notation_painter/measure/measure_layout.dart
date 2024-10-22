@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 
@@ -365,44 +367,16 @@ class MeasureLayout extends StatelessWidget {
     return timeline.toList(54);
   }
 
-  // Calculate the vertical padding based on the highest note above and below the staff.
+// Calculate the vertical padding based on the highest note above and below the staff.
   EdgeInsets _calculateVerticalPadding() {
-    const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
-
-    // Distance from absolute bottom C0.
-    double distanceToStaffTop =
-        offsetPerPosition * ElementPosition.staffTop.numeric;
-    double distanceToStaffBottom =
-        offsetPerPosition * ElementPosition.staffBottom.numeric;
-
     double topPadding = 0;
     double bottomPadding = 0;
 
     for (var child in children) {
-      double aboveStaffLength = [
-        offsetPerPosition * child.position.numeric,
-        child.verticalAlignmentAxisOffset,
-        -distanceToStaffTop
-      ].sum;
-
-      aboveStaffLength = [0.0, aboveStaffLength].max;
-
-      double belowStaffLength = [
-        offsetPerPosition * child.position.numeric,
-        child.size.height,
-        // -child.verticalAlignmentAxisOffset,
-        -distanceToStaffBottom,
-      ].sum;
-
-      belowStaffLength = [0.0, belowStaffLength.abs()].max;
-
-      if (topPadding < aboveStaffLength) {
-        topPadding = aboveStaffLength;
-      }
-      if (bottomPadding < belowStaffLength) {
-        bottomPadding = belowStaffLength;
-      }
+      topPadding = max(topPadding, child.boxAboveStaff().height);
+      bottomPadding = max(bottomPadding, child.boxBelowStaff().height);
     }
+
     return EdgeInsets.only(
       bottom: bottomPadding,
       top: topPadding,
@@ -456,6 +430,20 @@ class MeasureLayout extends StatelessWidget {
             left: spacings[index],
             top: inheritedPadding.top + topOffset,
             child: child,
+          ),
+        );
+
+        Rect boxBelow = child.boxBelowStaff();
+
+        positionedElements.add(
+          Positioned(
+            left: spacings[index],
+            top: inheritedPadding.top + NotationLayoutProperties.staveHeight,
+            child: Container(
+              width: boxBelow.width,
+              height: [boxBelow.height, 0].max.toDouble(),
+              color: Color.fromRGBO(255, 10, 100, 0.2),
+            ),
           ),
         );
       }
