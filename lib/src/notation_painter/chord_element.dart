@@ -62,25 +62,19 @@ class Chord extends StatelessWidget implements MeasureWidget {
 
   final Stem? stem;
 
+  /// X - the middle of stem.
+  /// Y - the tip of stem.
   Offset get offsetForBeam {
     if (stem?.value == StemValue.down) {
       return Offset(
-        NotationLayoutProperties.stemStrokeWidth / 1.5,
+        NotationLayoutProperties.stemStrokeWidth / 2,
         NotationLayoutProperties.staveSpace / 2,
       );
     }
 
-    double width = notes
-        .map((e) => NoteElement.calculateSize(
-              note: e,
-              stemLength: 0,
-              font: font,
-            ).width)
-        .max;
-
     return Offset(
-      width - NotationLayoutProperties.stemStrokeWidth,
-      size.height,
+      size.width,
+      0,
     );
   }
 

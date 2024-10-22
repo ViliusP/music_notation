@@ -13,6 +13,7 @@ import 'package:music_notation/src/models/elements/music_data/forward.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
+import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
 import 'package:music_notation/src/notation_painter/clef_element.dart';
 import 'package:music_notation/src/notation_painter/chord_element.dart';
@@ -421,8 +422,8 @@ class MeasureLayout extends StatelessWidget {
 
     return LayoutBuilder(builder: (context, constraints) {
       List<Widget> beams = [];
-      (double x, double y)? beamStartOffset;
-      (double x, double y)? beamEndOffset;
+      Offset? beamStartOffset;
+      Offset? beamEndOffset;
 
       var positionedElements = <Widget>[];
       for (var (index, child) in children.indexed) {
@@ -437,17 +438,16 @@ class MeasureLayout extends StatelessWidget {
         var beamResult = BeamProcessing.evaluate(
           child: child,
           index: index,
-          bottomOffset: topOffset,
+          topOffset: inheritedPadding.top + topOffset,
           spacings: spacings,
           beamStartOffset: beamStartOffset,
           beamEndOffset: beamEndOffset,
         );
 
-        // Update beam offsets and beams if necessary
         beamStartOffset = beamResult.beamStartOffset;
         beamEndOffset = beamResult.beamEndOffset;
-        if (beamResult.beamWidget != null) {
-          beams.add(beamResult.beamWidget!);
+        if (beamResult.beam != null) {
+          beams.add(beamResult.beam!);
           // Reset the beam offsets
           beamStartOffset = null;
           beamEndOffset = null;
@@ -580,28 +580,28 @@ class StaffLines extends StatelessWidget {
 }
 
 class BeamProcessing {
-  final (double x, double y)? beamStartOffset;
-  final (double x, double y)? beamEndOffset;
-  final Widget? beamWidget;
+  final Offset? beamStartOffset;
+  final Offset? beamEndOffset;
+  final Widget? beam;
 
   BeamProcessing({
     this.beamStartOffset,
     this.beamEndOffset,
-    this.beamWidget,
+    this.beam,
   });
 
   static BeamProcessing evaluate({
     required MeasureWidget child,
     required int index,
-    required double bottomOffset,
+    required double topOffset,
     required List<double> spacings,
-    (double x, double y)? beamStartOffset,
-    (double x, double y)? beamEndOffset,
+    Offset? beamStartOffset,
+    Offset? beamEndOffset,
   }) {
     bool isBeamStart = false;
     bool isBeamEnd = false;
-    double? offsetX;
-    double? offsetY;
+    Offset? beamOffset;
+    StemValue direction = StemValue.up;
 
     // Check if the child has an offsetForBeam property
     if (child is NoteElement) {
@@ -610,51 +610,59 @@ class BeamProcessing {
         isBeamStart = beamValue == BeamValue.begin;
         isBeamEnd = beamValue == BeamValue.end;
       }
-      offsetX = child.offsetForBeam.dx;
-      offsetY = child.offsetForBeam.dy;
-    } else if (child is Chord) {
+      beamOffset = child.offsetForBeam;
+      direction = child.stem?.value ?? direction;
+    }
+    if (child is Chord) {
       var beamsList = child.notes.expand((note) => note.beams);
       isBeamStart = beamsList.any((beam) => beam.value == BeamValue.begin);
       isBeamEnd = beamsList.any((beam) => beam.value == BeamValue.end);
-      offsetX = child.offsetForBeam.dx;
-      offsetY = child.offsetForBeam.dy;
+      beamOffset = child.offsetForBeam;
+      direction = child.stem?.value ?? direction;
     }
 
     // Update beam offsets
-    if (isBeamStart && offsetX != null && offsetY != null) {
-      beamStartOffset = (
-        offsetX +
-            spacings[index] -
-            NotationLayoutProperties.stemStrokeWidth * 0.5,
-        bottomOffset + offsetY,
+    if (isBeamStart && beamOffset != null) {
+      beamStartOffset = beamOffset.translate(spacings[index], topOffset);
+      beamStartOffset = beamStartOffset.translate(
+        -NotationLayoutProperties.stemStrokeWidth / 2,
+        0,
       );
+
+      if (direction == StemValue.down) {
+        beamStartOffset = beamStartOffset.translate(
+          0,
+          -NotationLayoutProperties.beamThickness,
+        );
+      }
     }
 
-    if (isBeamEnd && offsetX != null && offsetY != null) {
-      beamEndOffset = (
-        offsetX +
-            spacings[index] +
-            NotationLayoutProperties.stemStrokeWidth * 0.5,
-        bottomOffset + offsetY,
+    if (isBeamEnd && beamOffset != null) {
+      beamEndOffset = beamOffset.translate(spacings[index], topOffset);
+      beamEndOffset = beamEndOffset.translate(
+        -NotationLayoutProperties.stemStrokeWidth / 2,
+        0,
       );
+      if (direction == StemValue.up) {
+        beamEndOffset = beamEndOffset.translate(
+          0,
+          -NotationLayoutProperties.beamThickness,
+        );
+      }
     }
 
     // If both beam offsets are defined, create the beam widget
     if (beamStartOffset != null && beamEndOffset != null) {
-      Widget beamWidget = Positioned(
-        left: beamStartOffset.$1,
-        bottom: beamStartOffset.$2,
+      Widget beam = Positioned(
+        left: beamStartOffset.dx,
+        top: beamStartOffset.dy,
         child: CustomPaint(
-          painter: BeamPainter(
-            secondPoint: Offset(
-              beamEndOffset.$1 - beamStartOffset.$1,
-              beamStartOffset.$2 - beamEndOffset.$2,
-            ),
-          ),
+          size: Rect.fromPoints(beamStartOffset, beamEndOffset).size,
+          painter: BeamPainter(),
         ),
       );
       return BeamProcessing(
-        beamWidget: beamWidget,
+        beam: beam,
       );
     }
 

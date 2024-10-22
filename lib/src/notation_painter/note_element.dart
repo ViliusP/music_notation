@@ -121,17 +121,19 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     return note.form is Rest;
   }
 
+  /// X - the middle of stem.
+  /// Y - the tip of stem.
   Offset get offsetForBeam {
     if (stem?.value == StemValue.down) {
       return Offset(
         NotationLayoutProperties.stemStrokeWidth / 2,
-        NotationLayoutProperties.staveSpace / 2,
+        size.height,
       );
     }
 
     return Offset(
       noteheadSize.width,
-      size.height,
+      0,
     );
   }
 
