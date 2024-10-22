@@ -44,7 +44,7 @@ class TimeBeatElement extends StatelessWidget implements MeasureWidget {
       topSmufl = _integerToSmufl(int.parse(signature.beats));
       bottomSmufl = _integerToSmufl(int.parse(signature.beatType));
     }
-    Size smuflSize = const Size(20, 24);
+    Size smuflSize = const Size(20, NotationLayoutProperties.staveHeight / 2);
 
     return SizedBox.fromSize(
       size: size,
@@ -67,7 +67,7 @@ class TimeBeatElement extends StatelessWidget implements MeasureWidget {
   }
 
   @override
-  Size get size => const Size(20, 48);
+  Size get size => const Size(20, NotationLayoutProperties.staveHeight);
 
   @override
   double get alignmentOffset => throw UnimplementedError();
