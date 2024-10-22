@@ -661,7 +661,7 @@ class BeamProcessing {
           0,
           -NotationLayoutProperties.beamThickness,
         );
-        color = Color.fromRGBO(255, 0, 0, 0.5);
+        // color = Color.fromRGBO(255, 0, 0, 0.5);
       }
 
       Rect beamRect = Rect.fromPoints(beamStartOffset, beamEndOffset);

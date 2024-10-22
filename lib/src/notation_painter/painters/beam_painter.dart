@@ -17,7 +17,7 @@ class BeamPainter extends CustomPainter {
     path.lineTo(size.width, size.height - beamThickness);
     path.close();
     final paint = Paint()
-      ..color = color ?? const Color.fromRGBO(129, 0, 0, .5)
+      ..color = color ?? const Color.fromRGBO(0, 0, 0, 1)
       ..strokeWidth = 0;
 
     if (flip) {
