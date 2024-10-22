@@ -84,7 +84,7 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
   Size get size {
     switch (clef.sign) {
       case ClefSign.G:
-        return const Size(32, 85);
+        return const Size(32, 88);
       case ClefSign.F:
         return const Size(34, 44);
       case ClefSign.C:
