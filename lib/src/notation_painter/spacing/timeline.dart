@@ -2,10 +2,11 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
-import 'package:music_notation/src/notation_painter/attributes_elements.dart';
+import 'package:music_notation/src/notation_painter/clef_element.dart';
+import 'package:music_notation/src/notation_painter/chord_element.dart';
 import 'package:music_notation/src/notation_painter/cursor_element.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
-import 'package:music_notation/src/notation_painter/measure_element.dart';
+import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/note_element.dart';
 import 'package:music_notation/src/notation_painter/time_beat_element.dart';
 

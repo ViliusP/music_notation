@@ -1,4 +1,5 @@
 import 'package:flutter/rendering.dart';
+import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 import 'package:music_notation/src/smufl/smufl_glyph.dart';
 
@@ -18,7 +19,10 @@ class DotsPainter extends CustomPainter {
       PainterUtilities.drawSmuflSymbol(
         canvas,
         SmuflGlyph.augmentationDot.codepoint,
-        offset: _defaultOffset.translate(7 * i.toDouble(), 0),
+        offset: _defaultOffset.translate(
+          7 * i.toDouble(),
+          NotationLayoutProperties.staveSpace * 1.4,
+        ),
       );
     }
   }

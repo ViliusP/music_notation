@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:music_notation/music_notation.dart';
 
 class ScorePage extends StatefulWidget {
@@ -11,6 +14,19 @@ class ScorePage extends StatefulWidget {
 }
 
 class _ScorePageState extends State<ScorePage> {
+  FontMetadata? font;
+  static const _fontPath =
+      'packages/music_notation/smufl_fonts/Leland/leland_metadata.json';
+
+  @override
+  void initState() {
+    rootBundle.loadString(_fontPath).then((x) {
+      font = FontMetadata.fromJson(jsonDecode(x));
+      setState(() {});
+    });
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     final ScrollController scorePageScrollController = ScrollController();
@@ -31,9 +47,12 @@ class _ScorePageState extends State<ScorePage> {
         scrollDirection: Axis.horizontal,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
-          child: MusicNotationCanvas(
-            scorePartwise: widget.scorePartwise,
-          ),
+          child: font == null
+              ? SizedBox.shrink()
+              : MusicNotationCanvas(
+                  scorePartwise: widget.scorePartwise,
+                  font: font!,
+                ),
         ),
       ),
     );

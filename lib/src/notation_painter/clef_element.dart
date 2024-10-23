@@ -1,16 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
-import 'package:music_notation/src/models/elements/music_data/attributes/attributes.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
-import 'package:music_notation/src/notation_painter/measure_element.dart';
+import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
+import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/clef_painter.dart';
-
-class AttributesElements {
-  static List<double> calculateSpacings(Attributes attributes) {
-    return [];
-  }
-}
 
 class ClefElement extends StatelessWidget implements MeasureWidget {
   final Clef clef;
@@ -38,12 +32,13 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
   }
 
   @override
-  double get positionalOffset {
+  double get verticalAlignmentAxisOffset {
     switch (clef.sign) {
       case ClefSign.G:
-        return -32;
+        return (NotationLayoutProperties.staveHeight - 8) +
+            NotationLayoutProperties.staveSpace;
       case ClefSign.F:
-        return -29;
+        return NotationLayoutProperties.staveSpace + 1;
       case ClefSign.C:
         // TODO: adjust
         return -21;
@@ -91,7 +86,7 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
       case ClefSign.G:
         return const Size(32, 88);
       case ClefSign.F:
-        return const Size(33, 42);
+        return const Size(34, 44);
       case ClefSign.C:
         // TODO: adjust
         return const Size(33, 42);
@@ -111,18 +106,18 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
   Offset get _paintingOffset {
     switch (clef.sign) {
       case ClefSign.G:
-        return const Offset(0, 73);
+        return const Offset(0, 29);
       case ClefSign.F:
-        return const Offset(0, 70);
+        return const Offset(0, -12);
       case ClefSign.C:
         // TODO: adjust
-        return const Offset(0, 70);
+        return const Offset(0, 65);
       case ClefSign.percussion:
         // TODO: adjust
-        return const Offset(0, 70);
+        return const Offset(0, 65);
       case ClefSign.tab:
         // TODO: adjust
-        return const Offset(0, 70);
+        return const Offset(0, 65);
       default:
         throw UnimplementedError(
           "'${clef.sign}' clef sign is not implemented in renderer yet",

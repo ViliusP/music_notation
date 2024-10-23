@@ -7,8 +7,11 @@ import 'package:music_notation/src/notation_painter/measure/inherited_padding.da
 import 'package:music_notation/src/notation_painter/measure/measure_layout.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
+import 'package:music_notation/src/notation_painter/notation_font.dart';
+import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 
 import 'package:music_notation/src/notation_painter/sync_width_column.dart';
+import 'package:music_notation/src/smufl/font_metadata.dart';
 
 class MusicNotationCanvas extends StatelessWidget {
   final ScorePartwise scorePartwise;
@@ -25,6 +28,8 @@ class MusicNotationCanvas extends StatelessWidget {
   /// internal logic or algorithms.
   final bool useExplicitBeaming;
 
+  final FontMetadata font;
+
   NotationGrid get grid => NotationGrid.fromScoreParts(
         scorePartwise.parts,
       );
@@ -33,6 +38,7 @@ class MusicNotationCanvas extends StatelessWidget {
     super.key,
     required this.scorePartwise,
     this.useExplicitBeaming = true,
+    required this.font,
   });
 
   @override
@@ -53,6 +59,7 @@ class MusicNotationCanvas extends StatelessWidget {
         );
 
         var measure = MeasureLayout.fromMeasureData(
+          font: font,
           measure: grid.data.getValue(i, j),
           staff: grid.staffForRow(i),
           barlineSettings: barlineSettings,
@@ -81,7 +88,11 @@ class MusicNotationCanvas extends StatelessWidget {
             top: maxTopPadding,
             bottom: maxBottomPadding,
             child: SizedBox(
-              height: maxTopPadding + maxBottomPadding + 48,
+              height: [
+                maxTopPadding,
+                maxBottomPadding,
+                NotationLayoutProperties.staveHeight,
+              ].sum,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: children,
@@ -92,8 +103,11 @@ class MusicNotationCanvas extends StatelessWidget {
         children: measures,
       ));
     }
-    return SyncWidthColumn(
-      builders: parts,
+    return NotationFont(
+      value: font,
+      child: SyncWidthColumn(
+        builders: parts,
+      ),
     );
   }
 }

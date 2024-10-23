@@ -1,6 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_notation/src/models/data_types/accidental_value.dart';
-import 'package:music_notation/src/models/elements/music_data/note/accidental.dart';
 import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:xml/xml.dart';

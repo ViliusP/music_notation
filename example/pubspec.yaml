@@ -70,12 +70,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/scores/après_un_rêve.xml
-    - assets/scores/chopin_prelude.xml
-    - assets/scores/scale.xml
-    - assets/scores/hello_world.xml
-    - assets/scores/dot(s)_examples.musicxml
-
+    - assets/scores/
+    - packages/music_notation/smufl_fonts/Leland/leland_metadata.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
@@ -90,9 +86,9 @@ flutter:
   # example:
   # fonts:
   fonts:
-    - family: Sebastian
+    - family: Leland
       fonts:
-        - asset: packages/music_notation/smufl_fonts/Sebastian/Sebastian.otf
+        - asset: packages/music_notation/smufl_fonts/Leland/Leland.otf
 
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

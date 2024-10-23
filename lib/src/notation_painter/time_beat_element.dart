@@ -1,15 +1,17 @@
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
-import 'package:music_notation/src/notation_painter/measure_element.dart';
+import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
+import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/time_beat_painter.dart';
 
 class TimeBeatElement extends StatelessWidget implements MeasureWidget {
   final TimeBeat timeBeat;
 
   @override
-  double get positionalOffset => -size.height / 2;
+  double get verticalAlignmentAxisOffset =>
+      NotationLayoutProperties.staveSpace * 2;
 
   @override
   ElementPosition get position => const ElementPosition(
@@ -42,7 +44,7 @@ class TimeBeatElement extends StatelessWidget implements MeasureWidget {
       topSmufl = _integerToSmufl(int.parse(signature.beats));
       bottomSmufl = _integerToSmufl(int.parse(signature.beatType));
     }
-    Size smuflSize = const Size(20, 24);
+    Size smuflSize = const Size(20, NotationLayoutProperties.staveHeight / 2);
 
     return SizedBox.fromSize(
       size: size,
@@ -65,7 +67,7 @@ class TimeBeatElement extends StatelessWidget implements MeasureWidget {
   }
 
   @override
-  Size get size => const Size(20, 48);
+  Size get size => const Size(20, NotationLayoutProperties.staveHeight);
 
   @override
   double get alignmentOffset => throw UnimplementedError();
