@@ -1,5 +1,133 @@
+import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
+import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
+import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
+import 'package:music_notation/src/notation_painter/chord_element.dart';
+import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
+import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/note_element.dart';
+import 'package:music_notation/src/notation_painter/painters/beam_painter.dart';
+
+class BeamElement {}
+
+class BeamProcessing {
+  final Offset? beamStartOffset;
+  final Offset? beamEndOffset;
+  final Widget? beam;
+
+  BeamProcessing({
+    this.beamStartOffset,
+    this.beamEndOffset,
+    this.beam,
+  });
+
+  static BeamProcessing evaluate({
+    required MeasureWidget child,
+    required int index,
+    required double topOffset,
+    required List<double> spacings,
+    Offset? beamStartOffset,
+    Offset? beamEndOffset,
+  }) {
+    bool isBeamStart = false;
+    bool isBeamEnd = false;
+    Offset? beamOffset;
+    StemValue direction = StemValue.up;
+
+    // Check if the child has an offsetForBeam property
+    if (child is NoteElement) {
+      var beamValue = child.note.beams.firstOrNull?.value;
+      if (beamValue != null) {
+        isBeamStart = beamValue == BeamValue.begin;
+        isBeamEnd = beamValue == BeamValue.end;
+      }
+      beamOffset = child.offsetForBeam;
+      direction = child.stem?.value ?? direction;
+    }
+    if (child is Chord) {
+      var beamsList = child.notes.expand((note) => note.beams);
+      isBeamStart = beamsList.any((beam) => beam.value == BeamValue.begin);
+      isBeamEnd = beamsList.any((beam) => beam.value == BeamValue.end);
+      beamOffset = child.offsetForBeam;
+      direction = child.stem?.value ?? direction;
+    }
+
+    // Update beam offsets
+    if (isBeamStart && beamOffset != null) {
+      beamStartOffset = beamOffset.translate(spacings[index], topOffset);
+      beamStartOffset = beamStartOffset.translate(
+        -NotationLayoutProperties.stemStrokeWidth / 2,
+        0,
+      );
+
+      if (direction == StemValue.down) {
+        beamStartOffset = beamStartOffset.translate(
+          0,
+          -NotationLayoutProperties.beamThickness,
+        );
+      }
+    }
+
+    if (isBeamEnd && beamOffset != null) {
+      beamEndOffset = beamOffset.translate(spacings[index], topOffset);
+      beamEndOffset = beamEndOffset.translate(
+        -NotationLayoutProperties.stemStrokeWidth / 2,
+        0,
+      );
+      if (direction == StemValue.up) {
+        beamEndOffset = beamEndOffset.translate(
+          0,
+          NotationLayoutProperties.beamThickness,
+        );
+      }
+    }
+
+    // If both beam offsets are defined, create the beam widget
+    if (beamStartOffset != null && beamEndOffset != null) {
+      Color? color;
+
+      if (beamStartOffset.dy > beamEndOffset.dy) {
+        beamStartOffset = beamStartOffset.translate(
+          0,
+          NotationLayoutProperties.beamThickness,
+        );
+        beamEndOffset = beamEndOffset.translate(
+          0,
+          -NotationLayoutProperties.beamThickness,
+        );
+        // color = Color.fromRGBO(255, 0, 0, 0.5);
+      }
+
+      Rect beamRect = Rect.fromPoints(beamStartOffset, beamEndOffset);
+
+      double top = beamStartOffset.dy < beamEndOffset.dy
+          ? beamStartOffset.dy
+          : beamEndOffset.dy;
+
+      Widget beam = Positioned(
+        left: beamStartOffset.dx,
+        top: top,
+        child: CustomPaint(
+          size: beamRect.size,
+          painter: BeamPainter(
+            color: color,
+            flip: beamStartOffset.dy > beamEndOffset.dy,
+          ),
+        ),
+      );
+
+      return BeamProcessing(
+        beam: beam,
+      );
+    }
+
+    return BeamProcessing(
+      beamStartOffset: beamStartOffset,
+      beamEndOffset: beamEndOffset,
+    );
+  }
+}
 
 /// Different beat strengths typically used in music notation.
 enum BeatStrength {
