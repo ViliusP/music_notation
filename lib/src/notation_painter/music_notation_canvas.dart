@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
+import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
 import 'package:music_notation/src/notation_painter/measure/inherited_padding.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_layout.dart';
@@ -103,10 +104,14 @@ class MusicNotationCanvas extends StatelessWidget {
         children: measures,
       ));
     }
-    return NotationFont(
-      value: font,
-      child: SyncWidthColumn(
-        builders: parts,
+    return DebugSettings(
+      paintBBoxAboveStaff: false,
+      paintBBoxBelowStaff: false,
+      child: NotationFont(
+        value: font,
+        child: SyncWidthColumn(
+          builders: parts,
+        ),
       ),
     );
   }

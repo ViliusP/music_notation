@@ -433,12 +433,17 @@ class MeasureLayout extends StatelessWidget {
           ),
         );
 
+        DebugSettings? dSettings = DebugSettings.of(context);
+
+        if (dSettings != null) {
+          if (dSettings.paintBBoxBelowStaff) {
         Rect boxBelow = child.boxBelowStaff();
 
         positionedElements.add(
           Positioned(
             left: spacings[index],
-            top: inheritedPadding.top + NotationLayoutProperties.staveHeight,
+                top:
+                    inheritedPadding.top + NotationLayoutProperties.staveHeight,
             child: Container(
               width: boxBelow.width,
               height: [boxBelow.height, 0].max.toDouble(),
@@ -446,6 +451,25 @@ class MeasureLayout extends StatelessWidget {
             ),
           ),
         );
+          }
+
+          if (dSettings.paintBBoxAboveStaff) {
+            Rect boxAbove = child.boxAboveStaff();
+
+            positionedElements.add(
+              Positioned(
+                left: spacings[index],
+                bottom: inheritedPadding.bottom +
+                    NotationLayoutProperties.staveHeight,
+                child: Container(
+                  width: boxAbove.width,
+                  height: [boxAbove.height, 0].max.toDouble(),
+                  color: Color.fromRGBO(3, 154, 255, 0.2),
+                ),
+              ),
+            );
+          }
+        }
       }
 
       EdgeInsets measurePadding = EdgeInsets.only(
