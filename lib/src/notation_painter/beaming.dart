@@ -65,17 +65,17 @@ class BeamGroup extends StatelessWidget {
       lastStemLength = last.stemLength;
     }
 
-    double beamCanvasHeight =
+    double canvasHeight =
         offsetPerPosition * firstPosition!.distance(lastPosition!);
 
-    beamCanvasHeight += (firstBeamOffset!.dy - lastBeamOffset!.dy);
-    beamCanvasHeight += NotationLayoutProperties.beamThickness;
-    beamCanvasHeight -= (lastStemLength - firstStemLength);
+    canvasHeight += (firstBeamOffset!.dy - lastBeamOffset!.dy);
+    canvasHeight += NotationLayoutProperties.beamThickness;
+    canvasHeight -= (lastStemLength - firstStemLength);
 
-    return Size(
-      leftOffsets.last - leftOffsets.first,
-      beamCanvasHeight,
-    );
+    double canvasWidth = leftOffsets.last - leftOffsets.first;
+    canvasWidth -= (NotationLayoutProperties.stemStrokeWidth / 2);
+
+    return Size(canvasWidth, canvasHeight);
   }
 
   bool _isBeamDownward() {
@@ -99,6 +99,25 @@ class BeamGroup extends StatelessWidget {
     }
 
     return firstPosition! > lastPosition!;
+  }
+
+  List<NoteBeams> beamsPattern() {
+    List<NoteBeams> pattern = [];
+    for (var (i, child) in children.indexed) {
+      if (child is NoteElement) {
+        pattern.add(NoteBeams(
+          values: child.note.beams,
+          leftOffset: leftOffsets[i] - leftOffsets[0],
+        ));
+      }
+      if (child is Chord) {
+        pattern.add(NoteBeams(
+          values: child.notes.firstWhere((x) => x.beams.isNotEmpty).beams,
+          leftOffset: leftOffsets[i] - leftOffsets[0],
+        ));
+      }
+    }
+    return pattern;
   }
 
   @override
@@ -176,6 +195,7 @@ class BeamGroup extends StatelessWidget {
           child: CustomPaint(
             size: _beamSize(),
             painter: BeamPainter(
+              beamsPattern: beamsPattern(),
               // color: color,
               downward: _isBeamDownward(),
             ),
@@ -186,13 +206,15 @@ class BeamGroup extends StatelessWidget {
   }
 }
 
-// class NoteBeam {
-//   final List<BeamValue> beams;
-// }
+class NoteBeams {
+  final List<Beam> values;
+  final double leftOffset;
 
-// class BeamGroup {
-//   List<NoteBeam>
-// }
+  NoteBeams({
+    required this.values,
+    required this.leftOffset,
+  });
+}
 
 class BeamGrouping {
   final List<MeasureWidget> _group = [];
