@@ -108,12 +108,14 @@ class BeamGroup extends StatelessWidget {
         pattern.add(NoteBeams(
           values: child.note.beams,
           leftOffset: leftOffsets[i] - leftOffsets[0],
+          stem: child.stem!.value,
         ));
       }
       if (child is Chord) {
         pattern.add(NoteBeams(
           values: child.notes.firstWhere((x) => x.beams.isNotEmpty).beams,
           leftOffset: leftOffsets[i] - leftOffsets[0],
+          stem: child.stem!.value,
         ));
       }
     }
@@ -208,11 +210,13 @@ class BeamGroup extends StatelessWidget {
 
 class NoteBeams {
   final List<Beam> values;
+  final StemValue stem;
   final double leftOffset;
 
   NoteBeams({
     required this.values,
     required this.leftOffset,
+    required this.stem,
   });
 }
 
