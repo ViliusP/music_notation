@@ -7,7 +7,10 @@ class PainterUtilities {
   static void drawSmuflSymbol(
     Canvas canvas,
     String symbol, {
-    Offset offset = const Offset(0, -NotationLayoutProperties.staveSpace * 1.5),
+    Offset offset = const Offset(
+      0,
+      (-NotationLayoutProperties.staveSpace * 1.5),
+    ),
     Color color = const Color.fromRGBO(0, 0, 0, 1.0),
   }) {
     TextStyle textStyle = TextStyle(

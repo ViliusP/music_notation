@@ -121,6 +121,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     return note.form is Rest;
   }
 
+  /// Relative offset from bounding box top left corner.
   /// X - the middle of stem.
   /// Y - the tip of stem.
   Offset get offsetForBeam {

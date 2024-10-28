@@ -394,12 +394,21 @@ class MeasureLayout extends StatelessWidget {
     if (inheritedPadding == null) return SizedBox.shrink();
 
     return LayoutBuilder(builder: (context, constraints) {
-      List<Widget> beams = [];
-      Offset? beamStartOffset;
-      Offset? beamEndOffset;
+      List<Widget> beamGroups = [];
+
+      BeamGrouping beaming = BeamGrouping();
 
       var positionedElements = <Widget>[];
       for (var (index, child) in children.indexed) {
+        var beamingResult = beaming.add(child, spacings[index]);
+
+        if (beaming.isFinalized) {
+          beamGroups.add(
+            Positioned.fill(child: BeamGroup.fromBeaming(beaming)),
+          );
+          beaming = BeamGrouping();
+        }
+
         double topOffset = -child.verticalAlignmentAxisOffset;
 
         // Calculate the interval from staff bottom to the child's position.
@@ -407,30 +416,15 @@ class MeasureLayout extends StatelessWidget {
         intervalFromTheTop -= (child.position.numeric);
         topOffset += intervalFromTheTop * offsetPerPosition;
 
-        // Process beam for the current child
-        var beamResult = BeamProcessing.evaluate(
-          child: child,
-          index: index,
-          topOffset: inheritedPadding.top + topOffset,
-          spacings: spacings,
-          beamStartOffset: beamStartOffset,
-          beamEndOffset: beamEndOffset,
-        );
-
-        beamStartOffset = beamResult.beamStartOffset;
-        beamEndOffset = beamResult.beamEndOffset;
-        if (beamResult.beam != null) {
-          beams.add(beamResult.beam!);
+        if (beamingResult == BeamingResult.skipped) {
+          positionedElements.add(
+            Positioned(
+              left: spacings[index],
+              top: inheritedPadding.top + topOffset,
+              child: child,
+            ),
+          );
         }
-
-        // Add the positioned child to the list.
-        positionedElements.add(
-          Positioned(
-            left: spacings[index],
-            top: inheritedPadding.top + topOffset,
-            child: child,
-          ),
-        );
 
         DebugSettings? dSettings = DebugSettings.of(context);
 
@@ -493,7 +487,7 @@ class MeasureLayout extends StatelessWidget {
               ),
             ),
           ),
-          ...beams,
+          ...beamGroups,
           ...positionedElements,
         ],
       );

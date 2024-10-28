@@ -62,6 +62,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
 
   final Stem? stem;
 
+  /// Relative offset from bounding box top left corner.
   /// X - the middle of stem.
   /// Y - the tip of stem.
   Offset get offsetForBeam {
