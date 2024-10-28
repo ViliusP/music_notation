@@ -49,25 +49,21 @@ class BeamPainter extends CustomPainter {
 
         if (beams.value == BeamValue.begin ||
             beams.value == BeamValue.bContinue) {
-          double beamLength =
-              beamsPattern[index + 1].leftOffset - noteBeams.leftOffset;
-
-          Color? color;
+          double beamLength = beamsPattern[index + 1].leftOffset;
+          beamLength -= noteBeams.leftOffset;
 
           drawAngledBeam(
             angle: angle,
             canvas: canvas,
             start: Offset(start.dx, start.dy + yOffset),
             beamLength: beamLength,
-            imaginaryLineLength: 0,
-            imaginaryLineOffset: offsetX,
+            alignmentLineLength: 0,
+            alignmentLineOffset: offsetX,
             alignment: Alignment.start,
-            imaginaryLineByHorizontalSpan: true,
-            // lineOffset: startingX,
+            alignmentLineByHorizontalSpan: true,
             beamByHorizontalSpan: true,
-
             beamThickness: NotationLayoutProperties.beamThickness,
-            color: color ?? const Color.fromRGBO(0, 0, 0, 1),
+            color: color ?? const Color.fromRGBO(0, 0, 0, .25),
           );
         }
 
@@ -78,9 +74,9 @@ class BeamPainter extends CustomPainter {
             start: Offset(start.dx, start.dy + yOffset),
             beamLength: NotationLayoutProperties.defaultNoteheadHeight,
             // lineOffset: startingX,
-            imaginaryLineLength: offsetX - beamsPattern[index - 1].leftOffset,
+            alignmentLineLength: offsetX - beamsPattern[index - 1].leftOffset,
             alignment: Alignment.end,
-            imaginaryLineByHorizontalSpan: true,
+            alignmentLineByHorizontalSpan: true,
             beamByHorizontalSpan: false,
             beamThickness: NotationLayoutProperties.beamThickness,
             color: color ?? const Color.fromRGBO(0, 0, 0, 1),
@@ -90,100 +86,225 @@ class BeamPainter extends CustomPainter {
     }
   }
 
+  /// Draws an angled beam on the canvas with adjustable alignment and length options.
+  ///
+  /// This function renders an angled beam starting from a specified point and extending at a given angle.
+  /// The beam can be aligned and adjusted in length along an alignment line, making it flexible for various
+  /// musical notation or custom visualizations. The function also provides options to draw a visual
+  /// alignment line and border lines for the beam.
+  ///
+  /// The `alignment` parameter determines the beam's position along the alignment line, allowing for
+  /// alignment at the start, middle, or end. The `alignmentLineByHorizontalSpan` and `beamByHorizontalSpan`
+  /// flags determine if the specified lengths should be adjusted by their horizontal spans.
+  ///
+  /// * [canvas] - The canvas to draw on.
+  /// * [start] - The starting point of the beam.
+  /// * [angle] - The angle (in radians) at which the beam extends from the start point.
+  /// * [alignmentLineLength] - Length of the alignment line for the beam.
+  /// * [beamLength] - The actual length of the beam.
+  /// * [alignment] - The alignment of the beam along the alignment line (start, middle, end).
+  /// * [beamThickness] - Thickness of the beam.
+  /// * [alignmentLineByHorizontalSpan] - When true, calculates the alignment line's length by its horizontal span.
+  /// * [beamByHorizontalSpan] - When true, calculates the beam's length by its horizontal span.
+  /// * [alignmentLineOffset] - Offset distance for the alignment line along the angle direction.
+  /// * [color] - Color of the main beam.
+  ///
+  /// ## Example:
+  ///
+  /// ```dart
+  /// drawAngledBeam(
+  ///   canvas: canvas,
+  ///   start: Offset(0, 0),
+  ///   angle: pi / 4,
+  ///   alignmentLineLength: 100,
+  ///   beamLength: 80,
+  ///   alignment: Alignment.middle,
+  ///   beamThickness: 4.0,
+  ///   alignmentLineByHorizontalSpan: true,
+  ///   beamByHorizontalSpan: false,
+  ///   alignmentLineOffset: 10,
+  ///   color: Color.fromRGBO(0, 0, 0, 1),
+  /// );
+  /// ```
   void drawAngledBeam({
     required Canvas canvas,
     required Offset start,
     required double angle,
-    required double
-        imaginaryLineLength, // Length of the imaginary alignment line
-    required double beamLength, // Actual length of the beam
-    required Alignment alignment, // Alignment of beam along the imaginary line
+    required double alignmentLineLength,
+    required double beamLength,
+    required Alignment alignment,
     required double beamThickness,
-    bool imaginaryLineByHorizontalSpan =
-        false, // Flag to calculate imaginary line by horizontal span
-    bool beamByHorizontalSpan =
-        false, // Flag to calculate beam length by horizontal span
-    double imaginaryLineOffset =
-        0, // Offset for the imaginary line along its angle
+    bool alignmentLineByHorizontalSpan = false,
+    bool beamByHorizontalSpan = false,
+    double alignmentLineOffset = 0,
     Color color = const Color.fromRGBO(0, 0, 0, 1),
   }) {
-    // Calculate actual imaginary line length based on the flag
-    double adjustedImaginaryLineLength = imaginaryLineByHorizontalSpan
-        ? imaginaryLineLength / cos(angle) // Convert to angled length
-        : imaginaryLineLength;
+    // Adjust alignment line length to ensure it spans the correct horizontal distance
+    double adjustedAlignmentLineLength = alignmentLineByHorizontalSpan
+        ? alignmentLineLength / cos(angle)
+        : alignmentLineLength;
 
-    // Apply imaginary line offset
-    Offset adjustedImaginaryLineStart = Offset(
-      start.dx + cos(angle) * imaginaryLineOffset,
-      start.dy + sin(angle) * imaginaryLineOffset,
+    // Apply the offset along the angle direction to the alignment line's start point
+    Offset adjustedAlignmentLineStart = Offset(
+      start.dx + alignmentLineOffset,
+      start.dy + sin(angle) * alignmentLineOffset,
     );
 
-    // Calculate the imaginary line’s end point
-    Offset imaginaryLineEnd = Offset(
-      adjustedImaginaryLineStart.dx + cos(angle) * adjustedImaginaryLineLength,
-      adjustedImaginaryLineStart.dy + sin(angle) * adjustedImaginaryLineLength,
-    );
+    // Calculate actual beam length based on the `beamByHorizontalSpan` flag
+    double adjustedBeamLength =
+        beamByHorizontalSpan ? beamLength / cos(angle) : beamLength;
 
-    // Calculate actual beam length based on the flag
-    double adjustedBeamLength = beamByHorizontalSpan
-        ? beamLength / cos(angle) // Convert to angled length
-        : beamLength;
-
-    // Determine the beam's starting position based on alignment
+    // Alignment adjustment for both the horizontal and angled beams
     Offset adjustedStart;
+    double alignmentOffset;
+
     switch (alignment) {
       case Alignment.start:
-        adjustedStart = adjustedImaginaryLineStart;
+        adjustedStart = adjustedAlignmentLineStart;
+        alignmentOffset = 0;
         break;
       case Alignment.middle:
-        double midOffset =
-            (adjustedImaginaryLineLength - adjustedBeamLength) / 2;
+        alignmentOffset =
+            (adjustedAlignmentLineLength - adjustedBeamLength) / 2;
         adjustedStart = Offset(
-          adjustedImaginaryLineStart.dx + cos(angle) * midOffset,
-          adjustedImaginaryLineStart.dy + sin(angle) * midOffset,
+          adjustedAlignmentLineStart.dx + cos(angle) * alignmentOffset,
+          adjustedAlignmentLineStart.dy + sin(angle) * alignmentOffset,
         );
         break;
       case Alignment.end:
-        double endOffset = adjustedImaginaryLineLength - adjustedBeamLength;
+        alignmentOffset = adjustedAlignmentLineLength - adjustedBeamLength;
         adjustedStart = Offset(
-          adjustedImaginaryLineStart.dx + cos(angle) * endOffset,
-          adjustedImaginaryLineStart.dy + sin(angle) * endOffset,
+          adjustedAlignmentLineStart.dx + cos(angle) * alignmentOffset,
+          adjustedAlignmentLineStart.dy + sin(angle) * alignmentOffset,
         );
         break;
     }
 
-    // Calculate the end point for the beam based on `adjustedBeamLength`
-    Offset end = Offset(
+    // Calculate the end points for both the angled and horizontal beams
+    Offset angledEnd = Offset(
       adjustedStart.dx + cos(angle) * adjustedBeamLength,
       adjustedStart.dy + sin(angle) * adjustedBeamLength,
     );
 
-    // Create the main beam path
+    Offset originalStart = Offset(
+      start.dx + alignmentLineOffset + alignmentOffset,
+      start.dy,
+    );
+    Offset horizontalEnd = Offset(
+      originalStart.dx + beamLength,
+      originalStart.dy,
+    );
+
+    // Define the alignment line, borders for top and bottom lines
+    List<Map<String, dynamic>> lines = [
+      {
+        'start': adjustedAlignmentLineStart,
+        'end': Offset(
+          adjustedAlignmentLineStart.dx +
+              cos(angle) * adjustedAlignmentLineLength,
+          adjustedAlignmentLineStart.dy +
+              sin(angle) * adjustedAlignmentLineLength,
+        ),
+        'color': Color.fromRGBO(255, 10, 100, 0.35),
+        'thickness': 2.0,
+      },
+      {
+        'start': originalStart,
+        'end': horizontalEnd,
+        'color': Color.fromRGBO(255, 0, 0, 0.5),
+        'thickness': 2.0,
+      },
+      {
+        'start': Offset(originalStart.dx, originalStart.dy + beamThickness),
+        'end': Offset(horizontalEnd.dx, horizontalEnd.dy + beamThickness),
+        'color': Color.fromRGBO(200, 0, 0, 0.5),
+        'thickness': 2.0,
+      },
+      {
+        'start': adjustedStart,
+        'end': angledEnd,
+        'color': Color.fromRGBO(0, 0, 255, 0.5),
+        'thickness': 2.0,
+      },
+      {
+        'start': Offset(adjustedStart.dx, adjustedStart.dy + beamThickness),
+        'end': Offset(angledEnd.dx, angledEnd.dy + beamThickness),
+        'color': Color.fromRGBO(0, 0, 200, 0.5),
+        'thickness': 2.0,
+      },
+    ];
+
+    // Draw debug lines (alignment line and beam borders)
+    _drawDebugLines(canvas, lines);
+
+    // Create the main beam path for the angled beam
     final Path beamPath = Path();
     beamPath.moveTo(adjustedStart.dx, adjustedStart.dy);
     beamPath.lineTo(adjustedStart.dx, adjustedStart.dy + beamThickness);
-    beamPath.lineTo(end.dx, end.dy + beamThickness);
-    beamPath.lineTo(end.dx, end.dy);
+    beamPath.lineTo(angledEnd.dx, angledEnd.dy + beamThickness);
+    beamPath.lineTo(angledEnd.dx, angledEnd.dy);
     beamPath.close();
 
-    // Paint for the beam
+    // Paint the main beam
     final Paint beamPaint = Paint()
       ..color = color
       ..style = PaintingStyle.fill;
-
-    // // Draw the imaginary line (for visualization purposes)
-    // final Paint imaginaryLinePaint = Paint()
-    //   ..color = Color.fromRGBO(255, 10, 100, 0.35)
-    //   ..style = PaintingStyle.stroke
-    //   ..strokeWidth = 1.0;
-    // canvas.drawLine(
-    //   adjustedImaginaryLineStart,
-    //   imaginaryLineEnd,
-    //   imaginaryLinePaint,
-    // );
-
-    // Draw the beam path on canvas
     canvas.drawPath(beamPath, beamPaint);
+  }
+
+  /// Draws debug lines on the canvas based on provided start and end points, colors, and thicknesses.
+  ///
+  /// This function paints multiple lines on the canvas based on a list of debug line data,
+  /// including the alignment line and the beam borders. Each debug line is drawn with a specified
+  /// start and end offset, color, and line thickness. If the start and end points are the same,
+  /// a dot is drawn instead of a line.
+  ///
+  /// Parameters:
+  /// - `canvas`: The canvas to draw on.
+  /// - `lines`: A list of maps, where each map specifies:
+  ///     - `start`: Offset - Starting point of the line.
+  ///     - `end`: Offset - Ending point of the line.
+  ///     - `color`: Color - Color of the line.
+  ///     - `thickness`: double - Line thickness.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// _drawDebugLines(
+  ///   canvas,
+  ///   [
+  ///     {
+  ///       'start': Offset(0, 0),
+  ///       'end': Offset(100, 0),
+  ///       'color': Color.fromRGBO(255, 0, 0, 0.5),
+  ///       'thickness': 2.0,
+  ///     },
+  ///     {
+  ///       'start': Offset(0, 10),
+  ///       'end': Offset(0, 10), // Dot instead of a line
+  ///       'color': Color.fromRGBO(0, 255, 0, 0.5),
+  ///       'thickness': 4.0,
+  ///     },
+  ///   ],
+  /// );
+  /// ```
+  void _drawDebugLines(Canvas canvas, List<Map<String, dynamic>> lines) {
+    for (var line in lines) {
+      final Paint paint = Paint()
+        ..color = line['color'] as Color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = line['thickness'] as double;
+
+      // Check if start and end points are the same to draw a dot instead of a line
+      if (line['start'] == line['end']) {
+        canvas.drawCircle(
+          line['start'] as Offset,
+          (line['thickness'] as double) * 2,
+          paint,
+        );
+      } else {
+        canvas.drawLine(line['start'] as Offset, line['end'] as Offset, paint);
+      }
+    }
   }
 
   @override

@@ -107,7 +107,7 @@ class BeamGroup extends StatelessWidget {
       if (child is NoteElement) {
         pattern.add(NoteBeams(
           values: child.note.beams,
-          leftOffset: leftOffsets[i] - leftOffsets[0],
+          leftOffset: (leftOffsets[i] - leftOffsets[0]),
           stem: child.stem!.value,
         ));
       }
