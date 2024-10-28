@@ -63,7 +63,7 @@ class BeamPainter extends CustomPainter {
             alignmentLineByHorizontalSpan: true,
             beamByHorizontalSpan: true,
             beamThickness: NotationLayoutProperties.beamThickness,
-            color: color ?? const Color.fromRGBO(0, 0, 0, .25),
+            color: color ?? const Color.fromRGBO(0, 0, 0, 1),
           );
         }
 
@@ -93,8 +93,8 @@ class BeamPainter extends CustomPainter {
   /// musical notation or custom visualizations. The function also provides options to draw a visual
   /// alignment line and border lines for the beam.
   ///
-  /// The `alignment` parameter determines the beam's position along the alignment line, allowing for
-  /// alignment at the start, middle, or end. The `alignmentLineByHorizontalSpan` and `beamByHorizontalSpan`
+  /// The [alignment] parameter determines the beam's position along the alignment line, allowing for
+  /// alignment at the start, middle, or end. The [alignmentLineByHorizontalSpan] and [beamByHorizontalSpan]
   /// flags determine if the specified lengths should be adjusted by their horizontal spans.
   ///
   /// * [canvas] - The canvas to draw on.
@@ -138,6 +138,7 @@ class BeamPainter extends CustomPainter {
     bool beamByHorizontalSpan = false,
     double alignmentLineOffset = 0,
     Color color = const Color.fromRGBO(0, 0, 0, 1),
+    bool debug = false,
   }) {
     // Adjust alignment line length to ensure it spans the correct horizontal distance
     double adjustedAlignmentLineLength = alignmentLineByHorizontalSpan
@@ -235,7 +236,7 @@ class BeamPainter extends CustomPainter {
     ];
 
     // Draw debug lines (alignment line and beam borders)
-    _drawDebugLines(canvas, lines);
+    if (debug) _drawDebugLines(canvas, lines);
 
     // Create the main beam path for the angled beam
     final Path beamPath = Path();
@@ -247,7 +248,7 @@ class BeamPainter extends CustomPainter {
 
     // Paint the main beam
     final Paint beamPaint = Paint()
-      ..color = color
+      ..color = debug ? color.withOpacity(0.25) : color
       ..style = PaintingStyle.fill;
     canvas.drawPath(beamPath, beamPaint);
   }
