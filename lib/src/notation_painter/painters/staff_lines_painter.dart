@@ -1,24 +1,61 @@
 import 'package:flutter/rendering.dart';
+import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 
 class StaffLinesPainter extends CustomPainter {
-  // final double length;
+  final int extraStaveLineCount;
+  final ExtraStaveLines extraStaveLines;
 
-  StaffLinesPainter();
+  StaffLinesPainter({
+    this.extraStaveLineCount = 0,
+    this.extraStaveLines = ExtraStaveLines.none,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    for (var y = 0.0;
-        y <= NotationLayoutProperties.staveHeight;
-        y += NotationLayoutProperties.staveSpace) {
+    Paint staffLinePainter = Paint()
+      ..color = const Color.fromRGBO(0, 0, 0, 1.0)
+      ..strokeWidth = NotationLayoutProperties.staffLineStrokeWidth;
+
+    double top = 0;
+    double bottom = 0;
+    for (bottom = top;
+        bottom <= NotationLayoutProperties.staveHeight;
+        bottom += NotationLayoutProperties.staveSpace) {
       canvas.drawLine(
-        Offset(0, y),
-        Offset(size.width, y),
-        Paint()
-          ..color = const Color.fromRGBO(0, 0, 0, 1.0)
-          ..strokeWidth = NotationLayoutProperties.staffLineStrokeWidth,
+        Offset(0, bottom),
+        Offset(size.width, bottom),
+        staffLinePainter,
       );
+    }
+
+    // For ledger lines debugginb
+    if (extraStaveLines != ExtraStaveLines.none) {
+      bottom -= NotationLayoutProperties.staveSpace;
+
+      for (int i = 0; i < extraStaveLineCount; i++) {
+        top -= NotationLayoutProperties.staveSpace;
+        bottom += NotationLayoutProperties.staveSpace;
+
+        if (extraStaveLines == ExtraStaveLines.above ||
+            extraStaveLines == ExtraStaveLines.double) {
+          canvas.drawLine(
+            Offset(0, top),
+            Offset(size.width, top),
+            staffLinePainter..color = const Color.fromRGBO(125, 0, 0, .5),
+          );
+        }
+
+        if (extraStaveLines == ExtraStaveLines.below ||
+            extraStaveLines == ExtraStaveLines.double) {
+          canvas.drawLine(
+            Offset(0, bottom),
+            Offset(size.width, bottom),
+            staffLinePainter..color = const Color.fromRGBO(0, 0, 125, .5),
+          );
+        }
+      }
     }
   }
 

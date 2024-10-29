@@ -66,4 +66,7 @@ enum ExtraStaveLines {
 
   /// Renders extra stave lines below the staff.
   below,
+
+  /// Renders extra stave lines above and below the staff.
+  double,
 }

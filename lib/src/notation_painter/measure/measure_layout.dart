@@ -546,6 +546,8 @@ class StaffLines extends StatelessWidget {
       calculatedEndOffset -= measurePadding.top;
     }
 
+    DebugSettings? debugSettings = DebugSettings.of(context);
+
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -563,7 +565,11 @@ class StaffLines extends StatelessWidget {
             ),
           ),
         CustomPaint(
-          painter: StaffLinesPainter(),
+          painter: StaffLinesPainter(
+            extraStaveLineCount: debugSettings?.extraStaveLineCount ?? 0,
+            extraStaveLines:
+                debugSettings?.extraStaveLines ?? ExtraStaveLines.none,
+          ),
         ),
         Align(
           alignment: Alignment.centerRight,
