@@ -100,6 +100,14 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     if (_stemmed && stem?.value == StemValue.up) {
       return stemLength;
     }
+
+    // When note is on drawn the line and it's stem is drawn down,
+    // the dots size must be taken in the account.
+    if (stem?.value == StemValue.down &&
+        position.numeric % 2 == 0 &&
+        _dots > 0) {
+      return NotationLayoutProperties.staveSpace / 2 + _dotsSize.height / 2;
+    }
     return NotationLayoutProperties.staveSpace / 2;
   }
 
@@ -389,13 +397,14 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       dotsOffsetFromNotehead -= (_dotsSize.height / 2).ceil();
       dotsTopPosition = dotsOffsetFromNotehead;
     }
-
+    double dotVerticalOffset = 0;
     // When note is on drawn the line and it's stem is drawn down,
     // it's dot needs to be positioned above note.
     if (stem?.value == StemValue.down &&
         position.numeric % 2 == 0 &&
         _dots > 0) {
       dotsOffsetFromNotehead = 0;
+      dotVerticalOffset = _dotsSize.height / 2;
       dotsTopPosition = dotsOffsetFromNotehead;
     }
 
@@ -410,6 +419,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       child: Stack(
         children: [
           Positioned(
+            top: stem?.value == StemValue.down ? dotVerticalOffset : null,
             bottom: stem?.value == StemValue.up ? 0 : null,
             child: notehead,
           ),
@@ -427,7 +437,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
             Padding(
               padding: EdgeInsets.only(
                 bottom: stemBottomPadding,
-                top: stemTopPadding,
+                top: stemTopPadding + dotVerticalOffset,
                 left: stemLeftPadding,
               ),
               child: StemElement(
