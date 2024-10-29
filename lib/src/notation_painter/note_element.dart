@@ -307,7 +307,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     return width / 2;
   }
 
-  double _dotsRightOffset(NoteheadElement notehead) {
+  double _dotsRightOffset() {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
     double defaultOffset = NotationLayoutProperties.staveSpace * 1.75;
 
