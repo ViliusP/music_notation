@@ -10,18 +10,15 @@ class DotsPainter extends CustomPainter {
 
   DotsPainter(this.count);
 
-  // Offset to move smufl symbol to (0, 0)
-  static const Offset _defaultOffset = Offset(-3, -41);
-
   @override
   void paint(Canvas canvas, Size size) {
     for (int i = 0; i < count; i++) {
       PainterUtilities.drawSmuflSymbol(
         canvas,
         SmuflGlyph.augmentationDot.codepoint,
-        offset: _defaultOffset.translate(
+        offset: Offset(
           7 * i.toDouble(),
-          NotationLayoutProperties.staveSpace * 1.4,
+          -NotationLayoutProperties.staveSpace * 2 + size.height / 2,
         ),
       );
     }
