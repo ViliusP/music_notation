@@ -107,6 +107,8 @@ class MusicNotationCanvas extends StatelessWidget {
     return DebugSettings(
       paintBBoxAboveStaff: false,
       paintBBoxBelowStaff: false,
+      extraStaveLineCount: 0,
+      extraStaveLines: ExtraStaveLines.none,
       child: NotationFont(
         value: font,
         child: SyncWidthColumn(

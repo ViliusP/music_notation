@@ -66,6 +66,17 @@ class Chord extends StatelessWidget implements MeasureWidget {
   /// X - the middle of stem.
   /// Y - the tip of stem.
   Offset get offsetForBeam {
+    double xDotsOffset = -0;
+
+    Note maxDotsNote = notes.reduce(
+      (a, b) => a.dots.length > b.dots.length ? a : b,
+    );
+
+    if (maxDotsNote.dots.isNotEmpty) {
+      xDotsOffset = NoteElement.dotsOffset();
+      xDotsOffset += NoteElement.dotsSize(font).width;
+    }
+
     if (stem?.value == StemValue.down) {
       return Offset(
         NotationLayoutProperties.stemStrokeWidth / 2,
@@ -74,7 +85,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
     }
 
     return Offset(
-      size.width,
+      size.width - xDotsOffset,
       0,
     );
   }
@@ -85,6 +96,18 @@ class Chord extends StatelessWidget implements MeasureWidget {
       return _calculateStemLength(notes);
     }
 
+    Note maxDotsNote = notes.reduce(
+      (a, b) => a.dots.length > b.dots.length ? a : b,
+    );
+
+    // When note is on drawn the line and it's stem is drawn down,
+    // the dots size must be taken in the account.
+    if (stem?.value == StemValue.down &&
+        position.numeric % 2 == 0 &&
+        maxDotsNote.dots.isNotEmpty) {
+      return NotationLayoutProperties.staveSpace / 2 +
+          NoteElement.dotsSize(font).height / 2;
+    }
     return NotationLayoutProperties.staveSpace / 2;
   }
 
@@ -123,6 +146,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
       return NoteElement.calculateSize(
         note: sortedNotes.first,
         stemLength: _calculateStemLength(notes),
+        clef: notationContext.clef,
         font: font,
       );
     }
@@ -130,6 +154,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
     if (stemType == StemValue.down) {
       return NoteElement.calculateSize(
         note: sortedNotes.last,
+        clef: notationContext.clef,
         stemLength: _calculateStemLength(notes),
         font: font,
       );
@@ -150,6 +175,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
     if (stemLength == 0) {
       height += NoteElement.calculateSize(
             note: sortedNotes.last,
+            clef: notationContext.clef,
             stemLength: 0,
             font: font,
           ).height /
@@ -158,6 +184,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
       height += (NoteElement.calculateSize(
             note: sortedNotes.first,
             stemLength: 0,
+            clef: notationContext.clef,
             font: font,
           ).height /
           2);
@@ -168,6 +195,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
         .map((e) => NoteElement.calculateSize(
               note: e,
               stemLength: 0,
+              clef: notationContext.clef,
               font: font,
             ).width)
         .max;
@@ -225,18 +253,20 @@ class Chord extends StatelessWidget implements MeasureWidget {
     return width / 2;
   }
 
-  @override
-  ElementPosition get position {
-    var notesPositions = notes.map((note) => NoteElement.determinePosition(
-          note,
-          notationContext.clef,
-        ));
-
+  int get referenceNoteIndex {
     if (_stemmed && stem?.value == StemValue.up) {
-      return notesPositions.first;
+      return 0;
     }
 
-    return notesPositions.last;
+    return notes.length - 1;
+  }
+
+  @override
+  ElementPosition get position {
+    return NoteElement.determinePosition(
+      notes[referenceNoteIndex],
+      notationContext.clef,
+    );
   }
 
   @override
@@ -248,22 +278,19 @@ class Chord extends StatelessWidget implements MeasureWidget {
 
     double calculatedStemLength = _calculateStemLength(notes);
 
+    NoteElement refnote = NoteElement.fromNote(
+      note: notes[referenceNoteIndex],
+      font: font,
+      notationContext: notationContext,
+      showLedger: false,
+      stemLength: stemLength,
+    );
+
     for (var (index, note) in sortedNotes.indexed) {
       bool isLowest = index == 0;
       bool isHighest = index == notes.length - 1;
       bool isStemmedUpward = _stemmed && stem?.value == StemValue.up;
       bool showLedger = isLowest || isHighest;
-
-      ElementPosition notePosition = NoteElement.determinePosition(
-        note,
-        notationContext.clef,
-      );
-
-      // Interval between reference (position of highest or lowest note) and chord note.
-      double interval = ((notePosition.numeric - position.numeric)).toDouble();
-
-      double distanceFromRef =
-          interval * NotationLayoutProperties.staveSpace / 2;
 
       double stemLength = 0;
 
@@ -283,10 +310,28 @@ class Chord extends StatelessWidget implements MeasureWidget {
         stemLength: stemLength,
       );
 
+      // Interval between reference (position of highest or lowest note) and chord note.
+      double interval =
+          ((element.position.numeric - position.numeric)).toDouble();
+
+      double distanceFromRef =
+          interval * NotationLayoutProperties.staveSpace / 2;
+
+      // When note is on drawn the line and it's stem is drawn down,
+      // the dots size must be taken in the account.
+      if (stem?.value == StemValue.down &&
+          element.position.numeric % 2 == 0 &&
+          refnote.position.numeric % 2 != 0 &&
+          note.dots.isNotEmpty &&
+          index != referenceNoteIndex) {
+        distanceFromRef += element.verticalAlignmentAxisOffset;
+        distanceFromRef -= NotationLayoutProperties.staveSpace / 2;
+      }
+
       children.add(
         Positioned(
-          bottom: isStemmedUpward ? distanceFromRef : 0,
-          top: !isStemmedUpward ? distanceFromRef.abs() : 0,
+          bottom: isStemmedUpward ? distanceFromRef : null,
+          top: !isStemmedUpward ? distanceFromRef.abs() : null,
           child: element,
         ),
       );
