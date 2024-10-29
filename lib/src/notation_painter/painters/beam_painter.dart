@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/rendering.dart';
 import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
-import 'package:music_notation/src/models/elements/music_data/note/notations/notation.dart';
 import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
 import 'package:music_notation/src/notation_painter/beaming.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
@@ -73,7 +72,6 @@ class BeamPainter extends CustomPainter {
             canvas: canvas,
             start: Offset(start.dx, start.dy + yOffset),
             beamLength: NotationLayoutProperties.defaultNoteheadHeight,
-            // lineOffset: startingX,
             alignmentLineLength: offsetX - beamsPattern[index - 1].leftOffset,
             alignment: Alignment.end,
             alignmentLineByHorizontalSpan: true,
