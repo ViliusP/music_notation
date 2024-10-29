@@ -2,18 +2,6 @@ import 'package:flutter/rendering.dart';
 
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 
-class PainterSettings {
-  bool debugFrame = false;
-
-  static final PainterSettings _instance = PainterSettings._();
-
-  factory PainterSettings() {
-    return _instance;
-  }
-
-  PainterSettings._();
-}
-
 class StaffLinesPainter extends CustomPainter {
   // final double length;
 
