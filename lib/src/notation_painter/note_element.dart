@@ -59,6 +59,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     required FontMetadata font,
     required NotationContext notationContext,
     double? stemLength,
+    bool showFlag = true,
     bool showLedger = true,
   }) {
     if (notationContext.divisions == null) {
@@ -74,6 +75,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       font: font,
       stemLength: stemLength ?? _calculateStemLength(note, notationContext),
       showLedger: showLedger,
+      showFlag: showFlag,
       duration: determineDuration(note),
       divisions: notationContext.divisions!,
       stem: note.stem,
@@ -85,6 +87,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     required this.note,
     required this.notationContext,
     this.stemLength = StemElement.defaultLength,
+    this.showFlag = true,
     this.showLedger = true,
     required this.duration,
     required this.divisions,
@@ -118,6 +121,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
   bool get _stemmed => stemLength != 0;
 
   final bool showLedger;
+  final bool showFlag;
 
   final NotationContext notationContext;
 
@@ -264,6 +268,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
         clef: notationContext.clef,
         stemLength: stemLength,
         font: font,
+        showFlag: false,
       );
 
   Size get noteheadSize => NoteheadElement(
@@ -275,6 +280,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     required Clef? clef,
     required double stemLength,
     required FontMetadata font,
+    bool showFlag = true,
   }) {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
 
@@ -291,7 +297,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       var stemElement = StemElement(
         type: type,
         length: stemLength,
-        showFlag: note.beams.isEmpty,
+        showFlag: note.beams.isEmpty && showFlag,
       );
 
       width += stemElement.size.width;
@@ -444,7 +450,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
                 length: stemLength,
                 type: type,
                 direction: stemDirection,
-                showFlag: note.beams.isEmpty,
+                showFlag: note.beams.isEmpty && showFlag,
               ),
             ),
         ],
