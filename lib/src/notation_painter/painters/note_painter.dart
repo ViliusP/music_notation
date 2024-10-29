@@ -28,17 +28,14 @@ class NotePainter extends CustomPainter {
     PainterUtilities.drawSmuflSymbol(
       canvas,
       smufl,
-      offset: Offset(0, size.height - 48),
       color: color,
     );
     if (ledgerLines == null || ledgerLines?.count == 0) return;
 
     double level = 0;
+    if (ledgerLines!.placement == LedgerPlacement.above) level = size.height;
     if (ledgerLines!.extendsThroughNote) {
-      level = NotationLayoutProperties.noteheadHeight / 2;
-    } else if (ledgerLines!.placement == LedgerPlacement.above) {
-      level = NotationLayoutProperties.noteheadHeight;
-      level -= NotationLayoutProperties.stemStrokeWidth / 1.5;
+      level = size.height / 2;
     }
 
     for (int i = 0; i < ledgerLines!.count; i++) {
@@ -49,12 +46,10 @@ class NotePainter extends CustomPainter {
       );
 
       if (ledgerLines!.placement == LedgerPlacement.below) {
-        level -= NotationLayoutProperties.noteheadHeight;
-        level += NotationLayoutProperties.stemStrokeWidth / 0.75;
+        level -= NotationLayoutProperties.staveSpace;
       }
       if (ledgerLines!.placement == LedgerPlacement.above) {
-        level += NotationLayoutProperties.noteheadHeight;
-        level -= NotationLayoutProperties.stemStrokeWidth / 0.75;
+        level += NotationLayoutProperties.staveSpace;
       }
     }
   }

@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:music_notation/src/notation_painter/measure_element.dart';
+import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 
 /// Represents the `<forward>` and `<backup>` element in MusicXML, which moves the cursor
@@ -24,7 +24,7 @@ class CursorElement extends StatelessWidget implements MeasureWidget {
 
   /// No positional offset is needed for `<forward>`.
   @override
-  double get positionalOffset => 0.0;
+  double get verticalAlignmentAxisOffset => 0.0;
 
   /// Generic position as `<forward>` does not correspond to a specific musical position.
   @override

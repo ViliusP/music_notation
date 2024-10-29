@@ -10,3 +10,12 @@ export 'src/notation_painter/music_grid.dart' show NotationGrid;
 export 'src/models/elements/score/score.dart' show ScorePartwise, ScoreHeader;
 
 export 'src/smufl/glyph_class.dart' show GlyphClasses;
+
+export 'src/smufl/font_metadata.dart'
+    show
+        EngravingDefaults,
+        GlyphBBox,
+        GlyphAnchor,
+        AnchorField,
+        GlyphWithAnchor,
+        FontMetadata;

@@ -5,6 +5,7 @@ import 'package:music_notation/src/models/elements/music_data/attributes/clef.da
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/note_element.dart';
+import 'package:music_notation/src/smufl/font_metadata.dart';
 
 void main() {
   final notes = [
@@ -115,6 +116,7 @@ void main() {
             clef: Clef(sign: ClefSign.G),
             time: null,
           ),
+          font: FontMetadata.empty(),
         );
 
         widget = Directionality(
@@ -202,6 +204,7 @@ void main() {
             clef: Clef(sign: ClefSign.F),
             time: null,
           ),
+          font: FontMetadata.empty(),
         );
 
         widget = Directionality(

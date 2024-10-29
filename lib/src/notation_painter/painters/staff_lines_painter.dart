@@ -21,16 +21,16 @@ class StaffLinesPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    var lineY = 0.0;
-    for (var i = 0; i < NotationLayoutProperties.staffLines; i++) {
+    for (var y = 0.0;
+        y <= NotationLayoutProperties.staveHeight;
+        y += NotationLayoutProperties.staveSpace) {
       canvas.drawLine(
-        Offset(0, lineY),
-        Offset(size.width, lineY),
+        Offset(0, y),
+        Offset(size.width, y),
         Paint()
           ..color = const Color.fromRGBO(0, 0, 0, 1.0)
           ..strokeWidth = NotationLayoutProperties.staffLineStrokeWidth,
       );
-      lineY += NotationLayoutProperties.staveSpace;
     }
   }
 
@@ -44,7 +44,7 @@ class StaffLinesPainter extends CustomPainter {
     var lineY = 0.0;
 
     for (var i = 0; i < NotationLayoutProperties.staffLines; i++) {
-      double halfStroke = NotationLayoutProperties.staffLineStrokeWidth / 2;
+      double halfStroke = NotationLayoutProperties.staffLineStrokeWidth;
 
       if (position.dy > lineY - halfStroke &&
           position.dy < lineY + halfStroke) {
