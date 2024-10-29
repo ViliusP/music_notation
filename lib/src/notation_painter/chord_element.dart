@@ -261,6 +261,10 @@ class Chord extends StatelessWidget implements MeasureWidget {
     return notes.length - 1;
   }
 
+  bool get beamed =>
+      notes.firstWhereOrNull((note) => !note.isChord)?.beams.isNotEmpty ??
+      false;
+
   @override
   ElementPosition get position {
     return NoteElement.determinePosition(
@@ -308,6 +312,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
         notationContext: notationContext,
         showLedger: showLedger,
         stemLength: stemLength,
+        showFlag: !beamed,
       );
 
       // Interval between reference (position of highest or lowest note) and chord note.
