@@ -11,6 +11,10 @@ enum NotationExample {
     displayName: "Scale",
     path: "assets/scores/scale.xml",
   ),
+  stemsLedgerLines(
+    displayName: "Stems for notes on ledger lines",
+    path: "assets/scores/ledger_line_notes_stems.musicxml",
+  ),
   apresUnReve(
     displayName: "Tutorial: Après un rêve",
     path: "assets/scores/après_un_rêve.xml",
@@ -22,6 +26,10 @@ enum NotationExample {
   dots(
     displayName: "Dot(s) rendering",
     path: "assets/scores/dot(s)_examples.musicxml",
+  ),
+  singleVoiceBeaming(
+    displayName: "Single voice beaming",
+    path: "assets/scores/single_voice_beaming.musicxml",
   );
 
   const NotationExample({

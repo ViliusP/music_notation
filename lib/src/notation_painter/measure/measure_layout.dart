@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 
@@ -11,24 +13,26 @@ import 'package:music_notation/src/models/elements/music_data/backup.dart';
 import 'package:music_notation/src/models/elements/music_data/direction/direction.dart';
 import 'package:music_notation/src/models/elements/music_data/forward.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
-import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
-import 'package:music_notation/src/notation_painter/attributes_elements.dart';
+import 'package:music_notation/src/notation_painter/beaming.dart';
+import 'package:music_notation/src/notation_painter/clef_element.dart';
+import 'package:music_notation/src/notation_painter/chord_element.dart';
 import 'package:music_notation/src/notation_painter/cursor_element.dart';
+import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
 import 'package:music_notation/src/notation_painter/measure/inherited_padding.dart';
-import 'package:music_notation/src/notation_painter/measure_element.dart';
+import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/note_element.dart';
 import 'package:music_notation/src/notation_painter/painters/barline_painter.dart';
-import 'package:music_notation/src/notation_painter/painters/beam_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/staff_lines_painter.dart';
 import 'package:music_notation/src/notation_painter/spacing/timeline.dart';
 import 'package:music_notation/src/notation_painter/time_beat_element.dart';
+import 'package:music_notation/src/smufl/font_metadata.dart';
 
 /// A widget that lays out musical measures with notes, chords, beams, and staff lines.
 class MeasureLayout extends StatelessWidget {
@@ -89,9 +93,12 @@ class MeasureLayout extends StatelessWidget {
 
   final BarlineSettings barlineSettings;
 
+  final FontMetadata font;
+
   const MeasureLayout._({
     super.key,
     required this.children,
+    required this.font,
     required List<double> initialSpacings,
     required this.notationContext,
     this.useExplicitBeaming = false,
@@ -103,6 +110,7 @@ class MeasureLayout extends StatelessWidget {
   factory MeasureLayout.fromMeasureData({
     Key? key,
     required Measure measure,
+    required FontMetadata font,
     int? staff,
     required NotationContext notationContext,
     bool useExplicitBeaming = false,
@@ -111,6 +119,7 @@ class MeasureLayout extends StatelessWidget {
     var children = _computeChildren(
       context: notationContext,
       measure: measure,
+      font: font,
       staff: staff,
     );
     var spacings = _computeSpacings(children);
@@ -118,6 +127,7 @@ class MeasureLayout extends StatelessWidget {
     return MeasureLayout._(
       key: key,
       initialSpacings: spacings,
+      font: font,
       notationContext: notationContext,
       useExplicitBeaming: useExplicitBeaming,
       staff: staff,
@@ -132,6 +142,7 @@ class MeasureLayout extends StatelessWidget {
     Note note,
     NotationContext context,
     List<MusicDataElement> measureData,
+    FontMetadata font,
     int? staff,
   ) {
     if (context.divisions == null) {
@@ -158,11 +169,13 @@ class MeasureLayout extends StatelessWidget {
       return Chord.fromNotes(
         notes: notes,
         notationContext: context,
+        font: font,
       );
     }
     return NoteElement.fromNote(
       note: note,
       notationContext: context,
+      font: font,
     );
   }
 
@@ -243,12 +256,13 @@ class MeasureLayout extends StatelessWidget {
     int? staff,
     NotationContext notationContext,
   ) {
-    Clef clef = element.clefs.firstWhere(
+    Clef? clef = element.clefs.firstWhereOrNull(
       (element) => staff != null ? element.number == staff : true,
     );
 
     return notationContext.copyWith(
       clef: clef,
+      time: element.times.firstOrNull,
       divisions: element.divisions,
     );
   }
@@ -264,6 +278,7 @@ class MeasureLayout extends StatelessWidget {
     required NotationContext context,
     required int? staff,
     required Measure measure,
+    required FontMetadata font,
   }) {
     NotationContext contextAfter = context.copyWith();
 
@@ -276,6 +291,7 @@ class MeasureLayout extends StatelessWidget {
             note,
             contextAfter,
             measure.data.sublist(i + 1),
+            font,
             staff,
           );
           if (noteWidget != null) {
@@ -298,6 +314,8 @@ class MeasureLayout extends StatelessWidget {
         case Direction _:
           break;
         case Attributes _:
+          // TODO: test attributes parsing and context change.
+          // For example, time beat mid score change should be seen in new context.
           var attributesWidgets = _processAttributes(
             element,
             staff,
@@ -348,46 +366,15 @@ class MeasureLayout extends StatelessWidget {
     return timeline.toList(54);
   }
 
-  // Calculate the vertical padding based on the highest note above and below the staff.
+// Calculate the vertical padding based on the highest note above and below the staff.
   EdgeInsets _calculateVerticalPadding() {
-    const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
-
-    double distanceToStaffTop =
-        offsetPerPosition * ElementPosition.staffTop.numeric;
-    double distanceToStaffBottom =
-        offsetPerPosition * ElementPosition.staffBottom.numeric;
-
     double topPadding = 0;
     double bottomPadding = 0;
 
     for (var child in children) {
-      double aboveStaffLength = [
-        offsetPerPosition * child.position.numeric,
-        child.size.height,
-        child.positionalOffset,
-        -distanceToStaffTop
-      ].sum;
-
-      aboveStaffLength = [0.0, aboveStaffLength].max;
-
-      double belowStaffLength = [
-        offsetPerPosition * child.position.numeric,
-        child.positionalOffset,
-        -distanceToStaffBottom,
-      ].sum;
-
-      belowStaffLength = [0.0, belowStaffLength].min.abs();
-
-      if (topPadding < aboveStaffLength) {
-        topPadding = aboveStaffLength;
-      }
-      if (bottomPadding < belowStaffLength) {
-        bottomPadding = belowStaffLength;
-      }
+      topPadding = max(topPadding, child.boxAboveStaff().height);
+      bottomPadding = max(bottomPadding, child.boxBelowStaff().height);
     }
-
-    bottomPadding += NotationLayoutProperties.staffLineStrokeWidth / 2;
-    topPadding += NotationLayoutProperties.staffLineStrokeWidth / 2;
 
     return EdgeInsets.only(
       bottom: bottomPadding,
@@ -407,51 +394,75 @@ class MeasureLayout extends StatelessWidget {
     if (inheritedPadding == null) return SizedBox.shrink();
 
     return LayoutBuilder(builder: (context, constraints) {
-      List<Widget> beams = [];
-      (double x, double y)? beamStartOffset;
-      (double x, double y)? beamEndOffset;
+      List<Widget> beamGroups = [];
+
+      BeamGrouping beaming = BeamGrouping();
 
       var positionedElements = <Widget>[];
       for (var (index, child) in children.indexed) {
-        // Calculate bottomOffset for the current child.
-        double bottomOffset = inheritedPadding.bottom;
+        var beamingResult = beaming.add(child, spacings[index]);
 
-        // Calculate the interval from staff bottom to the child's position.
-        int intervalFromStaffBottom = ElementPosition.staffBottom.numeric;
-        intervalFromStaffBottom -= child.position.numeric + 1;
-        bottomOffset -= (intervalFromStaffBottom * offsetPerPosition);
-
-        // Adjust by the child's positional offset.
-        bottomOffset += child.positionalOffset;
-
-        // Process beam for the current child
-        var beamResult = BeamProcessingResult.processBeam(
-          child: child,
-          index: index,
-          bottomOffset: bottomOffset,
-          spacings: spacings,
-          beamStartOffset: beamStartOffset,
-          beamEndOffset: beamEndOffset,
-        );
-
-        // Update beam offsets and beams if necessary
-        beamStartOffset = beamResult.beamStartOffset;
-        beamEndOffset = beamResult.beamEndOffset;
-        if (beamResult.beamWidget != null) {
-          beams.add(beamResult.beamWidget!);
-          // Reset the beam offsets
-          beamStartOffset = null;
-          beamEndOffset = null;
+        if (beaming.isFinalized) {
+          beamGroups.add(
+            Positioned.fill(child: BeamGroup.fromBeaming(beaming)),
+          );
+          beaming = BeamGrouping();
         }
 
-        // Add the positioned child to the list.
-        positionedElements.add(
-          Positioned(
-            left: spacings[index],
-            bottom: bottomOffset,
-            child: child,
-          ),
-        );
+        double topOffset = -child.verticalAlignmentAxisOffset;
+
+        // Calculate the interval from staff bottom to the child's position.
+        int intervalFromTheTop = ElementPosition.staffTop.numeric;
+        intervalFromTheTop -= (child.position.numeric);
+        topOffset += intervalFromTheTop * offsetPerPosition;
+
+        if (beamingResult == BeamingResult.skipped) {
+          positionedElements.add(
+            Positioned(
+              left: spacings[index],
+              top: inheritedPadding.top + topOffset,
+              child: child,
+            ),
+          );
+        }
+
+        DebugSettings? dSettings = DebugSettings.of(context);
+
+        if (dSettings != null) {
+          if (dSettings.paintBBoxBelowStaff) {
+            Rect boxBelow = child.boxBelowStaff();
+
+            positionedElements.add(
+              Positioned(
+                left: spacings[index],
+                top:
+                    inheritedPadding.top + NotationLayoutProperties.staveHeight,
+                child: Container(
+                  width: boxBelow.width,
+                  height: [boxBelow.height, 0].max.toDouble(),
+                  color: Color.fromRGBO(255, 10, 100, 0.2),
+                ),
+              ),
+            );
+          }
+
+          if (dSettings.paintBBoxAboveStaff) {
+            Rect boxAbove = child.boxAboveStaff();
+
+            positionedElements.add(
+              Positioned(
+                left: spacings[index],
+                bottom: inheritedPadding.bottom +
+                    NotationLayoutProperties.staveHeight,
+                child: Container(
+                  width: boxAbove.width,
+                  height: [boxAbove.height, 0].max.toDouble(),
+                  color: Color.fromRGBO(3, 154, 255, 0.2),
+                ),
+              ),
+            );
+          }
+        }
       }
 
       EdgeInsets measurePadding = EdgeInsets.only(
@@ -476,7 +487,7 @@ class MeasureLayout extends StatelessWidget {
               ),
             ),
           ),
-          ...beams,
+          ...beamGroups,
           ...positionedElements,
         ],
       );
@@ -498,12 +509,12 @@ class StaffLines extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Map<BarlineExtension, Color> colors = {
-      BarlineExtension.both: Color.fromRGBO(27, 114, 0, .5),
-      BarlineExtension.bottom: Color.fromRGBO(255, 0, 0, .5),
-      BarlineExtension.none: Color.fromRGBO(195, 0, 255, .5),
-      BarlineExtension.top: Color.fromRGBO(4, 0, 255, .5),
-    };
+    // Map<BarlineExtension, Color> colors = {
+    //   BarlineExtension.both: Color.fromRGBO(27, 114, 0, .5),
+    //   BarlineExtension.bottom: Color.fromRGBO(255, 0, 0, .5),
+    //   BarlineExtension.none: Color.fromRGBO(195, 0, 255, .5),
+    //   BarlineExtension.top: Color.fromRGBO(4, 0, 255, .5),
+    // };
 
     double calculatedStartOffset = 0;
     double calculatedStartHeight = BarlinePainter.size.height;
@@ -547,6 +558,7 @@ class StaffLines extends StatelessWidget {
                 // color: colors[startExtension]!,
                 offset: calculatedStartOffset,
                 height: calculatedStartHeight,
+                end: false,
               ),
             ),
           ),
@@ -565,92 +577,6 @@ class StaffLines extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class BeamProcessingResult {
-  final (double x, double y)? beamStartOffset;
-  final (double x, double y)? beamEndOffset;
-  final Widget? beamWidget;
-
-  BeamProcessingResult({
-    this.beamStartOffset,
-    this.beamEndOffset,
-    this.beamWidget,
-  });
-
-  static BeamProcessingResult processBeam({
-    required MeasureWidget child,
-    required int index,
-    required double bottomOffset,
-    required List<double> spacings,
-    (double x, double y)? beamStartOffset,
-    (double x, double y)? beamEndOffset,
-  }) {
-    bool isBeamStart = false;
-    bool isBeamEnd = false;
-    double? offsetX;
-    double? offsetY;
-
-    // Check if the child has an offsetForBeam property
-    if (child is NoteElement) {
-      var beamValue = child.note.beams.firstOrNull?.value;
-      if (beamValue != null) {
-        isBeamStart = beamValue == BeamValue.begin;
-        isBeamEnd = beamValue == BeamValue.end;
-      }
-      offsetX = child.offsetForBeam.dx;
-      offsetY = child.offsetForBeam.dy;
-    } else if (child is Chord) {
-      var beamsList = child.notes.expand((note) => note.beams);
-      isBeamStart = beamsList.any((beam) => beam.value == BeamValue.begin);
-      isBeamEnd = beamsList.any((beam) => beam.value == BeamValue.end);
-      offsetX = child.offsetForBeam.dx;
-      offsetY = child.offsetForBeam.dy;
-    }
-
-    // Update beam offsets
-    if (isBeamStart && offsetX != null && offsetY != null) {
-      beamStartOffset = (
-        offsetX +
-            spacings[index] -
-            NotationLayoutProperties.stemStrokeWidth * 0.5,
-        bottomOffset + offsetY,
-      );
-    }
-
-    if (isBeamEnd && offsetX != null && offsetY != null) {
-      beamEndOffset = (
-        offsetX +
-            spacings[index] +
-            NotationLayoutProperties.stemStrokeWidth * 0.5,
-        bottomOffset + offsetY,
-      );
-    }
-
-    // If both beam offsets are defined, create the beam widget
-    if (beamStartOffset != null && beamEndOffset != null) {
-      Widget beamWidget = Positioned(
-        left: beamStartOffset.$1,
-        bottom: beamStartOffset.$2,
-        child: CustomPaint(
-          painter: BeamPainter(
-            secondPoint: Offset(
-              beamEndOffset.$1 - beamStartOffset.$1,
-              beamStartOffset.$2 - beamEndOffset.$2,
-            ),
-          ),
-        ),
-      );
-      return BeamProcessingResult(
-        beamWidget: beamWidget,
-      );
-    }
-
-    return BeamProcessingResult(
-      beamStartOffset: beamStartOffset,
-      beamEndOffset: beamEndOffset,
     );
   }
 }

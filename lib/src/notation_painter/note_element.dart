@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:music_notation/src/models/data_types/step.dart';
@@ -7,13 +6,17 @@ import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/music_data/note/notehead.dart';
 import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
-import 'package:music_notation/src/notation_painter/measure_element.dart';
+import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
+import 'package:music_notation/src/notation_painter/notation_font.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/dots_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/note_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
+import 'package:music_notation/src/notation_painter/painters/utilities.dart';
+import 'package:music_notation/src/notation_painter/utilities/notation_rendering_exception.dart';
+import 'package:music_notation/src/smufl/font_metadata.dart';
 import 'package:music_notation/src/smufl/smufl_glyph.dart';
 
 const Map<String, Color> _voiceColors = {
@@ -53,6 +56,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
   factory NoteElement.fromNote({
     Key? key,
     required Note note,
+    required FontMetadata font,
     required NotationContext notationContext,
     double? stemLength,
     bool showLedger = true,
@@ -63,17 +67,12 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       );
     }
 
-    double? calculatedLength;
-
-    if (stemLength == null && note.type?.value.stemmed == true) {
-      calculatedLength = StemElement.defaultLength;
-    }
-
     return NoteElement._(
       key: key,
       note: note,
       notationContext: notationContext,
-      stemLength: stemLength ?? calculatedLength ?? 0,
+      font: font,
+      stemLength: stemLength ?? _calculateStemLength(note, notationContext),
       showLedger: showLedger,
       duration: determineDuration(note),
       divisions: notationContext.divisions!,
@@ -90,19 +89,18 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     required this.duration,
     required this.divisions,
     this.stem,
+    required this.font,
   });
 
   final Note note;
   final Stem? stem;
 
   @override
-  double get positionalOffset {
-    if (_stemmed && stem?.value == StemValue.down) {
-      return -stemLength - NotationLayoutProperties.staffLineStrokeWidth / 2;
+  double get verticalAlignmentAxisOffset {
+    if (_stemmed && stem?.value == StemValue.up) {
+      return stemLength;
     }
-
-    return (-NotationLayoutProperties.staveSpace / 2 -
-        NotationLayoutProperties.staffLineStrokeWidth / 2);
+    return NotationLayoutProperties.staveSpace / 2;
   }
 
   final double duration;
@@ -123,23 +121,51 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     return note.form is Rest;
   }
 
+  /// Relative offset from bounding box top left corner.
+  /// X - the middle of stem.
+  /// Y - the tip of stem.
   Offset get offsetForBeam {
     if (stem?.value == StemValue.down) {
-      return Offset(0, 0);
+      return Offset(
+        NotationLayoutProperties.stemStrokeWidth / 2,
+        size.height,
+      );
     }
 
-    var noteheadSize = NoteheadElement(
-      note: note,
-    ).size;
-
     return Offset(
-      noteheadSize.width - NotationLayoutProperties.stemStrokeWidth,
-      size.height,
+      noteheadSize.width,
+      0,
     );
   }
 
   int get _dots {
     return note.dots.length;
+  }
+
+  /// Default stem length: `3.5*stave_space`.
+  ///
+  /// Stems for notes on more than one ledger line extend to the middle stave-line
+  static double _calculateStemLength(Note note, NotationContext context) {
+    if (note.type?.value.stemmed != true) {
+      return 0.0;
+    }
+
+    double stemLength = StemElement.defaultLength;
+
+    var position = determinePosition(note, context.clef);
+
+    int distance = 0;
+
+    if (position >= ElementPosition.secondLedgerAbove) {
+      distance = position.distance(ElementPosition.secondLedgerAbove) + 1;
+    }
+
+    if (position <= ElementPosition.secondLedgerBelow) {
+      distance = position.distance(ElementPosition.secondLedgerBelow) + 1;
+    }
+
+    stemLength += distance * NotationLayoutProperties.staveSpace / 2;
+    return stemLength;
   }
 
   static double determineDuration(Note note) {
@@ -186,6 +212,8 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
           case Pitch _:
             step = noteForm.step;
             octave = noteForm.octave;
+            // step = Step.B;
+            // octave = 4;
             break;
           case Unpitched _:
             step = noteForm.displayStep;
@@ -220,21 +248,29 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
 
   final bool drawLedgerLines = true;
 
+  final FontMetadata font;
+
   @override
   Size get size => calculateSize(
         note: note,
         stemLength: stemLength,
+        font: font,
       );
+
+  Size get noteheadSize => NoteheadElement(
+        note: note,
+      ).size(font);
 
   static Size calculateSize({
     required Note note,
     required double stemLength,
+    required FontMetadata font,
   }) {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
 
     var noteheadSize = NoteheadElement(
       note: note,
-    ).size;
+    ).size(font);
 
     double width = noteheadSize.width;
     double height = noteheadSize.height;
@@ -256,12 +292,12 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
   }
 
   @override
-  double get alignmentOffset => _calculateAlignmentOffset();
+  double get alignmentOffset => _calculateAlignmentOffset(font);
 
-  double _calculateAlignmentOffset() {
+  double _calculateAlignmentOffset(FontMetadata font) {
     var noteheadSize = NoteheadElement(
       note: note,
-    ).size;
+    ).size(font);
 
     var width = noteheadSize.width;
     if (_stemmed) {
@@ -271,9 +307,9 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     return width / 2;
   }
 
-  double _dotsRightOffset(notehead) {
+  double _dotsRightOffset() {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
-    double defaultOffset = notehead.size.width * 1.4;
+    double defaultOffset = NotationLayoutProperties.staveSpace * 1.75;
 
     // For upstemmed notes with tails
     if (_stemmed &&
@@ -288,8 +324,8 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
   @override
   Widget build(BuildContext context) {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
-
     LedgerLines? ledgerLines;
+
     if (showLedger) {
       ledgerLines = LedgerLines.fromElementPosition(position);
     }
@@ -303,15 +339,15 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       return RestElement.fromNote(note, notationContext.divisions!);
     }
 
-    var stemLeftPadding = NotationLayoutProperties.stemStrokeWidth / 1.5;
-    var stemTopPadding = NotationLayoutProperties.noteheadHeight / 2;
+    var stemLeftPadding = NotationLayoutProperties.stemStrokeWidth / 2;
+    var stemTopPadding = NotationLayoutProperties.defaultNoteheadHeight / 2;
     var stemBottomPadding = 0.0;
 
     if (stem?.value == StemValue.up) {
-      stemLeftPadding = notehead.size.width;
-      stemLeftPadding -= NotationLayoutProperties.stemStrokeWidth;
+      stemLeftPadding = noteheadSize.width;
+      stemLeftPadding -= NotationLayoutProperties.stemStrokeWidth / 2;
       stemTopPadding = 0;
-      stemBottomPadding = NotationLayoutProperties.noteheadHeight / 2;
+      stemBottomPadding = NotationLayoutProperties.defaultNoteheadHeight / 2;
     }
 
     StemDirection stemDirection = StemDirection.up;
@@ -319,11 +355,11 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       stemDirection = StemDirection.down;
     }
     double dotsTopPadding = position.numeric % 2 != 0
-        ? notehead.size.height / 2 // Between lines
-        : notehead.size.height / 8; // On the line
+        ? noteheadSize.height / 2 // Between lines
+        : noteheadSize.height / 8; // On the line
 
     if (_stemmed && stem?.value == StemValue.up) {
-      dotsTopPadding += stemLength - notehead.size.height / 2;
+      dotsTopPadding += stemLength - noteheadSize.height / 2;
     }
 
     return SizedBox.fromSize(
@@ -332,16 +368,12 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
         children: [
           Positioned(
             bottom: stem?.value == StemValue.up ? 0 : null,
-            child: SizedBox(
-              height: notehead.size.height,
-              width: notehead.size.width,
-              child: notehead,
-            ),
+            child: notehead,
           ),
           if (_dots > 0)
             Padding(
               padding: EdgeInsets.only(
-                left: _dotsRightOffset(notehead),
+                left: _dotsRightOffset(),
                 top: dotsTopPadding,
               ),
               child: CustomPaint(
@@ -389,8 +421,8 @@ class NoteheadElement extends StatelessWidget {
   ///
   /// The height of all notehead types is same and equal to the sum of the staff
   /// line stroke width and stave space.
-  Size get size {
-    const height = NotationLayoutProperties.noteheadHeight;
+  Size size(FontMetadata font) {
+    const height = NotationLayoutProperties.defaultNoteheadHeight;
 
     switch (_noteType) {
       case NoteTypeValue.n1024th:
@@ -402,10 +434,15 @@ class NoteheadElement extends StatelessWidget {
       case NoteTypeValue.n16th:
       case NoteTypeValue.eighth:
       case NoteTypeValue.quarter:
+        Rect headRect = font.glyphBBoxes['noteheadBlack']!.toRect();
+        return Size(headRect.width, headRect.height);
       case NoteTypeValue.half:
-        return const Size(16, height);
+        Rect headRect = font.glyphBBoxes['noteheadHalf']!.toRect();
+        return Size(headRect.width, headRect.height);
       case NoteTypeValue.whole:
-        return const Size(21.2, height);
+        Rect headRect = font.glyphBBoxes['noteheadWhole']!.toRect();
+        // Old value: const Size(21.2, height)
+        return Size(headRect.width, headRect.height);
       case NoteTypeValue.breve:
         return const Size(30, height); // Need to be adjusted in future.
       case NoteTypeValue.long:
@@ -428,288 +465,17 @@ class NoteheadElement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var font = NotationFont.of(context)?.value;
+
+    if (font == null) {
+      throw NotationRenderingException.noFont(widget: this);
+    }
     return CustomPaint(
-      size: size,
+      size: size(font),
       painter: NotePainter(
         smufl: _smufl,
         ledgerLines: ledgerLines,
         color: color,
-      ),
-    );
-  }
-}
-
-class Chord extends StatelessWidget implements MeasureWidget {
-  const Chord._({
-    super.key,
-    required this.notes,
-    required this.notationContext,
-    required this.divisions,
-    required this.stemLength,
-    required this.duration,
-    this.stem,
-  });
-
-  /// **IMPORTANT**: [notes] cannot be empty.
-  factory Chord.fromNotes({
-    Key? key,
-    required List<Note> notes,
-    required NotationContext notationContext,
-  }) {
-    if (notes.isEmpty) {
-      throw ArgumentError('notes list is empty');
-    }
-
-    if (notationContext.divisions == null) {
-      throw ArgumentError(
-        "Divisions in notationContext cannot be null on note's initialization",
-      );
-    }
-
-    return Chord._(
-      key: key,
-      notationContext: notationContext,
-      divisions: notationContext.divisions!,
-      stemLength: _calculateStemLength(notes),
-      duration: NoteElement.determineDuration(notes.first),
-      stem: notes.first.stem,
-      notes: notes,
-    );
-  }
-
-  final List<Note> notes;
-  final NotationContext notationContext;
-
-  final double divisions;
-  final double duration;
-
-  final double stemLength;
-  bool get _stemmed => stemLength != 0;
-
-  final Stem? stem;
-
-  Offset get offsetForBeam {
-    if (stem?.value == StemValue.down) {
-      return Offset(0, 0);
-    }
-
-    double width = notes
-        .map((e) => NoteElement.calculateSize(note: e, stemLength: 0).width)
-        .max;
-
-    return Offset(
-      width - NotationLayoutProperties.stemStrokeWidth,
-      size.height,
-    );
-  }
-
-  @override
-  double get positionalOffset {
-    if (stem?.value == StemValue.down) {
-      const heightPerPosition = NotationLayoutProperties.staveSpace / 2;
-      double height = positionsDifference * heightPerPosition;
-      return -_calculateStemLength(notes) + height;
-    }
-
-    return -NotationLayoutProperties.staveSpace / 2 -
-        NotationLayoutProperties.staffLineStrokeWidth / 2;
-  }
-
-  /// Difference between lowest and highest notes' positions;
-  int get positionsDifference {
-    List<Note> sortedNotes = notes.sortedBy(
-      (note) => NoteElement.determinePosition(note, null),
-    );
-
-    int lowestPosition = NoteElement.determinePosition(
-      sortedNotes.first,
-      null,
-    ).numeric;
-    int highestPosition = NoteElement.determinePosition(
-      sortedNotes.last,
-      null,
-    ).numeric;
-    return highestPosition - lowestPosition;
-  }
-
-  /// Calculates chord widget size from provided [notes].
-  static Size _calculateSize({
-    required List<Note> notes,
-    required double stemLength,
-    required NotationContext notationContext,
-  }) {
-    // Sorts from lowest to highest note. First being lowest.
-    List<Note> sortedNotes = notes.sortedBy(
-      (note) => NoteElement.determinePosition(note, null),
-    );
-
-    StemValue? stemType = sortedNotes.first.stem?.value;
-
-    if (stemType == StemValue.up) {
-      return NoteElement.calculateSize(
-        note: sortedNotes.first,
-        stemLength: _calculateStemLength(notes),
-      );
-    }
-
-    if (stemType == StemValue.down) {
-      return NoteElement.calculateSize(
-        note: sortedNotes.last,
-        stemLength: _calculateStemLength(notes),
-      );
-    }
-
-    int lowestPosition = NoteElement.determinePosition(
-      sortedNotes.first,
-      null,
-    ).numeric;
-    int highestPosition = NoteElement.determinePosition(
-      sortedNotes.last,
-      null,
-    ).numeric;
-    int positionDifference = highestPosition - lowestPosition;
-
-    const heightPerPosition = NotationLayoutProperties.staveSpace / 2;
-    double height = positionDifference * heightPerPosition;
-    if (stemLength == 0) {
-      height += NoteElement.calculateSize(
-            note: sortedNotes.last,
-            stemLength: 0,
-          ).height /
-          2;
-
-      height += (NoteElement.calculateSize(
-            note: sortedNotes.first,
-            stemLength: 0,
-          ).height /
-          2);
-    }
-    height += stemLength;
-
-    double width = sortedNotes
-        .map((e) => NoteElement.calculateSize(note: e, stemLength: 0).width)
-        .max;
-
-    return Size(width, height);
-  }
-
-  static double _calculateStemLength(
-    List<Note> notes,
-  ) {
-    var sortedNotes = notes.sortedBy(
-      (note) => NoteElement.determinePosition(note, null),
-    );
-
-    int lowestPosition = NoteElement.determinePosition(
-      sortedNotes.last,
-      null,
-    ).numeric;
-
-    int highestPosition = NoteElement.determinePosition(
-      sortedNotes.first,
-      null,
-    ).numeric;
-
-    int positionDifference = highestPosition - lowestPosition;
-    const heightPerPosition = NotationLayoutProperties.staveSpace / 2;
-
-    double stemLength = positionDifference.abs() * heightPerPosition;
-    stemLength += StemElement.defaultLength;
-
-    return stemLength;
-  }
-
-  @override
-  Size get size => _calculateSize(
-        notes: notes,
-        notationContext: notationContext,
-        stemLength: stemLength,
-      );
-
-  @override
-  double get alignmentOffset => _calculateAlignmentOffset();
-
-  double _calculateAlignmentOffset() {
-    var noteheadSize = NoteheadElement(
-      note: notes.first,
-    ).size;
-
-    var width = noteheadSize.width;
-    if (_stemmed) {
-      width += NotationLayoutProperties.stemStrokeWidth;
-    }
-
-    return width / 2;
-  }
-
-  @override
-  ElementPosition get position {
-    return notes
-        .map((note) => NoteElement.determinePosition(
-              note,
-              notationContext.clef,
-            ))
-        .first;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    var children = <Widget>[];
-    var sortedNotes = notes.sortedBy(
-      (note) => NoteElement.determinePosition(note, null),
-    );
-
-    double calculatedStemLength = _calculateStemLength(notes);
-
-    for (var (index, note) in sortedNotes.indexed) {
-      bool isLowest = index == 0;
-      bool isHighest = index == notes.length - 1;
-
-      bool showLedger = isLowest || isHighest;
-
-      ElementPosition notePosition = NoteElement.determinePosition(
-        note,
-        notationContext.clef,
-      );
-
-      double bottom = (notePosition.numeric - position.numeric).toDouble();
-      bottom *= NotationLayoutProperties.staveSpace / 2;
-
-      double stemLength = 0;
-
-      if (stem?.value == StemValue.up && isLowest) {
-        stemLength = calculatedStemLength;
-      }
-
-      if (stem?.value == StemValue.down && isHighest) {
-        stemLength = calculatedStemLength;
-        bottom = 0;
-      }
-
-      NoteElement element = NoteElement.fromNote(
-        note: note,
-        notationContext: notationContext,
-        showLedger: showLedger,
-        stemLength: stemLength,
-      );
-
-      if (stem?.value == StemValue.down && !isHighest) {
-        bottom += 35; // This is magic number that just works, need to fix it.
-        // bottom += element.positionalOffset;
-      }
-
-      children.add(
-        Positioned(
-          bottom: bottom,
-          child: element,
-        ),
-      );
-    }
-
-    return SizedBox.fromSize(
-      size: size,
-      child: Stack(
-        children: children,
       ),
     );
   }
@@ -872,7 +638,7 @@ class RestElement extends StatelessWidget {
       case NoteTypeValue.whole:
         return const Size(
           17,
-          NotationLayoutProperties.noteheadHeight / 2,
+          NotationLayoutProperties.defaultNoteheadHeight / 2,
         ); // Need to be adjusted in future.
       case NoteTypeValue.breve:
         return const Size(30, 14); // Need to be adjusted in future.
@@ -967,11 +733,11 @@ extension NoteVisualInformation on NoteTypeValue {
       case NoteTypeValue.n16th:
       case NoteTypeValue.eighth:
       case NoteTypeValue.quarter:
-        return '\uE0A4'; // black note head.
+        return SmuflGlyph.noteheadBlack.codepoint; // black note head.
       case NoteTypeValue.half:
-        return '\uE0A3'; // minim.
+        return SmuflGlyph.noteheadHalf.codepoint; // minim.
       case NoteTypeValue.whole:
-        return '\uE0A2'; // semibreve.
+        return SmuflGlyph.noteheadWhole.codepoint; // semibreve.
       case NoteTypeValue.breve:
         return '\uE0A0';
       case NoteTypeValue.long:
