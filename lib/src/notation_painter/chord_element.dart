@@ -66,6 +66,17 @@ class Chord extends StatelessWidget implements MeasureWidget {
   /// X - the middle of stem.
   /// Y - the tip of stem.
   Offset get offsetForBeam {
+    double xDotsOffset = -0;
+
+    Note maxDotsNote = notes.reduce(
+      (a, b) => a.dots.length > b.dots.length ? a : b,
+    );
+
+    if (maxDotsNote.dots.isNotEmpty) {
+      xDotsOffset = NoteElement.dotsOffset();
+      xDotsOffset += NoteElement.dotsSize(font).width;
+    }
+
     if (stem?.value == StemValue.down) {
       return Offset(
         NotationLayoutProperties.stemStrokeWidth / 2,
@@ -74,7 +85,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
     }
 
     return Offset(
-      size.width,
+      size.width - xDotsOffset,
       0,
     );
   }
@@ -123,6 +134,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
       return NoteElement.calculateSize(
         note: sortedNotes.first,
         stemLength: _calculateStemLength(notes),
+        clef: notationContext.clef,
         font: font,
       );
     }
@@ -130,6 +142,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
     if (stemType == StemValue.down) {
       return NoteElement.calculateSize(
         note: sortedNotes.last,
+        clef: notationContext.clef,
         stemLength: _calculateStemLength(notes),
         font: font,
       );
@@ -150,6 +163,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
     if (stemLength == 0) {
       height += NoteElement.calculateSize(
             note: sortedNotes.last,
+            clef: notationContext.clef,
             stemLength: 0,
             font: font,
           ).height /
@@ -158,6 +172,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
       height += (NoteElement.calculateSize(
             note: sortedNotes.first,
             stemLength: 0,
+            clef: notationContext.clef,
             font: font,
           ).height /
           2);
@@ -168,6 +183,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
         .map((e) => NoteElement.calculateSize(
               note: e,
               stemLength: 0,
+              clef: notationContext.clef,
               font: font,
             ).width)
         .max;
