@@ -253,18 +253,20 @@ class Chord extends StatelessWidget implements MeasureWidget {
     return width / 2;
   }
 
-  @override
-  ElementPosition get position {
-    var notesPositions = notes.map((note) => NoteElement.determinePosition(
-          note,
-          notationContext.clef,
-        ));
-
+  int get referenceNoteIndex {
     if (_stemmed && stem?.value == StemValue.up) {
-      return notesPositions.first;
+      return 0;
     }
 
-    return notesPositions.last;
+    return notes.length - 1;
+  }
+
+  @override
+  ElementPosition get position {
+    return NoteElement.determinePosition(
+      notes[referenceNoteIndex],
+      notationContext.clef,
+    );
   }
 
   @override
@@ -276,22 +278,19 @@ class Chord extends StatelessWidget implements MeasureWidget {
 
     double calculatedStemLength = _calculateStemLength(notes);
 
+    NoteElement refnote = NoteElement.fromNote(
+      note: notes[referenceNoteIndex],
+      font: font,
+      notationContext: notationContext,
+      showLedger: false,
+      stemLength: stemLength,
+    );
+
     for (var (index, note) in sortedNotes.indexed) {
       bool isLowest = index == 0;
       bool isHighest = index == notes.length - 1;
       bool isStemmedUpward = _stemmed && stem?.value == StemValue.up;
       bool showLedger = isLowest || isHighest;
-
-      ElementPosition notePosition = NoteElement.determinePosition(
-        note,
-        notationContext.clef,
-      );
-
-      // Interval between reference (position of highest or lowest note) and chord note.
-      double interval = ((notePosition.numeric - position.numeric)).toDouble();
-
-      double distanceFromRef =
-          interval * NotationLayoutProperties.staveSpace / 2;
 
       double stemLength = 0;
 
@@ -311,10 +310,28 @@ class Chord extends StatelessWidget implements MeasureWidget {
         stemLength: stemLength,
       );
 
+      // Interval between reference (position of highest or lowest note) and chord note.
+      double interval =
+          ((element.position.numeric - position.numeric)).toDouble();
+
+      double distanceFromRef =
+          interval * NotationLayoutProperties.staveSpace / 2;
+
+      // When note is on drawn the line and it's stem is drawn down,
+      // the dots size must be taken in the account.
+      if (stem?.value == StemValue.down &&
+          element.position.numeric % 2 == 0 &&
+          refnote.position.numeric % 2 != 0 &&
+          note.dots.isNotEmpty &&
+          index != referenceNoteIndex) {
+        distanceFromRef += element.verticalAlignmentAxisOffset;
+        distanceFromRef -= NotationLayoutProperties.staveSpace / 2;
+      }
+
       children.add(
         Positioned(
-          bottom: isStemmedUpward ? distanceFromRef : 0,
-          top: !isStemmedUpward ? distanceFromRef.abs() : 0,
+          bottom: isStemmedUpward ? distanceFromRef : null,
+          top: !isStemmedUpward ? distanceFromRef.abs() : null,
           child: element,
         ),
       );
