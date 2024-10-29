@@ -253,6 +253,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
   @override
   Size get size => calculateSize(
         note: note,
+        clef: notationContext.clef,
         stemLength: stemLength,
         font: font,
       );
@@ -263,6 +264,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
 
   static Size calculateSize({
     required Note note,
+    required Clef? clef,
     required double stemLength,
     required FontMetadata font,
   }) {
@@ -288,6 +290,16 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       height += stemElement.size.height - noteheadSize.height / 2;
     }
 
+    if (note.dots.isNotEmpty) {
+      width += dotsSize(font).width;
+      width += dotsOffset();
+
+      ElementPosition position = determinePosition(note, clef);
+      if (note.stem?.value == StemValue.down && position.numeric % 2 == 0) {
+        height += dotsSize(font).height / 2;
+      }
+    }
+
     return Size(width, height);
   }
 
@@ -307,18 +319,31 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     return width / 2;
   }
 
-  double _dotsRightOffset() {
-    NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
-    double defaultOffset = NotationLayoutProperties.staveSpace * 1.75;
+  double get _dotsRightOffset => dotsOffset();
 
-    // For upstemmed notes with tails
-    if (_stemmed &&
-        type.compareTo(NoteTypeValue.eighth) != 1 &&
-        stem?.value == StemValue.up &&
-        note.beams.isEmpty) {
-      defaultOffset *= 1.35;
-    }
+  /// Calculates the offset for [dotsOffset] based on the right side of the note.
+  /// This offset is typically half of the stave space and is added to the note size.
+  static double dotsOffset() {
+    // Distance from note to dot is conventionally half the stave space.
+    double defaultOffset = NotationLayoutProperties.staveSpace / 2;
+
     return defaultOffset;
+  }
+
+  Size get _dotsSize => dotsSize(font);
+
+  static Size dotsSize(FontMetadata font) {
+    const double referenceStaveHeight = 50;
+    const Size defaultSize = Size(5, 4.95); // Size when stave height is 50;
+    const double scaleFactor =
+        NotationLayoutProperties.staveHeight / referenceStaveHeight;
+    Size scaledDefaultSize = Size(
+      defaultSize.width * scaleFactor,
+      defaultSize.height * scaleFactor,
+    );
+
+    Size? glyphSize = font.glyphBBoxes['augmentationDot']?.toRect().size;
+    return glyphSize ?? scaledDefaultSize;
   }
 
   @override
@@ -350,16 +375,34 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       stemBottomPadding = NotationLayoutProperties.defaultNoteheadHeight / 2;
     }
 
+    double? dotsTopPosition;
+    double? dotsBottomPosition;
+
+    double dotsOffsetFromNotehead = position.numeric % 2 != 0
+        ? noteheadSize.height / 2 // Between lines
+        : NotationLayoutProperties.staveSpace; // On the line
+
     StemDirection stemDirection = StemDirection.up;
     if (stem?.value == StemValue.down) {
       stemDirection = StemDirection.down;
+      // Somehow it works, probably because of pixel snapping nuances
+      dotsOffsetFromNotehead -= (_dotsSize.height / 2).ceil();
+      dotsTopPosition = dotsOffsetFromNotehead;
     }
-    double dotsTopPadding = position.numeric % 2 != 0
-        ? noteheadSize.height / 2 // Between lines
-        : noteheadSize.height / 8; // On the line
 
-    if (_stemmed && stem?.value == StemValue.up) {
-      dotsTopPadding += stemLength - noteheadSize.height / 2;
+    // When note is on drawn the line and it's stem is drawn down,
+    // it's dot needs to be positioned above note.
+    if (stem?.value == StemValue.down &&
+        position.numeric % 2 == 0 &&
+        _dots > 0) {
+      dotsOffsetFromNotehead = 0;
+      dotsTopPosition = dotsOffsetFromNotehead;
+    }
+
+    if (stem?.value == StemValue.up) {
+      // Somehow it works, probably because of pixel snapping nuances
+      dotsOffsetFromNotehead -= (_dotsSize.height / 2).floor();
+      dotsBottomPosition = dotsOffsetFromNotehead;
     }
 
     return SizedBox.fromSize(
@@ -371,12 +414,12 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
             child: notehead,
           ),
           if (_dots > 0)
-            Padding(
-              padding: EdgeInsets.only(
-                left: _dotsRightOffset(),
-                top: dotsTopPadding,
-              ),
+            Positioned(
+              right: 0,
+              top: dotsTopPosition,
+              bottom: dotsBottomPosition,
               child: CustomPaint(
+                size: _dotsSize,
                 painter: DotsPainter(_dots),
               ),
             ),
