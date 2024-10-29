@@ -96,6 +96,18 @@ class Chord extends StatelessWidget implements MeasureWidget {
       return _calculateStemLength(notes);
     }
 
+    Note maxDotsNote = notes.reduce(
+      (a, b) => a.dots.length > b.dots.length ? a : b,
+    );
+
+    // When note is on drawn the line and it's stem is drawn down,
+    // the dots size must be taken in the account.
+    if (stem?.value == StemValue.down &&
+        position.numeric % 2 == 0 &&
+        maxDotsNote.dots.isNotEmpty) {
+      return NotationLayoutProperties.staveSpace / 2 +
+          NoteElement.dotsSize(font).height / 2;
+    }
     return NotationLayoutProperties.staveSpace / 2;
   }
 
