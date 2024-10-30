@@ -48,13 +48,16 @@ class AlignmentPosition {
 
   /// Horizontal offset from the left side of the element’s bounding box, aligning the
   /// element horizontally, typically at the visual or optical center.
-  final double? left;
+  final double left;
 
   const AlignmentPosition({
-    required this.top,
-    required this.bottom,
+    this.top,
+    this.bottom,
     required this.left,
-  });
+  }) : assert(
+          (top == null) != (bottom == null),
+          'Either top or bottom must be null, but not both.',
+        );
 }
 
 /// A mixin for calculating bounding boxes of elements positioned above or below

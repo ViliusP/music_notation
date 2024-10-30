@@ -47,7 +47,6 @@ const Map<String, Color> _voiceColors = {
 /// stem goes up;
 /// - If equidistant the stem goes down.
 ///
-/// TODO: need to take account of different voices on the same staff:
 /// If you are writing two voices on the same staff, the stems for the upper
 /// voice will go up, and the stems for the lower voice will go down.
 class NoteElement extends StatelessWidget implements MeasureWidget {
@@ -55,7 +54,31 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
   final Stem? stem;
 
   @override
-  AlignmentPosition? get alignmentPosition => null;
+  AlignmentPosition get alignmentPosition {
+    double? bottom;
+    double? top;
+
+    if (_stemmed && stem?.value == StemValue.up) {
+      bottom = -NotationLayoutProperties.staveSpace / 2;
+    }
+
+    if (_stemmed && stem?.value == StemValue.down) {
+      top = -NotationLayoutProperties.staveSpace / 2;
+      if (position.numeric % 2 == 0 && _dots > 0) {
+        top -= _dotsSize.height / 2;
+      }
+    }
+
+    if (top == null && bottom == null) {
+      top = -NotationLayoutProperties.staveSpace / 2;
+    }
+
+    return AlignmentPosition(
+      top: top,
+      bottom: bottom,
+      left: -alignmentOffset,
+    );
+  }
 
   final double duration;
   final double divisions;
