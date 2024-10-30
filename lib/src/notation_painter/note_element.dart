@@ -76,8 +76,21 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     return AlignmentPosition(
       top: top,
       bottom: bottom,
-      left: -alignmentOffset,
+      left: -_calculateAlignmentOffset(font),
     );
+  }
+
+  double _calculateAlignmentOffset(FontMetadata font) {
+    var noteheadSize = NoteheadElement(
+      note: note,
+    ).size(font);
+
+    var width = noteheadSize.width;
+    if (_stemmed) {
+      width += NotationLayoutProperties.stemStrokeWidth;
+    }
+
+    return width / 2;
   }
 
   final double duration;
@@ -176,13 +189,6 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
 
     if (stem?.value == StemValue.down) {
       offsetX = NotationLayoutProperties.stemStrokeWidth / 2;
-    }
-
-    if (stem?.value == StemValue.down &&
-        position.numeric % 2 == 0 &&
-        _dots > 0) {
-      offsetY -= NotationLayoutProperties.staveSpace / 2 +
-          NoteElement.dotsSize(font).height / 2;
     }
 
     return Offset(
@@ -349,22 +355,6 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     }
 
     return Size(width, height);
-  }
-
-  @override
-  double get alignmentOffset => _calculateAlignmentOffset(font);
-
-  double _calculateAlignmentOffset(FontMetadata font) {
-    var noteheadSize = NoteheadElement(
-      note: note,
-    ).size(font);
-
-    var width = noteheadSize.width;
-    if (_stemmed) {
-      width += NotationLayoutProperties.stemStrokeWidth;
-    }
-
-    return width / 2;
   }
 
   double get _dotsRightOffset => dotsOffset();

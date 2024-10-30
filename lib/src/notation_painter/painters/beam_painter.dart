@@ -12,10 +12,13 @@ class BeamPainter extends CustomPainter {
   final bool downward;
   final Color? color;
 
+  final bool debug;
+
   BeamPainter({
     required this.beamsPattern,
     required this.downward,
     this.color,
+    this.debug = false,
   });
 
   @override
@@ -63,6 +66,7 @@ class BeamPainter extends CustomPainter {
             beamByHorizontalSpan: true,
             beamThickness: NotationLayoutProperties.beamThickness,
             color: color ?? const Color.fromRGBO(0, 0, 0, 1),
+            debug: debug,
           );
         }
 
@@ -78,6 +82,7 @@ class BeamPainter extends CustomPainter {
             beamByHorizontalSpan: false,
             beamThickness: NotationLayoutProperties.beamThickness,
             color: color ?? const Color.fromRGBO(0, 0, 0, 1),
+            debug: debug,
           );
         }
       }

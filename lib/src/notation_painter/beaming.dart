@@ -38,37 +38,29 @@ class BeamGroup extends StatelessWidget {
     ElementPosition? firstPosition;
     ElementPosition? lastPosition;
 
-    Offset? firstBeamOffset;
-    Offset? lastBeamOffset;
-
     double firstStemLength = 0;
     double lastStemLength = 0;
 
     if (first is NoteElement) {
       firstPosition = first.position;
-      firstBeamOffset = first.offsetForBeam;
       firstStemLength = first.stemLength;
     }
     if (first is Chord) {
       firstPosition = first.position;
-      firstBeamOffset = first.offsetForBeam;
       firstStemLength = first.stemLength;
     }
     if (last is NoteElement) {
       lastPosition = last.position;
-      lastBeamOffset = last.offsetForBeam;
       lastStemLength = last.stemLength;
     }
     if (last is Chord) {
       lastPosition = last.position;
-      lastBeamOffset = last.offsetForBeam;
       lastStemLength = last.stemLength;
     }
 
     double canvasHeight =
         offsetPerPosition * firstPosition!.distance(lastPosition!);
 
-    canvasHeight += (firstBeamOffset!.dy - lastBeamOffset!.dy);
     canvasHeight += NotationLayoutProperties.beamThickness;
     canvasHeight -= (lastStemLength - firstStemLength);
 
