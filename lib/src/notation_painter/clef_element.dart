@@ -9,6 +9,15 @@ import 'package:music_notation/src/notation_painter/painters/clef_painter.dart';
 class ClefElement extends StatelessWidget implements MeasureWidget {
   final Clef clef;
 
+  @override
+  AlignmentPosition? get alignmentPosition => null;
+
+  @override
+  // TODO: implement alignmentOffset
+  double get alignmentOffset => throw UnimplementedError();
+
+  const ClefElement({super.key, required this.clef});
+
   String get _symbol {
     switch (clef.sign) {
       case ClefSign.G:
@@ -78,8 +87,6 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
     }
   }
 
-  const ClefElement({super.key, required this.clef});
-
   @override
   Size get size {
     switch (clef.sign) {
@@ -132,8 +139,4 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
       painter: ClefPainter(_symbol, _paintingOffset),
     );
   }
-
-  @override
-  // TODO: implement alignmentOffset
-  double get alignmentOffset => throw UnimplementedError();
 }

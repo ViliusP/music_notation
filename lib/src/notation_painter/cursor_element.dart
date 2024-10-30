@@ -14,13 +14,11 @@ class CursorElement extends StatelessWidget implements MeasureWidget {
 
   final int? staff;
 
-  /// Creates a [CursorElement] with the given [duration] data.
-  const CursorElement({
-    super.key,
-    required this.duration,
-    this.voice,
-    this.staff,
-  });
+  @override
+  double get alignmentOffset => 0;
+
+  @override
+  AlignmentPosition? get alignmentPosition => null;
 
   /// No positional offset is needed for `<forward>`.
   @override
@@ -33,6 +31,14 @@ class CursorElement extends StatelessWidget implements MeasureWidget {
   /// `<forward>` does not occupy any visual space.
   @override
   Size get size => Size.zero;
+
+  /// Creates a [CursorElement] with the given [duration] data.
+  const CursorElement({
+    super.key,
+    required this.duration,
+    this.voice,
+    this.staff,
+  });
 
   /// Since `<forward>` is a structural element, it does not render anything visually.
   @override
@@ -54,7 +60,4 @@ class CursorElement extends StatelessWidget implements MeasureWidget {
     );
     */
   }
-
-  @override
-  double get alignmentOffset => 0;
 }

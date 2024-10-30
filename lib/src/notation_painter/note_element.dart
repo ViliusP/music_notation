@@ -51,6 +51,30 @@ const Map<String, Color> _voiceColors = {
 /// If you are writing two voices on the same staff, the stems for the upper
 /// voice will go up, and the stems for the lower voice will go down.
 class NoteElement extends StatelessWidget implements MeasureWidget {
+  final Note note;
+  final Stem? stem;
+
+  @override
+  AlignmentPosition? get alignmentPosition => null;
+
+  final double duration;
+  final double divisions;
+
+  final double stemLength;
+  bool get _stemmed => stemLength != 0;
+
+  final bool showLedger;
+  final bool showFlag;
+
+  final NotationContext notationContext;
+
+  @override
+  ElementPosition get position => determinePosition(note, notationContext.clef);
+
+  final bool drawLedgerLines = true;
+
+  final FontMetadata font;
+
   /// Create [NoteElement] from musicXML [note]. Throws exception if divisions of
   /// [notationContext] is null.
   factory NoteElement.fromNote({
@@ -95,9 +119,6 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     required this.font,
   });
 
-  final Note note;
-  final Stem? stem;
-
   @override
   double get verticalAlignmentAxisOffset {
     if (_stemmed && stem?.value == StemValue.up) {
@@ -113,17 +134,6 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     }
     return NotationLayoutProperties.staveSpace / 2;
   }
-
-  final double duration;
-  final double divisions;
-
-  final double stemLength;
-  bool get _stemmed => stemLength != 0;
-
-  final bool showLedger;
-  final bool showFlag;
-
-  final NotationContext notationContext;
 
   bool get influencedByClef {
     return note.form is! Rest;
@@ -254,13 +264,6 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
         );
     }
   }
-
-  @override
-  ElementPosition get position => determinePosition(note, notationContext.clef);
-
-  final bool drawLedgerLines = true;
-
-  final FontMetadata font;
 
   @override
   Size get size => calculateSize(

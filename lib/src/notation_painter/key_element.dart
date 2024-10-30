@@ -43,6 +43,9 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
   static const _verticalOffsetPerPosition =
       NotationLayoutProperties.staveSpace / 2;
 
+  @override
+  AlignmentPosition? get alignmentPosition => null;
+
   static const _sharpSequence = [
     (octave: 5, accidental: PitchedKeyAccidental(step: Step.F, alter: 1)),
     (octave: 5, accidental: PitchedKeyAccidental(step: Step.C, alter: 1)),

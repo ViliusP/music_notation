@@ -10,6 +10,21 @@ import 'package:music_notation/src/notation_painter/note_element.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
 class Chord extends StatelessWidget implements MeasureWidget {
+  final List<Note> notes;
+  final NotationContext notationContext;
+  final FontMetadata font;
+
+  @override
+  AlignmentPosition? get alignmentPosition => null;
+
+  final double divisions;
+  final double duration;
+
+  final double stemLength;
+  bool get _stemmed => stemLength != 0;
+
+  final Stem? stem;
+
   const Chord._({
     super.key,
     required this.notes,
@@ -49,18 +64,6 @@ class Chord extends StatelessWidget implements MeasureWidget {
       stem: notes.first.stem,
     );
   }
-
-  final List<Note> notes;
-  final NotationContext notationContext;
-  final FontMetadata font;
-
-  final double divisions;
-  final double duration;
-
-  final double stemLength;
-  bool get _stemmed => stemLength != 0;
-
-  final Stem? stem;
 
   /// Relative offset from bounding box top left corner.
   /// X - the middle of stem.
