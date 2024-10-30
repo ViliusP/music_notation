@@ -47,10 +47,70 @@ const Map<String, Color> _voiceColors = {
 /// stem goes up;
 /// - If equidistant the stem goes down.
 ///
-/// TODO: need to take account of different voices on the same staff:
 /// If you are writing two voices on the same staff, the stems for the upper
 /// voice will go up, and the stems for the lower voice will go down.
 class NoteElement extends StatelessWidget implements MeasureWidget {
+  final Note note;
+  final Stem? stem;
+
+  @override
+  AlignmentPosition get alignmentPosition {
+    double? bottom;
+    double? top;
+
+    if (_stemmed && stem?.value == StemValue.up) {
+      bottom = -NotationLayoutProperties.staveSpace / 2;
+    }
+
+    if (_stemmed && stem?.value == StemValue.down) {
+      top = -NotationLayoutProperties.staveSpace / 2;
+      if (position.numeric % 2 == 0 && _dots > 0) {
+        top -= _dotsSize.height / 2;
+      }
+    }
+
+    if (top == null && bottom == null) {
+      top = -NotationLayoutProperties.staveSpace / 2;
+    }
+
+    return AlignmentPosition(
+      top: top,
+      bottom: bottom,
+      left: -_calculateAlignmentOffset(font),
+    );
+  }
+
+  double _calculateAlignmentOffset(FontMetadata font) {
+    var noteheadSize = NoteheadElement(
+      note: note,
+    ).size(font);
+
+    var width = noteheadSize.width;
+    if (_stemmed) {
+      width += NotationLayoutProperties.stemStrokeWidth;
+    }
+
+    return width / 2;
+  }
+
+  final double duration;
+  final double divisions;
+
+  final double stemLength;
+  bool get _stemmed => stemLength != 0;
+
+  final bool showLedger;
+  final bool showFlag;
+
+  final NotationContext notationContext;
+
+  @override
+  ElementPosition get position => determinePosition(note, notationContext.clef);
+
+  final bool drawLedgerLines = true;
+
+  final FontMetadata font;
+
   /// Create [NoteElement] from musicXML [note]. Throws exception if divisions of
   /// [notationContext] is null.
   factory NoteElement.fromNote({
@@ -59,6 +119,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     required FontMetadata font,
     required NotationContext notationContext,
     double? stemLength,
+    bool showFlag = true,
     bool showLedger = true,
   }) {
     if (notationContext.divisions == null) {
@@ -74,6 +135,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       font: font,
       stemLength: stemLength ?? _calculateStemLength(note, notationContext),
       showLedger: showLedger,
+      showFlag: showFlag,
       duration: determineDuration(note),
       divisions: notationContext.divisions!,
       stem: note.stem,
@@ -85,6 +147,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     required this.note,
     required this.notationContext,
     this.stemLength = StemElement.defaultLength,
+    this.showFlag = true,
     this.showLedger = true,
     required this.duration,
     required this.divisions,
@@ -92,10 +155,6 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     required this.font,
   });
 
-  final Note note;
-  final Stem? stem;
-
-  @override
   double get verticalAlignmentAxisOffset {
     if (_stemmed && stem?.value == StemValue.up) {
       return stemLength;
@@ -111,16 +170,6 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     return NotationLayoutProperties.staveSpace / 2;
   }
 
-  final double duration;
-  final double divisions;
-
-  final double stemLength;
-  bool get _stemmed => stemLength != 0;
-
-  final bool showLedger;
-
-  final NotationContext notationContext;
-
   bool get influencedByClef {
     return note.form is! Rest;
   }
@@ -129,20 +178,22 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     return note.form is Rest;
   }
 
-  /// Relative offset from bounding box top left corner.
+  /// Relative offset from bounding box bottom left if [AlignmentPosition.top] is defined.
+  /// Relative offset from bounding box top left if [AlignmentPosition.bottom] is defined.
+  ///
   /// X - the middle of stem.
   /// Y - the tip of stem.
   Offset get offsetForBeam {
+    double? offsetX;
+    double offsetY = size.height;
+
     if (stem?.value == StemValue.down) {
-      return Offset(
-        NotationLayoutProperties.stemStrokeWidth / 2,
-        size.height,
-      );
+      offsetX = NotationLayoutProperties.stemStrokeWidth / 2;
     }
 
     return Offset(
-      noteheadSize.width,
-      0,
+      offsetX ?? noteheadSize.width,
+      offsetY,
     );
   }
 
@@ -252,18 +303,12 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
   }
 
   @override
-  ElementPosition get position => determinePosition(note, notationContext.clef);
-
-  final bool drawLedgerLines = true;
-
-  final FontMetadata font;
-
-  @override
   Size get size => calculateSize(
         note: note,
         clef: notationContext.clef,
         stemLength: stemLength,
         font: font,
+        showFlag: false,
       );
 
   Size get noteheadSize => NoteheadElement(
@@ -275,6 +320,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     required Clef? clef,
     required double stemLength,
     required FontMetadata font,
+    bool showFlag = true,
   }) {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
 
@@ -291,7 +337,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       var stemElement = StemElement(
         type: type,
         length: stemLength,
-        showFlag: note.beams.isEmpty,
+        showFlag: note.beams.isEmpty && showFlag,
       );
 
       width += stemElement.size.width;
@@ -309,22 +355,6 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     }
 
     return Size(width, height);
-  }
-
-  @override
-  double get alignmentOffset => _calculateAlignmentOffset(font);
-
-  double _calculateAlignmentOffset(FontMetadata font) {
-    var noteheadSize = NoteheadElement(
-      note: note,
-    ).size(font);
-
-    var width = noteheadSize.width;
-    if (_stemmed) {
-      width += NotationLayoutProperties.stemStrokeWidth;
-    }
-
-    return width / 2;
   }
 
   double get _dotsRightOffset => dotsOffset();
@@ -444,7 +474,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
                 length: stemLength,
                 type: type,
                 direction: stemDirection,
-                showFlag: note.beams.isEmpty,
+                showFlag: note.beams.isEmpty && showFlag,
               ),
             ),
         ],
