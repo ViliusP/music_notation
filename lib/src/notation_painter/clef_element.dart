@@ -10,11 +10,9 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
   final Clef clef;
 
   @override
-  AlignmentPosition? get alignmentPosition => null;
-
-  @override
-  // TODO: implement alignmentOffset
-  double get alignmentOffset => throw UnimplementedError();
+  AlignmentPosition get alignmentPosition {
+    return AlignmentPosition(left: 0, top: -verticalAlignmentAxisOffset);
+  }
 
   const ClefElement({super.key, required this.clef});
 

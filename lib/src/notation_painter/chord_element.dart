@@ -15,7 +15,33 @@ class Chord extends StatelessWidget implements MeasureWidget {
   final FontMetadata font;
 
   @override
-  AlignmentPosition? get alignmentPosition => null;
+  AlignmentPosition get alignmentPosition {
+    double top = 0;
+    if (stem?.value == StemValue.up) {
+      top = _calculateStemLength(notes);
+    }
+
+    Note maxDotsNote = notes.reduce(
+      (a, b) => a.dots.length > b.dots.length ? a : b,
+    );
+
+    // When note is on drawn the line and it's stem is drawn down,
+    // the dots size must be taken in the account.
+    if (stem?.value == StemValue.down &&
+        position.numeric % 2 == 0 &&
+        maxDotsNote.dots.isNotEmpty) {
+      top = NotationLayoutProperties.staveSpace / 2 +
+          NoteElement.dotsSize(font).height / 2;
+    }
+    if (top == 0) {
+      top = NotationLayoutProperties.staveSpace / 2;
+    }
+
+    return AlignmentPosition(
+      left: -_calculateOffsetForCenter(font),
+      top: -top,
+    );
+  }
 
   final double divisions;
   final double duration;
@@ -91,27 +117,6 @@ class Chord extends StatelessWidget implements MeasureWidget {
       size.width - xDotsOffset,
       0,
     );
-  }
-
-  @override
-  double get verticalAlignmentAxisOffset {
-    if (stem?.value == StemValue.up) {
-      return _calculateStemLength(notes);
-    }
-
-    Note maxDotsNote = notes.reduce(
-      (a, b) => a.dots.length > b.dots.length ? a : b,
-    );
-
-    // When note is on drawn the line and it's stem is drawn down,
-    // the dots size must be taken in the account.
-    if (stem?.value == StemValue.down &&
-        position.numeric % 2 == 0 &&
-        maxDotsNote.dots.isNotEmpty) {
-      return NotationLayoutProperties.staveSpace / 2 +
-          NoteElement.dotsSize(font).height / 2;
-    }
-    return NotationLayoutProperties.staveSpace / 2;
   }
 
   /// Difference between lowest and highest notes' positions;
@@ -244,10 +249,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
         font: font,
       );
 
-  @override
-  double get alignmentOffset => _calculateAlignmentOffset(font);
-
-  double _calculateAlignmentOffset(FontMetadata font) {
+  double _calculateOffsetForCenter(FontMetadata font) {
     var noteheadSize = NoteheadElement(
       note: notes.first,
     ).size(font);

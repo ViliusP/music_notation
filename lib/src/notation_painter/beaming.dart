@@ -124,20 +124,40 @@ class BeamGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<double> topOffsets = [];
+    final List<({double? bottom, double? top})> verticalOffsets = [];
 
     const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
     final inheritedPadding = InheritedPadding.of(context);
     if (inheritedPadding == null) return SizedBox.shrink();
 
     for (var child in children) {
-      double topOffset = -child.verticalAlignmentAxisOffset;
+      double? topOffset;
+      double? bottomOffset;
+
+      if (child.alignmentPosition.top != null) {
+        topOffset = 0;
+        topOffset = child.alignmentPosition.top ?? 0;
+
+        // Calculate the interval from staff top to the child's position.
+        int intervalFromTheF5 = ElementPosition.staffTop.numeric;
+        intervalFromTheF5 -= child.position.numeric;
+        topOffset += intervalFromTheF5 * offsetPerPosition;
+
+        topOffset += inheritedPadding.top;
+      }
+      if (child.alignmentPosition.bottom != null) {
+        bottomOffset = 0;
+        bottomOffset = child.alignmentPosition.bottom ?? 0;
 
       // Calculate the interval from staff bottom to the child's position.
-      int intervalFromTheTop = ElementPosition.staffTop.numeric;
-      intervalFromTheTop -= (child.position.numeric);
-      topOffset += intervalFromTheTop * offsetPerPosition;
-      topOffsets.add(topOffset);
+        int intervalFromTheE4 = ElementPosition.staffBottom.numeric;
+        intervalFromTheE4 -= child.position.numeric;
+        bottomOffset -= intervalFromTheE4 * offsetPerPosition;
+
+        bottomOffset += inheritedPadding.bottom;
+      }
+
+      verticalOffsets.add((bottom: bottomOffset, top: topOffset));
     }
 
     double beamLeftOffset = 0;
@@ -186,7 +206,8 @@ class BeamGroup extends StatelessWidget {
         ...children.mapIndexed(
           (i, x) => Positioned(
             left: leftOffsets[i],
-            top: inheritedPadding.top + topOffsets[i],
+            bottom: verticalOffsets[i].bottom,
+            top: verticalOffsets[i].top,
             child: x,
           ),
         ),

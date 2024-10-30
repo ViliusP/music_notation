@@ -13,23 +13,8 @@ abstract class MeasureWidget extends Widget {
   /// The size of the element, defining its width and height within the measure.
   Size get size;
 
-  /// Deprecated!
-  ///
-  /// The offset of the element's position within its parent container or measure.
-  /// This defines how much the element is shifted vertically from its default position.
-  ///
-  /// Measurement is defined from the element bounding box top.
-  double get verticalAlignmentAxisOffset;
-
-  /// Deprecated!
-  ///
-  /// The alignment offset from the left side of the element's rectangle.
-  /// It represents the axis point for aligning the element with others,
-  /// typically being the middle of most elements but adjustable for visual alignment.
-  double get alignmentOffset;
-
   /// Optional positioning and alignment information for precise element placement.
-  AlignmentPosition? get alignmentPosition;
+  AlignmentPosition get alignmentPosition;
 
   /// Constant constructor for the [MeasureWidget] base class.
   const MeasureWidget({super.key});
@@ -75,7 +60,7 @@ extension MeasureElementDimensions on MeasureWidget {
       -offsetPerPosition * position.numeric,
       distanceToStaffBottom,
       size.height,
-      -verticalAlignmentAxisOffset,
+      // -verticalAlignmentAxisOffset,
     ].sum;
 
     belowStaffLength = [0.0, belowStaffLength].max;
@@ -93,7 +78,7 @@ extension MeasureElementDimensions on MeasureWidget {
 
     double aboveStaffLength = [
       offsetPerPosition * position.numeric,
-      verticalAlignmentAxisOffset,
+      // verticalAlignmentAxisOffset,
       -distanceToStaffTop,
     ].sum;
 

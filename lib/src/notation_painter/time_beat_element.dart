@@ -10,17 +10,15 @@ class TimeBeatElement extends StatelessWidget implements MeasureWidget {
   final TimeBeat timeBeat;
 
   @override
-  AlignmentPosition? get alignmentPosition => null;
+  AlignmentPosition get alignmentPosition {
+    return AlignmentPosition(
+      top: -NotationLayoutProperties.staveSpace * 2,
+      left: 0,
+    );
+  }
 
   @override
   Size get size => const Size(20, NotationLayoutProperties.staveHeight);
-
-  @override
-  double get alignmentOffset => throw UnimplementedError();
-
-  @override
-  double get verticalAlignmentAxisOffset =>
-      NotationLayoutProperties.staveSpace * 2;
 
   @override
   ElementPosition get position => const ElementPosition(

@@ -44,7 +44,12 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
       NotationLayoutProperties.staveSpace / 2;
 
   @override
-  AlignmentPosition? get alignmentPosition => null;
+  AlignmentPosition get alignmentPosition {
+    return AlignmentPosition(
+      top: -NotationLayoutProperties.staveSpace * 3,
+      left: 0,
+    );
+  }
 
   static const _sharpSequence = [
     (octave: 5, accidental: PitchedKeyAccidental(step: Step.F, alter: 1)),
@@ -163,10 +168,6 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
   // TODO: fix
   @override
   ElementPosition get position => _position.transpose(_transposeInterval);
-
-  @override
-  double get verticalAlignmentAxisOffset =>
-      NotationLayoutProperties.staveSpace * 3;
 
   final NotationContext notationContext;
 

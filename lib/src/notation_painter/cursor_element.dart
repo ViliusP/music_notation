@@ -15,14 +15,10 @@ class CursorElement extends StatelessWidget implements MeasureWidget {
   final int? staff;
 
   @override
-  double get alignmentOffset => 0;
-
-  @override
-  AlignmentPosition? get alignmentPosition => null;
-
-  /// No positional offset is needed for `<forward>`.
-  @override
-  double get verticalAlignmentAxisOffset => 0.0;
+  AlignmentPosition get alignmentPosition => AlignmentPosition(
+        left: 0,
+        top: -size.height / 2,
+      );
 
   /// Generic position as `<forward>` does not correspond to a specific musical position.
   @override
@@ -30,7 +26,7 @@ class CursorElement extends StatelessWidget implements MeasureWidget {
 
   /// `<forward>` does not occupy any visual space.
   @override
-  Size get size => Size.zero;
+  Size get size => const Size(10, 10);
 
   /// Creates a [CursorElement] with the given [duration] data.
   const CursorElement({

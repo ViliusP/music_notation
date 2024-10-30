@@ -142,7 +142,6 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     required this.font,
   });
 
-  @override
   double get verticalAlignmentAxisOffset {
     if (_stemmed && stem?.value == StemValue.up) {
       return stemLength;
