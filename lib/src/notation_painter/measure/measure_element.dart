@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
+import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 
@@ -43,6 +44,27 @@ class AlignmentPosition {
           (top == null) != (bottom == null),
           'Either top or bottom must be null, but not both.',
         );
+}
+
+///
+abstract class RhythmicElement extends MeasureWidget {
+  final double stemLength;
+
+  final double divisions;
+  final double duration;
+
+  final Offset offsetForBeam;
+
+  final Stem? stem;
+
+  const RhythmicElement({
+    super.key,
+    this.stemLength = NotationLayoutProperties.standardStemLength,
+    required this.divisions,
+    required this.duration,
+    required this.offsetForBeam,
+    this.stem,
+  });
 }
 
 /// A mixin for calculating bounding boxes of elements positioned above or below

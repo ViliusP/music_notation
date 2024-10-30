@@ -9,10 +9,23 @@ import 'package:music_notation/src/notation_painter/notation_layout_properties.d
 import 'package:music_notation/src/notation_painter/note_element.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
-class Chord extends StatelessWidget implements MeasureWidget {
+class Chord extends StatelessWidget implements RhythmicElement {
   final List<Note> notes;
   final NotationContext notationContext;
   final FontMetadata font;
+
+  @override
+  final double divisions;
+
+  @override
+  final double duration;
+
+  @override
+  final double stemLength;
+
+  bool get _stemmed => stemLength != 0;
+
+  final Stem? stem;
 
   @override
   AlignmentPosition get alignmentPosition {
@@ -42,14 +55,6 @@ class Chord extends StatelessWidget implements MeasureWidget {
       top: -top,
     );
   }
-
-  final double divisions;
-  final double duration;
-
-  final double stemLength;
-  bool get _stemmed => stemLength != 0;
-
-  final Stem? stem;
 
   const Chord._({
     super.key,
@@ -240,7 +245,7 @@ class Chord extends StatelessWidget implements MeasureWidget {
     const heightPerPosition = NotationLayoutProperties.staveSpace / 2;
 
     double stemLength = positionDifference.abs() * heightPerPosition;
-    stemLength += StemElement.defaultLength;
+    stemLength += NotationLayoutProperties.standardStemLength;
 
     return stemLength;
   }

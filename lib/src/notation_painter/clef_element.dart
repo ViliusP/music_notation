@@ -11,7 +11,7 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
 
   @override
   AlignmentPosition get alignmentPosition {
-    return AlignmentPosition(left: 0, top: -verticalAlignmentAxisOffset);
+    return AlignmentPosition(left: 0, top: -_verticalAlignmentAxisOffset);
   }
 
   const ClefElement({super.key, required this.clef});
@@ -38,8 +38,7 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
     }
   }
 
-  @override
-  double get verticalAlignmentAxisOffset {
+  double get _verticalAlignmentAxisOffset {
     switch (clef.sign) {
       case ClefSign.G:
         return (NotationLayoutProperties.staveHeight - 8) +
