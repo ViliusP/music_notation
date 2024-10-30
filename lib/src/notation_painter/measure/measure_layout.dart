@@ -352,18 +352,14 @@ class MeasureLayout extends StatelessWidget {
   ) {
     double divisions = 1;
     for (var child in children.reversed) {
-      if (child is NoteElement) {
-        divisions = child.divisions;
-        break;
-      }
-      if (child is Chord) {
+      if (child is RhythmicElement) {
         divisions = child.divisions;
         break;
       }
     }
 
     final Timeline timeline = Timeline(divisions: divisions)..compute(children);
-    return timeline.toList(54);
+    return timeline.toList(60);
   }
 
 // Calculate the vertical padding based on the highest note above and below the staff.
@@ -400,7 +396,10 @@ class MeasureLayout extends StatelessWidget {
 
       var positionedElements = <Widget>[];
       for (var (index, child) in children.indexed) {
-        var beamingResult = beaming.add(child, spacings[index]);
+        BeamingResult? beamingResult;
+        if (child is RhythmicElement) {
+          beamingResult = beaming.add(child, spacings[index]);
+        }
 
         if (beaming.isFinalized) {
           beamGroups.add(
@@ -435,7 +434,7 @@ class MeasureLayout extends StatelessWidget {
           bottomOffset += inheritedPadding.bottom;
         }
 
-        if (beamingResult == BeamingResult.skipped) {
+        if (beamingResult == null || beamingResult == BeamingResult.skipped) {
           positionedElements.add(
             Positioned(
               left: spacings[index],

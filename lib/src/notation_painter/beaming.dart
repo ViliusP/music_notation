@@ -13,7 +13,7 @@ import 'package:music_notation/src/notation_painter/note_element.dart';
 import 'package:music_notation/src/notation_painter/painters/beam_painter.dart';
 
 class BeamGroup extends StatelessWidget {
-  final List<MeasureWidget> children;
+  final List<RhythmicElement> children;
   final List<double> leftOffsets;
 
   const BeamGroup({
@@ -32,34 +32,20 @@ class BeamGroup extends StatelessWidget {
   Size _beamSize() {
     const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
 
-    MeasureWidget first = children.first;
-    MeasureWidget last = children.last;
-
     ElementPosition? firstPosition;
     ElementPosition? lastPosition;
 
     double firstStemLength = 0;
     double lastStemLength = 0;
 
-    if (first is NoteElement) {
-      firstPosition = first.position;
-      firstStemLength = first.stemLength;
-    }
-    if (first is Chord) {
-      firstPosition = first.position;
-      firstStemLength = first.stemLength;
-    }
-    if (last is NoteElement) {
-      lastPosition = last.position;
-      lastStemLength = last.stemLength;
-    }
-    if (last is Chord) {
-      lastPosition = last.position;
-      lastStemLength = last.stemLength;
-    }
+    firstPosition = children.first.position;
+    firstStemLength = children.first.stemLength;
+
+    lastPosition = children.last.position;
+    lastStemLength = children.last.stemLength;
 
     double canvasHeight =
-        offsetPerPosition * firstPosition!.distance(lastPosition!);
+        offsetPerPosition * firstPosition.distance(lastPosition);
 
     canvasHeight += NotationLayoutProperties.beamThickness;
     canvasHeight -= (lastStemLength - firstStemLength);
@@ -71,26 +57,7 @@ class BeamGroup extends StatelessWidget {
   }
 
   bool _isBeamDownward() {
-    MeasureWidget first = children.first;
-    MeasureWidget last = children.last;
-
-    ElementPosition? firstPosition;
-    ElementPosition? lastPosition;
-
-    if (first is NoteElement) {
-      firstPosition = first.position;
-    }
-    if (first is Chord) {
-      firstPosition = first.position;
-    }
-    if (last is NoteElement) {
-      lastPosition = last.position;
-    }
-    if (last is Chord) {
-      lastPosition = last.position;
-    }
-
-    return firstPosition! > lastPosition!;
+    return children.first.position > children.last.position;
   }
 
   List<NoteBeams> beamsPattern() {
@@ -155,31 +122,17 @@ class BeamGroup extends StatelessWidget {
     Offset? firstNoteBeamOffset = Offset(0, 0);
     Offset? lastNoteBeamOffset = Offset(0, 0);
 
-    MeasureWidget first = children.first;
-    MeasureWidget last = children.last;
+    RhythmicElement first = children.first;
+    RhythmicElement last = children.last;
 
     StemValue? firstNoteStemValue;
-    StemValue? LastNoteStemValue;
+    // StemValue? lastNoteStemValue;
 
-    if (first is Chord) {
-      firstNoteBeamOffset = first.offsetForBeam;
-      firstNoteStemValue = first.stem!.value;
-    }
+    firstNoteBeamOffset = first.offsetForBeam;
+    firstNoteStemValue = first.stem!.value;
 
-    if (first is NoteElement) {
-      firstNoteBeamOffset = first.offsetForBeam;
-      firstNoteStemValue = first.stem!.value;
-    }
-
-    if (last is Chord) {
-      lastNoteBeamOffset = last.offsetForBeam;
-      LastNoteStemValue = last.stem!.value;
-    }
-
-    if (last is NoteElement) {
-      lastNoteBeamOffset = last.offsetForBeam;
-      LastNoteStemValue = last.stem!.value;
-    }
+    lastNoteBeamOffset = last.offsetForBeam;
+    // lastNoteStemValue = last.stem!.value;
 
     double? beamTopOffset;
     if (verticalOffsets[0].top != null) {
@@ -254,10 +207,10 @@ class NoteBeams {
 }
 
 class BeamGrouping {
-  final List<MeasureWidget> _group = [];
+  final List<RhythmicElement> _group = [];
   final List<double> _leftOffsets = [];
 
-  final bool _strictAddition = true;
+  // final bool _strictAddition = true;
 
   bool _isFinalized = false;
 
@@ -269,15 +222,11 @@ class BeamGrouping {
   List<MeasureWidget> get tentativeGroup => _group;
 
   /// Returns [BeamingResult] after addition of provided [element].
-  BeamingResult add(MeasureWidget element, double leftOffset) {
+  BeamingResult add(RhythmicElement element, double leftOffset) {
     BeamValue? beamValue;
 
     if (isFinalized) {
       return BeamingResult.skippedAndFinished;
-    }
-
-    if (element is! NoteElement && element is! Chord) {
-      return BeamingResult.skipped;
     }
 
     if (element is NoteElement) {

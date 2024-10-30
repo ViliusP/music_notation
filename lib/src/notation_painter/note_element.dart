@@ -49,54 +49,19 @@ const Map<String, Color> _voiceColors = {
 ///
 /// If you are writing two voices on the same staff, the stems for the upper
 /// voice will go up, and the stems for the lower voice will go down.
-class NoteElement extends StatelessWidget implements MeasureWidget {
+class NoteElement extends StatelessWidget implements RhythmicElement {
   final Note note;
   final Stem? stem;
 
   @override
-  AlignmentPosition get alignmentPosition {
-    double? bottom;
-    double? top;
+  final double stemLength;
 
-    if (_stemmed && stem?.value == StemValue.up) {
-      bottom = -NotationLayoutProperties.staveSpace / 2;
-    }
-
-    if (_stemmed && stem?.value == StemValue.down) {
-      top = -NotationLayoutProperties.staveSpace / 2;
-      if (position.numeric % 2 == 0 && _dots > 0) {
-        top -= _dotsSize.height / 2;
-      }
-    }
-
-    if (top == null && bottom == null) {
-      top = -NotationLayoutProperties.staveSpace / 2;
-    }
-
-    return AlignmentPosition(
-      top: top,
-      bottom: bottom,
-      left: -_calculateAlignmentOffset(font),
-    );
-  }
-
-  double _calculateAlignmentOffset(FontMetadata font) {
-    var noteheadSize = NoteheadElement(
-      note: note,
-    ).size(font);
-
-    var width = noteheadSize.width;
-    if (_stemmed) {
-      width += NotationLayoutProperties.stemStrokeWidth;
-    }
-
-    return width / 2;
-  }
-
+  @override
   final double duration;
+
+  @override
   final double divisions;
 
-  final double stemLength;
   bool get _stemmed => stemLength != 0;
 
   final bool showLedger;
@@ -146,7 +111,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     super.key,
     required this.note,
     required this.notationContext,
-    this.stemLength = StemElement.defaultLength,
+    this.stemLength = NotationLayoutProperties.standardStemLength,
     this.showFlag = true,
     this.showLedger = true,
     required this.duration,
@@ -155,27 +120,52 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     required this.font,
   });
 
-  double get verticalAlignmentAxisOffset {
-    if (_stemmed && stem?.value == StemValue.up) {
-      return stemLength;
-    }
-
-    // When note is on drawn the line and it's stem is drawn down,
-    // the dots size must be taken in the account.
-    if (stem?.value == StemValue.down &&
-        position.numeric % 2 == 0 &&
-        _dots > 0) {
-      return NotationLayoutProperties.staveSpace / 2 + _dotsSize.height / 2;
-    }
-    return NotationLayoutProperties.staveSpace / 2;
-  }
-
   bool get influencedByClef {
     return note.form is! Rest;
   }
 
   bool get _isRest {
     return note.form is Rest;
+  }
+
+  @override
+  AlignmentPosition get alignmentPosition {
+    double? bottom;
+    double? top;
+
+    if (_stemmed && stem?.value == StemValue.up) {
+      bottom = -NotationLayoutProperties.staveSpace / 2;
+    }
+
+    if (_stemmed && stem?.value == StemValue.down) {
+      top = -NotationLayoutProperties.staveSpace / 2;
+      if (position.numeric % 2 == 0 && _dots > 0) {
+        top -= _dotsSize.height / 2;
+      }
+    }
+
+    if (top == null && bottom == null) {
+      top = -NotationLayoutProperties.staveSpace / 2;
+    }
+
+    return AlignmentPosition(
+      top: top,
+      bottom: bottom,
+      left: -_calculateAlignmentOffset(font),
+    );
+  }
+
+  double _calculateAlignmentOffset(FontMetadata font) {
+    var noteheadSize = NoteheadElement(
+      note: note,
+    ).size(font);
+
+    var width = noteheadSize.width;
+    if (_stemmed) {
+      width += NotationLayoutProperties.stemStrokeWidth;
+    }
+
+    return width / 2;
   }
 
   /// Relative offset from bounding box bottom left if [AlignmentPosition.top] is defined.
@@ -197,10 +187,6 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     );
   }
 
-  int get _dots {
-    return note.dots.length;
-  }
-
   /// Default stem length: `3.5*stave_space`.
   ///
   /// Stems for notes on more than one ledger line extend to the middle stave-line
@@ -209,7 +195,7 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
       return 0.0;
     }
 
-    double stemLength = StemElement.defaultLength;
+    double stemLength = NotationLayoutProperties.standardStemLength;
 
     var position = determinePosition(note, context.clef);
 
@@ -355,6 +341,25 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     }
 
     return Size(width, height);
+  }
+
+  double get verticalAlignmentAxisOffset {
+    if (_stemmed && stem?.value == StemValue.up) {
+      return stemLength;
+    }
+
+    // When note is on drawn the line and it's stem is drawn down,
+    // the dots size must be taken in the account.
+    if (stem?.value == StemValue.down &&
+        position.numeric % 2 == 0 &&
+        _dots > 0) {
+      return NotationLayoutProperties.staveSpace / 2 + _dotsSize.height / 2;
+    }
+    return NotationLayoutProperties.staveSpace / 2;
+  }
+
+  int get _dots {
+    return note.dots.length;
   }
 
   double get _dotsRightOffset => dotsOffset();
@@ -759,12 +764,10 @@ class StemElement extends StatelessWidget {
   const StemElement({
     super.key,
     required this.type,
-    this.length = defaultLength,
+    this.length = NotationLayoutProperties.standardStemLength,
     this.direction = StemDirection.up,
     this.showFlag = true,
   });
-
-  static const defaultLength = NotationLayoutProperties.standardStemLength;
 
   final NoteTypeValue type;
 
