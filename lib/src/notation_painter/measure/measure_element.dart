@@ -53,15 +53,27 @@ extension MeasureElementDimensions on MeasureWidget {
   Rect boxBelowStaff() {
     const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
 
+    double belowStaffLength = 0;
+
     double distanceToStaffBottom =
         offsetPerPosition * ElementPosition.staffBottom.numeric;
 
-    double belowStaffLength = [
-      -offsetPerPosition * position.numeric,
-      distanceToStaffBottom,
-      size.height,
-      // -verticalAlignmentAxisOffset,
-    ].sum;
+    if (alignmentPosition.top != null) {
+      belowStaffLength = [
+        -offsetPerPosition * position.numeric,
+        distanceToStaffBottom,
+        size.height,
+        alignmentPosition.top!,
+      ].sum;
+    }
+
+    if (alignmentPosition.bottom != null) {
+      belowStaffLength = [
+        -offsetPerPosition * position.numeric,
+        distanceToStaffBottom,
+        -alignmentPosition.bottom!,
+      ].sum;
+    }
 
     belowStaffLength = [0.0, belowStaffLength].max;
 
@@ -73,14 +85,27 @@ extension MeasureElementDimensions on MeasureWidget {
   Rect boxAboveStaff() {
     const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
 
+    double aboveStaffLength = 0;
+
     double distanceToStaffTop =
         offsetPerPosition * ElementPosition.staffTop.numeric;
 
-    double aboveStaffLength = [
-      offsetPerPosition * position.numeric,
-      // verticalAlignmentAxisOffset,
-      -distanceToStaffTop,
-    ].sum;
+    if (alignmentPosition.top != null) {
+      aboveStaffLength = [
+        offsetPerPosition * position.numeric,
+        -alignmentPosition.top!,
+        -distanceToStaffTop,
+      ].sum;
+    }
+
+    if (alignmentPosition.bottom != null) {
+      aboveStaffLength = [
+        offsetPerPosition * position.numeric,
+        -distanceToStaffTop,
+        size.height,
+        alignmentPosition.bottom!,
+      ].sum;
+    }
 
     aboveStaffLength = [0.0, aboveStaffLength].max;
 
