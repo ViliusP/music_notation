@@ -136,7 +136,7 @@ class BeamGroup extends StatelessWidget {
 
       if (child.alignmentPosition.top != null) {
         topOffset = 0;
-        topOffset = child.alignmentPosition.top ?? 0;
+        topOffset = child.alignmentPosition.top!;
 
         // Calculate the interval from staff top to the child's position.
         int intervalFromTheF5 = ElementPosition.staffTop.numeric;
@@ -147,9 +147,9 @@ class BeamGroup extends StatelessWidget {
       }
       if (child.alignmentPosition.bottom != null) {
         bottomOffset = 0;
-        bottomOffset = child.alignmentPosition.bottom ?? 0;
+        bottomOffset = child.alignmentPosition.bottom!;
 
-      // Calculate the interval from staff bottom to the child's position.
+        // Calculate the interval from staff bottom to the child's position.
         int intervalFromTheE4 = ElementPosition.staffBottom.numeric;
         intervalFromTheE4 -= child.position.numeric;
         bottomOffset -= intervalFromTheE4 * offsetPerPosition;
@@ -160,44 +160,64 @@ class BeamGroup extends StatelessWidget {
       verticalOffsets.add((bottom: bottomOffset, top: topOffset));
     }
 
-    double beamLeftOffset = 0;
+    Offset? firstNoteBeamOffset = Offset(0, 0);
+    Offset? lastNoteBeamOffset = Offset(0, 0);
 
     MeasureWidget first = children.first;
-    StemValue? stemValue;
+    MeasureWidget last = children.last;
+
+    StemValue? firstNoteStemValue;
+    StemValue? LastNoteStemValue;
+
+    if (first is Chord) {
+      firstNoteBeamOffset = first.offsetForBeam;
+      firstNoteStemValue = first.stem!.value;
+    }
 
     if (first is NoteElement) {
-      beamLeftOffset = first.offsetForBeam.dx;
-      stemValue = first.stem!.value;
+      firstNoteBeamOffset = first.offsetForBeam;
+      firstNoteStemValue = first.stem!.value;
     }
-    if (first is Chord) {
-      beamLeftOffset = first.offsetForBeam.dx;
-      stemValue = first.stem!.value;
+
+    if (last is Chord) {
+      lastNoteBeamOffset = last.offsetForBeam;
+      LastNoteStemValue = last.stem!.value;
+    }
+
+    if (last is NoteElement) {
+      lastNoteBeamOffset = last.offsetForBeam;
+      LastNoteStemValue = last.stem!.value;
     }
 
     double? beamTopOffset;
-    if (stemValue == StemValue.up) {
+    if (verticalOffsets[0].top != null) {
       beamTopOffset = 0;
-      beamTopOffset += inheritedPadding.top;
-      if (!_isBeamDownward()) {
-        beamTopOffset += topOffsets[0];
+      // TODO: fix second check
+      if (first.position < last.position && verticalOffsets.last.top != null) {
+        beamTopOffset += verticalOffsets.last.top!;
+        beamTopOffset += lastNoteBeamOffset.dy;
       }
-      if (_isBeamDownward()) {
-        beamTopOffset += topOffsets.last;
+      if (first.position >= last.position) {
+        beamTopOffset += verticalOffsets.first.top!;
+        beamTopOffset += firstNoteBeamOffset.dy;
       }
-      beamTopOffset -= _beamSize().height;
-      beamTopOffset += NotationLayoutProperties.beamThickness;
+      if (firstNoteStemValue == StemValue.down) {
+        beamTopOffset -= NotationLayoutProperties.beamThickness;
+      }
     }
 
     double? beamBottomOffset;
-    if (stemValue == StemValue.down) {
+    if (verticalOffsets[0].bottom != null) {
       beamBottomOffset = 0;
-      beamBottomOffset += inheritedPadding.bottom;
-      if (!_isBeamDownward()) {
-        beamBottomOffset -= topOffsets[0];
+      if (first.position < last.position) {
+        beamBottomOffset += verticalOffsets.first.bottom!;
+        beamBottomOffset += firstNoteBeamOffset.dy;
       }
-      if (_isBeamDownward()) {
-        beamBottomOffset -= topOffsets.last;
+      if (first.position >= last.position) {
+        beamBottomOffset += lastNoteBeamOffset.dy;
+        beamBottomOffset += verticalOffsets.last.bottom!;
       }
+      beamBottomOffset -= NotationLayoutProperties.beamThickness;
     }
 
     return Stack(
@@ -212,7 +232,7 @@ class BeamGroup extends StatelessWidget {
           ),
         ),
         Positioned(
-          left: leftOffsets[0] + beamLeftOffset,
+          left: leftOffsets[0] + firstNoteBeamOffset.dx,
           top: beamTopOffset,
           bottom: beamBottomOffset,
           child: CustomPaint(

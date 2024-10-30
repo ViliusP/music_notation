@@ -91,31 +91,35 @@ class Chord extends StatelessWidget implements MeasureWidget {
     );
   }
 
-  /// Relative offset from bounding box top left corner.
+  /// Relative offset from bounding box bottom left if [AlignmentPosition.top] is defined.
+  /// Relative offset from bounding box top left if [AlignmentPosition.bottom] is defined.
+  ///
   /// X - the middle of stem.
   /// Y - the tip of stem.
   Offset get offsetForBeam {
-    double xDotsOffset = -0;
-
+    double? offsetX;
+    double? offsetY = size.height;
     Note maxDotsNote = notes.reduce(
       (a, b) => a.dots.length > b.dots.length ? a : b,
     );
 
     if (maxDotsNote.dots.isNotEmpty) {
-      xDotsOffset = NoteElement.dotsOffset();
-      xDotsOffset += NoteElement.dotsSize(font).width;
+      offsetX = size.width;
+      offsetX -= NoteElement.dotsOffset();
+      offsetX -= NoteElement.dotsSize(font).width;
     }
 
     if (stem?.value == StemValue.down) {
-      return Offset(
-        NotationLayoutProperties.stemStrokeWidth / 2,
-        NotationLayoutProperties.staveSpace / 2,
-      );
+      offsetX = NotationLayoutProperties.stemStrokeWidth / 2;
+    }
+
+    if (alignmentPosition.top != null && stem?.value != StemValue.down) {
+      offsetY = 0;
     }
 
     return Offset(
-      size.width - xDotsOffset,
-      0,
+      offsetX ?? size.width,
+      offsetY,
     );
   }
 

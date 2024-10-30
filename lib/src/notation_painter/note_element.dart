@@ -165,20 +165,29 @@ class NoteElement extends StatelessWidget implements MeasureWidget {
     return note.form is Rest;
   }
 
-  /// Relative offset from bounding box top left corner.
+  /// Relative offset from bounding box bottom left if [AlignmentPosition.top] is defined.
+  /// Relative offset from bounding box top left if [AlignmentPosition.bottom] is defined.
+  ///
   /// X - the middle of stem.
   /// Y - the tip of stem.
   Offset get offsetForBeam {
+    double? offsetX;
+    double offsetY = size.height;
+
     if (stem?.value == StemValue.down) {
-      return Offset(
-        NotationLayoutProperties.stemStrokeWidth / 2,
-        size.height,
-      );
+      offsetX = NotationLayoutProperties.stemStrokeWidth / 2;
+    }
+
+    if (stem?.value == StemValue.down &&
+        position.numeric % 2 == 0 &&
+        _dots > 0) {
+      offsetY -= NotationLayoutProperties.staveSpace / 2 +
+          NoteElement.dotsSize(font).height / 2;
     }
 
     return Offset(
-      noteheadSize.width,
-      0,
+      offsetX ?? noteheadSize.width,
+      offsetY,
     );
   }
 
