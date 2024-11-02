@@ -237,16 +237,42 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
     );
   }
 
-  static ElementPosition _accidentalPosition(
-      ({int octave, PitchedKeyAccidental accidental}) value) {
-    return ElementPosition(step: value.accidental.step, octave: value.octave);
+  /// Returns how many keys are canceled.
+  int get cancelCount {
+    int? lastFifths = (notationContext.lastKey as TraditionalKey?)?.fifths;
+
+    if (lastFifths == null) return 0;
+
+    return lastFifths.abs() - musicKey.fifths.abs();
   }
 
-  List<({int octave, PitchedKeyAccidental accidental})> get accidentals {
-    var accidentals = <({int octave, PitchedKeyAccidental accidental})>[];
-    int fifths = (musicKey).fifths.abs();
-    accidentals = (musicKey).fifths >= 0 ? _sharpSequence : _flatSequence;
-    return accidentals.sublist(0, fifths);
+  /// Returns `true` if keys are fully canceled.
+  /// Returns `null` if there is no cancel.
+  bool? get fullCancel {
+    int? lastFifths = (notationContext.lastKey as TraditionalKey?)?.fifths;
+
+    if (lastFifths == null) return null;
+
+    return lastFifths != 0 && musicKey.fifths == 0;
+  }
+
+  List<OctavedKeyAccidental> get accidentals {
+    var accidentals = <OctavedKeyAccidental>[];
+    int fifths = (musicKey).fifths;
+    if (fullCancel == true) {
+      fifths = (notationContext.lastKey as TraditionalKey).fifths;
+    }
+
+    accidentals = fifths >= 0 ? _sharpSequence : _flatSequence;
+
+    if (fullCancel == true) {
+      return accidentals
+          .map((x) => x.toNatural())
+          .toList()
+          .sublist(0, fifths.abs());
+    }
+
+    return accidentals.sublist(0, fifths.abs());
   }
 
   List<double> get _leftOffsets {
