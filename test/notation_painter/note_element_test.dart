@@ -115,6 +115,7 @@ void main() {
             divisions: 1,
             clef: Clef(sign: ClefSign.G),
             time: null,
+            lastKey: null,
           ),
           font: FontMetadata.empty(),
         );
@@ -203,6 +204,7 @@ void main() {
             divisions: 1,
             clef: Clef(sign: ClefSign.F),
             time: null,
+            lastKey: null,
           ),
           font: FontMetadata.empty(),
         );

@@ -352,11 +352,7 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
         if (keyData.fifths == 0) {
           return KeySignature(
             accidentals: [],
-            notationContext: NotationContext(
-              divisions: null,
-              clef: null,
-              time: null,
-            ),
+            notationContext: notationContext,
             font: font,
           );
         }
