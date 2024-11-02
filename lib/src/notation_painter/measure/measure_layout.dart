@@ -362,7 +362,7 @@ class MeasureLayout extends StatelessWidget {
     }
 
     final Timeline timeline = Timeline(divisions: divisions)..compute(children);
-    return timeline.toList(60);
+    return timeline.toList(100);
   }
 
 // Calculate the vertical padding based on the highest note above and below the staff.
@@ -451,7 +451,7 @@ class MeasureLayout extends StatelessWidget {
         DebugSettings? dSettings = DebugSettings.of(context);
 
         if (dSettings != null) {
-            Rect boxBelow = child.boxBelowStaff();
+          Rect boxBelow = child.boxBelowStaff();
           if (dSettings.paintBBoxBelowStaff && boxBelow.height > 0) {
             positionedElements.add(
               Positioned(
@@ -467,7 +467,7 @@ class MeasureLayout extends StatelessWidget {
             );
           }
 
-            Rect boxAbove = child.boxAboveStaff();
+          Rect boxAbove = child.boxAboveStaff();
           if (dSettings.paintBBoxAboveStaff && boxAbove.height > 0) {
             positionedElements.add(
               Positioned(

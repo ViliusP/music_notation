@@ -1,3 +1,4 @@
+import 'package:example/homepage.dart';
 import 'package:example/layout/notation_view.dart';
 import 'package:flutter/material.dart';
 
@@ -27,13 +28,13 @@ class MyApp extends StatelessWidget {
           initialEntries: [
             OverlayEntry(
               builder: (context) => NotationViewLayout(
-                body: child ?? Placeholder(),
+                body: child ?? Homepage(),
               ),
             ),
           ],
         );
       },
-      home: Placeholder(),
+      home: Homepage(),
     );
   }
 }

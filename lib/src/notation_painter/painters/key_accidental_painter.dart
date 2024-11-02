@@ -12,7 +12,7 @@ class KeyAccidentalPainter extends CustomPainter {
     PainterUtilities.drawSmuflSymbol(
       canvas,
       smufl,
-      offset: const Offset(0, -NotationLayoutProperties.staveSpace * .25),
+      offset: Offset(0, -0.704 * 50),
     );
   }
 

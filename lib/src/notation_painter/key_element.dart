@@ -216,7 +216,7 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
   @override
   AlignmentPosition get alignmentPosition {
     return AlignmentPosition(
-      top: -NotationLayoutProperties.staveSpace * 3,
+      top: -NotationLayoutProperties.staveSpace,
       left: 0,
     );
   }
@@ -291,8 +291,11 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
       width += accidentalSize.width + _spaceBetweenAccidentals;
     }
 
+    // Remove last width
+    width = width - _spaceBetweenAccidentals;
+
     return Size(
-      width - _spaceBetweenAccidentals,
+      width,
       tallestAccidental + ((range + 1) * _verticalOffsetPerPosition),
     );
   }
@@ -311,9 +314,9 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
   }
 
   ElementPosition get _position =>
-      firstPosition ??
+      // firstPosition ??
       const ElementPosition(
-        step: Step.A,
+        step: Step.B,
         octave: 4,
       );
 
@@ -387,6 +390,11 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
   @override
   Widget build(BuildContext context) {
     var children = <Widget>[];
+    ElementPosition ref = ElementPosition(
+      step: accidentals.first.accidental.step,
+      octave: accidentals.first.octave,
+    );
+
     for (var (index, accidental) in accidentals.indexed) {
       var accidentalWidget = KeySignatureAccidental(
         accidental: accidental.accidental,
@@ -395,10 +403,12 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
 
       int fromLowest =
           _accidentalPosition(accidental).numeric - _range!.lowest.numeric;
-
+      print(_accidentalPosition(accidental));
+      print(_range!.lowest);
       children.add(
         Positioned(
-          bottom: ((fromLowest + 2) * _verticalOffsetPerPosition) - 3,
+          bottom: ((fromLowest + 2) * _verticalOffsetPerPosition),
+          // bottom: 0,
           child: Padding(
             padding: EdgeInsets.only(
               left: _leftOffsets[index],
