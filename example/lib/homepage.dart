@@ -11,11 +11,14 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
-  double? calcWidth(GlyphBBox? bBoxes) {
+  Size? size(GlyphBBox? bBoxes) {
     if (bBoxes == null) {
-      return double.maxFinite;
+      return Size.infinite;
     }
-    return (bBoxes.bBoxNE.x * 20 - bBoxes.bBoxSW.x * 20).abs();
+    double width = (bBoxes.bBoxNE.x * 20 - bBoxes.bBoxSW.x * 20).abs();
+    double height = (bBoxes.bBoxNE.y * 20 - bBoxes.bBoxSW.y * 20).abs();
+
+    return Size(width, height);
   }
 
   @override
@@ -32,11 +35,11 @@ class _HomepageState extends State<Homepage> {
           ...glyphs.mapIndexed(
             (i, g) => Positioned(
               left: (i * 200) + 50,
-              child: SizedBox(
-                height: 80,
-                width: calcWidth(bBoxes.elementAt(i)),
+              top: 40 - (bBoxes.elementAt(i)!.bBoxNE.y * 20).floorToDouble(),
+              child: SizedBox.fromSize(
+                size: size(bBoxes.elementAt(i)),
                 child: CustomPaint(
-                  painter: SmuflPainter(g, bBoxes.elementAt(i)),
+                  painter: SmuflPainter(g, bBoxes.elementAt(i)!),
                 ),
               ),
             ),
