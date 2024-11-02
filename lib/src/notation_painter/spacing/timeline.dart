@@ -198,6 +198,7 @@ class Timeline {
     // List<String> names = List.generate(totalLength, (_) => "");
 
     double measureStartMargin = 0;
+    bool isMeasureStart = true;
     for (var entry in _value.entries) {
       List<_TimelineValue> beatCol = entry.value.sorted(
         (a, b) => a.voice.compareTo(b.voice),
