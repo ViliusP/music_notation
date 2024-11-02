@@ -511,7 +511,7 @@ class NoteheadElement extends StatelessWidget {
   /// line stroke width and stave space.
   Size size(FontMetadata font) {
     const height = NotationLayoutProperties.defaultNoteheadHeight;
-
+    SmuflGlyph glyph = NoteheadSetDefault.noteheadBlack;
     switch (_noteType) {
       case NoteTypeValue.n1024th:
       case NoteTypeValue.n512th:
@@ -522,15 +522,12 @@ class NoteheadElement extends StatelessWidget {
       case NoteTypeValue.n16th:
       case NoteTypeValue.eighth:
       case NoteTypeValue.quarter:
-        Rect headRect = font.glyphBBoxes['noteheadBlack']!.toRect();
-        return Size(headRect.width, headRect.height);
+        glyph = NoteheadSetDefault.noteheadBlack;
       case NoteTypeValue.half:
-        Rect headRect = font.glyphBBoxes['noteheadHalf']!.toRect();
-        return Size(headRect.width, headRect.height);
+        glyph = NoteheadSetDefault.noteheadHalf;
       case NoteTypeValue.whole:
-        Rect headRect = font.glyphBBoxes['noteheadWhole']!.toRect();
+        glyph = NoteheadSetDefault.noteheadWhole;
         // Old value: const Size(21.2, height)
-        return Size(headRect.width, headRect.height);
       case NoteTypeValue.breve:
         return const Size(30, height); // Need to be adjusted in future.
       case NoteTypeValue.long:
@@ -538,6 +535,8 @@ class NoteheadElement extends StatelessWidget {
       case NoteTypeValue.maxima:
         return const Size(30, height); // Need to be adjusted in future.
     }
+    Rect headRect = font.glyphBBoxes[glyph]!.toRect();
+    return Size(headRect.width, headRect.height);
   }
 
   String get _smufl {
