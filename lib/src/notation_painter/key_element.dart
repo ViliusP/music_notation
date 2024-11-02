@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/models/data_types/accidental_value.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
@@ -13,22 +14,193 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/key_accidental_painter.dart';
+import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart';
+import 'package:music_notation/src/smufl/smufl_glyph.dart';
+
+const Map<AccidentalValue, SmuflGlyph> _accidentalSmuflMapping = {
+  AccidentalValue.sharp: AccidentalsStandard.accidentalSharp,
+  AccidentalValue.natural: AccidentalsStandard.accidentalNatural,
+  AccidentalValue.flat: AccidentalsStandard.accidentalFlat,
+  AccidentalValue.doubleSharp: AccidentalsStandard.accidentalDoubleFlat,
+  AccidentalValue.sharpSharp: AccidentalsStandard.accidentalSharpSharp,
+  AccidentalValue.flatFlat: AccidentalsStandard.accidentalDoubleFlat,
+  AccidentalValue.naturalSharp: AccidentalsStandard.accidentalNaturalSharp,
+  AccidentalValue.naturalFlat: AccidentalsStandard.accidentalNaturalSharp,
+  AccidentalValue.quarterFlat: SmuflGlyph.accidentalQuarterToneFlatStein,
+  AccidentalValue.quarterFharp: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.threeQuartersFlat: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.threeQuartersSharp: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.sharpDown: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.sharpUp: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.naturalDown: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.naturalUp: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.flatDown: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.flatUp: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.doubleSharpDown: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.doubleSharpUp: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.flatFlatDown: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.flatFlatUp: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.arrowDown: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.arrowUp: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.tripleSharp: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.tripleFlat: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.slashQuarterSharp: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.slashSharp: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.slashFlat: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.doubleSlashFlat: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.sharp1: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.sharp2: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.sharp3: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.sharp5: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.flat1: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.flat2: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.flat3: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.flat4: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.sori: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.koron: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.other: SmuflGlyph.noteheadXBlack,
+};
+
+const _sharpSequence = [
+  (
+    octave: 5,
+    accidental: PitchedKeyAccidental(
+        step: Step.F,
+        alter: 1,
+        accidental: KeyAccidental(value: AccidentalValue.sharp)),
+  ),
+  (
+    octave: 5,
+    accidental: PitchedKeyAccidental(
+        step: Step.C,
+        alter: 1,
+        accidental: KeyAccidental(value: AccidentalValue.sharp)),
+  ),
+  (
+    octave: 5,
+    accidental: PitchedKeyAccidental(
+        step: Step.G,
+        alter: 1,
+        accidental: KeyAccidental(value: AccidentalValue.sharp)),
+  ),
+  (
+    octave: 5,
+    accidental: PitchedKeyAccidental(
+        step: Step.D,
+        alter: 1,
+        accidental: KeyAccidental(value: AccidentalValue.sharp)),
+  ),
+  (
+    octave: 4,
+    accidental: PitchedKeyAccidental(
+        step: Step.A,
+        alter: 1,
+        accidental: KeyAccidental(value: AccidentalValue.sharp)),
+  ),
+  (
+    octave: 5,
+    accidental: PitchedKeyAccidental(
+        step: Step.E,
+        alter: 1,
+        accidental: KeyAccidental(value: AccidentalValue.sharp)),
+  ),
+  (
+    octave: 4,
+    accidental: PitchedKeyAccidental(
+        step: Step.B,
+        alter: 1,
+        accidental: KeyAccidental(value: AccidentalValue.sharp)),
+  ),
+];
+
+const _flatSequence = [
+  (
+    octave: 4,
+    accidental: PitchedKeyAccidental(
+      step: Step.B,
+      alter: -1,
+      accidental: KeyAccidental(value: AccidentalValue.flat),
+    ),
+  ),
+  (
+    octave: 5,
+    accidental: PitchedKeyAccidental(
+        step: Step.E,
+        alter: -1,
+        accidental: KeyAccidental(value: AccidentalValue.flat))
+  ),
+  (
+    octave: 4,
+    accidental: PitchedKeyAccidental(
+        step: Step.A,
+        alter: -1,
+        accidental: KeyAccidental(value: AccidentalValue.flat))
+  ),
+  (
+    octave: 5,
+    accidental: PitchedKeyAccidental(
+        step: Step.D,
+        alter: -1,
+        accidental: KeyAccidental(value: AccidentalValue.flat))
+  ),
+  (
+    octave: 4,
+    accidental: PitchedKeyAccidental(
+        step: Step.G,
+        alter: -1,
+        accidental: KeyAccidental(value: AccidentalValue.flat))
+  ),
+  (
+    octave: 5,
+    accidental: PitchedKeyAccidental(
+        step: Step.C,
+        alter: -1,
+        accidental: KeyAccidental(value: AccidentalValue.flat))
+  ),
+  (
+    octave: 4,
+    accidental: PitchedKeyAccidental(
+        step: Step.F,
+        alter: -1,
+        accidental: KeyAccidental(value: AccidentalValue.flat))
+  ),
+];
 
 class KeySignatureAccidental extends StatelessWidget {
+  final PitchedKeyAccidental accidental;
   final FontMetadata font;
+
+  Size get size => calculateSize(accidental, font);
+
+  static Size calculateSize(
+    PitchedKeyAccidental accidental,
+    FontMetadata font,
+  ) {
+    SmuflGlyph glyph = _accidentalSmuflMapping[
+        accidental.accidental?.value ?? AccidentalValue.other]!;
+
+    Rect headRect = font.glyphBBoxes[glyph]!.toRect();
+    return Size(headRect.width, headRect.height);
+  }
 
   const KeySignatureAccidental({
     super.key,
+    required this.accidental,
     required this.font,
   });
+
+  static String smufl(AccidentalValue? accidentalValue) {
+    if (accidentalValue == null) return SmuflGlyph.noteheadXBlack.codepoint;
+    return _accidentalSmuflMapping[accidentalValue]!.codepoint;
+  }
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
       size: size,
       painter: KeyAccidentalPainter(
-        Accidentals.accidentalFlat.codepoint,
+        accidental.accidental?.smufl ?? smufl(accidental.accidental?.value),
       ),
     );
   }
@@ -49,26 +221,6 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
     );
   }
 
-  static const _sharpSequence = [
-    (octave: 5, accidental: PitchedKeyAccidental(step: Step.F, alter: 1)),
-    (octave: 5, accidental: PitchedKeyAccidental(step: Step.C, alter: 1)),
-    (octave: 5, accidental: PitchedKeyAccidental(step: Step.G, alter: 1)),
-    (octave: 5, accidental: PitchedKeyAccidental(step: Step.D, alter: 1)),
-    (octave: 4, accidental: PitchedKeyAccidental(step: Step.A, alter: 1)),
-    (octave: 5, accidental: PitchedKeyAccidental(step: Step.E, alter: 1)),
-    (octave: 4, accidental: PitchedKeyAccidental(step: Step.B, alter: 1)),
-  ];
-
-  static const _flatSequence = [
-    (octave: 4, accidental: PitchedKeyAccidental(step: Step.B, alter: -1)),
-    (octave: 5, accidental: PitchedKeyAccidental(step: Step.E, alter: -1)),
-    (octave: 4, accidental: PitchedKeyAccidental(step: Step.A, alter: -1)),
-    (octave: 5, accidental: PitchedKeyAccidental(step: Step.D, alter: -1)),
-    (octave: 4, accidental: PitchedKeyAccidental(step: Step.G, alter: -1)),
-    (octave: 5, accidental: PitchedKeyAccidental(step: Step.C, alter: -1)),
-    (octave: 4, accidental: PitchedKeyAccidental(step: Step.F, alter: -1)),
-  ];
-
   static ElementPosition _accidentalPosition(
       ({int octave, PitchedKeyAccidental accidental}) value) {
     return ElementPosition(step: value.accidental.step, octave: value.octave);
@@ -82,6 +234,9 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
       return [];
     }
     var offsets = <double>[];
+    for (var accidental in accidentals) {
+      Size accidentalSize = KeySignatureAccidental(
+        accidental: accidental.accidental,
         font: font,
       ).size;
 
@@ -124,6 +279,8 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
     for (var accidental in accidentals) {
       var accidentalPosition = _accidentalPosition(accidental);
 
+      Size accidentalSize = KeySignatureAccidental(
+        accidental: accidental.accidental,
         font: font,
       ).size;
 
@@ -231,6 +388,8 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
   Widget build(BuildContext context) {
     var children = <Widget>[];
     for (var (index, accidental) in accidentals.indexed) {
+      var accidentalWidget = KeySignatureAccidental(
+        accidental: accidental.accidental,
         font: font,
       );
 
