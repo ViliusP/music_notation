@@ -451,9 +451,8 @@ class MeasureLayout extends StatelessWidget {
         DebugSettings? dSettings = DebugSettings.of(context);
 
         if (dSettings != null) {
-          if (dSettings.paintBBoxBelowStaff) {
             Rect boxBelow = child.boxBelowStaff();
-
+          if (dSettings.paintBBoxBelowStaff && boxBelow.height > 0) {
             positionedElements.add(
               Positioned(
                 left: spacings[index],
@@ -468,9 +467,8 @@ class MeasureLayout extends StatelessWidget {
             );
           }
 
-          if (dSettings.paintBBoxAboveStaff) {
             Rect boxAbove = child.boxAboveStaff();
-
+          if (dSettings.paintBBoxAboveStaff && boxAbove.height > 0) {
             positionedElements.add(
               Positioned(
                 left: spacings[index],
