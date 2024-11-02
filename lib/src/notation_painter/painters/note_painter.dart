@@ -1,4 +1,5 @@
 import 'package:flutter/rendering.dart';
+import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/note_element.dart';
 
@@ -9,12 +10,15 @@ class NotePainter extends CustomPainter {
 
   final String smufl;
 
+  final GlyphBBox bBox;
+
   final LedgerLines? ledgerLines;
 
   final Color color;
 
   NotePainter({
     required this.smufl,
+    required this.bBox,
     this.ledgerLines,
     this.color = const Color.fromRGBO(0, 0, 0, 1),
   });
@@ -25,9 +29,10 @@ class NotePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    PainterUtilities.drawSmuflSymbol(
+    PainterUtilities.drawSmuflSymbolV2(
       canvas,
       smufl,
+      bBox,
       color: color,
     );
     if (ledgerLines == null || ledgerLines?.count == 0) return;
