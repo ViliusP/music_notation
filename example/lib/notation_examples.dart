@@ -34,6 +34,10 @@ enum NotationExample {
   adjecentNotes(
     displayName: "Adjecent notes",
     path: "assets/scores/adjecent_notes.musicxml",
+  ),
+  keySignatures(
+    displayName: "Key signatures",
+    path: "assets/scores/key_signatures.musicxml",
   );
 
   const NotationExample({
