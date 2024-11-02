@@ -1,5 +1,4 @@
 import 'package:flutter/rendering.dart';
-import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 
 class KeyAccidentalPainter extends CustomPainter {
