@@ -464,7 +464,7 @@ class KeyAccidental {
   /// Specifies a Standard Music Font Layout (SMuFL) accidental character by its canonical glyph name.
   final String? smufl;
 
-  KeyAccidental({
+  const KeyAccidental({
     required this.value,
     this.smufl,
   });
