@@ -37,9 +37,10 @@ extension FontPainting on GlyphBBox {
     return Rect.fromPoints(
       Offset(
         topRight.x * staveSpace,
-        48 - staveSpace * (topRight.y - bottomLeft.y),
+        NotationLayoutProperties.staveHeight -
+            staveSpace * (topRight.y - bottomLeft.y),
       ),
-      Offset(bottomLeft.x * staveSpace, 48),
+      Offset(bottomLeft.x * staveSpace, NotationLayoutProperties.staveHeight),
     );
   }
 }
