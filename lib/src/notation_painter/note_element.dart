@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
+import 'package:music_notation/src/models/elements/music_data/note/notations/notation.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/music_data/note/notehead.dart';
@@ -507,6 +508,10 @@ class NoteheadElement extends StatelessWidget {
   final Color color;
 
   GlyphBBox _bBox(FontMetadata font) {
+    return font.glyphBBoxes[_glyph]!;
+  }
+
+  SmuflGlyph get _glyph {
     switch (_noteType) {
       case NoteTypeValue.n1024th:
       case NoteTypeValue.n512th:
@@ -517,17 +522,17 @@ class NoteheadElement extends StatelessWidget {
       case NoteTypeValue.n16th:
       case NoteTypeValue.eighth:
       case NoteTypeValue.quarter:
-        return font.glyphBBoxes['noteheadBlack']!;
+        return NoteheadSetDefault.noteheadBlack;
       case NoteTypeValue.half:
-        return font.glyphBBoxes['noteheadHalf']!;
+        return NoteheadSetDefault.noteheadHalf;
       case NoteTypeValue.whole:
-        return font.glyphBBoxes['noteheadWhole']!;
+        return NoteheadSetDefault.noteheadWhole;
       case NoteTypeValue.breve:
-        return font.glyphBBoxes['noteheadBlack']!; // TODO: finish
+        return NoteheadSetDefault.noteheadDoubleWhole;
       case NoteTypeValue.long:
-        return font.glyphBBoxes['noteheadBlack']!; // TODO: finish
+        return SmuflGlyph.mensuralNoteheadLongaWhite;
       case NoteTypeValue.maxima:
-        return font.glyphBBoxes['noteheadBlack']!; // TODO: finish
+        return SmuflGlyph.mensuralNoteheadMaximaWhite;
     }
   }
 
@@ -540,32 +545,7 @@ class NoteheadElement extends StatelessWidget {
   /// The height of all notehead types is same and equal to the sum of the staff
   /// line stroke width and stave space.
   Size size(FontMetadata font) {
-    const height = NotationLayoutProperties.defaultNoteheadHeight;
-    SmuflGlyph glyph = NoteheadSetDefault.noteheadBlack;
-    switch (_noteType) {
-      case NoteTypeValue.n1024th:
-      case NoteTypeValue.n512th:
-      case NoteTypeValue.n256th:
-      case NoteTypeValue.n128th:
-      case NoteTypeValue.n64th:
-      case NoteTypeValue.n32nd:
-      case NoteTypeValue.n16th:
-      case NoteTypeValue.eighth:
-      case NoteTypeValue.quarter:
-        glyph = NoteheadSetDefault.noteheadBlack;
-      case NoteTypeValue.half:
-        glyph = NoteheadSetDefault.noteheadHalf;
-      case NoteTypeValue.whole:
-        glyph = NoteheadSetDefault.noteheadWhole;
-      // Old value: const Size(21.2, height)
-      case NoteTypeValue.breve:
-        return const Size(30, height); // Need to be adjusted in future.
-      case NoteTypeValue.long:
-        return const Size(30, height); // Need to be adjusted in future.
-      case NoteTypeValue.maxima:
-        return const Size(30, height); // Need to be adjusted in future.
-    }
-    Rect headRect = font.glyphBBoxes[glyph]!.toRect();
+    Rect headRect = _bBox(font).toRect();
     return Size(headRect.width, headRect.height);
   }
 
@@ -795,7 +775,7 @@ class RestElement extends StatelessWidget {
       // TODO: finish
       painter: NotePainter(
         smufl: _smufl,
-        bBox: font.glyphBBoxes["restHalf"]!,
+        bBox: font.glyphBBoxes[SmuflGlyph.restDoubleWhole]!,
       ),
     );
   }
