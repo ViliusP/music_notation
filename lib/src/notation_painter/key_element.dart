@@ -39,7 +39,7 @@ class KeySignatureAccidental extends StatelessWidget {
 }
 
 class KeySignature extends StatelessWidget implements MeasureWidget {
-  static const _spaceBetweenAccidentals = 6.0;
+  static const _spaceBetweenAccidentals = 0;
   static const _verticalOffsetPerPosition =
       NotationLayoutProperties.staveSpace / 2;
 
