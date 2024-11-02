@@ -137,7 +137,7 @@ class Timeline {
             ),
           );
           break;
-        case KeySignature keyElement:
+        case KeySignatureElement keyElement:
           _value[cursor]!.add(
             _TimelineValue(
               index,
@@ -145,7 +145,7 @@ class Timeline {
               offsetAfter: keyElement.size.width + 12,
               voice: "-1", // The "-1" indicates attributes sector
               name: "KeS",
-              widgetType: KeySignature,
+              widgetType: KeySignatureElement,
             ),
           );
           break;

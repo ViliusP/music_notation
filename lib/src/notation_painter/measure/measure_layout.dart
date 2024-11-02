@@ -74,6 +74,10 @@ class MeasureLayout extends StatelessWidget {
           contextAfter = contextAfter.copyWith(
             time: measureElement.timeBeat,
           );
+        case KeySignatureElement _:
+          contextAfter = contextAfter.copyWith(
+            lastKey: measureElement.musicKey,
+          );
           break;
       }
     }
@@ -226,7 +230,7 @@ class MeasureLayout extends StatelessWidget {
         "There are multiple keys elements in attributes, therefore correct staff must be provided",
       );
     }
-    var keySignature = KeySignature.fromKeyData(
+    var keySignature = KeySignatureElement.fromKeyData(
       keyData: musicKey,
       notationContext: notationContext,
       font: font,

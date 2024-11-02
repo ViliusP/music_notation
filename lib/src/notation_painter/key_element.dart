@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
@@ -9,6 +8,7 @@ import 'package:music_notation/src/models/elements/music_data/attributes/key.dar
     hide Key;
 import 'package:music_notation/src/models/elements/music_data/attributes/key.dart'
     as musicxml show Key;
+
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
@@ -16,7 +16,6 @@ import 'package:music_notation/src/notation_painter/notation_layout_properties.d
 import 'package:music_notation/src/notation_painter/painters/key_accidental_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart';
-import 'package:music_notation/src/smufl/smufl_glyph.dart';
 
 const Map<AccidentalValue, SmuflGlyph> _accidentalSmuflMapping = {
   AccidentalValue.sharp: AccidentalsStandard.accidentalSharp,
@@ -221,11 +220,13 @@ class AccidentalElement extends StatelessWidget {
   }
 }
 
-class KeySignature extends StatelessWidget implements MeasureWidget {
+class KeySignatureElement extends StatelessWidget implements MeasureWidget {
+  final FontMetadata font;
+  final TraditionalKey musicKey;
+  final NotationContext notationContext;
+
   static const _spaceBetweenAccidentals = 6.0;
   static const _offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
-
-  final FontMetadata font;
 
   @override
   AlignmentPosition get alignmentPosition {
@@ -247,7 +248,12 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
     return ElementPosition(step: value.accidental.step, octave: value.octave);
   }
 
-  final List<({int octave, PitchedKeyAccidental accidental})> accidentals;
+  List<({int octave, PitchedKeyAccidental accidental})> get accidentals {
+    var accidentals = <({int octave, PitchedKeyAccidental accidental})>[];
+    int fifths = (musicKey).fifths.abs();
+    accidentals = (musicKey).fifths >= 0 ? _sharpSequence : _flatSequence;
+    return accidentals.sublist(0, fifths);
+  }
 
   List<double> get _leftOffsets {
     var leftOffset = 0.0;
@@ -330,32 +336,20 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
   @override
   ElementPosition get position => _position.transpose(_transposeInterval);
 
-  final NotationContext notationContext;
-
-  const KeySignature({
-    super.key,
-    required this.accidentals,
+  const KeySignatureElement({
     required this.notationContext,
     required this.font,
+    required this.musicKey,
+    super.key,
   });
 
-  factory KeySignature.fromKeyData({
-    Key? key,
+  factory KeySignatureElement.fromKeyData({
     required musicxml.Key keyData,
     required NotationContext notationContext,
     required FontMetadata font,
   }) {
-    var accidentals = <({int octave, PitchedKeyAccidental accidental})>[];
-
     switch (keyData) {
       case TraditionalKey _:
-        if (keyData.fifths == 0) {
-          return KeySignature(
-            accidentals: [],
-            notationContext: notationContext,
-            font: font,
-          );
-        }
         if (kDebugMode && keyData.octaves.isNotEmpty) {
           // ignore: avoid_print
           print("key-octave is not currently supported.");
@@ -370,23 +364,16 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
           print("mode is not currently supported.");
         }
 
-        int fifths = keyData.fifths.abs();
-        accidentals = keyData.fifths >= 0 ? _sharpSequence : _flatSequence;
-        accidentals = accidentals.sublist(0, fifths);
-
-        break;
+        return KeySignatureElement(
+          notationContext: notationContext,
+          font: font,
+          musicKey: keyData,
+        );
       case NonTraditionalKey _:
         throw UnimplementedError(
           "Non traditional key is not implemented in renderer yet",
         );
     }
-
-    return KeySignature(
-      key: key,
-      accidentals: accidentals,
-      notationContext: notationContext,
-      font: font,
-    );
   }
 
   @override
