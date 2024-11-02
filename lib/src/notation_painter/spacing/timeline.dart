@@ -7,6 +7,7 @@ import 'package:music_notation/src/notation_painter/chord_element.dart';
 import 'package:music_notation/src/notation_painter/cursor_element.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
+import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/note_element.dart';
 import 'package:music_notation/src/notation_painter/time_beat_element.dart';
 
@@ -74,25 +75,29 @@ class Timeline {
     for (final (index, child) in children.indexed) {
       _value[cursor] ??= [];
       switch (child) {
-        case NoteElement _:
+        case NoteElement note:
           String voice = child.note.editorialVoice.voice ?? "1";
           _value[cursor]!.add(_TimelineValue(
             index,
             child.duration,
             voice: voice,
             widgetType: NoteElement,
-            name:
-                child.position.toString().replaceFirst("ElementPosition  ", ""),
+            width: note.size.width,
+            name: child.position.toString().replaceFirst(
+                  "ElementPosition  ",
+                  "",
+                ),
           ));
           cursor += child.duration.toInt();
           break;
-        case Chord _:
+        case Chord chord:
           String voice = child.notes.firstOrNull?.editorialVoice.voice ?? "1";
           _value[cursor]!.add(_TimelineValue(
             index,
             child.duration,
             voice: voice,
             widgetType: Chord,
+            width: chord.size.width,
             name:
                 "C${child.position.toString().replaceFirst("ElementPosition  ", "")}",
           ));
@@ -118,7 +123,7 @@ class Timeline {
             _TimelineValue(
               index,
               0,
-              offsetAfter: timeBeatElement.size.width + 16,
+              width: timeBeatElement.size.width,
               voice: "-1", // The "-1" indicates attributes sector
               name: "TB",
               widgetType: TimeBeatElement,
@@ -130,7 +135,7 @@ class Timeline {
             _TimelineValue(
               index,
               0,
-              offsetAfter: clefElement.size.width + 12,
+              width: clefElement.size.width,
               voice: "-1", // The "-1" indicates attributes sector
               name: "CLF",
               widgetType: ClefElement,
@@ -142,7 +147,7 @@ class Timeline {
             _TimelineValue(
               index,
               0,
-              offsetAfter: keyElement.size.width + 12,
+              width: keyElement.size.width,
               voice: "-1", // The "-1" indicates attributes sector
               name: "KeS",
               widgetType: KeySignature,
@@ -184,43 +189,58 @@ class Timeline {
   /// List<double> spacings = timeline.toList(10.0);
   /// // spacings now contains spatial positions for each _TimelineValue
   /// ```
-  List<double> toList(double spacePerFullDivision) {
+  List<double> toSpacings(double spacePerFullDivision) {
     double spacePerBeat = spacePerFullDivision / divisions;
     int totalLength = _value.values.fold(0, (sum, list) => sum + list.length);
     List<double> spacings = List.generate(totalLength, (_) => 0);
-    double offsetForNotes = (divisions / 8) * spacePerBeat;
     double biggestOffset = 0;
     _TimelineValue? biggestOffsetElement;
     // List<String> names = List.generate(totalLength, (_) => "");
+
+    double measureStartMargin = 0;
     for (var entry in _value.entries) {
       List<_TimelineValue> beatCol = entry.value.sorted(
         (a, b) => a.voice.compareTo(b.voice),
       );
 
       int beat = entry.key;
+      _TimelineValue? valueBefore;
+      bool isMeasureStart = true;
+      for (_TimelineValue value in beatCol) {
+        // names[value.index] = value.name;
+        if (value.duration != 0) {
+          if (isMeasureStart) {
+            measureStartMargin += valueBefore?.width ?? 0;
+            measureStartMargin += NotationLayoutProperties.staveSpace;
+            isMeasureStart = false;
+          }
+          double leftOffset = measureStartMargin + (beat * spacePerBeat);
 
-      for (_TimelineValue val in beatCol) {
-        // names[val.index] = val.name;
-        if (val.duration != 0) {
-          double leftOffset = offsetForNotes + (beat * spacePerBeat);
-          spacings[val.index] = leftOffset;
+          spacings[value.index] = leftOffset;
         }
-        if (val.duration == 0) {
-          spacings[val.index] = offsetForNotes;
-          offsetForNotes += val.offsetAfter;
+        if (value.duration == 0) {
+          spacings[value.index] = measureStartMargin;
+          spacings[value.index] += NotationLayoutProperties.staveSpace;
+          if (valueBefore != null) {
+            spacings[value.index] += valueBefore.width;
+          }
+
+          measureStartMargin = spacings[value.index];
         }
-        if (biggestOffset < spacings[val.index]) {
-          biggestOffset = spacings[val.index];
-          biggestOffsetElement = val;
+        if (biggestOffset < spacings[value.index]) {
+          biggestOffset = spacings[value.index];
+          biggestOffsetElement = value;
         }
+        valueBefore = value;
       }
     }
     // Last item processing:
     // If there is no empty last item like backup or forward. It should have last
     // additional spacing which indicates how much space should be after last element.
     if ([NoteElement, Chord].contains(biggestOffsetElement?.widgetType)) {
-      spacings
-          .add(biggestOffset + (biggestOffsetElement!.duration * spacePerBeat));
+      spacings.add(
+        biggestOffset + (biggestOffsetElement!.duration * spacePerBeat),
+      );
     }
     // print(names);
     return spacings;
@@ -323,7 +343,7 @@ class _TimelineValue {
   final String name;
   final int index;
   final double duration;
-  final double offsetAfter;
+  final double width;
 
   /// The runtime type of the [MeasureWidget] this timeline value represents.
   ///
@@ -335,7 +355,7 @@ class _TimelineValue {
     this.index,
     this.duration, {
     required this.name,
-    this.offsetAfter = 0,
+    this.width = 0,
     this.widgetType,
     required this.voice,
   });

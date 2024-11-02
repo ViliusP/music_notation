@@ -359,7 +359,7 @@ class MeasureLayout extends StatelessWidget {
     }
 
     final Timeline timeline = Timeline(divisions: divisions)..compute(children);
-    return timeline.toList(NotationLayoutProperties.staveHeight * 1.5);
+    return timeline.toSpacings(NotationLayoutProperties.staveHeight * 1.5);
   }
 
 // Calculate the vertical padding based on the highest note above and below the staff.
