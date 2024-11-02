@@ -30,6 +30,10 @@ enum NotationExample {
   singleVoiceBeaming(
     displayName: "Single voice beaming",
     path: "assets/scores/single_voice_beaming.musicxml",
+  ),
+  adjecentNotes(
+    displayName: "Adjecent notes",
+    path: "assets/scores/adjecent_notes.musicxml",
   );
 
   const NotationExample({
