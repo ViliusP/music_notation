@@ -619,7 +619,7 @@ class Coordinates {
   final double x;
   final double y;
 
-  Coordinates({required this.x, required this.y});
+  const Coordinates({required this.x, required this.y});
 
   factory Coordinates.fromList(List<double> coordinates) {
     return Coordinates(x: coordinates[0], y: coordinates[1]);
@@ -629,4 +629,15 @@ class Coordinates {
   String toString() {
     return "($x, $y)";
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Coordinates &&
+          runtimeType == other.runtimeType &&
+          x == other.x &&
+          y == other.y;
+
+  @override
+  int get hashCode => x.hashCode ^ y.hashCode;
 }
