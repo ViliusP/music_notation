@@ -206,7 +206,6 @@ class Timeline {
 
       int beat = entry.key;
       _TimelineValue? valueBefore;
-      bool isMeasureStart = true;
       for (_TimelineValue value in beatCol) {
         // names[value.index] = value.name;
         if (value.duration != 0) {
@@ -225,7 +224,6 @@ class Timeline {
           if (valueBefore != null) {
             spacings[value.index] += valueBefore.width;
           }
-
           measureStartMargin = spacings[value.index];
         }
         if (biggestOffset < spacings[value.index]) {
