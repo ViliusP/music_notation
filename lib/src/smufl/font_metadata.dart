@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:music_notation/src/smufl/smufl_glyph.dart';
 import 'package:music_notation/src/smufl/utilities.dart';
 
@@ -575,8 +576,16 @@ class FontMetadata {
     Map<SmuflGlyph, GlyphBBox> bBoxes = {};
     if (json['glyphBBoxes'] != null) {
       json['glyphBBoxes'].forEach((key, value) {
-        SmuflGlyph smuflGlyph = GlyphUtilties.fromRawName(key);
-        bBoxes[smuflGlyph] = GlyphBBox.fromJson(value);
+        try {
+          SmuflGlyph smuflGlyph = GlyphUtilties.fromRawName(key);
+          bBoxes[smuflGlyph] = GlyphBBox.fromJson(value);
+        } catch (e) {
+          if (kDebugMode) {
+            print(
+              "Error parsing bounding box for glyph: $key. Possible metadata inconsistency between SMuFL specification and font metadata.",
+            );
+          }
+        }
       });
     }
 
@@ -584,7 +593,15 @@ class FontMetadata {
     List<GlyphWithAnchor> glyphsWithAnchors = [];
     if (json['glyphsWithAnchors'] != null) {
       json['glyphsWithAnchors'].forEach((key, value) {
-        glyphsWithAnchors.add(GlyphWithAnchor.fromJson(key, value));
+        try {
+          glyphsWithAnchors.add(GlyphWithAnchor.fromJson(key, value));
+        } catch (e) {
+          if (kDebugMode) {
+            print(
+              "Error parsing anchors for glyph: $key. Possible metadata inconsistency between SMuFL specification and font metadata.",
+            );
+          }
+        }
       });
     }
 
