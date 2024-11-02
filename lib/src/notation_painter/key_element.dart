@@ -16,15 +16,11 @@ import 'package:music_notation/src/notation_painter/painters/key_accidental_pain
 import 'package:music_notation/src/smufl/glyph_class.dart';
 
 class KeySignatureAccidental extends StatelessWidget {
-  final AccidentalValue type;
-
-  // Size for flat.
-  // It should be different for sharp or natural.
-  Size get size => const Size(11, 30);
+  final FontMetadata font;
 
   const KeySignatureAccidental({
     super.key,
-    required this.type,
+    required this.font,
   });
 
   @override
@@ -42,6 +38,8 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
   static const _spaceBetweenAccidentals = 6.0;
   static const _verticalOffsetPerPosition =
       NotationLayoutProperties.staveSpace / 2;
+
+  final FontMetadata font;
 
   @override
   AlignmentPosition get alignmentPosition {
@@ -84,9 +82,7 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
       return [];
     }
     var offsets = <double>[];
-    for (var _ in accidentals) {
-      Size accidentalSize = const KeySignatureAccidental(
-        type: AccidentalValue.flat,
+        font: font,
       ).size;
 
       offsets.add(leftOffset);
@@ -128,8 +124,7 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
     for (var accidental in accidentals) {
       var accidentalPosition = _accidentalPosition(accidental);
 
-      Size accidentalSize = const KeySignatureAccidental(
-        type: AccidentalValue.flat,
+        font: font,
       ).size;
 
       if (_range!.highest == accidentalPosition) {
@@ -175,25 +170,28 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
     super.key,
     required this.accidentals,
     required this.notationContext,
+    required this.font,
   });
 
   factory KeySignature.fromKeyData({
     Key? key,
     required musicxml.Key keyData,
     required NotationContext notationContext,
+    required FontMetadata font,
   }) {
     var accidentals = <({int octave, PitchedKeyAccidental accidental})>[];
 
     switch (keyData) {
       case TraditionalKey _:
         if (keyData.fifths == 0) {
-          return const KeySignature(
+          return KeySignature(
             accidentals: [],
             notationContext: NotationContext(
               divisions: null,
               clef: null,
               time: null,
             ),
+            font: font,
           );
         }
         if (kDebugMode && keyData.octaves.isNotEmpty) {
@@ -225,6 +223,7 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
       key: key,
       accidentals: accidentals,
       notationContext: notationContext,
+      font: font,
     );
   }
 
@@ -232,8 +231,7 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
   Widget build(BuildContext context) {
     var children = <Widget>[];
     for (var (index, accidental) in accidentals.indexed) {
-      var accidentalWidget = const KeySignatureAccidental(
-        type: AccidentalValue.flat,
+        font: font,
       );
 
       int fromLowest =

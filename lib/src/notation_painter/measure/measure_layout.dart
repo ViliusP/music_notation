@@ -183,6 +183,7 @@ class MeasureLayout extends StatelessWidget {
     Attributes element,
     int? staff,
     NotationContext notationContext,
+    FontMetadata font,
   ) {
     List<MeasureWidget> widgets = [];
     // -----------------------------
@@ -228,6 +229,7 @@ class MeasureLayout extends StatelessWidget {
     var keySignature = KeySignature.fromKeyData(
       keyData: musicKey,
       notationContext: notationContext,
+      font: font,
     );
     if (keySignature.firstPosition != null) {
       widgets.add(keySignature);
@@ -320,6 +322,7 @@ class MeasureLayout extends StatelessWidget {
             element,
             staff,
             contextAfter,
+            font,
           );
           contextAfter = _contextAfterAttributes(element, staff, contextAfter);
           children.addAll(attributesWidgets);
