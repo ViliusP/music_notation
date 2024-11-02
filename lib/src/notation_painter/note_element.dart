@@ -17,6 +17,7 @@ import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 import 'package:music_notation/src/notation_painter/utilities/notation_rendering_exception.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
+import 'package:music_notation/src/smufl/glyph_class.dart';
 import 'package:music_notation/src/smufl/smufl_glyph.dart';
 
 const Map<String, Color> _voiceColors = {
@@ -527,7 +528,7 @@ class NoteheadElement extends StatelessWidget {
         glyph = NoteheadSetDefault.noteheadHalf;
       case NoteTypeValue.whole:
         glyph = NoteheadSetDefault.noteheadWhole;
-        // Old value: const Size(21.2, height)
+      // Old value: const Size(21.2, height)
       case NoteTypeValue.breve:
         return const Size(30, height); // Need to be adjusted in future.
       case NoteTypeValue.long:
