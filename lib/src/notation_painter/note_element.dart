@@ -265,7 +265,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
             step = noteForm.displayStep;
             octave = noteForm.displayOctave;
           case Rest _:
-            return RestElement.fromNote(note, 1).position;
+            return RestElement.determinePosition(note, 1);
         }
 
         final position = ElementPosition(
@@ -405,7 +405,11 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     );
 
     if (_isRest) {
-      return RestElement.fromNote(note, notationContext.divisions!);
+      return RestElement.fromNote(
+        note: note,
+        divisions: notationContext.divisions!,
+        font: font,
+      );
     }
 
     var stemLeftPadding = NotationLayoutProperties.stemStrokeWidth / 2;
@@ -502,6 +506,31 @@ class NoteheadElement extends StatelessWidget {
 
   final Color color;
 
+  GlyphBBox _bBox(FontMetadata font) {
+    switch (_noteType) {
+      case NoteTypeValue.n1024th:
+      case NoteTypeValue.n512th:
+      case NoteTypeValue.n256th:
+      case NoteTypeValue.n128th:
+      case NoteTypeValue.n64th:
+      case NoteTypeValue.n32nd:
+      case NoteTypeValue.n16th:
+      case NoteTypeValue.eighth:
+      case NoteTypeValue.quarter:
+        return font.glyphBBoxes['noteheadBlack']!;
+      case NoteTypeValue.half:
+        return font.glyphBBoxes['noteheadHalf']!;
+      case NoteTypeValue.whole:
+        return font.glyphBBoxes['noteheadWhole']!;
+      case NoteTypeValue.breve:
+        return font.glyphBBoxes['noteheadBlack']!; // TODO: finish
+      case NoteTypeValue.long:
+        return font.glyphBBoxes['noteheadBlack']!; // TODO: finish
+      case NoteTypeValue.maxima:
+        return font.glyphBBoxes['noteheadBlack']!; // TODO: finish
+    }
+  }
+
   /// Size of notehead symbol.
   ///
   /// The minim is usually slightly larger than the black notehead.
@@ -564,6 +593,7 @@ class NoteheadElement extends StatelessWidget {
         smufl: _smufl,
         ledgerLines: ledgerLines,
         color: color,
+        bBox: _bBox(font),
       ),
     );
   }
@@ -571,7 +601,7 @@ class NoteheadElement extends StatelessWidget {
 
 class RestElement extends StatelessWidget {
   final Note note;
-
+  final FontMetadata font;
   final double divisions;
 
   /// Determines the appropriate note type value based on the note's properties.
@@ -582,7 +612,7 @@ class RestElement extends StatelessWidget {
   /// Otherwise, the note type is calculated based on its duration and divisions.
   ///
   /// Returns the determined [NoteTypeValue] for the note.
-  NoteTypeValue get _type {
+  static NoteTypeValue _type(Note note, double divisions) {
     if (note.type?.value != null) {
       return note.type!.value;
     }
@@ -637,7 +667,7 @@ class RestElement extends StatelessWidget {
     return noteType!;
   }
 
-  ElementPosition get position {
+  static ElementPosition determinePosition(Note note, double divisions) {
     Step? step = (note.form as Rest).displayStep;
     int? octave = (note.form as Rest).displayOctave;
 
@@ -645,7 +675,7 @@ class RestElement extends StatelessWidget {
       return ElementPosition(step: step, octave: octave);
     }
 
-    switch (_type) {
+    switch (_type(note, divisions)) {
       case NoteTypeValue.n1024th:
         return const ElementPosition(step: Step.C, octave: 4); // Adjust
       case NoteTypeValue.n512th:
@@ -677,8 +707,10 @@ class RestElement extends StatelessWidget {
     }
   }
 
+  ElementPosition get position => determinePosition(note, divisions);
+
   String get _smufl {
-    switch (_type) {
+    switch (_type(note, divisions)) {
       case NoteTypeValue.n1024th:
         return SmuflGlyph.rest1024th.codepoint;
       case NoteTypeValue.n512th:
@@ -711,7 +743,7 @@ class RestElement extends StatelessWidget {
   }
 
   Size get size {
-    switch (_type) {
+    switch (_type(note, divisions)) {
       case NoteTypeValue.n1024th:
       case NoteTypeValue.n512th:
       case NoteTypeValue.n256th:
@@ -737,20 +769,34 @@ class RestElement extends StatelessWidget {
     }
   }
 
-  factory RestElement.fromNote(Note note, double divisions) {
+  factory RestElement.fromNote({
+    required Note note,
+    required double divisions,
+    required FontMetadata font,
+  }) {
     return RestElement._(
       note: note,
       divisions: divisions,
+      font: font,
     );
   }
 
-  const RestElement._({super.key, required this.note, required this.divisions});
+  const RestElement._({
+    super.key,
+    required this.note,
+    required this.divisions,
+    required this.font,
+  });
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
       size: size,
-      painter: NotePainter(smufl: _smufl),
+      // TODO: finish
+      painter: NotePainter(
+        smufl: _smufl,
+        bBox: font.glyphBBoxes["restHalf"]!,
+      ),
     );
   }
 }

@@ -415,8 +415,7 @@ class MeasureLayout extends StatelessWidget {
         double? bottomOffset;
 
         if (child.alignmentPosition.top != null) {
-          topOffset = 0;
-          topOffset = child.alignmentPosition.top ?? 0;
+          topOffset = child.alignmentPosition.top!;
 
           // Calculate the interval from staff top to the child's position.
           int intervalFromTheF5 = ElementPosition.staffTop.numeric;
