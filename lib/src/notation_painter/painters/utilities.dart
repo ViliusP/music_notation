@@ -36,6 +36,7 @@ class PainterUtilities {
     String symbol,
     GlyphBBox bBox, {
     Color color = const Color.fromRGBO(0, 0, 0, 1.0),
+    bool drawBBox = false,
   }) {
     // -------------------------
     // BBox painting
@@ -61,14 +62,17 @@ class PainterUtilities {
         )
         .translate(0, NotationLayoutProperties.staveHeight / 2);
 
-    canvas.drawRect(
-      Rect.fromPoints(
-        o1,
-        o2,
-      ),
-      paint,
-    );
+    double verticalOffset = -o1.dy.ceilToDouble();
 
+    if (drawBBox) {
+      canvas.drawRect(
+        Rect.fromPoints(
+          o1.translate(0, verticalOffset),
+          o2.translate(0, verticalOffset),
+        ),
+        paint,
+      );
+    }
     // -------------------------
     // Glyph painting
     // --------------------------
@@ -86,7 +90,7 @@ class PainterUtilities {
     textPainter.layout();
     textPainter.paint(
       canvas,
-      Offset(0, -NotationLayoutProperties.staveSpace / 0.7),
+      Offset(0, verticalOffset),
     );
   }
 }
@@ -108,8 +112,9 @@ extension FontPainting on GlyphBBox {
   /// in Cartesian, Y increases upwards; in Flutter, Y increases downwards.
   ///
   /// Returns tuple, where
-  /// `o1` represents the NW corner and `o2` represents the SE corner.
-  (Offset o1, Offset o2) toOffsets() {
+  /// `o1` (first value of [Offset]) represents the NW corner;
+  /// `o2` (second value of [Offset]) represents the SE corner.
+  (Offset, Offset) toOffsets() {
     Coordinates ne = bBoxNE;
     Coordinates sw = bBoxSW;
 
