@@ -20,6 +20,7 @@ import 'package:music_notation/src/notation_painter/clef_element.dart';
 import 'package:music_notation/src/notation_painter/chord_element.dart';
 import 'package:music_notation/src/notation_painter/cursor_element.dart';
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
+import 'package:music_notation/src/notation_painter/debug/stave_space_indicator_painter.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
 import 'package:music_notation/src/notation_painter/measure/inherited_padding.dart';
@@ -590,6 +591,12 @@ class StaffLines extends StatelessWidget {
                 debugSettings?.extraStaveLines ?? ExtraStaveLines.none,
           ),
         ),
+        if ((debugSettings?.verticalStaveLineSpacingMultiplier ?? 0) != 0)
+          CustomPaint(
+            painter: StaveSpaceIndicatorPainter(
+              debugSettings?.verticalStaveLineSpacingMultiplier ?? 0,
+            ),
+          ),
         Align(
           alignment: Alignment.centerRight,
           child: CustomPaint(
