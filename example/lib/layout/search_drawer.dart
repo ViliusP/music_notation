@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
-import 'package:example/layout/notation_examples.dart';
+import 'package:example/notation_examples.dart';
 import 'package:example/main.dart';
 import 'package:example/score_page.dart';
 import 'package:flutter/material.dart';
