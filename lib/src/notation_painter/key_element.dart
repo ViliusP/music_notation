@@ -167,9 +167,22 @@ const _flatSequence = [
   ),
 ];
 
-class KeySignatureAccidental extends StatelessWidget {
+class AccidentalElement extends StatelessWidget {
   final PitchedKeyAccidental accidental;
   final FontMetadata font;
+
+  AlignmentPosition get alignmentPosition {
+    AccidentalValue accidentalValue =
+        accidental.accidental?.value ?? AccidentalValue.other;
+
+    SmuflGlyph glyph = _accidentalSmuflMapping[accidentalValue]!;
+
+    return AlignmentPosition(
+      top: -NotationLayoutProperties.staveSpace *
+          font.glyphBBoxes[glyph]!.bBoxNE.y,
+      left: 0,
+    );
+  }
 
   Size get size => calculateSize(accidental, font);
 
@@ -184,7 +197,7 @@ class KeySignatureAccidental extends StatelessWidget {
     return Size(headRect.width, headRect.height);
   }
 
-  const KeySignatureAccidental({
+  const AccidentalElement({
     super.key,
     required this.accidental,
     required this.font,
@@ -201,6 +214,8 @@ class KeySignatureAccidental extends StatelessWidget {
       size: size,
       painter: KeyAccidentalPainter(
         accidental.accidental?.smufl ?? smufl(accidental.accidental?.value),
+        font.glyphBBoxes[
+            _accidentalSmuflMapping[accidental.accidental?.value]]!,
       ),
     );
   }
@@ -208,15 +223,21 @@ class KeySignatureAccidental extends StatelessWidget {
 
 class KeySignature extends StatelessWidget implements MeasureWidget {
   static const _spaceBetweenAccidentals = 6.0;
-  static const _verticalOffsetPerPosition =
-      NotationLayoutProperties.staveSpace / 2;
+  static const _offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
 
   final FontMetadata font;
 
   @override
   AlignmentPosition get alignmentPosition {
+    SmuflGlyph glyph = _accidentalSmuflMapping[
+        accidentals.first.accidental.accidental?.value ??
+            AccidentalValue.other]!;
+
+    double top = -NotationLayoutProperties.staveSpace *
+        font.glyphBBoxes[glyph]!.bBoxNE.y;
+
     return AlignmentPosition(
-      top: -NotationLayoutProperties.staveSpace,
+      top: top,
       left: 0,
     );
   }
@@ -235,7 +256,7 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
     }
     var offsets = <double>[];
     for (var accidental in accidentals) {
-      Size accidentalSize = KeySignatureAccidental(
+      Size accidentalSize = AccidentalElement(
         accidental: accidental.accidental,
         font: font,
       ).size;
@@ -246,7 +267,7 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
     return offsets;
   }
 
-  ({ElementPosition lowest, ElementPosition highest})? get _range {
+  ({ElementPosition lowest, ElementPosition highest}) get _range {
     ElementPosition? lowestAccidental;
     ElementPosition? highestAccidental;
 
@@ -271,21 +292,18 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
       return const Size(0, 0);
     }
 
-    var tallestAccidental = 0.0;
     var width = 0.0;
 
-    int range = _range!.highest.numeric - _range!.lowest.numeric;
-
-    for (var accidental in accidentals) {
-      var accidentalPosition = _accidentalPosition(accidental);
-
-      Size accidentalSize = KeySignatureAccidental(
+    int range = _range.highest.numeric - _range.lowest.numeric;
+    double height = range * _offsetPerPosition;
+    for (var (i, accidental) in accidentals.indexed) {
+      Size accidentalSize = AccidentalElement(
         accidental: accidental.accidental,
         font: font,
       ).size;
 
-      if (_range!.highest == accidentalPosition) {
-        tallestAccidental = accidentalSize.height;
+      if (i == 0) {
+        height += accidentalSize.height;
       }
 
       width += accidentalSize.width + _spaceBetweenAccidentals;
@@ -294,15 +312,8 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
     // Remove last width
     width = width - _spaceBetweenAccidentals;
 
-    return Size(
-      width,
-      tallestAccidental + ((range + 1) * _verticalOffsetPerPosition),
-    );
+    return Size(width, height);
   }
-
-  ElementPosition? get firstPosition => accidentals.firstOrNull != null
-      ? _accidentalPosition(accidentals.first)
-      : null;
 
   int get _transposeInterval {
     switch (notationContext.clef?.sign) {
@@ -313,12 +324,7 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
     return 0;
   }
 
-  ElementPosition get _position =>
-      // firstPosition ??
-      const ElementPosition(
-        step: Step.B,
-        octave: 4,
-      );
+  ElementPosition get _position => _range.highest;
 
   // TODO: fix
   @override
@@ -390,25 +396,21 @@ class KeySignature extends StatelessWidget implements MeasureWidget {
   @override
   Widget build(BuildContext context) {
     var children = <Widget>[];
-    ElementPosition ref = ElementPosition(
-      step: accidentals.first.accidental.step,
-      octave: accidentals.first.octave,
-    );
+
+    int highestAccidentalPosition = _range.highest.numeric;
 
     for (var (index, accidental) in accidentals.indexed) {
-      var accidentalWidget = KeySignatureAccidental(
+      var accidentalWidget = AccidentalElement(
         accidental: accidental.accidental,
         font: font,
       );
 
-      int fromLowest =
-          _accidentalPosition(accidental).numeric - _range!.lowest.numeric;
-      print(_accidentalPosition(accidental));
-      print(_range!.lowest);
+      int distanceFromHighest =
+          highestAccidentalPosition - _accidentalPosition(accidental).numeric;
+
       children.add(
         Positioned(
-          bottom: ((fromLowest + 2) * _verticalOffsetPerPosition),
-          // bottom: 0,
+          top: distanceFromHighest * _offsetPerPosition,
           child: Padding(
             padding: EdgeInsets.only(
               left: _leftOffsets[index],

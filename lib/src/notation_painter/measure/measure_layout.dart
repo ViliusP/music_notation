@@ -231,7 +231,7 @@ class MeasureLayout extends StatelessWidget {
       notationContext: notationContext,
       font: font,
     );
-    if (keySignature.firstPosition != null) {
+    if (keySignature.accidentals.isNotEmpty) {
       widgets.add(keySignature);
     }
     // -----------------------------

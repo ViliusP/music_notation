@@ -54,6 +54,7 @@ List<SmuflGlyph> glyphs = [
   SmuflGlyph.gClef,
   SmuflGlyph.noteheadBlack,
   SmuflGlyph.accidentalFlat,
+  SmuflGlyph.accidentalSharp,
 ];
 
 List<GlyphBBox?> bBoxes = [
@@ -68,5 +69,9 @@ List<GlyphBBox?> bBoxes = [
   GlyphBBox(
     bBoxNE: Coordinates(x: 0.812, y: 1.812),
     bBoxSW: Coordinates(x: 0.0, y: -0.704),
-  )
+  ),
+  GlyphBBox(
+    bBoxNE: Coordinates(x: 0.976, y: 1.336),
+    bBoxSW: Coordinates(x: 0.0, y: -1.332),
+  ),
 ];
