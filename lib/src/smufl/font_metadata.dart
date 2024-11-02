@@ -1,3 +1,6 @@
+import 'package:music_notation/src/smufl/smufl_glyph.dart';
+import 'package:music_notation/src/smufl/utilities.dart';
+
 /// Represents the engraving default settings for the font.
 ///
 /// These settings define various thicknesses and spacings used in music notation.
@@ -444,12 +447,12 @@ enum AnchorField {
 
 // Class to represent glyphs with anchors using enum for anchor fields
 class GlyphWithAnchor {
-  final String glyphName;
+  final SmuflGlyph value;
   final Map<AnchorField, List<double>> anchors;
 
   /// Creates an instance of [GlyphWithAnchor] with a glyph name and anchors.
   GlyphWithAnchor({
-    required this.glyphName,
+    required this.value,
     required this.anchors,
   });
 
@@ -468,9 +471,10 @@ class GlyphWithAnchor {
         anchors[AnchorField.map[key]!] = List<double>.from(value);
       }
     });
+    SmuflGlyph smuflGlyph = GlyphUtilties.fromRawName(glyphName);
 
     return GlyphWithAnchor(
-      glyphName: glyphName,
+      value: smuflGlyph,
       anchors: anchors,
     );
   }
@@ -499,7 +503,7 @@ class FontMetadata {
   ///
   /// Each [GlyphBBox] provides the north-east and south-west corners of
   /// the bounding box for the glyph.
-  final Map<String, GlyphBBox> glyphBBoxes;
+  final Map<SmuflGlyph, GlyphBBox> glyphBBoxes;
 
   /// A list of glyphs that contain anchor points.
   ///
@@ -568,10 +572,11 @@ class FontMetadata {
   /// ```
   factory FontMetadata.fromJson(Map<String, dynamic> json) {
     // Parse glyph bounding boxes
-    Map<String, GlyphBBox> bBoxes = {};
+    Map<SmuflGlyph, GlyphBBox> bBoxes = {};
     if (json['glyphBBoxes'] != null) {
       json['glyphBBoxes'].forEach((key, value) {
-        bBoxes[key] = GlyphBBox.fromJson(value);
+        SmuflGlyph smuflGlyph = GlyphUtilties.fromRawName(key);
+        bBoxes[smuflGlyph] = GlyphBBox.fromJson(value);
       });
     }
 
