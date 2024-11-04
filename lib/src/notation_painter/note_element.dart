@@ -387,7 +387,9 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       defaultSize.height * scaleFactor,
     );
 
-    Size? glyphSize = font.glyphBBoxes['augmentationDot']?.toRect().size;
+    Size? glyphSize = font.glyphBBoxes[CombiningStaffPositions.augmentationDot]
+        ?.toRect()
+        .size;
     return glyphSize ?? scaledDefaultSize;
   }
 
