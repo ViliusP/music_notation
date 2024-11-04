@@ -1,3 +1,7 @@
+import 'package:flutter/foundation.dart';
+import 'package:music_notation/src/smufl/smufl_glyph.dart';
+import 'package:music_notation/src/smufl/utilities.dart';
+
 /// Represents the engraving default settings for the font.
 ///
 /// These settings define various thicknesses and spacings used in music notation.
@@ -248,6 +252,17 @@ class GlyphBBox {
   String toString() {
     return "NE: $bBoxNE, SW: $bBoxSW";
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is GlyphBBox &&
+        other.bBoxNE == bBoxNE &&
+        other.bBoxSW == bBoxSW;
+  }
+
+  @override
+  int get hashCode => bBoxNE.hashCode ^ bBoxSW.hashCode;
 }
 
 /// Represents an anchor point for a glyph with its name and coordinates.
@@ -444,12 +459,12 @@ enum AnchorField {
 
 // Class to represent glyphs with anchors using enum for anchor fields
 class GlyphWithAnchor {
-  final String glyphName;
+  final SmuflGlyph value;
   final Map<AnchorField, List<double>> anchors;
 
   /// Creates an instance of [GlyphWithAnchor] with a glyph name and anchors.
   GlyphWithAnchor({
-    required this.glyphName,
+    required this.value,
     required this.anchors,
   });
 
@@ -468,9 +483,10 @@ class GlyphWithAnchor {
         anchors[AnchorField.map[key]!] = List<double>.from(value);
       }
     });
+    SmuflGlyph smuflGlyph = GlyphUtilties.fromRawName(glyphName);
 
     return GlyphWithAnchor(
-      glyphName: glyphName,
+      value: smuflGlyph,
       anchors: anchors,
     );
   }
@@ -499,7 +515,7 @@ class FontMetadata {
   ///
   /// Each [GlyphBBox] provides the north-east and south-west corners of
   /// the bounding box for the glyph.
-  final Map<String, GlyphBBox> glyphBBoxes;
+  final Map<SmuflGlyph, GlyphBBox> glyphBBoxes;
 
   /// A list of glyphs that contain anchor points.
   ///
@@ -568,10 +584,19 @@ class FontMetadata {
   /// ```
   factory FontMetadata.fromJson(Map<String, dynamic> json) {
     // Parse glyph bounding boxes
-    Map<String, GlyphBBox> bBoxes = {};
+    Map<SmuflGlyph, GlyphBBox> bBoxes = {};
     if (json['glyphBBoxes'] != null) {
       json['glyphBBoxes'].forEach((key, value) {
-        bBoxes[key] = GlyphBBox.fromJson(value);
+        try {
+          SmuflGlyph smuflGlyph = GlyphUtilties.fromRawName(key);
+          bBoxes[smuflGlyph] = GlyphBBox.fromJson(value);
+        } catch (e) {
+          if (kDebugMode) {
+            print(
+              "Error parsing bounding box for glyph: $key. Possible metadata inconsistency between SMuFL specification and font metadata.",
+            );
+          }
+        }
       });
     }
 
@@ -579,7 +604,15 @@ class FontMetadata {
     List<GlyphWithAnchor> glyphsWithAnchors = [];
     if (json['glyphsWithAnchors'] != null) {
       json['glyphsWithAnchors'].forEach((key, value) {
-        glyphsWithAnchors.add(GlyphWithAnchor.fromJson(key, value));
+        try {
+          glyphsWithAnchors.add(GlyphWithAnchor.fromJson(key, value));
+        } catch (e) {
+          if (kDebugMode) {
+            print(
+              "Error parsing anchors for glyph: $key. Possible metadata inconsistency between SMuFL specification and font metadata.",
+            );
+          }
+        }
       });
     }
 
@@ -597,7 +630,7 @@ class Coordinates {
   final double x;
   final double y;
 
-  Coordinates({required this.x, required this.y});
+  const Coordinates({required this.x, required this.y});
 
   factory Coordinates.fromList(List<double> coordinates) {
     return Coordinates(x: coordinates[0], y: coordinates[1]);
@@ -607,4 +640,15 @@ class Coordinates {
   String toString() {
     return "($x, $y)";
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Coordinates &&
+          runtimeType == other.runtimeType &&
+          x == other.x &&
+          y == other.y;
+
+  @override
+  int get hashCode => x.hashCode ^ y.hashCode;
 }

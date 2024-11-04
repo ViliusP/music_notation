@@ -4,7 +4,7 @@ import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
-import 'package:music_notation/src/notation_painter/note_element.dart';
+import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
 void main() {
@@ -115,6 +115,7 @@ void main() {
             divisions: 1,
             clef: Clef(sign: ClefSign.G),
             time: null,
+            lastKey: null,
           ),
           font: FontMetadata.empty(),
         );
@@ -203,6 +204,7 @@ void main() {
             divisions: 1,
             clef: Clef(sign: ClefSign.F),
             time: null,
+            lastKey: null,
           ),
           font: FontMetadata.empty(),
         );

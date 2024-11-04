@@ -3,11 +3,11 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:music_notation/src/notation_painter/clef_element.dart';
-import 'package:music_notation/src/notation_painter/chord_element.dart';
+import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
 import 'package:music_notation/src/notation_painter/cursor_element.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
-import 'package:music_notation/src/notation_painter/note_element.dart';
+import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/time_beat_element.dart';
 
 /// Represents a timeline for musical elements within a score.
@@ -137,7 +137,7 @@ class Timeline {
             ),
           );
           break;
-        case KeySignature keyElement:
+        case KeySignatureElement keyElement:
           _value[cursor]!.add(
             _TimelineValue(
               index,
@@ -145,7 +145,7 @@ class Timeline {
               offsetAfter: keyElement.size.width + 12,
               voice: "-1", // The "-1" indicates attributes sector
               name: "KeS",
-              widgetType: KeySignature,
+              widgetType: KeySignatureElement,
             ),
           );
           break;

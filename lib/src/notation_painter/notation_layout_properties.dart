@@ -38,6 +38,10 @@ class NotationLayoutProperties {
 
   /// The distance between beams is 1/4 stave space.
   static const double beamSpacing = staveSpace / 2;
+
+  /// The distance between between elements when positional difference is 1.
+  static const double offsetPerPosition =
+      NotationLayoutProperties.staveSpace / 2;
 }
 
 /// Manages the spacing of symbols in a system of musical notation. The spacing

@@ -1,18 +1,19 @@
 import 'package:flutter/rendering.dart';
-import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
+import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 
 class KeyAccidentalPainter extends CustomPainter {
   final String smufl;
+  final GlyphBBox bBox;
 
-  const KeyAccidentalPainter(this.smufl);
+  const KeyAccidentalPainter(this.smufl, this.bBox);
 
   @override
   void paint(Canvas canvas, Size size) {
-    PainterUtilities.drawSmuflSymbol(
+    PainterUtilities.drawSmuflSymbolV2(
       canvas,
       smufl,
-      offset: const Offset(0, -NotationLayoutProperties.staveSpace * .25),
+      bBox,
     );
   }
 

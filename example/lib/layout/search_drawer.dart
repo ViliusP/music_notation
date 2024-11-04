@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:collection/collection.dart';
-import 'package:example/layout/notation_examples.dart';
+import 'package:example/examples/notation_examples.dart';
 import 'package:example/main.dart';
 import 'package:example/score_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:fuzzywuzzy/model/extracted_result.dart';
 import 'package:music_notation/music_notation.dart';
@@ -24,6 +26,10 @@ class _SearchDrawerState extends State<SearchDrawer> {
   Timer? _checkTypingTimer;
   int? selectedIndex;
 
+  FontMetadata? font;
+  static const _fontPath =
+      'packages/music_notation/smufl_fonts/Leland/leland_metadata.json';
+
   final List<ExtractedResult<NotationExample>> _defaultSearchResults =
       NotationExample.values
           .mapIndexed((i, e) =>
@@ -35,6 +41,12 @@ class _SearchDrawerState extends State<SearchDrawer> {
   @override
   void initState() {
     searchResults = _defaultSearchResults;
+
+    rootBundle.loadString(_fontPath).then((x) {
+      font = FontMetadata.fromJson(jsonDecode(x));
+      setState(() {});
+    });
+
     super.initState();
   }
 
@@ -86,7 +98,8 @@ class _SearchDrawerState extends State<SearchDrawer> {
                   hintText: "Search",
                   prefixIcon: Icon(Icons.search),
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(25.0)))),
+                    borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                  )),
             ),
           ),
           Expanded(
@@ -138,7 +151,9 @@ class _SearchDrawerState extends State<SearchDrawer> {
         Navigator.of(MyApp.navigatorKey.currentContext!).push(
           PageRouteBuilder(
             pageBuilder: (_, __, ___) => ScorePage(
+              fontMetadata: font,
               scorePartwise: scorePartwise,
+              description: score.description,
             ),
             transitionDuration: Duration(milliseconds: 0),
             transitionsBuilder: (_, a, __, c) => FadeTransition(

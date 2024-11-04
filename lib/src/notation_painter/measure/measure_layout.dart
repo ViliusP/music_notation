@@ -15,9 +15,9 @@ import 'package:music_notation/src/models/elements/music_data/forward.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
-import 'package:music_notation/src/notation_painter/beaming.dart';
+import 'package:music_notation/src/notation_painter/notes/beaming.dart';
 import 'package:music_notation/src/notation_painter/clef_element.dart';
-import 'package:music_notation/src/notation_painter/chord_element.dart';
+import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
 import 'package:music_notation/src/notation_painter/cursor_element.dart';
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
@@ -27,7 +27,8 @@ import 'package:music_notation/src/notation_painter/measure/measure_element.dart
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
-import 'package:music_notation/src/notation_painter/note_element.dart';
+import 'package:music_notation/src/notation_painter/notes/note_element.dart';
+import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/notation_painter/painters/barline_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/staff_lines_painter.dart';
 import 'package:music_notation/src/notation_painter/spacing/timeline.dart';
@@ -73,6 +74,10 @@ class MeasureLayout extends StatelessWidget {
         case TimeBeatElement _:
           contextAfter = contextAfter.copyWith(
             time: measureElement.timeBeat,
+          );
+        case KeySignatureElement _:
+          contextAfter = contextAfter.copyWith(
+            lastKey: measureElement.musicKey,
           );
           break;
       }
@@ -183,6 +188,7 @@ class MeasureLayout extends StatelessWidget {
     Attributes element,
     int? staff,
     NotationContext notationContext,
+    FontMetadata font,
   ) {
     List<MeasureWidget> widgets = [];
     // -----------------------------
@@ -204,7 +210,7 @@ class MeasureLayout extends StatelessWidget {
         clef: clef,
         divisions: element.divisions,
       );
-      widgets.add(ClefElement(clef: clef));
+      widgets.add(ClefElement(clef: clef, font: font));
     }
     // -----------------------------
     // Keys
@@ -225,11 +231,12 @@ class MeasureLayout extends StatelessWidget {
         "There are multiple keys elements in attributes, therefore correct staff must be provided",
       );
     }
-    var keySignature = KeySignature.fromKeyData(
+    var keySignature = KeySignatureElement.fromKeyData(
       keyData: musicKey,
       notationContext: notationContext,
+      font: font,
     );
-    if (keySignature.firstPosition != null) {
+    if (keySignature.accidentals.isNotEmpty) {
       widgets.add(keySignature);
     }
     // -----------------------------
@@ -320,6 +327,7 @@ class MeasureLayout extends StatelessWidget {
             element,
             staff,
             contextAfter,
+            font,
           );
           contextAfter = _contextAfterAttributes(element, staff, contextAfter);
           children.addAll(attributesWidgets);
@@ -359,7 +367,7 @@ class MeasureLayout extends StatelessWidget {
     }
 
     final Timeline timeline = Timeline(divisions: divisions)..compute(children);
-    return timeline.toList(60);
+    return timeline.toList(100);
   }
 
 // Calculate the vertical padding based on the highest note above and below the staff.
@@ -447,9 +455,8 @@ class MeasureLayout extends StatelessWidget {
         DebugSettings? dSettings = DebugSettings.of(context);
 
         if (dSettings != null) {
-          if (dSettings.paintBBoxBelowStaff) {
-            Rect boxBelow = child.boxBelowStaff();
-
+          Rect boxBelow = child.boxBelowStaff();
+          if (dSettings.paintBBoxBelowStaff && boxBelow.height > 0) {
             positionedElements.add(
               Positioned(
                 left: spacings[index],
@@ -464,9 +471,8 @@ class MeasureLayout extends StatelessWidget {
             );
           }
 
-          if (dSettings.paintBBoxAboveStaff) {
-            Rect boxAbove = child.boxAboveStaff();
-
+          Rect boxAbove = child.boxAboveStaff();
+          if (dSettings.paintBBoxAboveStaff && boxAbove.height > 0) {
             positionedElements.add(
               Positioned(
                 left: spacings[index],

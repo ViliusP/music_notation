@@ -70,6 +70,7 @@ class MusicNotationCanvas extends StatelessWidget {
                   divisions: null,
                   clef: null,
                   time: null,
+                  lastKey: null,
                 ),
         );
         maxTopPadding = [
