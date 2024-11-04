@@ -294,8 +294,6 @@ class Chord extends StatelessWidget implements RhythmicElement {
 
   bool get _beamed => isBeamed(notes);
 
-  /// Notes position
-  ///
   List<NoteheadPosition> get _noteheadsPositions =>
       Adjacency.determineNoteheadPositions(
         sortedNotes,
@@ -365,10 +363,14 @@ class Chord extends StatelessWidget implements RhythmicElement {
         distanceFromRef -= NotationLayoutProperties.staveSpace / 2;
       }
 
+      final NoteheadPosition noteheadPos = _noteheadsPositions[index];
+
       children.add(
         Positioned(
           bottom: isStemmedUpward ? distanceFromRef : null,
           top: !isStemmedUpward ? distanceFromRef.abs() : null,
+          left: noteheadPos == NoteheadPosition.left ? 0 : null,
+          right: noteheadPos == NoteheadPosition.right ? 0 : null,
           child: element,
         ),
       );
