@@ -4,33 +4,41 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 
-/// Set of static methods to help calculating direction of stems
+/// A set of static methods to determine notehead positions in chords based on adjacency and stem direction.
 class Adjacency {
-  /// Notes position
+  /// Determines the relative positions of noteheads within a chord based on stem direction and adjacency.
+  ///
+  /// [notes] - List of notes to determine relative notehead positions.
+  /// [stemDirection] - Direction of the chord's stem, affecting notehead placement.
+  ///
+  /// Returns:
+  /// A list of [NoteheadPosition] values (left or right) corresponding to the noteheads' positions.
   static List<NoteheadPosition> determineNoteheadPositions(
     List<Note> notes,
     StemDirection stemDirection,
   ) {
+    // Default position is set based on the stem direction.
     NoteheadPosition defaultPosition = NoteheadPosition.left;
+    if (stemDirection == StemDirection.down) {
+      defaultPosition = NoteheadPosition.right;
+    }
 
     final sortedNotes = notes.sortedBy(
       (note) => NoteElement.determinePosition(note, null),
     );
 
-    if (stemDirection == StemDirection.down) {
-      defaultPosition = NoteheadPosition.right;
-    }
-
+    // Initialize positions with the default position
     List<NoteheadPosition> positions = List.filled(
       notes.length,
       defaultPosition,
     );
 
-    // Return earlier if it has no adjacent notes.
+    // Return immediately if there are no adjacent notes.
     if (!containsAdjacentNotes(sortedNotes)) {
       return positions;
     }
 
+    // Group adjacent notes by their position on the staff
     ElementPosition? noteBeforePosition;
     List<Set<int>> groups = [];
     Set<int> group = {};
@@ -55,6 +63,7 @@ class Adjacency {
       groups.add(group);
     }
 
+    // Determine notehead positions for each group based on adjacency and stem direction
     for (var group in groups) {
       ElementPosition position = NoteElement.determinePosition(
         sortedNotes.first,
@@ -66,23 +75,23 @@ class Adjacency {
       }
       for (var index in group) {
         positions[index] = pos;
-        if (pos == NoteheadPosition.right) {
-          pos = NoteheadPosition.left;
-        } else if (pos == NoteheadPosition.left) {
-          pos = NoteheadPosition.right;
-        }
+        // Alternate positions to create the zigzag pattern for adjacent notes
+        pos = (pos == NoteheadPosition.right)
+            ? NoteheadPosition.left
+            : NoteheadPosition.right;
       }
     }
 
     return positions;
   }
 
-  /// Checks if the chord contains adjacent notes, where two or more notes have a positional difference of 1.
+  /// Determines if the given list of notes contains adjacent notes.
   ///
-  /// In musical terms, this indicates that there are two notes in the chord with
-  /// an interval of a second (either minor or major).
+  /// [notes] - List of notes to check for adjacency.
   ///
-  /// Returns `true` if the notes in the chord are adjacent; otherwise, returns `false`.
+  /// Returns:
+  /// `true` if any two notes in the list have a positional difference of 1 (i.e., an interval of a second).
+  /// Otherwise, returns `false`.
   static bool containsAdjacentNotes(List<Note> notes) {
     ElementPosition? noteBeforePosition;
 
@@ -102,7 +111,7 @@ class Adjacency {
   }
 }
 
-/// Indicates the relative position of a notehead in relation to the stem.
+/// Represents the relative position of a notehead in relation to the stem within a chord.
 enum NoteheadPosition {
   left,
   right;
