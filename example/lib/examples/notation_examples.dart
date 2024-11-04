@@ -1,3 +1,4 @@
+import 'package:example/examples/example_descriptions.dart';
 import 'package:flutter/services.dart';
 import 'package:xml/xml.dart';
 
@@ -30,6 +31,15 @@ enum NotationExample {
   singleVoiceBeaming(
     displayName: "Single voice beaming",
     path: "assets/scores/single_voice_beaming.musicxml",
+  ),
+  adjecentNotes(
+    displayName: "Adjecent notes",
+    path: "assets/scores/adjecent_notes.musicxml",
+    description: dKeySignature,
+  ),
+  keySignatures(
+    displayName: "Key signatures",
+    path: "assets/scores/key_signatures.musicxml",
   );
 
   const NotationExample({

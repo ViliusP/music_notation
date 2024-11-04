@@ -5,32 +5,44 @@ import 'package:music_notation/src/notation_painter/measure/measure_element.dart
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/clef_painter.dart';
+import 'package:music_notation/src/notation_painter/painters/utilities.dart';
+import 'package:music_notation/src/smufl/font_metadata.dart';
+import 'package:music_notation/src/smufl/glyph_class.dart';
+import 'package:music_notation/src/smufl/smufl_glyph.dart';
 
 class ClefElement extends StatelessWidget implements MeasureWidget {
   final Clef clef;
+  final FontMetadata font;
 
   @override
   AlignmentPosition get alignmentPosition {
     return AlignmentPosition(left: 0, top: -_verticalAlignmentAxisOffset);
   }
 
-  const ClefElement({super.key, required this.clef});
+  const ClefElement({
+    super.key,
+    required this.clef,
+    required this.font,
+  });
 
-  String get _symbol {
+  SmuflGlyph get _glyph {
     switch (clef.sign) {
       case ClefSign.G:
-        return '\uE050';
+        if (clef.octaveChange != 0 && clef.octaveChange != null) {
+          return ClefsG.gClef8vb;
+        }
+        return ClefsG.gClef;
       case ClefSign.F:
-        return '\uE062';
+        if (clef.octaveChange != 0 && clef.octaveChange != null) {
+          return ClefsF.fClef8vb;
+        }
+        return ClefsF.fClef;
       case ClefSign.C:
-        return '\uE05C';
+        return ClefsC.cClef;
       case ClefSign.percussion:
-        return '\uE069';
+        return Clefs.unpitchedPercussionClef1;
       case ClefSign.tab:
-        throw UnimplementedError(
-          "'${clef.sign}' clef sign is not implemented in renderer yet",
-        );
-      // symbol = '\uE06D';
+        return Clefs.g6stringTabClef;
       default:
         throw UnimplementedError(
           "'${clef.sign}' clef sign is not implemented in renderer yet",
@@ -38,28 +50,12 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
     }
   }
 
+  GlyphBBox get _bBox {
+    return font.glyphBBoxes[_glyph]!;
+  }
+
   double get _verticalAlignmentAxisOffset {
-    switch (clef.sign) {
-      case ClefSign.G:
-        return (NotationLayoutProperties.staveHeight - 8) +
-            NotationLayoutProperties.staveSpace;
-      case ClefSign.F:
-        return NotationLayoutProperties.staveSpace + 1;
-      case ClefSign.C:
-        // TODO: adjust
-        return -21;
-      case ClefSign.percussion:
-        // TODO: adjust
-        return -21;
-      case ClefSign.tab:
-        throw UnimplementedError(
-          "'${clef.sign}' clef sign is not implemented in renderer yet",
-        );
-      default:
-        throw UnimplementedError(
-          "'${clef.sign}' clef sign is not implemented in renderer yet",
-        );
-    }
+    return NotationLayoutProperties.staveSpace * _bBox.bBoxNE.y;
   }
 
   @override
@@ -86,54 +82,14 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
 
   @override
   Size get size {
-    switch (clef.sign) {
-      case ClefSign.G:
-        return const Size(32, 88);
-      case ClefSign.F:
-        return const Size(34, 44);
-      case ClefSign.C:
-        // TODO: adjust
-        return const Size(33, 42);
-      case ClefSign.percussion:
-        // TODO: adjust
-        return const Size(33, 42);
-      case ClefSign.tab:
-        // TODO: adjust
-        return const Size(33, 42);
-      default:
-        throw UnimplementedError(
-          "'${clef.sign}' clef sign is not implemented in renderer yet",
-        );
-    }
-  }
-
-  Offset get _paintingOffset {
-    switch (clef.sign) {
-      case ClefSign.G:
-        return const Offset(0, 29);
-      case ClefSign.F:
-        return const Offset(0, -12);
-      case ClefSign.C:
-        // TODO: adjust
-        return const Offset(0, 65);
-      case ClefSign.percussion:
-        // TODO: adjust
-        return const Offset(0, 65);
-      case ClefSign.tab:
-        // TODO: adjust
-        return const Offset(0, 65);
-      default:
-        throw UnimplementedError(
-          "'${clef.sign}' clef sign is not implemented in renderer yet",
-        );
-    }
+    return _bBox.toRect().size;
   }
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
       size: size,
-      painter: ClefPainter(_symbol, _paintingOffset),
+      painter: ClefPainter(_glyph.codepoint, _bBox),
     );
   }
 }

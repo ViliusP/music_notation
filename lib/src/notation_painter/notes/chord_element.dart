@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
@@ -6,11 +7,19 @@ import 'package:music_notation/src/notation_painter/measure/measure_element.dart
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
-import 'package:music_notation/src/notation_painter/note_element.dart';
+import 'package:music_notation/src/notation_painter/notes/adjacency.dart';
+import 'package:music_notation/src/notation_painter/notes/note_element.dart';
+import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
+import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
 class Chord extends StatelessWidget implements RhythmicElement {
   final List<Note> notes;
+
+  List<Note> get sortedNotes => notes.sortedBy(
+        (note) => NoteElement.determinePosition(note, null),
+      );
+
   final NotationContext notationContext;
   final FontMetadata font;
 
@@ -25,12 +34,13 @@ class Chord extends StatelessWidget implements RhythmicElement {
 
   bool get _stemmed => stemLength != 0;
 
-  final Stem? stem;
+  @override
+  final StemDirection? stemDirection;
 
   @override
   AlignmentPosition get alignmentPosition {
     double top = 0;
-    if (stem?.value == StemValue.up) {
+    if (stemDirection == StemDirection.up) {
       top = _calculateStemLength(notes);
     }
 
@@ -40,7 +50,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
 
     // When note is on drawn the line and it's stem is drawn down,
     // the dots size must be taken in the account.
-    if (stem?.value == StemValue.down &&
+    if (stemDirection == StemDirection.down &&
         position.numeric % 2 == 0 &&
         maxDotsNote.dots.isNotEmpty) {
       top = NotationLayoutProperties.staveSpace / 2 +
@@ -51,8 +61,16 @@ class Chord extends StatelessWidget implements RhythmicElement {
     }
 
     return AlignmentPosition(
-      left: -_calculateOffsetForCenter(font),
+      left: 0,
       top: -top,
+    );
+  }
+
+  @override
+  ElementPosition get position {
+    return NoteElement.determinePosition(
+      notes[referenceNoteIndex],
+      notationContext.clef,
     );
   }
 
@@ -64,7 +82,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
     required this.divisions,
     required this.stemLength,
     required this.duration,
-    this.stem,
+    this.stemDirection,
   });
 
   /// **IMPORTANT**: [notes] cannot be empty.
@@ -84,6 +102,12 @@ class Chord extends StatelessWidget implements RhythmicElement {
       );
     }
 
+    StemValue? stemValue = notes.first.stem?.value;
+    StemDirection? stemDirection;
+    if (stemValue != null) {
+      stemDirection = StemDirection.fromStemValue(stemValue);
+    }
+
     return Chord._(
       key: key,
       notes: notes,
@@ -92,7 +116,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
       divisions: notationContext.divisions!,
       stemLength: _calculateStemLength(notes),
       duration: NoteElement.determineDuration(notes.first),
-      stem: notes.first.stem,
+      stemDirection: stemDirection,
     );
   }
 
@@ -101,6 +125,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
   ///
   /// X - the middle of stem.
   /// Y - the tip of stem.
+  @override
   Offset get offsetForBeam {
     double? offsetX;
     double? offsetY = size.height;
@@ -114,11 +139,21 @@ class Chord extends StatelessWidget implements RhythmicElement {
       offsetX -= NoteElement.dotsSize(font).width;
     }
 
-    if (stem?.value == StemValue.down) {
-      offsetX = NotationLayoutProperties.stemStrokeWidth / 2;
+    var (leftWidth, rightWidth) = _noteheadSizesBySide(
+      notes,
+      font,
+      stemDirection ?? Stemming.determineChordStem(notes),
+    );
+
+    if (stemDirection == StemDirection.up && rightWidth != 0) {
+      offsetX = rightWidth;
     }
 
-    if (alignmentPosition.top != null && stem?.value != StemValue.down) {
+    if (stemDirection == StemDirection.down) {
+      offsetX = NotationLayoutProperties.stemStrokeWidth / 2 + leftWidth;
+    }
+
+    if (alignmentPosition.top != null && stemDirection != StemDirection.down) {
       offsetY = 0;
     }
 
@@ -130,10 +165,6 @@ class Chord extends StatelessWidget implements RhythmicElement {
 
   /// Difference between lowest and highest notes' positions;
   int get positionsDifference {
-    List<Note> sortedNotes = notes.sortedBy(
-      (note) => NoteElement.determinePosition(note, null),
-    );
-
     int lowestPosition = NoteElement.determinePosition(
       sortedNotes.first,
       null,
@@ -157,71 +188,80 @@ class Chord extends StatelessWidget implements RhythmicElement {
       (note) => NoteElement.determinePosition(note, null),
     );
 
-    StemValue? stemType = sortedNotes.first.stem?.value;
+    StemDirection? stemDirection = StemDirection.fromStemValue(
+      sortedNotes.first.stem?.value ?? StemValue.none,
+    );
 
+    double height = 0;
     bool beamed = isBeamed(notes);
 
-    if (stemType == StemValue.up) {
-      return NoteElement.calculateSize(
+    if (stemDirection == StemDirection.up) {
+      height = NoteElement.calculateSize(
         note: sortedNotes.first,
         stemLength: _calculateStemLength(notes),
         clef: notationContext.clef,
         font: font,
         showFlag: !beamed,
-      );
+      ).height;
     }
 
-    if (stemType == StemValue.down) {
-      return NoteElement.calculateSize(
+    if (stemDirection == StemDirection.down) {
+      height = NoteElement.calculateSize(
         note: sortedNotes.last,
         clef: notationContext.clef,
         stemLength: _calculateStemLength(notes),
         font: font,
         showFlag: !beamed,
-      );
+      ).height;
     }
 
-    int lowestPosition = NoteElement.determinePosition(
-      sortedNotes.first,
-      null,
-    ).numeric;
-    int highestPosition = NoteElement.determinePosition(
-      sortedNotes.last,
-      null,
-    ).numeric;
-    int positionDifference = highestPosition - lowestPosition;
+    var (leftWidth, rightWidth) = _noteheadSizesBySide(
+      notes,
+      font,
+      stemDirection ?? Stemming.determineChordStem(notes),
+    );
 
-    const heightPerPosition = NotationLayoutProperties.staveSpace / 2;
-    double height = positionDifference * heightPerPosition;
-    if (stemLength == 0) {
-      height += NoteElement.calculateSize(
-            note: sortedNotes.last,
-            clef: notationContext.clef,
-            stemLength: 0,
-            font: font,
-          ).height /
-          2;
+    double width = leftWidth + rightWidth;
 
-      height += (NoteElement.calculateSize(
-            note: sortedNotes.first,
-            stemLength: 0,
-            clef: notationContext.clef,
-            font: font,
-          ).height /
-          2);
+    if (leftWidth != 0 && rightWidth != 0) {
+      width -= NotationLayoutProperties.stemStrokeWidth / 2;
     }
-    height += stemLength;
-
-    double width = sortedNotes
-        .map((e) => NoteElement.calculateSize(
-              note: e,
-              stemLength: 0,
-              clef: notationContext.clef,
-              font: font,
-            ).width)
-        .max;
 
     return Size(width, height);
+  }
+
+  static (double left, double right) _noteheadSizesBySide(
+    List<Note> notes,
+    FontMetadata font,
+    StemDirection direction,
+  ) {
+    // Sorts from lowest to highest note. First being lowest.
+    List<Note> sortedNotes = notes.sortedBy(
+      (note) => NoteElement.determinePosition(note, null),
+    );
+
+    var noteheadPositions = Adjacency.determineNoteheadPositions(
+      sortedNotes,
+      direction,
+    );
+
+    double widthToLeft = 0;
+    double widthToRight = 0;
+    for (var (i, pos) in noteheadPositions.indexed) {
+      double width = NoteElement.calculateSize(
+        note: notes[i],
+        clef: null,
+        stemLength: 0,
+        font: font,
+      ).width;
+      if (pos == NoteheadPosition.left) {
+        widthToLeft = [width, widthToLeft].max;
+      }
+      if (pos == NoteheadPosition.right) {
+        widthToRight = [width, widthToRight].max;
+      }
+    }
+    return (widthToLeft, widthToRight);
   }
 
   static double _calculateStemLength(
@@ -258,21 +298,8 @@ class Chord extends StatelessWidget implements RhythmicElement {
         font: font,
       );
 
-  double _calculateOffsetForCenter(FontMetadata font) {
-    var noteheadSize = NoteheadElement(
-      note: notes.first,
-    ).size(font);
-
-    var width = noteheadSize.width;
-    if (_stemmed) {
-      width += NotationLayoutProperties.stemStrokeWidth;
-    }
-
-    return width / 2;
-  }
-
   int get referenceNoteIndex {
-    if (_stemmed && stem?.value == StemValue.up) {
+    if (_stemmed && stemDirection == StemDirection.up) {
       return 0;
     }
 
@@ -286,20 +313,21 @@ class Chord extends StatelessWidget implements RhythmicElement {
 
   bool get _beamed => isBeamed(notes);
 
-  @override
-  ElementPosition get position {
-    return NoteElement.determinePosition(
-      notes[referenceNoteIndex],
-      notationContext.clef,
-    );
-  }
+  List<NoteheadPosition> get _noteheadsPositions =>
+      Adjacency.determineNoteheadPositions(
+        sortedNotes,
+        stemDirection ??
+            Stemming.determineChordStem(
+              notes,
+              notationContext.clef,
+            ),
+      );
+
+  bool get _hasAdjacentNotes => Adjacency.containsAdjacentNotes(sortedNotes);
 
   @override
   Widget build(BuildContext context) {
     var children = <Widget>[];
-    var sortedNotes = notes.sortedBy(
-      (note) => NoteElement.determinePosition(note, null),
-    );
 
     double calculatedStemLength = _calculateStemLength(notes);
 
@@ -311,19 +339,29 @@ class Chord extends StatelessWidget implements RhythmicElement {
       stemLength: stemLength,
     );
 
+    int leftHighest = _noteheadsPositions.lastIndexWhere(
+      (p) => p == NoteheadPosition.left,
+    );
+    int leftLowest = _noteheadsPositions.indexWhere(
+      (p) => p == NoteheadPosition.left,
+    );
+    int rightHighest = _noteheadsPositions.lastIndexWhere(
+      (p) => p == NoteheadPosition.right,
+    );
+    int rightLowest = _noteheadsPositions.indexWhere(
+      (p) => p == NoteheadPosition.left,
+    );
+
     for (var (index, note) in sortedNotes.indexed) {
-      bool isLowest = index == 0;
-      bool isHighest = index == notes.length - 1;
-      bool isStemmedUpward = _stemmed && stem?.value == StemValue.up;
-      bool showLedger = isLowest || isHighest;
+      bool isLowestOfSide = index == leftLowest || index == rightLowest;
+      bool isHighestOfSide = index == leftHighest || index == rightHighest;
+      bool showLedger = isLowestOfSide || isHighestOfSide;
+
+      bool isStemmedUpward = _stemmed && stemDirection == StemDirection.up;
 
       double stemLength = 0;
 
-      if (stem?.value == StemValue.up && isLowest) {
-        stemLength = calculatedStemLength;
-      }
-
-      if (stem?.value == StemValue.down && isHighest) {
+      if (_stemmed && referenceNoteIndex == index) {
         stemLength = calculatedStemLength;
       }
 
@@ -345,7 +383,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
 
       // When note is on drawn the line and it's stem is drawn down,
       // the dots size must be taken in the account.
-      if (stem?.value == StemValue.down &&
+      if (stemDirection == StemDirection.down &&
           element.position.numeric % 2 == 0 &&
           refnote.position.numeric % 2 != 0 &&
           note.dots.isNotEmpty &&
@@ -354,10 +392,19 @@ class Chord extends StatelessWidget implements RhythmicElement {
         distanceFromRef -= NotationLayoutProperties.staveSpace / 2;
       }
 
+      final NoteheadPosition noteheadPos = _noteheadsPositions[index];
+
+      double? right;
+
+      if (noteheadPos == NoteheadPosition.right && _hasAdjacentNotes) {
+        right = 0;
+      }
+
       children.add(
         Positioned(
           bottom: isStemmedUpward ? distanceFromRef : null,
           top: !isStemmedUpward ? distanceFromRef.abs() : null,
+          right: right,
           child: element,
         ),
       );
@@ -367,6 +414,34 @@ class Chord extends StatelessWidget implements RhythmicElement {
       size: size,
       child: Stack(
         children: children,
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    DiagnosticLevel level = DiagnosticLevel.info;
+
+    properties.add(
+      FlagProperty(
+        '_hasAdjecentNotes',
+        value: _hasAdjacentNotes,
+        ifTrue: _hasAdjacentNotes.toString(),
+        ifFalse: _hasAdjacentNotes.toString(),
+        defaultValue: null,
+        level: level,
+        showName: true,
+      ),
+    );
+
+    properties.add(
+      IterableProperty(
+        '_noteheadsPositions',
+        _noteheadsPositions,
+        defaultValue: [],
+        level: level,
+        showName: true,
       ),
     );
   }

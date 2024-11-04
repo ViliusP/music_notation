@@ -1,4 +1,5 @@
 import 'package:music_notation/src/smufl/font_metadata.dart';
+import 'package:music_notation/src/smufl/glyph_class.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -134,18 +135,18 @@ void main() {
   group('GlyphWithAnchor', () {
     test('fromJson constructs a valid object', () {
       final json = {
-        'noteheadQuarter': {
+        'noteABlack': {
           'stemDownNW': [0.0, -0.184],
           'stemUpSE': [1.328, 0.184],
         },
       };
 
       final glyphWithAnchor = GlyphWithAnchor.fromJson(
-        'noteheadQuarter',
-        json['noteheadQuarter']!,
+        'noteABlack',
+        json['noteABlack']!,
       );
 
-      expect(glyphWithAnchor.glyphName, 'noteheadQuarter');
+      expect(glyphWithAnchor.value, Noteheads.noteABlack);
       expect(glyphWithAnchor.anchors[AnchorField.stemDownNW], [0.0, -0.184]);
       expect(glyphWithAnchor.anchors[AnchorField.stemUpSE], [1.328, 0.184]);
     });
@@ -162,13 +163,13 @@ void main() {
           'barlineSeparation': 0.6,
         },
         'glyphBBoxes': {
-          'noteheadQuarter': {
+          'noteABlack': {
             'bBoxNE': [1.0, 1.5],
             'bBoxSW': [0.0, -1.0]
           }
         },
         'glyphsWithAnchors': {
-          'noteheadQuarter': {
+          'noteABlack': {
             'stemDownNW': [0.0, -0.184],
             'stemUpSE': [1.328, 0.184]
           }
@@ -178,17 +179,20 @@ void main() {
       final fontMetadata = FontMetadata.fromJson(json);
 
       expect(fontMetadata.fontName, 'Sebastian');
-      expect(fontMetadata.fontVersion, 1.07);
+      expect(fontMetadata.fontVersion, "1.07");
       expect(
         fontMetadata.engravingDefaults.textFontFamily,
         ['Academico', 'serif'],
       );
-      expect(fontMetadata.glyphBBoxes['noteheadQuarter']!.bBoxNE, [1.0, 1.5]);
+      expect(
+        fontMetadata.glyphBBoxes[Noteheads.noteABlack]!.bBoxNE,
+        Coordinates(x: 1, y: 1.5),
+      );
       expect(fontMetadata.glyphsWithAnchors.length, 1);
-      expect(fontMetadata.glyphsWithAnchors[0].glyphName, 'noteheadQuarter');
+      expect(fontMetadata.glyphsWithAnchors[0].value, Noteheads.noteABlack);
       expect(
         fontMetadata.glyphsWithAnchors[0].anchors[AnchorField.stemDownNW],
-        [0.0, -0.184],
+        [0, -0.184],
       );
     });
   });

@@ -11,12 +11,15 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notation_font.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
+import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/painters/dots_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/note_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 import 'package:music_notation/src/notation_painter/utilities/notation_rendering_exception.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
+import 'package:music_notation/src/smufl/glyph_class.dart';
 import 'package:music_notation/src/smufl/smufl_glyph.dart';
 
 const Map<String, Color> _voiceColors = {
@@ -51,7 +54,9 @@ const Map<String, Color> _voiceColors = {
 /// voice will go up, and the stems for the lower voice will go down.
 class NoteElement extends StatelessWidget implements RhythmicElement {
   final Note note;
-  final Stem? stem;
+
+  @override
+  final StemDirection? stemDirection;
 
   @override
   final double stemLength;
@@ -103,7 +108,9 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       showFlag: showFlag,
       duration: determineDuration(note),
       divisions: notationContext.divisions!,
-      stem: note.stem,
+      stemDirection: note.stem == null
+          ? null
+          : StemDirection.fromStemValue(note.stem!.value),
     );
   }
 
@@ -116,7 +123,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     this.showLedger = true,
     required this.duration,
     required this.divisions,
-    this.stem,
+    this.stemDirection,
     required this.font,
   });
 
@@ -133,11 +140,11 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     double? bottom;
     double? top;
 
-    if (_stemmed && stem?.value == StemValue.up) {
+    if (_stemmed && stemDirection == StemDirection.up) {
       bottom = -NotationLayoutProperties.staveSpace / 2;
     }
 
-    if (_stemmed && stem?.value == StemValue.down) {
+    if (_stemmed && stemDirection == StemDirection.down) {
       top = -NotationLayoutProperties.staveSpace / 2;
       if (position.numeric % 2 == 0 && _dots > 0) {
         top -= _dotsSize.height / 2;
@@ -177,7 +184,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     double? offsetX;
     double offsetY = size.height;
 
-    if (stem?.value == StemValue.down) {
+    if (stemDirection == StemDirection.down) {
       offsetX = NotationLayoutProperties.stemStrokeWidth / 2;
     }
 
@@ -277,9 +284,9 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
         }
 
         // Unpitched notes probably shouldn't be transposed;
-        return position.transpose(
-          ElementPosition.clefTransposeInterval(clef),
-        );
+        return position.transpose(ElementPosition.transposeIntervalByClef(
+          clef,
+        ));
 
       default:
         throw UnimplementedError(
@@ -344,13 +351,13 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
   }
 
   double get verticalAlignmentAxisOffset {
-    if (_stemmed && stem?.value == StemValue.up) {
+    if (_stemmed && stemDirection == StemDirection.up) {
       return stemLength;
     }
 
     // When note is on drawn the line and it's stem is drawn down,
     // the dots size must be taken in the account.
-    if (stem?.value == StemValue.down &&
+    if (stemDirection == StemDirection.down &&
         position.numeric % 2 == 0 &&
         _dots > 0) {
       return NotationLayoutProperties.staveSpace / 2 + _dotsSize.height / 2;
@@ -385,7 +392,9 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       defaultSize.height * scaleFactor,
     );
 
-    Size? glyphSize = font.glyphBBoxes['augmentationDot']?.toRect().size;
+    Size? glyphSize = font.glyphBBoxes[CombiningStaffPositions.augmentationDot]
+        ?.toRect()
+        .size;
     return glyphSize ?? scaledDefaultSize;
   }
 
@@ -415,7 +424,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     var stemTopPadding = NotationLayoutProperties.defaultNoteheadHeight / 2;
     var stemBottomPadding = 0.0;
 
-    if (stem?.value == StemValue.up) {
+    if (stemDirection == StemDirection.up) {
       stemLeftPadding = noteheadSize.width;
       stemLeftPadding -= NotationLayoutProperties.stemStrokeWidth / 2;
       stemTopPadding = 0;
@@ -429,9 +438,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
         ? noteheadSize.height / 2 // Between lines
         : NotationLayoutProperties.staveSpace; // On the line
 
-    StemDirection stemDirection = StemDirection.up;
-    if (stem?.value == StemValue.down) {
-      stemDirection = StemDirection.down;
+    if (stemDirection == StemDirection.down) {
       // Somehow it works, probably because of pixel snapping nuances
       dotsOffsetFromNotehead -= (_dotsSize.height / 2).ceil();
       dotsTopPosition = dotsOffsetFromNotehead;
@@ -439,7 +446,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     double dotVerticalOffset = 0;
     // When note is on drawn the line and it's stem is drawn down,
     // it's dot needs to be positioned above note.
-    if (stem?.value == StemValue.down &&
+    if (stemDirection == StemDirection.down &&
         position.numeric % 2 == 0 &&
         _dots > 0) {
       dotsOffsetFromNotehead = 0;
@@ -447,7 +454,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       dotsTopPosition = dotsOffsetFromNotehead;
     }
 
-    if (stem?.value == StemValue.up) {
+    if (stemDirection == StemDirection.up) {
       // Somehow it works, probably because of pixel snapping nuances
       dotsOffsetFromNotehead -= (_dotsSize.height / 2).floor();
       dotsBottomPosition = dotsOffsetFromNotehead;
@@ -458,8 +465,8 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       child: Stack(
         children: [
           Positioned(
-            top: stem?.value == StemValue.down ? dotVerticalOffset : null,
-            bottom: stem?.value == StemValue.up ? 0 : null,
+            top: stemDirection == StemDirection.down ? dotVerticalOffset : null,
+            bottom: stemDirection == StemDirection.up ? 0 : null,
             child: notehead,
           ),
           if (_dots > 0)
@@ -482,7 +489,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
               child: StemElement(
                 length: stemLength,
                 type: type,
-                direction: stemDirection,
+                direction: stemDirection!,
                 showFlag: note.beams.isEmpty && showFlag,
               ),
             ),
@@ -506,6 +513,10 @@ class NoteheadElement extends StatelessWidget {
   final Color color;
 
   GlyphBBox _bBox(FontMetadata font) {
+    return font.glyphBBoxes[_glyph]!;
+  }
+
+  SmuflGlyph get _glyph {
     switch (_noteType) {
       case NoteTypeValue.n1024th:
       case NoteTypeValue.n512th:
@@ -516,17 +527,17 @@ class NoteheadElement extends StatelessWidget {
       case NoteTypeValue.n16th:
       case NoteTypeValue.eighth:
       case NoteTypeValue.quarter:
-        return font.glyphBBoxes['noteheadBlack']!;
+        return NoteheadSetDefault.noteheadBlack;
       case NoteTypeValue.half:
-        return font.glyphBBoxes['noteheadHalf']!;
+        return NoteheadSetDefault.noteheadHalf;
       case NoteTypeValue.whole:
-        return font.glyphBBoxes['noteheadWhole']!;
+        return NoteheadSetDefault.noteheadWhole;
       case NoteTypeValue.breve:
-        return font.glyphBBoxes['noteheadBlack']!; // TODO: finish
+        return NoteheadSetDefault.noteheadDoubleWhole;
       case NoteTypeValue.long:
-        return font.glyphBBoxes['noteheadBlack']!; // TODO: finish
+        return SmuflGlyph.mensuralNoteheadLongaWhite;
       case NoteTypeValue.maxima:
-        return font.glyphBBoxes['noteheadBlack']!; // TODO: finish
+        return SmuflGlyph.mensuralNoteheadMaximaWhite;
     }
   }
 
@@ -539,34 +550,8 @@ class NoteheadElement extends StatelessWidget {
   /// The height of all notehead types is same and equal to the sum of the staff
   /// line stroke width and stave space.
   Size size(FontMetadata font) {
-    const height = NotationLayoutProperties.defaultNoteheadHeight;
-
-    switch (_noteType) {
-      case NoteTypeValue.n1024th:
-      case NoteTypeValue.n512th:
-      case NoteTypeValue.n256th:
-      case NoteTypeValue.n128th:
-      case NoteTypeValue.n64th:
-      case NoteTypeValue.n32nd:
-      case NoteTypeValue.n16th:
-      case NoteTypeValue.eighth:
-      case NoteTypeValue.quarter:
-        Rect headRect = font.glyphBBoxes['noteheadBlack']!.toRect();
-        return Size(headRect.width, headRect.height);
-      case NoteTypeValue.half:
-        Rect headRect = font.glyphBBoxes['noteheadHalf']!.toRect();
-        return Size(headRect.width, headRect.height);
-      case NoteTypeValue.whole:
-        Rect headRect = font.glyphBBoxes['noteheadWhole']!.toRect();
-        // Old value: const Size(21.2, height)
-        return Size(headRect.width, headRect.height);
-      case NoteTypeValue.breve:
-        return const Size(30, height); // Need to be adjusted in future.
-      case NoteTypeValue.long:
-        return const Size(30, height); // Need to be adjusted in future.
-      case NoteTypeValue.maxima:
-        return const Size(30, height); // Need to be adjusted in future.
-    }
+    Rect headRect = _bBox(font).toRect();
+    return Size(headRect.width, headRect.height);
   }
 
   String get _smufl {
@@ -795,15 +780,10 @@ class RestElement extends StatelessWidget {
       // TODO: finish
       painter: NotePainter(
         smufl: _smufl,
-        bBox: font.glyphBBoxes["restHalf"]!,
+        bBox: font.glyphBBoxes[SmuflGlyph.restDoubleWhole]!,
       ),
     );
   }
-}
-
-enum StemDirection {
-  up,
-  down;
 }
 
 class StemElement extends StatelessWidget {
