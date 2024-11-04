@@ -15,7 +15,7 @@ import 'package:music_notation/src/models/elements/music_data/forward.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
-import 'package:music_notation/src/notation_painter/beaming.dart';
+import 'package:music_notation/src/notation_painter/notes/beaming.dart';
 import 'package:music_notation/src/notation_painter/clef_element.dart';
 import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
 import 'package:music_notation/src/notation_painter/cursor_element.dart';

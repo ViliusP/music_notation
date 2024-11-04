@@ -4,7 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
-import 'package:music_notation/src/notation_painter/beaming.dart';
+import 'package:music_notation/src/notation_painter/notes/beaming.dart';
 import 'package:test/test.dart';
 import 'package:xml/xml.dart';
 
