@@ -365,12 +365,19 @@ class Chord extends StatelessWidget implements RhythmicElement {
 
       final NoteheadPosition noteheadPos = _noteheadsPositions[index];
 
+      double? right;
+
+      if (noteheadPos == NoteheadPosition.right &&
+          _stemmed &&
+          _hasAdjacentNotes) {
+        right = NotationLayoutProperties.stemStrokeWidth / 2;
+      }
+
       children.add(
         Positioned(
           bottom: isStemmedUpward ? distanceFromRef : null,
           top: !isStemmedUpward ? distanceFromRef.abs() : null,
-          left: noteheadPos == NoteheadPosition.left ? 0 : null,
-          right: noteheadPos == NoteheadPosition.right ? 0 : null,
+          right: right,
           child: element,
         ),
       );
