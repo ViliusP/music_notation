@@ -7,7 +7,9 @@ import 'package:music_notation/src/notation_painter/measure/measure_element.dart
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/notes/adjacency.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
+import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
 class Chord extends StatelessWidget implements RhythmicElement {
@@ -233,7 +235,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
             ).width)
         .max;
 
-    _determineNoteheadPositions(sortedNotes)
+    Adjacency.determineNoteheadPositions(sortedNotes, StemDirection.up);
 
     return Size(width, height);
   }
@@ -301,53 +303,11 @@ class Chord extends StatelessWidget implements RhythmicElement {
   bool get _beamed => isBeamed(notes);
 
   /// Notes position
-  /// !!!!!!! notes must be sorted, lowest note is first.
-  static List<_NoteheadPosition> _determineNoteheadPositions(
-    List<Note> notes
-  ) {
-    _NoteheadPosition defaultPosition = _NoteheadPosition.left;
-
-    if (stemmed) defaultPosition = _NoteheadPosition.right;
-
-    List<_NoteheadPosition> positions = List.filled(
-      notes.length,
-      defaultPosition,
-    );
-
-    // Return earlier if it has no adjacent notes.
-    if (!_containsAdjacentNotes(notes)) {
-      return positions;
-    }
-
-    ElementPosition? noteBeforePosition;
-    List<Set<int>> groups = [];
-    Set<int> group = {};
-    for (var (i, note) in notes.indexed) {
-      if (noteBeforePosition == null) {
-        noteBeforePosition = NoteElement.determinePosition(note, null);
-        group.add(i);
-        continue;
-      }
-      ElementPosition position = NoteElement.determinePosition(note, null);
-      if (position.distance(noteBeforePosition) == 1) {
-        group.add(i);
-      } else if (group.length > 1) {
-        groups.add(group);
-        print(groups);
-        group.clear();
-      } else {
-        group.clear();
-      }
-      noteBeforePosition = position;
-    }
-
-    return positions;
-  }
-
-  /// Notes position
   ///
-  List<_NoteheadPosition> get _noteheadsPositions =>
-      _determineNoteheadPositions(sortedNotes, false);
+  List<NoteheadPosition> get _noteheadsPositions =>
+      Adjacency.determineNoteheadPositions(
+        sortedNotes,
+      );
 
   /// Checks if the chord contains ad jacent notes, where two or more notes have a positional difference of 1.
   ///
@@ -355,53 +315,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
   /// an interval of a second (either minor or major).
   ///
   /// Returns `true` if the notes in the chord are adjacent; otherwise, returns `false`.
-  bool get _hasAdjacentNotes => _containsAdjacentNotes(sortedNotes);
-
-  /// Checks if the chord contains adjacent notes, where two or more notes have a positional difference of 1.
-  ///
-  /// In musical terms, this indicates that there are two notes in the chord with
-  /// an interval of a second (either minor or major).
-  ///
-  /// Returns `true` if the notes in the chord are adjacent; otherwise, returns `false`.
-  static bool _containsAdjacentNotes(List<Note> notes) {
-    ElementPosition? noteBeforePosition;
-
-    for (var note in notes) {
-      if (noteBeforePosition == null) {
-        noteBeforePosition = NoteElement.determinePosition(note, null);
-        continue;
-      }
-      ElementPosition position = NoteElement.determinePosition(note, null);
-      if (position.distance(noteBeforePosition) == 1) {
-        return true;
-      }
-      noteBeforePosition = position;
-    }
-
-    return false;
-  }
-
-  /// Determines the lowest note position in a chord with adjacent notes,
-  /// returning either [_NoteheadPosition.left] or [_NoteheadPosition.right].
-  ///
-  /// This function returns `null` if the chord does not contain adjacent notes,
-  /// as there is no specific lowest note position in that case.
-  ///
-  /// Returns:
-  /// - `null` if the chord does not contain adjacent notes.
-  /// - [_NoteheadPosition.right] if the chord has an odd number of notes and a downward stem.
-  /// - [_NoteheadPosition.left] in any other case.
-  // _NoteheadPosition? get _lowestNotePosition {
-  //   if (!_hasAdjacentNotes) return null;
-
-  //   // If the chord has an odd number of notes and the stem is down,
-  //   // the lowest note is positioned to the right.
-  //   if (notes.length % 2 != 0 && stem?.value == StemValue.down) {
-  //     return _NoteheadPosition.right;
-  //   }
-
-  //   return _NoteheadPosition.left;
-  // }
+  bool get _hasAdjacentNotes => Adjacency.containsAdjacentNotes(sortedNotes);
 
   @override
   Widget build(BuildContext context) {
@@ -494,10 +408,4 @@ class Chord extends StatelessWidget implements RhythmicElement {
       ),
     );
   }
-}
-
-/// Indicates the relative position of a notehead in relation to the stem.
-enum _NoteheadPosition {
-  left,
-  right;
 }
