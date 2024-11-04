@@ -139,8 +139,18 @@ class Chord extends StatelessWidget implements RhythmicElement {
       offsetX -= NoteElement.dotsSize(font).width;
     }
 
+    var (leftWidth, rightWidth) = _noteheadColumnSizes(
+      notes,
+      font,
+      stemDirection ?? Stemming.determineChordStem(notes),
+    );
+
+    if (stemDirection == StemDirection.up && rightWidth != 0) {
+      offsetX = rightWidth;
+    }
+
     if (stemDirection == StemDirection.down) {
-      offsetX = NotationLayoutProperties.stemStrokeWidth / 2;
+      offsetX = NotationLayoutProperties.stemStrokeWidth / 2 + leftWidth;
     }
 
     if (alignmentPosition.top != null && stemDirection != StemDirection.down) {
