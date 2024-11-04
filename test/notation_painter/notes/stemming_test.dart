@@ -58,7 +58,7 @@ void main() {
             RegularNote(form: Pitch(step: Step.F, octave: 5), duration: 0),
             RegularNote(form: Pitch(step: Step.B, octave: 5), duration: 0),
           ],
-          direction: StemDirection.up,
+          direction: StemDirection.down,
         ),
         (
           name:
