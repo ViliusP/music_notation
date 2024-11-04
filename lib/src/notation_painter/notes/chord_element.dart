@@ -61,7 +61,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
     }
 
     return AlignmentPosition(
-      left: -_calculateOffsetForCenter(font),
+      left: 0,
       top: -top,
     );
   }
@@ -173,8 +173,6 @@ class Chord extends StatelessWidget implements RhythmicElement {
     required NotationContext notationContext,
     required FontMetadata font,
   }) {
-    // const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
-
     // Sorts from lowest to highest note. First being lowest.
     List<Note> sortedNotes = notes.sortedBy(
       (note) => NoteElement.determinePosition(note, null),
@@ -265,19 +263,6 @@ class Chord extends StatelessWidget implements RhythmicElement {
         stemLength: stemLength,
         font: font,
       );
-
-  double _calculateOffsetForCenter(FontMetadata font) {
-    var noteheadSize = NoteheadElement(
-      note: notes.first,
-    ).size(font);
-
-    var width = noteheadSize.width;
-    if (_stemmed) {
-      width += NotationLayoutProperties.stemStrokeWidth;
-    }
-
-    return width / 2;
-  }
 
   int get referenceNoteIndex {
     if (_stemmed && stemDirection == StemDirection.up) {
