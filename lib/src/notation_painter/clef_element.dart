@@ -28,12 +28,12 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
   SmuflGlyph get _glyph {
     switch (clef.sign) {
       case ClefSign.G:
-        if (clef.octaveChange != 0 && clef.octaveChange == null) {
+        if (clef.octaveChange != 0 && clef.octaveChange != null) {
           return ClefsG.gClef8vb;
         }
         return ClefsG.gClef;
       case ClefSign.F:
-        if (clef.octaveChange != 0 && clef.octaveChange == null) {
+        if (clef.octaveChange != 0 && clef.octaveChange != null) {
           return ClefsF.fClef8vb;
         }
         return ClefsF.fClef;
