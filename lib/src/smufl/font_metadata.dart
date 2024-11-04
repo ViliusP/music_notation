@@ -252,6 +252,17 @@ class GlyphBBox {
   String toString() {
     return "NE: $bBoxNE, SW: $bBoxSW";
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is GlyphBBox &&
+        other.bBoxNE == bBoxNE &&
+        other.bBoxSW == bBoxSW;
+  }
+
+  @override
+  int get hashCode => bBoxNE.hashCode ^ bBoxSW.hashCode;
 }
 
 /// Represents an anchor point for a glyph with its name and coordinates.
