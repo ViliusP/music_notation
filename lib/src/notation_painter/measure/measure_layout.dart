@@ -209,7 +209,7 @@ class MeasureLayout extends StatelessWidget {
         clef: clef,
         divisions: element.divisions,
       );
-      widgets.add(ClefElement(clef: clef));
+      widgets.add(ClefElement(clef: clef, font: font));
     }
     // -----------------------------
     // Keys
