@@ -40,6 +40,10 @@ enum NotationExample {
   keySignatures(
     displayName: "Key signatures",
     path: "assets/scores/key_signatures.musicxml",
+  ),
+  rests(
+    displayName: "Rests",
+    path: "assets/scores/rests.musicxml",
   );
 
   const NotationExample({
