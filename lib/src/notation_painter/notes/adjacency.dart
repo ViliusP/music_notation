@@ -100,28 +100,6 @@ class Adjacency {
 
     return false;
   }
-
-  /// Determines the lowest note position in a chord with adjacent notes,
-  /// returning either [_NoteheadPosition.left] or [_NoteheadPosition.right].
-  ///
-  /// This function returns `null` if the chord does not contain adjacent notes,
-  /// as there is no specific lowest note position in that case.
-  ///
-  /// Returns:
-  /// - `null` if the chord does not contain adjacent notes.
-  /// - [_NoteheadPosition.right] if the chord has an odd number of notes and a downward stem.
-  /// - [_NoteheadPosition.left] in any other case.
-  // _NoteheadPosition? get _lowestNotePosition {
-  //   if (!_hasAdjacentNotes) return null;
-
-  //   // If the chord has an odd number of notes and the stem is down,
-  //   // the lowest note is positioned to the right.
-  //   if (notes.length % 2 != 0 && stem?.value == StemValue.down) {
-  //     return _NoteheadPosition.right;
-  //   }
-
-  //   return _NoteheadPosition.left;
-  // }
 }
 
 /// Indicates the relative position of a notehead in relation to the stem.
