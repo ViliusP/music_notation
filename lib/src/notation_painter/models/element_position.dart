@@ -90,11 +90,13 @@ class ElementPosition implements Comparable<ElementPosition> {
   }
 
   static int clefTransposeInterval(Clef clef) {
+    const positionsPerOctave = 8;
+    int positionsToTranspose = 0;
     switch (clef.sign) {
       case ClefSign.G:
-        return 0;
+        positionsToTranspose = 0;
       case ClefSign.F:
-        return 12;
+        positionsToTranspose = 12;
       case ClefSign.C:
         throw UnimplementedError(
           "ClefSign.C is transpose is not implemented yet",
@@ -116,6 +118,9 @@ class ElementPosition implements Comparable<ElementPosition> {
           "ClefSign.none is transpose is not implemented yet",
         );
     }
+
+    positionsToTranspose -= (clef.octaveChange ?? 0) * positionsPerOctave;
+    return positionsToTranspose;
   }
 
   /// Less-than operator. Compares an [ElementPosition] to another [ElementPosition]
