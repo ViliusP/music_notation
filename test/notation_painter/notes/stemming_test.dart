@@ -108,7 +108,7 @@ void main() {
             RegularNote(form: Pitch(step: Step.A, octave: 4), duration: 0),
             RegularNote(form: Pitch(step: Step.A, octave: 5), duration: 0),
           ],
-          direction: StemDirection.up,
+          direction: StemDirection.down,
         ),
         (
           name:
@@ -118,7 +118,7 @@ void main() {
             RegularNote(form: Pitch(step: Step.C, octave: 5), duration: 0),
             RegularNote(form: Pitch(step: Step.E, octave: 5), duration: 0),
           ],
-          direction: StemDirection.down,
+          direction: StemDirection.up,
         ),
         (
           name:
@@ -137,7 +137,7 @@ void main() {
           notes: [
             RegularNote(form: Pitch(step: Step.C, octave: 4), duration: 0),
             RegularNote(form: Pitch(step: Step.E, octave: 4), duration: 0),
-            RegularNote(form: Pitch(step: Step.A, octave: 4), duration: 0),
+            RegularNote(form: Pitch(step: Step.A, octave: 5), duration: 0),
           ],
           direction: StemDirection.up,
         ),
