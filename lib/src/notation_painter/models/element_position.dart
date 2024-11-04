@@ -89,7 +89,7 @@ class ElementPosition implements Comparable<ElementPosition> {
     return ElementPosition.fromInt(numeric + interval);
   }
 
-  static int clefTransposeInterval(Clef clef) {
+  static int transposeIntervalByClef(Clef clef) {
     const positionsPerOctave = 7;
     int positionsToTranspose = 0;
     switch (clef.sign) {
