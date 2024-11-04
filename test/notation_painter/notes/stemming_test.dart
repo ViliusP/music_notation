@@ -60,6 +60,41 @@ void main() {
           ],
           direction: StemDirection.up,
         ),
+        (
+          name:
+              "Both notes are equidistant from the middle, stem goes to the default direction (down)",
+          notes: [
+            RegularNote(form: Pitch(step: Step.A, octave: 4), duration: 0),
+            RegularNote(form: Pitch(step: Step.C, octave: 5), duration: 0),
+          ],
+          direction: StemDirection.down,
+        ),
+        (
+          name:
+              "Both notes are equidistant from the middle, stem goes to the default direction (down)",
+          notes: [
+            RegularNote(form: Pitch(step: Step.A, octave: 3), duration: 0),
+            RegularNote(form: Pitch(step: Step.C, octave: 6), duration: 0),
+          ],
+          direction: StemDirection.down,
+        ),
+      ];
+
+      // Iterate through each test case and execute the test
+      for (var testCase in testCases) {
+        String notesDescription = testCase.notes
+            .map((note) => "${note.form.step}${note.form.octave}")
+            .join(", ");
+        notesDescription = "($notesDescription)";
+
+        test("${testCase.name} $notesDescription", () {
+          var result = Stemming.determineChordStem(testCase.notes);
+          expect(result, testCase.direction);
+        });
+      }
+    },
+  );
+
       ];
 
       // Iterate through each test case and execute the test
