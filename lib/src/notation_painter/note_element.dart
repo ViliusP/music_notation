@@ -279,9 +279,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
         }
 
         // Unpitched notes probably shouldn't be transposed;
-        return position.transpose(
-          ElementPosition.clefTransposeInterval(clef),
-        );
+        return position.transpose(ElementPosition.clefTransposeInterval(clef));
 
       default:
         throw UnimplementedError(
