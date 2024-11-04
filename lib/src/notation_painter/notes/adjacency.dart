@@ -65,12 +65,8 @@ class Adjacency {
 
     // Determine notehead positions for each group based on adjacency and stem direction
     for (var group in groups) {
-      ElementPosition position = NoteElement.determinePosition(
-        sortedNotes.first,
-        null,
-      );
       NoteheadPosition pos = NoteheadPosition.left; // Starting position
-      if (position.distanceFromMiddle >= 0 && group.length % 2 != 0) {
+      if (stemDirection == StemDirection.down && group.length % 2 != 0) {
         pos = NoteheadPosition.right;
       }
       for (var index in group) {

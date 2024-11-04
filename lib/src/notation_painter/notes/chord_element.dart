@@ -424,5 +424,15 @@ class Chord extends StatelessWidget implements RhythmicElement {
         showName: true,
       ),
     );
+
+    properties.add(
+      IterableProperty(
+        '_noteheadsPositions',
+        _noteheadsPositions,
+        defaultValue: [],
+        level: level,
+        showName: true,
+      ),
+    );
   }
 }
