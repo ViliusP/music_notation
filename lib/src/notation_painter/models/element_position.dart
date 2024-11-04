@@ -90,7 +90,7 @@ class ElementPosition implements Comparable<ElementPosition> {
   }
 
   static int clefTransposeInterval(Clef clef) {
-    const positionsPerOctave = 8;
+    const positionsPerOctave = 7;
     int positionsToTranspose = 0;
     switch (clef.sign) {
       case ClefSign.G:
