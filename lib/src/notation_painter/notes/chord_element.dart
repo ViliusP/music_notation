@@ -173,78 +173,63 @@ class Chord extends StatelessWidget implements RhythmicElement {
     required NotationContext notationContext,
     required FontMetadata font,
   }) {
+    // const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
+
     // Sorts from lowest to highest note. First being lowest.
     List<Note> sortedNotes = notes.sortedBy(
       (note) => NoteElement.determinePosition(note, null),
     );
 
-    StemValue? stemType = sortedNotes.first.stem?.value;
+    StemDirection? stemDirection = StemDirection.fromStemValue(
+      sortedNotes.first.stem?.value ?? StemValue.none,
+    );
 
+    double height = 0;
     bool beamed = isBeamed(notes);
 
-    if (stemType == StemValue.up) {
-      return NoteElement.calculateSize(
+    if (stemDirection == StemDirection.up) {
+      height = NoteElement.calculateSize(
         note: sortedNotes.first,
         stemLength: _calculateStemLength(notes),
         clef: notationContext.clef,
         font: font,
         showFlag: !beamed,
-      );
+      ).height;
     }
 
-    if (stemType == StemValue.down) {
-      return NoteElement.calculateSize(
+    if (stemDirection == StemDirection.down) {
+      height = NoteElement.calculateSize(
         note: sortedNotes.last,
         clef: notationContext.clef,
         stemLength: _calculateStemLength(notes),
         font: font,
         showFlag: !beamed,
-      );
+      ).height;
     }
 
-    int lowestPosition = NoteElement.determinePosition(
-      sortedNotes.first,
-      null,
-    ).numeric;
-    int highestPosition = NoteElement.determinePosition(
-      sortedNotes.last,
-      null,
-    ).numeric;
-    int positionDifference = highestPosition - lowestPosition;
+    var noteheadPositions = Adjacency.determineNoteheadPositions(
+      sortedNotes,
+      stemDirection ?? Stemming.determineChordStem(notes),
+    );
 
-    const heightPerPosition = NotationLayoutProperties.staveSpace / 2;
-    double height = positionDifference * heightPerPosition;
-    if (stemLength == 0) {
-      height += NoteElement.calculateSize(
-            note: sortedNotes.last,
-            clef: notationContext.clef,
-            stemLength: 0,
-            font: font,
-          ).height /
-          2;
-
-      height += (NoteElement.calculateSize(
-            note: sortedNotes.first,
-            stemLength: 0,
-            clef: notationContext.clef,
-            font: font,
-          ).height /
-          2);
+    double widthToLeft = 0;
+    double widthToRight = 0;
+    for (var (i, pos) in noteheadPositions.indexed) {
+      double width = NoteElement.calculateSize(
+        note: notes[i],
+        clef: notationContext.clef,
+        stemLength: 0,
+        font: font,
+      ).width;
+      if (pos == NoteheadPosition.left) {
+        widthToLeft = [width, widthToLeft].max;
+      }
+      if (pos == NoteheadPosition.right) {
+        widthToRight = [width, widthToRight].max;
+      }
     }
-    height += stemLength;
 
-    double width = sortedNotes
-        .map((e) => NoteElement.calculateSize(
-              note: e,
-              stemLength: 0,
-              clef: notationContext.clef,
-              font: font,
-            ).width)
-        .max;
-
-    Adjacency.determineNoteheadPositions(sortedNotes, StemDirection.up);
-
-    return Size(width, height);
+    return Size(widthToLeft + widthToRight, height);
   }
 
   static double _calculateStemLength(
