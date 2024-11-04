@@ -106,8 +106,8 @@ class MusicNotationCanvas extends StatelessWidget {
       ));
     }
     return DebugSettings(
-      paintBBoxAboveStaff: true,
-      paintBBoxBelowStaff: true,
+      paintBBoxAboveStaff: false,
+      paintBBoxBelowStaff: false,
       extraStaveLineCount: 0,
       extraStaveLines: ExtraStaveLines.none,
       child: NotationFont(
