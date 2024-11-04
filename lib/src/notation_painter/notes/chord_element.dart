@@ -139,7 +139,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
       offsetX -= NoteElement.dotsSize(font).width;
     }
 
-    var (leftWidth, rightWidth) = _noteheadColumnSizes(
+    var (leftWidth, rightWidth) = _noteheadSizesBySide(
       notes,
       font,
       stemDirection ?? Stemming.determineChordStem(notes),
@@ -215,7 +215,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
       ).height;
     }
 
-    var (leftWidth, rightWidth) = _noteheadColumnSizes(
+    var (leftWidth, rightWidth) = _noteheadSizesBySide(
       notes,
       font,
       stemDirection ?? Stemming.determineChordStem(notes),
@@ -230,7 +230,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
     return Size(width, height);
   }
 
-  static (double left, double right) _noteheadColumnSizes(
+  static (double left, double right) _noteheadSizesBySide(
     List<Note> notes,
     FontMetadata font,
     StemDirection direction,
