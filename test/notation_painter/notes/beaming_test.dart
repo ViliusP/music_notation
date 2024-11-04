@@ -8,7 +8,7 @@ import 'package:music_notation/src/notation_painter/notes/beaming.dart';
 import 'package:test/test.dart';
 import 'package:xml/xml.dart';
 
-import '../test_path.dart';
+import '../../test_path.dart';
 
 void main() {
   group("Après un rêve beamings", () {
