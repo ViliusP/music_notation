@@ -8,11 +8,15 @@ import 'package:music_notation/music_notation.dart';
 class ScorePage extends StatefulWidget {
   final ScorePartwise scorePartwise;
   final String description;
+  final FontMetadata? fontMetadata;
+  final String? fontMetadataPath;
 
   const ScorePage({
     super.key,
     required this.scorePartwise,
     this.description = "",
+    this.fontMetadata,
+    this.fontMetadataPath,
   });
 
   @override
@@ -26,10 +30,12 @@ class _ScorePageState extends State<ScorePage> {
 
   @override
   void initState() {
-    rootBundle.loadString(_fontPath).then((x) {
-      font = FontMetadata.fromJson(jsonDecode(x));
-      setState(() {});
-    });
+    if (widget.fontMetadata == null) {
+      rootBundle.loadString(widget.fontMetadataPath ?? _fontPath).then((x) {
+        font = FontMetadata.fromJson(jsonDecode(x));
+        setState(() {});
+      });
+    }
     super.initState();
   }
 
@@ -44,6 +50,8 @@ class _ScorePageState extends State<ScorePage> {
     //     ?.value;
 
     // String title = "${creator ?? 'No creator'}: ${movementTitle ?? 'unnamed'}";
+
+    FontMetadata? usedFont = widget.fontMetadata ?? font;
 
     return SingleChildScrollView(
       child: Column(
@@ -69,11 +77,11 @@ class _ScorePageState extends State<ScorePage> {
                     vertical: 4,
                     horizontal: 16,
                   ),
-                  child: font == null
+                  child: usedFont == null
                       ? SizedBox.shrink()
                       : MusicNotationCanvas(
                           scorePartwise: widget.scorePartwise,
-                          font: font!,
+                          font: usedFont,
                         ),
                 ),
               ),
