@@ -1,6 +1,7 @@
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
+import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 
 /// Set of static methods to help calculating direction of stems
 class Adjacency {
@@ -8,7 +9,7 @@ class Adjacency {
   /// !!!!!!! notes must be sorted, lowest note is first.
   static List<NoteheadPosition> determineNoteheadPositions(
     List<Note> notes,
-    StemDirection stemDirection,
+    StemDirection? stemDirection,
   ) {
     NoteheadPosition defaultPosition = NoteheadPosition.left;
 

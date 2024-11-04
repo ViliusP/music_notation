@@ -1,7 +1,7 @@
 import 'package:flutter/rendering.dart';
-import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 
 ///
 abstract class RhythmicElement extends MeasureWidget {
@@ -12,7 +12,7 @@ abstract class RhythmicElement extends MeasureWidget {
 
   final Offset offsetForBeam;
 
-  final Stem? stem;
+  final StemDirection? stemDirection;
 
   const RhythmicElement({
     super.key,
@@ -20,6 +20,6 @@ abstract class RhythmicElement extends MeasureWidget {
     required this.divisions,
     required this.duration,
     required this.offsetForBeam,
-    this.stem,
+    this.stemDirection,
   });
 }

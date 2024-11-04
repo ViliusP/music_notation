@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
 import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
-import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
 import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
 import 'package:music_notation/src/notation_painter/measure/inherited_padding.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
@@ -11,6 +10,7 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
+import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/painters/beam_painter.dart';
 
 class BeamGroup extends StatelessWidget {
@@ -68,14 +68,14 @@ class BeamGroup extends StatelessWidget {
         pattern.add(NoteBeams(
           values: child.note.beams,
           leftOffset: (leftOffsets[i] - leftOffsets[0]),
-          stem: child.stem!.value,
+          stemDirection: child.stemDirection!,
         ));
       }
       if (child is Chord) {
         pattern.add(NoteBeams(
           values: child.notes.firstWhere((x) => x.beams.isNotEmpty).beams,
           leftOffset: leftOffsets[i] - leftOffsets[0],
-          stem: child.stem!.value,
+          stemDirection: child.stemDirection!,
         ));
       }
     }
@@ -126,11 +126,11 @@ class BeamGroup extends StatelessWidget {
     RhythmicElement first = children.first;
     RhythmicElement last = children.last;
 
-    StemValue? firstNoteStemValue;
+    StemDirection? firstNoteStemValue;
     // StemValue? lastNoteStemValue;
 
     firstNoteBeamOffset = first.offsetForBeam;
-    firstNoteStemValue = first.stem!.value;
+    firstNoteStemValue = first.stemDirection;
 
     lastNoteBeamOffset = last.offsetForBeam;
     // lastNoteStemValue = last.stem!.value;
@@ -147,7 +147,7 @@ class BeamGroup extends StatelessWidget {
         beamTopOffset += verticalOffsets.first.top!;
         beamTopOffset += firstNoteBeamOffset.dy;
       }
-      if (firstNoteStemValue == StemValue.down) {
+      if (firstNoteStemValue == StemDirection.down) {
         beamTopOffset -= NotationLayoutProperties.beamThickness;
       }
     }
@@ -197,13 +197,13 @@ class BeamGroup extends StatelessWidget {
 
 class NoteBeams {
   final List<Beam> values;
-  final StemValue stem;
+  final StemDirection stemDirection;
   final double leftOffset;
 
   NoteBeams({
     required this.values,
     required this.leftOffset,
-    required this.stem,
+    required this.stemDirection,
   });
 }
 

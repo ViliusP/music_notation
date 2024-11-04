@@ -12,6 +12,7 @@ import 'package:music_notation/src/notation_painter/models/notation_context.dart
 import 'package:music_notation/src/notation_painter/notation_font.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
+import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/painters/dots_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/note_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
@@ -53,7 +54,9 @@ const Map<String, Color> _voiceColors = {
 /// voice will go up, and the stems for the lower voice will go down.
 class NoteElement extends StatelessWidget implements RhythmicElement {
   final Note note;
-  final Stem? stem;
+
+  @override
+  final StemDirection? stemDirection;
 
   @override
   final double stemLength;
@@ -105,7 +108,9 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       showFlag: showFlag,
       duration: determineDuration(note),
       divisions: notationContext.divisions!,
-      stem: note.stem,
+      stemDirection: note.stem == null
+          ? null
+          : StemDirection.fromStemValue(note.stem!.value),
     );
   }
 
@@ -118,7 +123,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     this.showLedger = true,
     required this.duration,
     required this.divisions,
-    this.stem,
+    this.stemDirection,
     required this.font,
   });
 
@@ -135,11 +140,11 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     double? bottom;
     double? top;
 
-    if (_stemmed && stem?.value == StemValue.up) {
+    if (_stemmed && stemDirection == StemDirection.up) {
       bottom = -NotationLayoutProperties.staveSpace / 2;
     }
 
-    if (_stemmed && stem?.value == StemValue.down) {
+    if (_stemmed && stemDirection == StemDirection.down) {
       top = -NotationLayoutProperties.staveSpace / 2;
       if (position.numeric % 2 == 0 && _dots > 0) {
         top -= _dotsSize.height / 2;
@@ -179,7 +184,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     double? offsetX;
     double offsetY = size.height;
 
-    if (stem?.value == StemValue.down) {
+    if (stemDirection == StemDirection.down) {
       offsetX = NotationLayoutProperties.stemStrokeWidth / 2;
     }
 
@@ -344,13 +349,13 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
   }
 
   double get verticalAlignmentAxisOffset {
-    if (_stemmed && stem?.value == StemValue.up) {
+    if (_stemmed && stemDirection == StemDirection.up) {
       return stemLength;
     }
 
     // When note is on drawn the line and it's stem is drawn down,
     // the dots size must be taken in the account.
-    if (stem?.value == StemValue.down &&
+    if (stemDirection == StemDirection.down &&
         position.numeric % 2 == 0 &&
         _dots > 0) {
       return NotationLayoutProperties.staveSpace / 2 + _dotsSize.height / 2;
@@ -417,7 +422,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     var stemTopPadding = NotationLayoutProperties.defaultNoteheadHeight / 2;
     var stemBottomPadding = 0.0;
 
-    if (stem?.value == StemValue.up) {
+    if (stemDirection == StemDirection.up) {
       stemLeftPadding = noteheadSize.width;
       stemLeftPadding -= NotationLayoutProperties.stemStrokeWidth / 2;
       stemTopPadding = 0;
@@ -431,9 +436,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
         ? noteheadSize.height / 2 // Between lines
         : NotationLayoutProperties.staveSpace; // On the line
 
-    StemDirection stemDirection = StemDirection.up;
-    if (stem?.value == StemValue.down) {
-      stemDirection = StemDirection.down;
+    if (stemDirection == StemDirection.down) {
       // Somehow it works, probably because of pixel snapping nuances
       dotsOffsetFromNotehead -= (_dotsSize.height / 2).ceil();
       dotsTopPosition = dotsOffsetFromNotehead;
@@ -441,7 +444,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     double dotVerticalOffset = 0;
     // When note is on drawn the line and it's stem is drawn down,
     // it's dot needs to be positioned above note.
-    if (stem?.value == StemValue.down &&
+    if (stemDirection == StemDirection.down &&
         position.numeric % 2 == 0 &&
         _dots > 0) {
       dotsOffsetFromNotehead = 0;
@@ -449,7 +452,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       dotsTopPosition = dotsOffsetFromNotehead;
     }
 
-    if (stem?.value == StemValue.up) {
+    if (stemDirection == StemDirection.up) {
       // Somehow it works, probably because of pixel snapping nuances
       dotsOffsetFromNotehead -= (_dotsSize.height / 2).floor();
       dotsBottomPosition = dotsOffsetFromNotehead;
@@ -460,8 +463,8 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       child: Stack(
         children: [
           Positioned(
-            top: stem?.value == StemValue.down ? dotVerticalOffset : null,
-            bottom: stem?.value == StemValue.up ? 0 : null,
+            top: stemDirection == StemDirection.down ? dotVerticalOffset : null,
+            bottom: stemDirection == StemDirection.up ? 0 : null,
             child: notehead,
           ),
           if (_dots > 0)
@@ -484,7 +487,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
               child: StemElement(
                 length: stemLength,
                 type: type,
-                direction: stemDirection,
+                direction: stemDirection!,
                 showFlag: note.beams.isEmpty && showFlag,
               ),
             ),
@@ -779,11 +782,6 @@ class RestElement extends StatelessWidget {
       ),
     );
   }
-}
-
-enum StemDirection {
-  up,
-  down;
 }
 
 class StemElement extends StatelessWidget {

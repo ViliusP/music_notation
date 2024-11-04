@@ -10,6 +10,7 @@ import 'package:music_notation/src/notation_painter/notation_layout_properties.d
 import 'package:music_notation/src/notation_painter/notes/adjacency.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
+import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
 class Chord extends StatelessWidget implements RhythmicElement {
@@ -34,12 +35,12 @@ class Chord extends StatelessWidget implements RhythmicElement {
   bool get _stemmed => stemLength != 0;
 
   @override
-  final Stem? stem;
+  final StemDirection? stemDirection;
 
   @override
   AlignmentPosition get alignmentPosition {
     double top = 0;
-    if (stem?.value == StemValue.up) {
+    if (stemDirection == StemDirection.up) {
       top = _calculateStemLength(notes);
     }
 
@@ -49,7 +50,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
 
     // When note is on drawn the line and it's stem is drawn down,
     // the dots size must be taken in the account.
-    if (stem?.value == StemValue.down &&
+    if (stemDirection == StemDirection.down &&
         position.numeric % 2 == 0 &&
         maxDotsNote.dots.isNotEmpty) {
       top = NotationLayoutProperties.staveSpace / 2 +
@@ -81,7 +82,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
     required this.divisions,
     required this.stemLength,
     required this.duration,
-    this.stem,
+    this.stemDirection,
   });
 
   /// **IMPORTANT**: [notes] cannot be empty.
@@ -101,6 +102,12 @@ class Chord extends StatelessWidget implements RhythmicElement {
       );
     }
 
+    StemValue? stemValue = notes.first.stem?.value;
+    StemDirection? stemDirection;
+    if (stemValue != null) {
+      stemDirection = StemDirection.fromStemValue(stemValue);
+    }
+
     return Chord._(
       key: key,
       notes: notes,
@@ -109,7 +116,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
       divisions: notationContext.divisions!,
       stemLength: _calculateStemLength(notes),
       duration: NoteElement.determineDuration(notes.first),
-      stem: notes.first.stem,
+      stemDirection: stemDirection,
     );
   }
 
@@ -132,11 +139,11 @@ class Chord extends StatelessWidget implements RhythmicElement {
       offsetX -= NoteElement.dotsSize(font).width;
     }
 
-    if (stem?.value == StemValue.down) {
+    if (stemDirection == StemDirection.down) {
       offsetX = NotationLayoutProperties.stemStrokeWidth / 2;
     }
 
-    if (alignmentPosition.top != null && stem?.value != StemValue.down) {
+    if (alignmentPosition.top != null && stemDirection == StemDirection.down) {
       offsetY = 0;
     }
 
@@ -288,7 +295,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
   }
 
   int get referenceNoteIndex {
-    if (_stemmed && stem?.value == StemValue.up) {
+    if (_stemmed && stemDirection == StemDirection.up) {
       return 0;
     }
 
@@ -307,14 +314,9 @@ class Chord extends StatelessWidget implements RhythmicElement {
   List<NoteheadPosition> get _noteheadsPositions =>
       Adjacency.determineNoteheadPositions(
         sortedNotes,
+        stemDirection,
       );
 
-  /// Checks if the chord contains ad jacent notes, where two or more notes have a positional difference of 1.
-  ///
-  /// In musical terms, this indicates that there are two notes in the chord with
-  /// an interval of a second (either minor or major).
-  ///
-  /// Returns `true` if the notes in the chord are adjacent; otherwise, returns `false`.
   bool get _hasAdjacentNotes => Adjacency.containsAdjacentNotes(sortedNotes);
 
   @override
@@ -334,16 +336,16 @@ class Chord extends StatelessWidget implements RhythmicElement {
     for (var (index, note) in sortedNotes.indexed) {
       bool isLowest = index == 0;
       bool isHighest = index == notes.length - 1;
-      bool isStemmedUpward = _stemmed && stem?.value == StemValue.up;
+      bool isStemmedUpward = _stemmed && stemDirection == StemDirection.up;
       bool showLedger = isLowest || isHighest;
 
       double stemLength = 0;
 
-      if (stem?.value == StemValue.up && isLowest) {
+      if (stemDirection == StemDirection.up && isLowest) {
         stemLength = calculatedStemLength;
       }
 
-      if (stem?.value == StemValue.down && isHighest) {
+      if (stemDirection == StemDirection.down && isHighest) {
         stemLength = calculatedStemLength;
       }
 
@@ -365,7 +367,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
 
       // When note is on drawn the line and it's stem is drawn down,
       // the dots size must be taken in the account.
-      if (stem?.value == StemValue.down &&
+      if (stemDirection == StemDirection.down &&
           element.position.numeric % 2 == 0 &&
           refnote.position.numeric % 2 != 0 &&
           note.dots.isNotEmpty &&
