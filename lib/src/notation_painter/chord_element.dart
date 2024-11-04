@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
@@ -25,6 +26,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
 
   bool get _stemmed => stemLength != 0;
 
+  @override
   final Stem? stem;
 
   @override
@@ -53,6 +55,14 @@ class Chord extends StatelessWidget implements RhythmicElement {
     return AlignmentPosition(
       left: -_calculateOffsetForCenter(font),
       top: -top,
+    );
+  }
+
+  @override
+  ElementPosition get position {
+    return NoteElement.determinePosition(
+      notes[referenceNoteIndex],
+      notationContext.clef,
     );
   }
 
@@ -101,6 +111,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
   ///
   /// X - the middle of stem.
   /// Y - the tip of stem.
+  @override
   Offset get offsetForBeam {
     double? offsetX;
     double? offsetY = size.height;
@@ -286,12 +297,20 @@ class Chord extends StatelessWidget implements RhythmicElement {
 
   bool get _beamed => isBeamed(notes);
 
-  @override
-  ElementPosition get position {
-    return NoteElement.determinePosition(
-      notes[referenceNoteIndex],
-      notationContext.clef,
-    );
+  bool get hasAdjacentNotes {
+    if (notes.length == 2) {
+      ElementPosition firstNotePosition = NoteElement.determinePosition(
+        notes.first,
+        null,
+      );
+
+      ElementPosition secondNotePosition = NoteElement.determinePosition(
+        notes.last,
+        null,
+      );
+      return firstNotePosition.distance(secondNotePosition) == 1;
+    }
+    return false;
   }
 
   @override
@@ -367,6 +386,24 @@ class Chord extends StatelessWidget implements RhythmicElement {
       size: size,
       child: Stack(
         children: children,
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    DiagnosticLevel level = DiagnosticLevel.info;
+
+    properties.add(
+      FlagProperty(
+        'hasAdjecentNotes',
+        value: hasAdjacentNotes,
+        ifTrue: hasAdjacentNotes.toString(),
+        ifFalse: hasAdjacentNotes.toString(),
+        defaultValue: null,
+        level: level,
+        showName: true,
       ),
     );
   }
