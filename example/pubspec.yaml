@@ -44,7 +44,7 @@ dependencies:
   fuzzywuzzy: ^1.2.0
 
   # A Markdown renderer for Flutter. Create rich text output, including text styles, tables, links, and more, from plain text data formatted with simple Markdown tags.
-  flutter_markdown: ^0.7.4
+  flutter_markdown: ^0.7.4+1
 
 dev_dependencies:
   flutter_test:

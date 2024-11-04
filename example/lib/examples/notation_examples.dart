@@ -1,3 +1,4 @@
+import 'package:example/examples/example_descriptions.dart';
 import 'package:flutter/services.dart';
 import 'package:xml/xml.dart';
 
@@ -34,6 +35,7 @@ enum NotationExample {
   adjecentNotes(
     displayName: "Adjecent notes",
     path: "assets/scores/adjecent_notes.musicxml",
+    description: dKeySignature,
   ),
   keySignatures(
     displayName: "Key signatures",

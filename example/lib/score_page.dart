@@ -2,12 +2,18 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:music_notation/music_notation.dart';
 
 class ScorePage extends StatefulWidget {
   final ScorePartwise scorePartwise;
+  final String description;
 
-  const ScorePage({super.key, required this.scorePartwise});
+  const ScorePage({
+    super.key,
+    required this.scorePartwise,
+    this.description = "",
+  });
 
   @override
   State<ScorePage> createState() => _ScorePageState();
@@ -39,21 +45,41 @@ class _ScorePageState extends State<ScorePage> {
 
     // String title = "${creator ?? 'No creator'}: ${movementTitle ?? 'unnamed'}";
 
-    return Scrollbar(
-      controller: scorePageScrollController,
-      thumbVisibility: true,
-      child: SingleChildScrollView(
-        controller: scorePageScrollController,
-        scrollDirection: Axis.horizontal,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
-          child: font == null
-              ? SizedBox.shrink()
-              : MusicNotationCanvas(
-                  scorePartwise: widget.scorePartwise,
-                  font: font!,
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (widget.description.isNotEmpty)
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: MarkdownBody(
+                data: widget.description,
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Scrollbar(
+              controller: scorePageScrollController,
+              thumbVisibility: true,
+              child: SingleChildScrollView(
+                controller: scorePageScrollController,
+                scrollDirection: Axis.horizontal,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 4,
+                    horizontal: 16,
+                  ),
+                  child: font == null
+                      ? SizedBox.shrink()
+                      : MusicNotationCanvas(
+                          scorePartwise: widget.scorePartwise,
+                          font: font!,
+                        ),
                 ),
-        ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

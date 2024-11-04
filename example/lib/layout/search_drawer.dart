@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
-import 'package:example/notation_examples.dart';
+import 'package:example/examples/notation_examples.dart';
 import 'package:example/main.dart';
 import 'package:example/score_page.dart';
 import 'package:flutter/material.dart';
@@ -86,7 +86,8 @@ class _SearchDrawerState extends State<SearchDrawer> {
                   hintText: "Search",
                   prefixIcon: Icon(Icons.search),
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(25.0)))),
+                    borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                  )),
             ),
           ),
           Expanded(
@@ -139,6 +140,7 @@ class _SearchDrawerState extends State<SearchDrawer> {
           PageRouteBuilder(
             pageBuilder: (_, __, ___) => ScorePage(
               scorePartwise: scorePartwise,
+              description: score.description,
             ),
             transitionDuration: Duration(milliseconds: 0),
             transitionsBuilder: (_, a, __, c) => FadeTransition(
