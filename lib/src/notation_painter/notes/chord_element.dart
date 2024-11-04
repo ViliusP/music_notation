@@ -143,7 +143,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
       offsetX = NotationLayoutProperties.stemStrokeWidth / 2;
     }
 
-    if (alignmentPosition.top != null && stemDirection == StemDirection.down) {
+    if (alignmentPosition.top != null && stemDirection != StemDirection.down) {
       offsetY = 0;
     }
 
