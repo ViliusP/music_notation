@@ -297,7 +297,15 @@ class Chord extends StatelessWidget implements RhythmicElement {
 
   bool get _beamed => isBeamed(notes);
 
-  bool get hasAdjacentNotes {
+  /// Checks if the chord contains adjacent notes, where two or more notes have a positional difference of 1.
+  ///
+  /// In musical terms, this indicates that there are two notes in the chord with
+  /// an interval of a second (either minor or major).
+  /// This function specifically checks for a pair of notes with this characteristic
+  /// when the chord contains exactly two notes.
+  ///
+  /// Returns `true` if the notes in the chord are adjacent; otherwise, returns `false`.
+  bool get _hasAdjacentNotes {
     if (notes.length == 2) {
       ElementPosition firstNotePosition = NoteElement.determinePosition(
         notes.first,
@@ -311,6 +319,28 @@ class Chord extends StatelessWidget implements RhythmicElement {
       return firstNotePosition.distance(secondNotePosition) == 1;
     }
     return false;
+  }
+
+  /// Determines the lowest note position in a chord with adjacent notes,
+  /// returning either [LowestNotePosition.left] or [LowestNotePosition.right].
+  ///
+  /// This function returns `null` if the chord does not contain adjacent notes,
+  /// as there is no specific lowest note position in that case.
+  ///
+  /// Returns:
+  /// - `null` if the chord does not contain adjacent notes.
+  /// - [LowestNotePosition.right] if the chord has an odd number of notes and a downward stem.
+  /// - [LowestNotePosition.left] in any other case.
+  LowestNotePosition? get _lowestNotePosition {
+    if (!_hasAdjacentNotes) return null;
+
+    // If the chord has an odd number of notes and the stem is down,
+    // the lowest note is positioned to the right.
+    if (notes.length % 2 != 0 && stem?.value == StemValue.down) {
+      return LowestNotePosition.right;
+    }
+
+    return LowestNotePosition.left;
   }
 
   @override
@@ -397,14 +427,19 @@ class Chord extends StatelessWidget implements RhythmicElement {
 
     properties.add(
       FlagProperty(
-        'hasAdjecentNotes',
-        value: hasAdjacentNotes,
-        ifTrue: hasAdjacentNotes.toString(),
-        ifFalse: hasAdjacentNotes.toString(),
+        '_hasAdjecentNotes',
+        value: _hasAdjacentNotes,
+        ifTrue: _hasAdjacentNotes.toString(),
+        ifFalse: _hasAdjacentNotes.toString(),
         defaultValue: null,
         level: level,
         showName: true,
       ),
     );
   }
+}
+
+enum LowestNotePosition {
+  left,
+  right;
 }
