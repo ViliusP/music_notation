@@ -3,6 +3,8 @@ const String dKeySignature = """
 
 This example demonstrates how the music notation rendering library handles adjacent notes within chords, covering two-note chords, stemless notes, and double stems.
 
+It only includes chords without dotted notes, without chromatic alterations (such as sharps, flats, naturals, and others), and without multiple voices.
+
 ## Rules:
 
 ### Even Number of Adjacent Notes
