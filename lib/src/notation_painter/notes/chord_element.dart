@@ -339,19 +339,29 @@ class Chord extends StatelessWidget implements RhythmicElement {
       stemLength: stemLength,
     );
 
+    int leftHighest = _noteheadsPositions.lastIndexWhere(
+      (p) => p == NoteheadPosition.left,
+    );
+    int leftLowest = _noteheadsPositions.indexWhere(
+      (p) => p == NoteheadPosition.left,
+    );
+    int rightHighest = _noteheadsPositions.lastIndexWhere(
+      (p) => p == NoteheadPosition.right,
+    );
+    int rightLowest = _noteheadsPositions.indexWhere(
+      (p) => p == NoteheadPosition.left,
+    );
+
     for (var (index, note) in sortedNotes.indexed) {
-      bool isLowest = index == 0;
-      bool isHighest = index == notes.length - 1;
+      bool isLowestOfSide = index == leftLowest || index == rightLowest;
+      bool isHighestOfSide = index == leftHighest || index == rightHighest;
+      bool showLedger = isLowestOfSide || isHighestOfSide;
+
       bool isStemmedUpward = _stemmed && stemDirection == StemDirection.up;
-      bool showLedger = isLowest || isHighest;
 
       double stemLength = 0;
 
-      if (stemDirection == StemDirection.up && isLowest) {
-        stemLength = calculatedStemLength;
-      }
-
-      if (stemDirection == StemDirection.down && isHighest) {
+      if (_stemmed && referenceNoteIndex == index) {
         stemLength = calculatedStemLength;
       }
 
