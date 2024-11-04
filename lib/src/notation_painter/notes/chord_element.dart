@@ -205,9 +205,34 @@ class Chord extends StatelessWidget implements RhythmicElement {
       ).height;
     }
 
+    var (leftWidth, rightWidth) = _noteheadColumnSizes(
+      notes,
+      font,
+      stemDirection ?? Stemming.determineChordStem(notes),
+    );
+
+    double width = leftWidth + rightWidth;
+
+    if (leftWidth != 0 && rightWidth != 0) {
+      width -= NotationLayoutProperties.stemStrokeWidth / 2;
+    }
+
+    return Size(width, height);
+  }
+
+  static (double left, double right) _noteheadColumnSizes(
+    List<Note> notes,
+    FontMetadata font,
+    StemDirection direction,
+  ) {
+    // Sorts from lowest to highest note. First being lowest.
+    List<Note> sortedNotes = notes.sortedBy(
+      (note) => NoteElement.determinePosition(note, null),
+    );
+
     var noteheadPositions = Adjacency.determineNoteheadPositions(
       sortedNotes,
-      stemDirection ?? Stemming.determineChordStem(notes),
+      direction,
     );
 
     double widthToLeft = 0;
@@ -215,7 +240,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
     for (var (i, pos) in noteheadPositions.indexed) {
       double width = NoteElement.calculateSize(
         note: notes[i],
-        clef: notationContext.clef,
+        clef: null,
         stemLength: 0,
         font: font,
       ).width;
@@ -226,8 +251,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
         widthToRight = [width, widthToRight].max;
       }
     }
-
-    return Size(widthToLeft + widthToRight, height);
+    return (widthToLeft, widthToRight);
   }
 
   static double _calculateStemLength(
