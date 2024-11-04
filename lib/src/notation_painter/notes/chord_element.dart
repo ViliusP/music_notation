@@ -314,7 +314,11 @@ class Chord extends StatelessWidget implements RhythmicElement {
   List<NoteheadPosition> get _noteheadsPositions =>
       Adjacency.determineNoteheadPositions(
         sortedNotes,
-        stemDirection,
+        stemDirection ??
+            Stemming.determineChordStem(
+              notes,
+              notationContext.clef,
+            ),
       );
 
   bool get _hasAdjacentNotes => Adjacency.containsAdjacentNotes(sortedNotes);

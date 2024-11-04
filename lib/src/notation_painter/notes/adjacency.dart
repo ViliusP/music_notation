@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
@@ -6,12 +7,15 @@ import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 /// Set of static methods to help calculating direction of stems
 class Adjacency {
   /// Notes position
-  /// !!!!!!! notes must be sorted, lowest note is first.
   static List<NoteheadPosition> determineNoteheadPositions(
     List<Note> notes,
-    StemDirection? stemDirection,
+    StemDirection stemDirection,
   ) {
     NoteheadPosition defaultPosition = NoteheadPosition.left;
+
+    final sortedNotes = notes.sortedBy(
+      (note) => NoteElement.determinePosition(note, null),
+    );
 
     if (stemDirection == StemDirection.down) {
       defaultPosition = NoteheadPosition.right;
@@ -23,14 +27,14 @@ class Adjacency {
     );
 
     // Return earlier if it has no adjacent notes.
-    if (!containsAdjacentNotes(notes)) {
+    if (!containsAdjacentNotes(sortedNotes)) {
       return positions;
     }
 
     ElementPosition? noteBeforePosition;
     List<Set<int>> groups = [];
     Set<int> group = {};
-    for (var (i, note) in notes.indexed) {
+    for (var (i, note) in sortedNotes.indexed) {
       if (noteBeforePosition == null) {
         noteBeforePosition = NoteElement.determinePosition(note, null);
         group.add(i);
@@ -39,14 +43,35 @@ class Adjacency {
       ElementPosition position = NoteElement.determinePosition(note, null);
       if (position.distance(noteBeforePosition) == 1) {
         group.add(i);
-      } else if (group.length > 1) {
-        groups.add(group);
-        print(groups);
-        group.clear();
       } else {
-        group.clear();
+        if (group.length > 1) {
+          groups.add(group);
+        }
+        group = {i};
       }
       noteBeforePosition = position;
+    }
+    if (group.length > 1) {
+      groups.add(group);
+    }
+
+    for (var group in groups) {
+      ElementPosition position = NoteElement.determinePosition(
+        sortedNotes.first,
+        null,
+      );
+      NoteheadPosition pos = NoteheadPosition.left; // Starting position
+      if (position.distanceFromMiddle >= 0 && group.length % 2 != 0) {
+        pos = NoteheadPosition.right;
+      }
+      for (var index in group) {
+        positions[index] = pos;
+        if (pos == NoteheadPosition.right) {
+          pos = NoteheadPosition.left;
+        } else if (pos == NoteheadPosition.left) {
+          pos = NoteheadPosition.right;
+        }
+      }
     }
 
     return positions;
