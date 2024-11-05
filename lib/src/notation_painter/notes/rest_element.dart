@@ -27,7 +27,7 @@ class RestElement extends StatelessWidget implements RhythmicElement {
       );
 
   @override
-  double get duration => throw UnimplementedError();
+  double get duration => note.determineDuration();
 
   @override
   Offset get offsetForBeam => Offset.zero;
