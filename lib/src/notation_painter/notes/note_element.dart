@@ -65,14 +65,12 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
   @override
   final double duration;
 
-  @override
-  final double divisions;
-
   bool get _stemmed => stemLength != 0;
 
   final bool showLedger;
   final bool showFlag;
 
+  @override
   final NotationContext notationContext;
 
   @override
@@ -107,8 +105,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       stemLength: stemLength ?? _calculateStemLength(note, notationContext),
       showLedger: showLedger,
       showFlag: showFlag,
-      duration: determineDuration(note),
-      divisions: notationContext.divisions!,
+      duration: note.determineDuration(),
       stemDirection: note.stem == null
           ? null
           : StemDirection.fromStemValue(note.stem!.value),
@@ -123,18 +120,9 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     this.showFlag = true,
     this.showLedger = true,
     required this.duration,
-    required this.divisions,
     this.stemDirection,
     required this.font,
   });
-
-  bool get influencedByClef {
-    return note.form is! Rest;
-  }
-
-  bool get _isRest {
-    return note.form is Rest;
-  }
 
   @override
   AlignmentPosition get alignmentPosition {
@@ -181,6 +169,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
   ///
   /// X - the middle of stem.
   /// Y - the tip of stem.
+  @override
   Offset get offsetForBeam {
     double? offsetX;
     double offsetY = size.height;
@@ -221,28 +210,6 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     return stemLength;
   }
 
-  static double determineDuration(Note note) {
-    switch (note) {
-      case GraceTieNote _:
-        throw UnimplementedError(
-          "Grace tie note is not implemented yet in renderer",
-        );
-      case GraceCueNote _:
-        throw UnimplementedError(
-          "Grace cue note is not implemented yet in renderer",
-        );
-      case CueNote _:
-        return note.duration;
-      case RegularNote _:
-        return note.duration;
-
-      default:
-        throw UnimplementedError(
-          "This error shouldn't occur, TODO: make switch exhaustively matched",
-        );
-    }
-  }
-
   static ElementPosition determinePosition(Note note, Clef? clef) {
     switch (note) {
       case GraceTieNote _:
@@ -272,7 +239,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
             step = noteForm.displayStep;
             octave = noteForm.displayOctave;
           case Rest _:
-            return RestElement.determinePosition(note, 1);
+            return RestElement.determinePosition(note);
         }
 
         final position = ElementPosition(
@@ -413,14 +380,6 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       // color: _voiceColors[note.editorialVoice.voice ?? "0"]!, // Colors by voice
     );
 
-    if (_isRest) {
-      return RestElement.fromNote(
-        note: note,
-        divisions: notationContext.divisions!,
-        font: font,
-      );
-    }
-
     var stemLeftPadding = NotationLayoutProperties.stemStrokeWidth / 2;
     var stemTopPadding = NotationLayoutProperties.defaultNoteheadHeight / 2;
     var stemBottomPadding = 0.0;
@@ -555,10 +514,6 @@ class NoteheadElement extends StatelessWidget {
     return Size(headRect.width, headRect.height);
   }
 
-  String get _smufl {
-    return _noteType.smuflSymbol;
-  }
-
   const NoteheadElement({
     super.key,
     required this.note,
@@ -576,7 +531,7 @@ class NoteheadElement extends StatelessWidget {
     return CustomPaint(
       size: size(font),
       painter: NotePainter(
-        smufl: _smufl,
+        smufl: _glyph.codepoint,
         ledgerLines: ledgerLines,
         color: color,
         bBox: _bBox(font),
@@ -632,32 +587,31 @@ class StemElement extends StatelessWidget {
   }
 }
 
-extension NoteVisualInformation on NoteTypeValue {
-  String get smuflSymbol {
+extension NoteWidgetization on Note {
+  double determineDuration() {
     switch (this) {
-      case NoteTypeValue.n1024th:
-      case NoteTypeValue.n512th:
-      case NoteTypeValue.n256th:
-      case NoteTypeValue.n128th:
-      case NoteTypeValue.n64th:
-      case NoteTypeValue.n32nd:
-      case NoteTypeValue.n16th:
-      case NoteTypeValue.eighth:
-      case NoteTypeValue.quarter:
-        return SmuflGlyph.noteheadBlack.codepoint; // black note head.
-      case NoteTypeValue.half:
-        return SmuflGlyph.noteheadHalf.codepoint; // minim.
-      case NoteTypeValue.whole:
-        return SmuflGlyph.noteheadWhole.codepoint; // semibreve.
-      case NoteTypeValue.breve:
-        return '\uE0A0';
-      case NoteTypeValue.long:
-        return '\uE0A1';
-      case NoteTypeValue.maxima:
-        return '\uE0A1';
+      case GraceTieNote _:
+        throw UnimplementedError(
+          "Grace tie note is not implemented yet in renderer",
+        );
+      case GraceCueNote _:
+        throw UnimplementedError(
+          "Grace cue note is not implemented yet in renderer",
+        );
+      case CueNote cueNote:
+        return cueNote.duration;
+      case RegularNote regularNote:
+        return regularNote.duration;
+
+      default:
+        throw UnimplementedError(
+          "This error shouldn't occur, TODO: make switch exhaustively matched",
+        );
     }
   }
+}
 
+extension NoteVisualInformation on NoteTypeValue {
   bool get stemmed {
     switch (this) {
       case NoteTypeValue.n1024th:
