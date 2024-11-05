@@ -14,7 +14,7 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/models/octaved_key_accidental.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
-import 'package:music_notation/src/notation_painter/painters/key_accidental_painter.dart';
+import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart';
 
@@ -206,7 +206,7 @@ class AccidentalElement extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       size: size,
-      painter: KeyAccidentalPainter(
+      painter: SimpleGlyphPainter(
         accidental.accidental?.smufl ?? smufl(accidental.accidental?.value),
         font.glyphBBoxes[
             _accidentalSmuflMapping[accidental.accidental?.value]]!,
