@@ -1,3 +1,4 @@
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:music_notation/src/models/data_types/step.dart';
@@ -456,6 +457,22 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    DiagnosticLevel level = DiagnosticLevel.info;
+
+    properties.add(
+      StringProperty(
+        'Position',
+        position.toString(),
+        defaultValue: null,
+        level: level,
+        showName: true,
       ),
     );
   }
