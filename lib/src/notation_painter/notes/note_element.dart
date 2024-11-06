@@ -11,7 +11,6 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notation_font.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
-import 'package:music_notation/src/notation_painter/notes/rest_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/painters/dots_painter.dart';
@@ -341,7 +340,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
 
   double get _dotsRightOffset => dotsOffset();
 
-  /// Calculates the offset for [dotsOffset] based on the right side of the note.
+  /// Calculates the offset for [_dots] based on the right side of the note.
   /// This offset is typically half of the stave space and is added to the note size.
   static double dotsOffset() {
     // Distance from note to dot is conventionally half the stave space.
