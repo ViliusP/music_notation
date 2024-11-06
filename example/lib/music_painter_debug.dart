@@ -50,10 +50,15 @@ class SmuflPainter extends CustomPainter {
 
     // Calculate the additional vertical offset to align black box’s top with the blue box’s top
     double verticalOffset = blueBoxTop - blackBoxTop;
+    double horizontalOffset = 0 - o1.dx;
 
     // Apply the calculated alignment offset on top of the initial starting position
     o1 = o1.translate(0, verticalOffset);
     o2 = o2.translate(0, verticalOffset);
+
+    // Apply the calculated alignment offset on top of the initial starting position
+    o1 = o1.translate(horizontalOffset, 0);
+    o2 = o2.translate(horizontalOffset, 0);
 
     // Draw the black box with adjusted offsets for alignment
     canvas.drawRect(
@@ -78,7 +83,7 @@ class SmuflPainter extends CustomPainter {
     textPainter.layout();
     textPainter.paint(
       canvas,
-      Offset(0, verticalOffset.floorToDouble()),
+      Offset(horizontalOffset.floorToDouble(), verticalOffset.floorToDouble()),
     );
   }
 

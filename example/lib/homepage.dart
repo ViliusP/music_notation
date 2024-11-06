@@ -29,7 +29,7 @@ class _HomepageState extends State<Homepage> {
         fit: StackFit.loose,
         children: [
           CustomPaint(
-            size: Size(1000, 80),
+            size: Size(1400, 80),
             painter: StaffPainter(),
           ),
           ...glyphs.mapIndexed(
@@ -55,6 +55,10 @@ List<SmuflGlyph> glyphs = [
   SmuflGlyph.noteheadBlack,
   SmuflGlyph.accidentalFlat,
   SmuflGlyph.accidentalSharp,
+  SmuflGlyph.restWhole,
+  SmuflGlyph.restQuarter,
+  SmuflGlyph.restWholeLegerLine,
+  SmuflGlyph.augmentationDot,
 ];
 
 List<GlyphBBox?> bBoxes = [
@@ -73,5 +77,21 @@ List<GlyphBBox?> bBoxes = [
   GlyphBBox(
     bBoxNE: Coordinates(x: 0.976, y: 1.336),
     bBoxSW: Coordinates(x: 0.0, y: -1.332),
+  ),
+  GlyphBBox(
+    bBoxNE: Coordinates(x: 1.3, y: 0.02),
+    bBoxSW: Coordinates(x: 0.0, y: -0.524),
+  ),
+  GlyphBBox(
+    bBoxNE: Coordinates(x: 0.94, y: 1.604),
+    bBoxSW: Coordinates(x: 0.0, y: -1.324),
+  ),
+  GlyphBBox(
+    bBoxNE: Coordinates(x: 1.856, y: 0.056),
+    bBoxSW: Coordinates(x: -0.556, y: -0.488),
+  ),
+  GlyphBBox(
+    bBoxNE: Coordinates(x: 0.4, y: 0.2),
+    bBoxSW: Coordinates(x: 0, y: -0.196),
   ),
 ];

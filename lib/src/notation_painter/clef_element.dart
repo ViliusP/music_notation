@@ -4,7 +4,7 @@ import 'package:music_notation/src/models/elements/music_data/attributes/clef.da
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
-import 'package:music_notation/src/notation_painter/painters/clef_painter.dart';
+import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart';
@@ -89,7 +89,7 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       size: size,
-      painter: ClefPainter(_glyph.codepoint, _bBox),
+      painter: SimpleGlyphPainter(_glyph.codepoint, _bBox),
     );
   }
 }
