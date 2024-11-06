@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/models/data_types/accidental_value.dart';
