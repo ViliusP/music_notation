@@ -3,10 +3,12 @@ import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
+import 'package:music_notation/src/notation_painter/debug/box_guide_painting.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/notes/augmentation_dot.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
@@ -31,7 +33,20 @@ class RestElement extends StatelessWidget implements RhythmicElement {
   }
 
   double get _verticalAlignmentAxisOffset {
-    return NotationLayoutProperties.staveSpace * _bBox.bBoxNE.y;
+    double initial = NotationLayoutProperties.staveSpace * _bBox.bBoxNE.y;
+    if (_dots > 0) {
+      double maybeDotOffset = initial;
+      maybeDotOffset -= AugmentationDot(
+            count: 1,
+            font: font,
+          ).alignmentPosition.top ??
+          0;
+      maybeDotOffset -= NotationLayoutProperties.staveSpace / 2;
+      if (maybeDotOffset < 0) {
+        initial -= maybeDotOffset;
+      }
+    }
+    return initial;
   }
 
   @override
@@ -47,11 +62,40 @@ class RestElement extends StatelessWidget implements RhythmicElement {
   double get stemLength => 0;
 
   @override
-  ElementPosition get position => determinePosition();
+  ElementPosition get position => _determinePosition();
 
   @override
   Size get size {
-    return _bBox.toRect().size;
+    Size restSymbolSize = _bBox.toRect().size;
+    double width = restSymbolSize.width;
+    double height = restSymbolSize.height;
+    if (_dots > 0) {
+      width += AugmentationDot.defaultOffset;
+      var dots = AugmentationDot(count: _dots, font: font);
+      width += dots.size.width;
+
+      if (_dotsVerticalOffset < 0) {
+        height += _dotsVerticalOffset.abs();
+      }
+    }
+    return Size(width, height);
+  }
+
+  int get _dots {
+    return note.dots.length;
+  }
+
+  double get _dotsVerticalOffset {
+    // Alignment line of rest.
+    double top = NotationLayoutProperties.staveSpace * _bBox.bBoxNE.y;
+
+    top -= AugmentationDot(
+          count: 1,
+          font: font,
+        ).alignmentPosition.top ??
+        0;
+    top -= NotationLayoutProperties.staveSpace / 2;
+    return top;
   }
 
   NoteTypeValue get _type {
@@ -129,16 +173,16 @@ class RestElement extends StatelessWidget implements RhythmicElement {
     }
   }
 
-  ElementPosition determinePosition() {
+  ElementPosition _determinePosition() {
     Step? step = (note.form as Rest).displayStep;
     int? octave = (note.form as Rest).displayOctave;
 
     if (step != null && octave != null) {
       ElementPosition pos = ElementPosition(step: step, octave: octave);
       if (notationContext.clef != null) {
-        pos = pos.transpose(
-          ElementPosition.transposeIntervalByClef(notationContext.clef!),
-        );
+        pos = pos.transpose(ElementPosition.transposeIntervalByClef(
+          notationContext.clef!,
+        ));
       }
       return pos;
     }
@@ -152,9 +196,7 @@ class RestElement extends StatelessWidget implements RhythmicElement {
       case NoteTypeValue.n32nd:
       case NoteTypeValue.n16th:
       case NoteTypeValue.eighth:
-        return const ElementPosition(step: Step.B, octave: 4);
       case NoteTypeValue.quarter:
-        return const ElementPosition(step: Step.B, octave: 4);
       case NoteTypeValue.half:
         return const ElementPosition(step: Step.B, octave: 4);
       case NoteTypeValue.whole:
@@ -162,80 +204,99 @@ class RestElement extends StatelessWidget implements RhythmicElement {
       case NoteTypeValue.breve:
       case NoteTypeValue.long:
       case NoteTypeValue.maxima:
-        return const ElementPosition(step: Step.B, octave: 6);
+        return const ElementPosition(step: Step.E, octave: 5); // TODO: adjust
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
+    return SizedBox.fromSize(
       size: size,
-      painter: SimpleGlyphPainter(_glyph.codepoint, _bBox),
+      child: Stack(
+        children: [
+          CustomPaint(
+            size: size,
+            painter: BoxGuidePainter(DebugLines.middleHorizontalLine.guides),
+          ),
+          if (_dots > 0)
+            Positioned(
+              top: _dotsVerticalOffset.clamp(0, double.maxFinite),
+              right: 0,
+              child: AugmentationDot(count: _dots, font: font),
+            ),
+          Positioned(
+            left: 0,
+            bottom: 0,
+            child: CustomPaint(
+              size: _bBox.toRect().size,
+              painter: SimpleGlyphPainter(_glyph.codepoint, _bBox),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
+// /// Calculates the appropriate [NoteTypeValue] based on the given note's [duration]
+// /// and the [divisions] specified by the time signature.
+// ///
+// /// The function determines the [duration] of the note relative to the [divisions]
+// /// and matches it to a corresponding [NoteTypeValue] based on predefined
+// /// ratio ranges. If no exact match is found, the closest [NoteTypeValue] is selected.
+// /// If the note duration significantly exceeds the [divisions], it defaults to [NoteTypeValue.maxima].
+// static NoteTypeValue calculateNoteType(double duration, double divisions) {
+//   // Calculate the ratio of note's duration to divisions
+//   final ratio = duration / divisions;
 
-  // /// Calculates the appropriate [NoteTypeValue] based on the given note's [duration]
-  // /// and the [divisions] specified by the time signature.
-  // ///
-  // /// The function determines the [duration] of the note relative to the [divisions]
-  // /// and matches it to a corresponding [NoteTypeValue] based on predefined
-  // /// ratio ranges. If no exact match is found, the closest [NoteTypeValue] is selected.
-  // /// If the note duration significantly exceeds the [divisions], it defaults to [NoteTypeValue.maxima].
-  // static NoteTypeValue calculateNoteType(double duration, double divisions) {
-  //   // Calculate the ratio of note's duration to divisions
-  //   final ratio = duration / divisions;
+//   // Define a map that relates ratio ranges to NoteTypeValue
+//   final ratioToNoteTypeMap = {
+//     1 / 256: NoteTypeValue.n1024th,
+//     1 / 128: NoteTypeValue.n512th,
+//     1 / 64: NoteTypeValue.n256th,
+//     1 / 32: NoteTypeValue.n128th,
+//     1 / 16: NoteTypeValue.n64th,
+//     1 / 8: NoteTypeValue.n32nd,
+//     1 / 4: NoteTypeValue.n16th,
+//     1 / 2: NoteTypeValue.eighth,
+//     1 / 1: NoteTypeValue.quarter,
+//     2: NoteTypeValue.half,
+//     4: NoteTypeValue.whole,
+//     8: NoteTypeValue.breve,
+//     16: NoteTypeValue.long,
+//     32: NoteTypeValue.maxima,
+//   };
 
-  //   // Define a map that relates ratio ranges to NoteTypeValue
-  //   final ratioToNoteTypeMap = {
-  //     1 / 256: NoteTypeValue.n1024th,
-  //     1 / 128: NoteTypeValue.n512th,
-  //     1 / 64: NoteTypeValue.n256th,
-  //     1 / 32: NoteTypeValue.n128th,
-  //     1 / 16: NoteTypeValue.n64th,
-  //     1 / 8: NoteTypeValue.n32nd,
-  //     1 / 4: NoteTypeValue.n16th,
-  //     1 / 2: NoteTypeValue.eighth,
-  //     1 / 1: NoteTypeValue.quarter,
-  //     2: NoteTypeValue.half,
-  //     4: NoteTypeValue.whole,
-  //     8: NoteTypeValue.breve,
-  //     16: NoteTypeValue.long,
-  //     32: NoteTypeValue.maxima,
-  //   };
+//   // Find the appropriate NoteTypeValue based on the ratio
+//   NoteTypeValue? noteType;
+//   ratioToNoteTypeMap.forEach((ratioRange, type) {
+//     if (ratio <= ratioRange) {
+//       noteType = type;
+//       return;
+//     }
+//   });
 
-  //   // Find the appropriate NoteTypeValue based on the ratio
-  //   NoteTypeValue? noteType;
-  //   ratioToNoteTypeMap.forEach((ratioRange, type) {
-  //     if (ratio <= ratioRange) {
-  //       noteType = type;
-  //       return;
-  //     }
-  //   });
+//   // Default to maxima if the note duration is larger than 8 times the divisions
+//   noteType ??= NoteTypeValue.maxima;
 
-  //   // Default to maxima if the note duration is larger than 8 times the divisions
-  //   noteType ??= NoteTypeValue.maxima;
+//   return noteType!;
+// }
 
-  //   return noteType!;
-  // }
+// /// Determines the appropriate note type value based on the note's properties.
+// ///
+// /// If the note has an explicit type value defined, that value is returned.
+// /// If the note is a complete measure rest (or a voice within a measure),
+// /// it is considered a whole note regardless of the time signature.
+// /// Otherwise, the note type is calculated based on its duration and divisions.
+// ///
+// /// Returns the determined [NoteTypeValue] for the note.
+// static NoteTypeValue _type(Note note, double divisions) {
+//   if (note.type?.value != null) {
+//     return note.type!.value;
+//   }
+//   if (note.form is Rest && (note.form as Rest).measure == true) {
+//     return NoteTypeValue.whole;
+//   }
 
-
-  // /// Determines the appropriate note type value based on the note's properties.
-  // ///
-  // /// If the note has an explicit type value defined, that value is returned.
-  // /// If the note is a complete measure rest (or a voice within a measure),
-  // /// it is considered a whole note regardless of the time signature.
-  // /// Otherwise, the note type is calculated based on its duration and divisions.
-  // ///
-  // /// Returns the determined [NoteTypeValue] for the note.
-  // static NoteTypeValue _type(Note note, double divisions) {
-  //   if (note.type?.value != null) {
-  //     return note.type!.value;
-  //   }
-  //   if (note.form is Rest && (note.form as Rest).measure == true) {
-  //     return NoteTypeValue.whole;
-  //   }
-
-  //   return calculateNoteType((note as RegularNote).duration, divisions);
-  // }
+//   return calculateNoteType((note as RegularNote).duration, divisions);
+// }
