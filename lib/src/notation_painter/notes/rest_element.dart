@@ -64,7 +64,7 @@ class RestElement extends StatelessWidget implements RhythmicElement {
     return type ?? NoteTypeValue.quarter;
   }
 
-  SmuflGlyph get _glyph => _determineGlyph(_type);
+  SmuflGlyph get _glyph => _determineGlyph(_type, position);
 
   factory RestElement.fromNote({
     required Note note,
@@ -84,7 +84,7 @@ class RestElement extends StatelessWidget implements RhythmicElement {
     required this.font,
   });
 
-  static SmuflGlyph _determineGlyph(NoteTypeValue type) {
+  static SmuflGlyph _determineGlyph(NoteTypeValue type, ElementPosition pos) {
     switch (type) {
       case NoteTypeValue.n1024th:
         return SmuflGlyph.rest1024th;
@@ -105,8 +105,20 @@ class RestElement extends StatelessWidget implements RhythmicElement {
       case NoteTypeValue.quarter:
         return SmuflGlyph.restQuarter;
       case NoteTypeValue.half:
+        if (pos.numeric >= ElementPosition.firstLedgerAbove.numeric) {
+          return SmuflGlyph.restHalfLegerLine;
+        }
+        if (pos.numeric <= ElementPosition.secondLedgerBelow.numeric) {
+          return SmuflGlyph.restHalfLegerLine;
+        }
         return SmuflGlyph.restHalf;
       case NoteTypeValue.whole:
+        if (pos.numeric >= ElementPosition.firstLedgerAbove.numeric) {
+          return SmuflGlyph.restWholeLegerLine;
+        }
+        if (pos.numeric <= ElementPosition.secondLedgerBelow.numeric) {
+          return SmuflGlyph.restWholeLegerLine;
+        }
         return SmuflGlyph.restWhole;
       case NoteTypeValue.breve:
         return SmuflGlyph.restDoubleWhole;
@@ -122,7 +134,13 @@ class RestElement extends StatelessWidget implements RhythmicElement {
     int? octave = (note.form as Rest).displayOctave;
 
     if (step != null && octave != null) {
-      return ElementPosition(step: step, octave: octave);
+      ElementPosition pos = ElementPosition(step: step, octave: octave);
+      if (notationContext.clef != null) {
+        pos = pos.transpose(
+          ElementPosition.transposeIntervalByClef(notationContext.clef!),
+        );
+      }
+      return pos;
     }
 
     switch (_type) {
