@@ -161,7 +161,8 @@ class Timeline {
       }
       _TimelinePosition pos;
 
-      if (valueToAdd.widgetType == RhythmicElement) {
+      if (valueToAdd.widgetType == RhythmicElement ||
+          valueToAdd.widgetType == CursorElement) {
         pos = _TimelinePosition(cursor);
       } else {
         pos = _TimelinePosition(cursor, false);
@@ -183,11 +184,11 @@ class Timeline {
   /// This method translates the internal timeline data into a list of double
   /// values representing the spatial distribution of musical elements. Each value
   /// corresponds to a specific position on the timeline, calculated based on the
-  /// provided [spacePerFullDivision], which defines the spatial representation of each
+  /// provided [spacePerDivisions], which defines the spatial representation of each
   /// time unit (e.g., pixels per beat).
   ///
   /// ### Parameters:
-  /// - [spacePerFullDivision]: The spatial representation of each time unit, used for rendering.
+  /// - [spacePerDivisions] - The spatial representation of each time unit, used for rendering.
   ///
   /// ### Returns:
   /// A list of double values representing the timeline's spatial distribution.
@@ -199,8 +200,8 @@ class Timeline {
   /// List<double> spacings = timeline.toList(10.0);
   /// // spacings now contains spatial positions for each _TimelineValue
   /// ```
-  List<double> toSpacings(double spacePerFullDivision) {
-    double spacePerBeat = spacePerFullDivision / divisions;
+  List<double> toSpacings(double spacePerDivisions) {
+    double spacePerBeat = spacePerDivisions / divisions;
     int totalLength = _value.values.fold(0, (sum, list) => sum + list.length);
     List<double> spacings = List.generate(totalLength, (_) => 0);
     double biggestOffset = 0;
@@ -269,10 +270,24 @@ class Timeline {
       int labelPad = 8;
       String row1 = "| ${'Time'.padRight(labelPad)} ||";
 
+      _TimelinePosition? lastNonRhythmicKey;
       for (var k in _value.keys) {
         row1 += "${_centerPad(k.toString(), 3)}|";
+        if (k.isRhytmic) {
+          lastNonRhythmicKey = k;
+        }
       }
-      row1 += "${_centerPad('L', 3)}|";
+
+      if (lastNonRhythmicKey != null) {
+        double lastDuration =
+            _value[lastNonRhythmicKey]!.map((v) => v.duration).max;
+        int toGenerate = lastDuration.toInt() - 1;
+
+        for (var i in List.generate((toGenerate), (i) => i + 1)) {
+          int cellNumber = lastNonRhythmicKey.value + i;
+          row1 += "${_centerPad((cellNumber).toString(), 3)}|";
+        }
+      }
 
       // Create a map with voices as keys and empty strings as values
       Map<String, String> voicesOutputRow = {
@@ -393,5 +408,5 @@ class _TimelinePosition implements Comparable<_TimelinePosition> {
   int get hashCode => Object.hash(value, isRhytmic);
 
   @override
-  String toString() => "${!isRhytmic ? "*" : ""}$value${!isRhytmic ? "*" : ""}";
+  String toString() => "$value${!isRhytmic ? "*" : ""}";
 }
