@@ -402,6 +402,8 @@ class MeasureLayout extends StatelessWidget {
     final inheritedPadding = InheritedPadding.of(context);
     if (inheritedPadding == null) return SizedBox.shrink();
 
+    DebugSettings? dSettings = DebugSettings.of(context);
+
     return LayoutBuilder(builder: (context, constraints) {
       List<Widget> beamGroups = [];
 
@@ -456,8 +458,6 @@ class MeasureLayout extends StatelessWidget {
             ),
           );
         }
-
-        DebugSettings? dSettings = DebugSettings.of(context);
 
         if (dSettings != null) {
           Rect boxBelow = child.boxBelowStaff();
@@ -515,6 +515,14 @@ class MeasureLayout extends StatelessWidget {
                 measurePadding: measurePadding,
               ),
             ),
+          ),
+          if (dSettings?.beatGuideType != null)
+            CustomPaint(
+              size: Size(
+                constraints.maxWidth.isFinite ? constraints.maxWidth : width,
+                NotationLayoutProperties.staveHeight,
+              ),
+              painter: BeatMarkPainter(dSettings!.beatGuideType!, 0),
           ),
           ...beamGroups,
           ...positionedElements,

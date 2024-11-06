@@ -148,7 +148,7 @@ class _SearchDrawerState extends State<SearchDrawer> {
       );
 
       if (mounted) {
-        Navigator.of(MyApp.navigatorKey.currentContext!).push(
+        Navigator.of(MyApp.navigatorKey.currentContext!).pushReplacement(
           PageRouteBuilder(
             pageBuilder: (_, __, ___) => ScorePage(
               fontMetadata: font,

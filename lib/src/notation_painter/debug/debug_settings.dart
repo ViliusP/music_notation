@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 
 /// An inherited widget providing debugging options for rendering musical notation,
 /// including options to paint bounding boxes and additional imaginary stave lines
@@ -26,6 +27,9 @@ class DebugSettings extends InheritedWidget {
   /// - `3`: Vertical lines are drawn at intervals of [NotationProperties.staveSpace] * 3 from the start of the measure.
   final int verticalStaveLineSpacingMultiplier;
 
+  /// Defines how often beat dot is drawn for debug purposes
+  final NoteTypeValue? beatGuideType;
+
   /// Creates a [DebugSettings] widget with specified debugging options.
   ///
   /// The [child] widget subtree inherits these debug settings. The [paintBBoxBelowStaff]
@@ -39,6 +43,7 @@ class DebugSettings extends InheritedWidget {
     this.extraStaveLines = ExtraStaveLines.none,
     this.extraStaveLineCount = 0,
     this.verticalStaveLineSpacingMultiplier = 0,
+    this.beatGuideType,
     required super.child,
   });
 
