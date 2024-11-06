@@ -8,23 +8,27 @@ class BoxGuidePainter extends CustomPainter {
   /// A list of guides that define which lines to draw within the box.
   final List<CustomGuide> guides;
 
-  /// Constructs a [BoxGuidePainter] with a specified list of guides.
-  const BoxGuidePainter(this.guides);
+  /// The color of stroke.
+  final Color color;
 
-  /// Paint object for drawing lines with a constant color and width.
-  static final Paint _linePainter = Paint()
-    ..color = Color.fromRGBO(255, 0, 0, 1)
-    ..strokeWidth = 1;
+  static const _defaultColor = Color.fromRGBO(255, 0, 0, 1);
+
+  /// Constructs a [BoxGuidePainter] with a specified list of guides.
+  const BoxGuidePainter(this.guides, [this.color = _defaultColor]);
 
   @override
   void paint(Canvas canvas, Size size) {
+    final Paint linePainter = Paint()
+      ..color = color
+      ..strokeWidth = 1;
+
     for (var guide in guides) {
       if (guide is VerticalGuide) {
         double dx = _calculateDx(guide, size.width);
-        _drawVerticalLine(canvas, dx, size, _linePainter);
+        _drawVerticalLine(canvas, dx, size, linePainter);
       } else if (guide is HorizontalGuide) {
         double dy = _calculateDy(guide, size.height);
-        _drawHorizontalLine(canvas, dy, size, _linePainter);
+        _drawHorizontalLine(canvas, dy, size, linePainter);
       }
     }
   }
