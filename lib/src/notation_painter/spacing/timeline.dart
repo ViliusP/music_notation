@@ -103,6 +103,18 @@ class Timeline {
           ));
           cursor += child.duration.toInt();
           break;
+        case RestElement rest:
+          String voice = rest.note.editorialVoice.voice ?? "1";
+          _value[cursor]!.add(_TimelineValue(
+            index,
+            child.duration,
+            voice: voice,
+            widgetType: RestElement,
+            name:
+                child.position.toString().replaceFirst("ElementPosition  ", ""),
+          ));
+          cursor += child.duration.toInt();
+          break;
         case Chord chord:
           String voice = child.notes.firstOrNull?.editorialVoice.voice ?? "1";
           _value[cursor]!.add(_TimelineValue(
