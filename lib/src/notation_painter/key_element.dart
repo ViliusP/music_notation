@@ -370,20 +370,6 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
   }) {
     switch (keyData) {
       case TraditionalKey _:
-        if (kDebugMode && keyData.octaves.isNotEmpty) {
-          // ignore: avoid_print
-          print("key-octave is not currently supported.");
-        }
-        if (kDebugMode && keyData.cancel != null) {
-          // ignore: avoid_print
-          print("cancel is not currently supported.");
-        }
-
-        if (kDebugMode && keyData.mode != null) {
-          // ignore: avoid_print
-          print("mode is not currently supported.");
-        }
-
         return KeySignatureElement(
           notationContext: notationContext,
           font: font,
