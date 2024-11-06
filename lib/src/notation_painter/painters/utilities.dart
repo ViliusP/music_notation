@@ -62,13 +62,14 @@ class PainterUtilities {
         )
         .translate(0, NotationLayoutProperties.staveHeight / 2);
 
-    double verticalOffset = -o1.dy.ceilToDouble();
+    double verticalOffset = -o1.dy;
+    double horizontalOffset = -o1.dx;
 
     if (drawBBox) {
       canvas.drawRect(
         Rect.fromPoints(
-          o1.translate(0, verticalOffset),
-          o2.translate(0, verticalOffset),
+          o1.translate(horizontalOffset, verticalOffset),
+          o2.translate(horizontalOffset, verticalOffset),
         ),
         paint,
       );
@@ -90,7 +91,7 @@ class PainterUtilities {
     textPainter.layout();
     textPainter.paint(
       canvas,
-      Offset(0, verticalOffset),
+      Offset(horizontalOffset, verticalOffset),
     );
   }
 }

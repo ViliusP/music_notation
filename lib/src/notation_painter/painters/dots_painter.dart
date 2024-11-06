@@ -8,7 +8,10 @@ import 'package:music_notation/src/smufl/smufl_glyph.dart';
 class DotsPainter extends CustomPainter {
   final int count;
 
-  DotsPainter(this.count);
+  /// The distance between two dots.
+  final double spacing;
+
+  DotsPainter(this.count, this.spacing);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -17,7 +20,7 @@ class DotsPainter extends CustomPainter {
         canvas,
         SmuflGlyph.augmentationDot.codepoint,
         offset: Offset(
-          7 * i.toDouble(),
+          spacing * i.toDouble(),
           -NotationLayoutProperties.staveSpace * 2 + size.height / 2,
         ),
       );

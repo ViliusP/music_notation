@@ -202,14 +202,24 @@ class ElementPosition implements Comparable<ElementPosition> {
     octave: 5,
   );
 
-  static const ElementPosition secondLedgerAbove = ElementPosition(
+  static const ElementPosition firstLedgerBelow = ElementPosition(
     step: Step.C,
-    octave: 6,
+    octave: 4,
+  );
+
+  static const ElementPosition firstLedgerAbove = ElementPosition(
+    step: Step.A,
+    octave: 5,
   );
 
   static const ElementPosition secondLedgerBelow = ElementPosition(
     step: Step.A,
     octave: 3,
+  );
+
+  static const ElementPosition secondLedgerAbove = ElementPosition(
+    step: Step.C,
+    octave: 6,
   );
 
   /// Calculates absolute numerical difference between two notes.

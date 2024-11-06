@@ -9,6 +9,7 @@ import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
+import 'package:music_notation/src/notation_painter/notes/rest_element.dart';
 import 'package:music_notation/src/notation_painter/time_beat_element.dart';
 
 /// Represents a timeline for musical elements within a score.
@@ -90,7 +91,19 @@ class Timeline {
           ));
           cursor += child.duration.toInt();
           break;
-        case Chord chord:
+        case RestElement rest:
+          String voice = rest.note.editorialVoice.voice ?? "1";
+          _value[cursor]!.add(_TimelineValue(
+            index,
+            child.duration,
+            voice: voice,
+            widgetType: RestElement,
+            name:
+                child.position.toString().replaceFirst("ElementPosition  ", ""),
+          ));
+          cursor += child.duration.toInt();
+          break;
+        case Chord _:
           String voice = child.notes.firstOrNull?.editorialVoice.voice ?? "1";
           _value[cursor]!.add(_TimelineValue(
             index,
@@ -236,10 +249,13 @@ class Timeline {
     // Last item processing:
     // If there is no empty last item like backup or forward. It should have last
     // additional spacing which indicates how much space should be after last element.
-    if ([NoteElement, Chord].contains(biggestOffsetElement?.widgetType)) {
-      spacings.add(
-        biggestOffset + (biggestOffsetElement!.duration * spacePerBeat),
-      );
+    if ([
+      NoteElement,
+      Chord,
+      RestElement,
+    ].contains(biggestOffsetElement?.widgetType)) {
+      spacings
+          .add(biggestOffset + (biggestOffsetElement!.duration * spacePerBeat));
     }
     // print(names);
     return spacings;

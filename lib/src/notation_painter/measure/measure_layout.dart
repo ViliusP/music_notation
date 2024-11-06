@@ -29,6 +29,7 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
+import 'package:music_notation/src/notation_painter/notes/rest_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/notation_painter/painters/barline_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/staff_lines_painter.dart';
@@ -62,14 +63,9 @@ class MeasureLayout extends StatelessWidget {
             clef: clefElement.clef,
           );
           break;
-        case NoteElement _:
+        case RhythmicElement _:
           contextAfter = contextAfter.copyWith(
-            divisions: measureElement.divisions,
-          );
-          break;
-        case Chord _:
-          contextAfter = contextAfter.copyWith(
-            divisions: measureElement.divisions,
+            divisions: measureElement.notationContext.divisions,
           );
           break;
         case TimeBeatElement _:
@@ -175,6 +171,14 @@ class MeasureLayout extends StatelessWidget {
       return Chord.fromNotes(
         notes: notes,
         notationContext: context,
+        font: font,
+      );
+    }
+
+    if (note.form is Rest) {
+      return RestElement.fromNote(
+        note: note,
+        context: context,
         font: font,
       );
     }
@@ -362,7 +366,7 @@ class MeasureLayout extends StatelessWidget {
     double divisions = 1;
     for (var child in children.reversed) {
       if (child is RhythmicElement) {
-        divisions = child.divisions;
+        divisions = child.notationContext.divisions!;
         break;
       }
     }

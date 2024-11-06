@@ -20,11 +20,9 @@ class Chord extends StatelessWidget implements RhythmicElement {
         (note) => NoteElement.determinePosition(note, null),
       );
 
+  @override
   final NotationContext notationContext;
   final FontMetadata font;
-
-  @override
-  final double divisions;
 
   @override
   final double duration;
@@ -79,7 +77,6 @@ class Chord extends StatelessWidget implements RhythmicElement {
     required this.notes,
     required this.notationContext,
     required this.font,
-    required this.divisions,
     required this.stemLength,
     required this.duration,
     this.stemDirection,
@@ -113,9 +110,8 @@ class Chord extends StatelessWidget implements RhythmicElement {
       notes: notes,
       notationContext: notationContext,
       font: font,
-      divisions: notationContext.divisions!,
       stemLength: _calculateStemLength(notes),
-      duration: NoteElement.determineDuration(notes.first),
+      duration: notes.first.determineDuration(),
       stemDirection: stemDirection,
     );
   }

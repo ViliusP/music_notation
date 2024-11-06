@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/models/data_types/accidental_value.dart';
@@ -14,7 +13,7 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/models/octaved_key_accidental.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
-import 'package:music_notation/src/notation_painter/painters/key_accidental_painter.dart';
+import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart';
 
@@ -206,7 +205,7 @@ class AccidentalElement extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       size: size,
-      painter: KeyAccidentalPainter(
+      painter: SimpleGlyphPainter(
         accidental.accidental?.smufl ?? smufl(accidental.accidental?.value),
         font.glyphBBoxes[
             _accidentalSmuflMapping[accidental.accidental?.value]]!,
@@ -370,20 +369,6 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
   }) {
     switch (keyData) {
       case TraditionalKey _:
-        if (kDebugMode && keyData.octaves.isNotEmpty) {
-          // ignore: avoid_print
-          print("key-octave is not currently supported.");
-        }
-        if (kDebugMode && keyData.cancel != null) {
-          // ignore: avoid_print
-          print("cancel is not currently supported.");
-        }
-
-        if (kDebugMode && keyData.mode != null) {
-          // ignore: avoid_print
-          print("mode is not currently supported.");
-        }
-
         return KeySignatureElement(
           notationContext: notationContext,
           font: font,
