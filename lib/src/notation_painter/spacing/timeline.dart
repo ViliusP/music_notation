@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:music_notation/src/notation_painter/clef_element.dart';
@@ -36,20 +38,20 @@ class Timeline {
   ///
   /// The key represents the cursor's position in time (e.g., beats or subdivisions),
   /// and the value is a list of [_TimelineValue] instances that occur at that position.
-  final Map<_TimelinePosition, List<_TimelineValue>> _value;
+  final SplayTreeMap<_TimelinePosition, List<_TimelineValue>> _values;
 
   /// Tracks the furthest point in time reached by the timeline.
   ///
   /// This is useful for determining the overall length of the timeline and for
   /// generating visual representations or performing analyses.
-  int get _maxCursor => _value.length;
+  int get _maxCursor => _values.length;
 
   /// A set of unique voice identifiers present in the timeline.
   ///
   /// Voices represent different musical lines or parts within a score.
   /// This getter extracts all unique voices from the internal [_value] map,
   /// ensuring that each voice is only listed once.
-  Set<String> get _uniqueVoices => _value.values
+  Set<String> get _uniqueVoices => _values.values
       .expand((list) => list) // Flatten all lists into a single iterable
       .map((timelineValue) => timelineValue.voice) // Extract the voice property
       .whereType<String>() // Filter out null values and cast to String
@@ -59,7 +61,7 @@ class Timeline {
   ///
   /// ### Parameters:
   /// - [divisions]: The number of divisions per measure, typically based on the time signature.
-  Timeline._(this._value, this.divisions);
+  Timeline._(this._values, this.divisions);
 
   /// Processes a list of [MeasureWidget] instances to populate the timeline.
   ///
@@ -161,8 +163,7 @@ class Timeline {
       }
       _TimelinePosition pos;
 
-      if (valueToAdd.widgetType == RhythmicElement ||
-          valueToAdd.widgetType == CursorElement) {
+      if (valueToAdd.widgetType == RhythmicElement) {
         pos = _TimelinePosition(cursor);
       } else {
         pos = _TimelinePosition(cursor, false);
@@ -176,7 +177,7 @@ class Timeline {
       }
     }
 
-    return Timeline._(values, divisions);
+    return Timeline._(SplayTreeMap.from(values), divisions);
   }
 
   /// Converts the timeline into a list of time-based spatial values.
@@ -202,7 +203,7 @@ class Timeline {
   /// ```
   List<double> toSpacings(double spacePerDivisions) {
     double spacePerBeat = spacePerDivisions / divisions;
-    int totalLength = _value.values.fold(0, (sum, list) => sum + list.length);
+    int totalLength = _values.values.fold(0, (sum, list) => sum + list.length);
     List<double> spacings = List.generate(totalLength, (_) => 0);
     double biggestOffset = 0;
     _TimelineValue? biggestOffsetElement;
@@ -210,7 +211,7 @@ class Timeline {
 
     double measureStartMargin = 0;
     bool isMeasureStart = true;
-    for (var entry in _value.entries) {
+    for (var entry in _values.entries) {
       List<_TimelineValue> beatCol = entry.value.sorted(
         (a, b) => a.voice.compareTo(b.voice),
       );
@@ -266,25 +267,23 @@ class Timeline {
   /// A string representation of the timeline if in debug mode; otherwise, the default `toString` implementation.
   @override
   String toString() {
-    if (kDebugMode && _value.keys.isNotEmpty) {
+    if (kDebugMode && _values.keys.isNotEmpty) {
       int labelPad = 8;
       String row1 = "| ${'Time'.padRight(labelPad)} ||";
 
-      _TimelinePosition? lastNonRhythmicKey;
-      for (var k in _value.keys) {
+      for (var k in _values.keys) {
         row1 += "${_centerPad(k.toString(), 3)}|";
-        if (k.isRhytmic) {
-          lastNonRhythmicKey = k;
-        }
       }
 
-      if (lastNonRhythmicKey != null) {
-        double lastDuration =
-            _value[lastNonRhythmicKey]!.map((v) => v.duration).max;
+      _TimelinePosition lastKey = _values.keys.last;
+
+      if (lastKey.isRhytmic) {
+        double lastDuration = _values[lastKey]!.map((v) => v.duration).max;
         int toGenerate = lastDuration.toInt() - 1;
+        if (toGenerate < 0) toGenerate = 0;
 
         for (var i in List.generate((toGenerate), (i) => i + 1)) {
-          int cellNumber = lastNonRhythmicKey.value + i;
+          int cellNumber = lastKey.value + i;
           row1 += "${_centerPad((cellNumber).toString(), 3)}|";
         }
       }
@@ -296,7 +295,7 @@ class Timeline {
       };
       int elementCount = 0;
 
-      _value.forEach((key, values) {
+      _values.forEach((key, values) {
         for (var voice in _uniqueVoices) {
           String voiceOutput = voicesOutputRow[voice]!;
           final voiceElements = values.where((x) => x.voice == voice);
