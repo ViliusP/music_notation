@@ -103,7 +103,7 @@ class Timeline {
           ));
           cursor += child.duration.toInt();
           break;
-        case Chord _:
+        case Chord chord:
           String voice = child.notes.firstOrNull?.editorialVoice.voice ?? "1";
           _value[cursor]!.add(_TimelineValue(
             index,
