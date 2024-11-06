@@ -47,20 +47,24 @@ class RestElement extends StatelessWidget implements RhythmicElement {
   double get stemLength => 0;
 
   @override
-  ElementPosition get position => determinePosition(
-        note,
-      );
+  ElementPosition get position => determinePosition();
 
   @override
   Size get size {
     return _bBox.toRect().size;
   }
 
-  static Size calculateSize({required Note note, required FontMetadata font}) {
-    return font.glyphBBoxes[_determineGlyph(note.type?.value)]!.toRect().size;
+  NoteTypeValue get _type {
+    NoteTypeValue? type = note.type?.value;
+
+    NoteForm noteForm = note.form;
+    if ((noteForm as Rest).measure == true) {
+      type = NoteTypeValue.whole;
+    }
+    return type ?? NoteTypeValue.quarter;
   }
 
-  SmuflGlyph get _glyph => _determineGlyph(note.type?.value);
+  SmuflGlyph get _glyph => _determineGlyph(_type);
 
   factory RestElement.fromNote({
     required Note note,
@@ -80,8 +84,8 @@ class RestElement extends StatelessWidget implements RhythmicElement {
     required this.font,
   });
 
-  static SmuflGlyph _determineGlyph(NoteTypeValue? type) {
-    switch (type ?? NoteTypeValue.quarter) {
+  static SmuflGlyph _determineGlyph(NoteTypeValue type) {
+    switch (type) {
       case NoteTypeValue.n1024th:
         return SmuflGlyph.rest1024th;
       case NoteTypeValue.n512th:
@@ -113,7 +117,7 @@ class RestElement extends StatelessWidget implements RhythmicElement {
     }
   }
 
-  static ElementPosition determinePosition(Note note) {
+  ElementPosition determinePosition() {
     Step? step = (note.form as Rest).displayStep;
     int? octave = (note.form as Rest).displayOctave;
 
@@ -121,35 +125,26 @@ class RestElement extends StatelessWidget implements RhythmicElement {
       return ElementPosition(step: step, octave: octave);
     }
 
-    switch (note.type?.value ?? NoteTypeValue.quarter) {
+    switch (_type) {
       case NoteTypeValue.n1024th:
-        return const ElementPosition(step: Step.C, octave: 4); // Adjust
       case NoteTypeValue.n512th:
-        return const ElementPosition(step: Step.C, octave: 4); // Adjust
       case NoteTypeValue.n256th:
-        return const ElementPosition(step: Step.C, octave: 4); // Adjust
       case NoteTypeValue.n128th:
-        return const ElementPosition(step: Step.C, octave: 4); // Adjust
       case NoteTypeValue.n64th:
-        return const ElementPosition(step: Step.C, octave: 4); // Adjust
       case NoteTypeValue.n32nd:
-        return const ElementPosition(step: Step.C, octave: 4); // Adjust
       case NoteTypeValue.n16th:
-        return const ElementPosition(step: Step.C, octave: 4); // Adjust
       case NoteTypeValue.eighth:
-        return const ElementPosition(step: Step.C, octave: 4); // Adjust
+        return const ElementPosition(step: Step.B, octave: 4);
       case NoteTypeValue.quarter:
         return const ElementPosition(step: Step.B, octave: 4);
       case NoteTypeValue.half:
-        return const ElementPosition(step: Step.C, octave: 5);
+        return const ElementPosition(step: Step.B, octave: 4);
       case NoteTypeValue.whole:
-        return const ElementPosition(step: Step.C, octave: 5);
+        return const ElementPosition(step: Step.D, octave: 5);
       case NoteTypeValue.breve:
-        return const ElementPosition(step: Step.C, octave: 4); // Adjust
       case NoteTypeValue.long:
-        return const ElementPosition(step: Step.C, octave: 4); // Adjust
       case NoteTypeValue.maxima:
-        return const ElementPosition(step: Step.C, octave: 4); // Adjust
+        return const ElementPosition(step: Step.B, octave: 6);
     }
   }
 

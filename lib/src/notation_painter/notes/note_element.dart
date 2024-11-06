@@ -239,7 +239,9 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
             step = noteForm.displayStep;
             octave = noteForm.displayOctave;
           case Rest _:
-            return RestElement.determinePosition(note);
+            throw ArgumentError(
+              "If note's form is `rest`, please use RestElemenent to render it",
+            );
         }
 
         final position = ElementPosition(
