@@ -58,6 +58,7 @@ List<SmuflGlyph> glyphs = [
   SmuflGlyph.restWhole,
   SmuflGlyph.restQuarter,
   SmuflGlyph.restWholeLegerLine,
+  SmuflGlyph.augmentationDot,
 ];
 
 List<GlyphBBox?> bBoxes = [
@@ -88,5 +89,9 @@ List<GlyphBBox?> bBoxes = [
   GlyphBBox(
     bBoxNE: Coordinates(x: 1.856, y: 0.056),
     bBoxSW: Coordinates(x: -0.556, y: -0.488),
+  ),
+  GlyphBBox(
+    bBoxNE: Coordinates(x: 0.4, y: 0.2),
+    bBoxSW: Coordinates(x: 0, y: -0.196),
   ),
 ];
