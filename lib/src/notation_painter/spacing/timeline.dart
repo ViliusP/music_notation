@@ -100,6 +100,7 @@ class Timeline {
             index,
             child.duration,
             voice: voice,
+            width: rest.size.width,
             widgetType: RhythmicElement,
             name:
                 child.position.toString().replaceFirst("ElementPosition  ", ""),
@@ -211,15 +212,26 @@ class Timeline {
 
     double measureStartMargin = 0;
     bool isMeasureStart = true;
+    _TimelineValue? valueBefore;
+
     for (var entry in _values.entries) {
       List<_TimelineValue> beatCol = entry.value.sorted(
         (a, b) => a.voice.compareTo(b.voice),
       );
 
       int beat = entry.key.value;
-      _TimelineValue? valueBefore;
       for (_TimelineValue value in beatCol) {
         // names[value.index] = value.name;
+
+        if (value.duration == 0) {
+          spacings[value.index] = measureStartMargin;
+          spacings[value.index] += NotationLayoutProperties.staveSpace;
+          if (valueBefore != null) {
+            spacings[value.index] += valueBefore.width;
+          }
+          measureStartMargin = spacings[value.index];
+        }
+
         if (value.duration != 0) {
           if (isMeasureStart) {
             measureStartMargin += valueBefore?.width ?? 0;
@@ -230,14 +242,7 @@ class Timeline {
 
           spacings[value.index] = leftOffset;
         }
-        if (value.duration == 0) {
-          spacings[value.index] = measureStartMargin;
-          spacings[value.index] += NotationLayoutProperties.staveSpace;
-          if (valueBefore != null) {
-            spacings[value.index] += valueBefore.width;
-          }
-          measureStartMargin = spacings[value.index];
-        }
+
         if (biggestOffset < spacings[value.index]) {
           biggestOffset = spacings[value.index];
           biggestOffsetElement = value;
