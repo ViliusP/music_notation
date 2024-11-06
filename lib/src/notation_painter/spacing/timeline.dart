@@ -254,8 +254,9 @@ class Timeline {
       Chord,
       RestElement,
     ].contains(biggestOffsetElement?.widgetType)) {
-      spacings
-          .add(biggestOffset + (biggestOffsetElement!.duration * spacePerBeat));
+      spacings.add(
+        biggestOffset + (biggestOffsetElement!.duration * spacePerBeat),
+      );
     }
     // print(names);
     return spacings;
