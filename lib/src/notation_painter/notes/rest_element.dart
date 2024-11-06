@@ -214,10 +214,6 @@ class RestElement extends StatelessWidget implements RhythmicElement {
       size: size,
       child: Stack(
         children: [
-          CustomPaint(
-            size: size,
-            painter: BoxGuidePainter(DebugLines.middleHorizontalLine.guides),
-          ),
           if (_dots > 0)
             Positioned(
               top: _dotsVerticalOffset.clamp(0, double.maxFinite),
