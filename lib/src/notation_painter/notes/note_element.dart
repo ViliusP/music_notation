@@ -11,6 +11,7 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notation_font.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/notes/augmentation_dot.dart';
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/painters/dots_painter.dart';
@@ -437,7 +438,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
               bottom: dotsBottomPosition,
               child: CustomPaint(
                 size: _dotsSize,
-                painter: DotsPainter(_dots),
+                painter: DotsPainter(_dots, AugmentationDot.defaultSpacing),
               ),
             ),
           if (_stemmed)
