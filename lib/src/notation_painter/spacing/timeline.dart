@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:music_notation/src/notation_painter/clef_element.dart';
@@ -10,6 +8,7 @@ import 'package:music_notation/src/notation_painter/measure/measure_element.dart
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rest_element.dart';
+import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/notation_painter/time_beat_element.dart';
 
 /// Represents a timeline for musical elements within a score.
@@ -37,13 +36,13 @@ class Timeline {
   ///
   /// The key represents the cursor's position in time (e.g., beats or subdivisions),
   /// and the value is a list of [_TimelineValue] instances that occur at that position.
-  final Map<int, List<_TimelineValue>> _value = {};
+  final Map<_TimelinePosition, List<_TimelineValue>> _value;
 
   /// Tracks the furthest point in time reached by the timeline.
   ///
   /// This is useful for determining the overall length of the timeline and for
   /// generating visual representations or performing analyses.
-  int maxCursor = 0;
+  int get _maxCursor => _value.length;
 
   /// A set of unique voice identifiers present in the timeline.
   ///
@@ -60,7 +59,7 @@ class Timeline {
   ///
   /// ### Parameters:
   /// - [divisions]: The number of divisions per measure, typically based on the time signature.
-  Timeline({required this.divisions});
+  Timeline._(this._value, this.divisions);
 
   /// Processes a list of [MeasureWidget] instances to populate the timeline.
   ///
@@ -70,115 +69,113 @@ class Timeline {
   /// [_value] map and tracks the maximum cursor position.
   ///
   /// ### Parameters:
-  /// - [children]: A list of [MeasureWidget] instances representing musical elements.
-  void compute(List<MeasureWidget> children) {
+  /// - [children] - A list of [MeasureWidget] instances representing musical elements.
+  factory Timeline.fromMeasureElements(
+    List<MeasureWidget> children,
+    double divisions,
+  ) {
+    Map<_TimelinePosition, List<_TimelineValue>> values = {};
     int cursor = 0;
     for (final (index, child) in children.indexed) {
-      _value[cursor] ??= [];
+      _TimelineValue valueToAdd;
       switch (child) {
         case NoteElement note:
           String voice = child.note.editorialVoice.voice ?? "1";
-          _value[cursor]!.add(_TimelineValue(
+          valueToAdd = _TimelineValue(
             index,
             child.duration,
             voice: voice,
-            widgetType: NoteElement,
+            widgetType: RhythmicElement,
             width: note.size.width,
             name: child.position.toString().replaceFirst(
                   "ElementPosition  ",
                   "",
                 ),
-          ));
-          cursor += child.duration.toInt();
-          break;
+          );
         case RestElement rest:
           String voice = rest.note.editorialVoice.voice ?? "1";
-          _value[cursor]!.add(_TimelineValue(
+          valueToAdd = _TimelineValue(
             index,
             child.duration,
             voice: voice,
-            widgetType: RestElement,
+            widgetType: RhythmicElement,
             name:
                 child.position.toString().replaceFirst("ElementPosition  ", ""),
-          ));
-          cursor += child.duration.toInt();
-          break;
+          );
         case Chord chord:
           String voice = child.notes.firstOrNull?.editorialVoice.voice ?? "1";
-          _value[cursor]!.add(_TimelineValue(
+          valueToAdd = _TimelineValue(
             index,
             child.duration,
             voice: voice,
-            widgetType: Chord,
+            widgetType: RhythmicElement,
             width: chord.size.width,
             name:
                 "C${child.position.toString().replaceFirst("ElementPosition  ", "")}",
-          ));
-          cursor += child.duration.toInt();
-          break;
+          );
         case CursorElement cursorElement:
-          _value[cursor]!.add(
-            _TimelineValue(
-              index,
-              cursorElement.duration,
-              voice: cursorElement.duration > 0 ? "F" : "B",
-              name: cursorElement.duration > 0
-                  ? "${cursorElement.duration.toInt()}>"
-                  : "<${cursorElement.duration.toInt().abs()}",
-              widgetType: CursorElement,
-            ),
+          valueToAdd = _TimelineValue(
+            index,
+            cursorElement.duration,
+            voice: cursorElement.duration > 0 ? "F" : "B",
+            name: cursorElement.duration > 0
+                ? "${cursorElement.duration.toInt()}>"
+                : "<${cursorElement.duration.toInt().abs()}",
+            widgetType: CursorElement,
           );
-          cursor += child.duration.toInt();
-          cursor = cursor.clamp(0, double.maxFinite).toInt();
-          break;
+
         case TimeBeatElement timeBeatElement:
-          _value[cursor]!.add(
-            _TimelineValue(
-              index,
-              0,
-              width: timeBeatElement.size.width,
-              voice: "-1", // The "-1" indicates attributes sector
-              name: "TB",
-              widgetType: TimeBeatElement,
-            ),
+          valueToAdd = _TimelineValue(
+            index,
+            0,
+            width: timeBeatElement.size.width,
+            voice: "-1", // The "-1" indicates attributes sector
+            name: "TB",
+            widgetType: TimeBeatElement,
           );
-          break;
         case ClefElement clefElement:
-          _value[cursor]!.add(
-            _TimelineValue(
-              index,
-              0,
-              width: clefElement.size.width,
-              voice: "-1", // The "-1" indicates attributes sector
-              name: "CLF",
-              widgetType: ClefElement,
-            ),
+          valueToAdd = _TimelineValue(
+            index,
+            0,
+            width: clefElement.size.width,
+            voice: "-1", // The "-1" indicates attributes sector
+            name: "CLF",
+            widgetType: ClefElement,
           );
-          break;
         case KeySignatureElement keyElement:
-          _value[cursor]!.add(
-            _TimelineValue(
-              index,
-              0,
-              width: keyElement.size.width,
-              voice: "-1", // The "-1" indicates attributes sector
-              name: "KeS",
-              widgetType: KeySignatureElement,
-            ),
+          valueToAdd = _TimelineValue(
+            index,
+            0,
+            width: keyElement.size.width,
+            voice: "-1", // The "-1" indicates attributes sector
+            name: "KeS",
+            widgetType: KeySignatureElement,
           );
-          break;
         default:
-          _value[cursor]!.add(
-            _TimelineValue(
-              index,
-              0,
-              voice: "-1", // The "-1" indicates attributes sector
-              name: child.runtimeType.toString().substring(0, 2),
-            ),
+          valueToAdd = _TimelineValue(
+            index,
+            0,
+            voice: "-1", // The "-1" indicates attributes sector
+            name: child.runtimeType.toString().substring(0, 2),
           );
       }
-      maxCursor = max(maxCursor, cursor);
+      _TimelinePosition pos;
+
+      if (valueToAdd.widgetType == RhythmicElement) {
+        pos = _TimelinePosition(cursor);
+      } else {
+        pos = _TimelinePosition(cursor, false);
+      }
+      values[pos] ??= [];
+      values[pos]!.add(valueToAdd);
+
+      cursor += valueToAdd.duration.toInt();
+      if (valueToAdd.widgetType == CursorElement) {
+        cursor = cursor.clamp(0, double.maxFinite).toInt();
+      }
     }
+
+    return Timeline._(values, divisions);
   }
 
   /// Converts the timeline into a list of time-based spatial values.
@@ -217,7 +214,7 @@ class Timeline {
         (a, b) => a.voice.compareTo(b.voice),
       );
 
-      int beat = entry.key;
+      int beat = entry.key.value;
       _TimelineValue? valueBefore;
       for (_TimelineValue value in beatCol) {
         // names[value.index] = value.name;
@@ -249,11 +246,7 @@ class Timeline {
     // Last item processing:
     // If there is no empty last item like backup or forward. It should have last
     // additional spacing which indicates how much space should be after last element.
-    if ([
-      NoteElement,
-      Chord,
-      RestElement,
-    ].contains(biggestOffsetElement?.widgetType)) {
+    if ([RhythmicElement].contains(biggestOffsetElement?.widgetType)) {
       spacings.add(
         biggestOffset + (biggestOffsetElement!.duration * spacePerBeat),
       );
@@ -276,18 +269,10 @@ class Timeline {
       int labelPad = 8;
       String row1 = "| ${'Time'.padRight(labelPad)} ||";
 
-      final times = Iterable.generate(
-        maxCursor + 1,
-        (i) => i,
-      );
-
-      for (final i in times) {
-        if (i == times.length - 1) {
-          row1 += "${_centerPad('L', 3)}|";
-          break;
-        }
-        row1 += "${_centerPad(i.toString(), 3)}|";
+      for (var k in _value.keys) {
+        row1 += "${_centerPad(k.toString(), 3)}|";
       }
+      row1 += "${_centerPad('L', 3)}|";
 
       // Create a map with voices as keys and empty strings as values
       Map<String, String> voicesOutputRow = {
@@ -295,8 +280,8 @@ class Timeline {
           voice: "| ${'Voice $voice'.padRight(labelPad)} ||"
       };
       int elementCount = 0;
-      for (final i in times) {
-        List<_TimelineValue> values = _value[i] ?? [];
+
+      _value.forEach((key, values) {
         for (var voice in _uniqueVoices) {
           String voiceOutput = voicesOutputRow[voice]!;
           final voiceElements = values.where((x) => x.voice == voice);
@@ -306,7 +291,7 @@ class Timeline {
           voiceOutput += "${_centerPad((cell).toString(), 3)}|";
           voicesOutputRow[voice] = voiceOutput;
         }
-      }
+      });
 
       String output = 'Divisions: $divisions | Length: $elementCount';
       output = "| ${output.padRight(row1.length - 4)} |";
@@ -375,4 +360,38 @@ class _TimelineValue {
     this.widgetType,
     required this.voice,
   });
+}
+
+class _TimelinePosition implements Comparable<_TimelinePosition> {
+  final int value;
+  final bool isRhytmic;
+
+  _TimelinePosition(
+    this.value, [
+    this.isRhytmic = true,
+  ]);
+
+  @override
+  int compareTo(_TimelinePosition other) {
+    if (value != other.value) {
+      return value.compareTo(other.value); // Compare by value first
+    }
+    return isRhytmic == other.isRhytmic
+        ? 0
+        : (isRhytmic ? 1 : -1); // `isRhytmic` as secondary comparison
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is _TimelinePosition &&
+          runtimeType == other.runtimeType &&
+          value == other.value &&
+          isRhytmic == other.isRhytmic;
+
+  @override
+  int get hashCode => Object.hash(value, isRhytmic);
+
+  @override
+  String toString() => "${!isRhytmic ? "*" : ""}$value${!isRhytmic ? "*" : ""}";
 }

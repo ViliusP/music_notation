@@ -15,6 +15,7 @@ import 'package:music_notation/src/models/elements/music_data/forward.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
+import 'package:music_notation/src/notation_painter/debug/beat_mark_painter.dart';
 import 'package:music_notation/src/notation_painter/notes/beaming.dart';
 import 'package:music_notation/src/notation_painter/clef_element.dart';
 import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
@@ -371,7 +372,7 @@ class MeasureLayout extends StatelessWidget {
       }
     }
 
-    final Timeline timeline = Timeline(divisions: divisions)..compute(children);
+    final Timeline timeline = Timeline.fromMeasureElements(children, divisions);
     return timeline.toSpacings(NotationLayoutProperties.staveHeight * 1.5);
   }
 
@@ -523,7 +524,7 @@ class MeasureLayout extends StatelessWidget {
                 NotationLayoutProperties.staveHeight,
               ),
               painter: BeatMarkPainter(dSettings!.beatGuideType!, 0),
-          ),
+            ),
           ...beamGroups,
           ...positionedElements,
         ],
