@@ -43,35 +43,7 @@ class BeatTimeline {
                 ? values.last.lastAttributeOffset
                 : lastAttributeOffset,
           ));
-          lastAttributeOffset = 0;
         }
-        // names[value.index] = value.name;
-
-        // if (value.duration == 0) {
-        //   spacings[value.index] = measureStartMargin;
-        //   spacings[value.index] += NotationLayoutProperties.staveSpace;
-        //   if (valueBefore != null) {
-        //     spacings[value.index] += valueBefore.width;
-        //   }
-        //   measureStartMargin = spacings[value.index];
-        // }
-
-        // if (value.duration != 0) {
-        //   if (isMeasureStart) {
-        //     measureStartMargin += valueBefore?.width ?? 0;
-        //     measureStartMargin += NotationLayoutProperties.staveSpace;
-        //     isMeasureStart = false;
-        //   }
-        //   double leftOffset = measureStartMargin + (beat * spacePerBeat);
-
-        //   spacings[value.index] = leftOffset;
-        // }
-
-        // if (biggestOffset < spacings[value.index]) {
-        //   biggestOffset = spacings[value.index];
-        //   biggestOffsetElement = value;
-        // }
-        // valueBefore = value;
       }
     }
     return BeatTimeline._(values: values, divisions: timeline.divisions);
