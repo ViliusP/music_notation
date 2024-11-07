@@ -373,6 +373,20 @@ class MeasureLayout extends StatelessWidget {
     }
 
     final Timeline timeline = Timeline.fromMeasureElements(children, divisions);
+    print(timeline);
+    for (var voice in timeline.uniqueVoices) {
+      if ((int.tryParse(voice) ?? 0) > 0) {
+        print("--------------");
+        print("Voice: $voice");
+        print("--------------");
+
+        BeatTimeline beatTimeline = BeatTimeline.fromTimeline(
+          timeline: timeline,
+          voice: voice,
+        );
+        print(beatTimeline);
+      }
+    }
     return timeline.toSpacings(NotationLayoutProperties.staveHeight * 1.5);
   }
 
