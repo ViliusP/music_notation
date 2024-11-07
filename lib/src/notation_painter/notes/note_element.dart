@@ -148,22 +148,22 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     return AlignmentPosition(
       top: top,
       bottom: bottom,
-      left: -_calculateAlignmentOffset(font),
+      left: 0,
     );
   }
 
-  double _calculateAlignmentOffset(FontMetadata font) {
-    var noteheadSize = NoteheadElement(
-      note: note,
-    ).size(font);
+  // double _calculateAlignmentOffset(FontMetadata font) {
+  //   var noteheadSize = NoteheadElement(
+  //     note: note,
+  //   ).size(font);
 
-    var width = noteheadSize.width;
-    if (_stemmed) {
-      width += NotationLayoutProperties.stemStrokeWidth;
-    }
+  //   var width = noteheadSize.width;
+  //   if (_stemmed) {
+  //     width += NotationLayoutProperties.stemStrokeWidth;
+  //   }
 
-    return width / 2;
-  }
+  //   return width / 2;
+  // }
 
   /// Relative offset from bounding box bottom left if [AlignmentPosition.top] is defined.
   /// Relative offset from bounding box top left if [AlignmentPosition.bottom] is defined.
