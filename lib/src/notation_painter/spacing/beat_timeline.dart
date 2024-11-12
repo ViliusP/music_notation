@@ -57,6 +57,33 @@ class BeatTimeline {
     ).normalize();
   }
 
+  BeatTimeline changeDivisions(double value) {
+    if (value < divisions) {
+      throw ArgumentError(
+        "The new value of divisions must be bigger than the old value",
+        "value",
+      );
+    }
+    if (value == divisions) return this;
+    double ratio = value / divisions;
+
+    final List<BeatTimelineValue?> modified = List.generate(
+      (duration * ratio).toInt(),
+      (i) => null,
+    );
+    int i = 0;
+    for (final value in values) {
+      if (value != null) {
+        modified[i] = value.copyWith(
+          duration: value.duration * ratio.toInt(),
+        );
+        i += (value.duration * ratio).toInt();
+      }
+    }
+
+    return BeatTimeline(values: modified, divisions: value);
+  }
+
   BeatTimeline normalize() {
     final List<BeatTimelineValue?> normalized = [];
     int i = 0;
