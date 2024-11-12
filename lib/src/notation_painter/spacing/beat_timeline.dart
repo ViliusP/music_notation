@@ -1,11 +1,15 @@
 part of 'timeline.dart';
 
-/// For one voice.
+/// Represents the timeline for rhythmic elements (notes, rests, chords) within a measure for a single voice.
 class BeatTimeline {
+  /// Divisions per beat in the timeline, used to determine placement accuracy.
   final double divisions;
 
+  /// Stores the beat values for each position in the timeline.
+  /// Each element represents a beat position and may be `null` to indicate empty or unoccupied slots.
   final List<BeatTimelineValue?> values;
 
+  /// Calculates the total duration covered by this timeline, summing all durations of non-null beats.
   double get duration => values.fold(
         0,
         (double duration, element) => duration + (element?.duration ?? 0),
@@ -16,6 +20,10 @@ class BeatTimeline {
     required this.divisions,
   });
 
+  /// Creates a [BeatTimeline] from a [Timeline] and filters by a specified voice.
+  ///
+  /// Iterates through each value in the [timeline] and includes elements matching the specified [voice].
+  /// Adjusts offsets for accurate beat placements.
   factory BeatTimeline.fromTimeline({
     required Timeline timeline,
     required String voice,
@@ -30,6 +38,7 @@ class BeatTimeline {
       );
       for (_TimelineValue value in beatCol) {
         int? valueVoice = int.tryParse(value.voice);
+        // Skip if the voice does not match and it's not an unassigned voice.
         if (parsedVoice == null ||
             parsedVoice < 0 ||
             (parsedVoice != valueVoice && (valueVoice ?? 0) > 0)) {
@@ -57,6 +66,9 @@ class BeatTimeline {
     ).normalize();
   }
 
+  /// Combines this timeline with another [BeatTimeline] and returns a new timeline with adjusted values.
+  ///
+  /// Requires that both timelines have compatible `duration` and `divisions`.
   BeatTimeline combine(BeatTimeline other) {
     if (duration / divisions != other.duration / other.divisions) {
       throw ArgumentError(
@@ -69,6 +81,7 @@ class BeatTimeline {
 
     BeatTimeline bl1 = normalize();
     BeatTimeline bl2 = other.normalize();
+    // Ensure both timelines share the same number of divisions.
     if (bl1.divisions < bl2.divisions) {
       bl1 = bl1.changeDivisions(bl2.divisions);
     }
@@ -120,6 +133,9 @@ class BeatTimeline {
     return BeatTimeline(values: combined, divisions: bl1.divisions);
   }
 
+  /// Changes the divisions of this timeline to the specified [value] and returns a new [BeatTimeline].
+  ///
+  /// The new divisions value must be greater than the current one.
   BeatTimeline changeDivisions(double value) {
     if (value < divisions) {
       throw ArgumentError(
@@ -147,6 +163,7 @@ class BeatTimeline {
     return BeatTimeline(values: modified, divisions: value);
   }
 
+  /// Normalizes the timeline, ensuring each duration unit has a corresponding position, including `null` slots for rests.
   BeatTimeline normalize() {
     final List<BeatTimelineValue?> normalized = [];
     int i = 0;
@@ -156,6 +173,7 @@ class BeatTimeline {
         i++;
       }
 
+      // Add `null` slots for gaps between beat positions.
       for (int j = 1; j < (value?.duration ?? 0); j++, i++) {
         normalized.add(null);
       }
@@ -225,6 +243,7 @@ class BeatTimeline {
   }
 }
 
+/// Represents a single beat position in the timeline, including width, offset, and duration details.
 class BeatTimelineValue {
   final double width;
   final double leftOffset;
