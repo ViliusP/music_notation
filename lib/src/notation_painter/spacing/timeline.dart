@@ -74,8 +74,9 @@ class Timeline {
   ) {
     Map<_TimelinePosition, List<_TimelineValue>> values = {};
     int cursor = 0;
+    _TimelineValue? valueToAdd;
+
     for (final (index, child) in children.indexed) {
-      _TimelineValue valueToAdd;
       switch (child) {
         case NoteElement note:
           String voice = child.note.editorialVoice.voice ?? "1";
@@ -118,7 +119,7 @@ class Timeline {
           valueToAdd = _TimelineValue(
             index,
             cursorElement.duration,
-            voice: cursorElement.duration > 0 ? "F" : "B",
+            voice: cursorElement.voice ?? valueToAdd?.voice ?? "?",
             name: cursorElement.duration > 0
                 ? "${cursorElement.duration.toInt()}>"
                 : "<${cursorElement.duration.toInt().abs()}",
