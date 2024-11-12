@@ -60,6 +60,11 @@ class BeatTimeline {
         }
       }
     }
+
+    /// Remove last if it is cursor to back
+    if (values.last.duration < 0) {
+      values.removeLast();
+    }
     return BeatTimeline(
       values: values,
       divisions: timeline.divisions,
@@ -240,6 +245,11 @@ class BeatTimeline {
       return "\n$generalInfo\n${stringTable.join("\n")}";
     }
     return super.toString();
+  }
+
+  List<double> toSpacings(Timeline timeline) {
+    NotationLayoutProperties.staveHeight * 1.5;
+    return [];
   }
 }
 
