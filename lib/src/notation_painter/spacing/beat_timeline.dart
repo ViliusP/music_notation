@@ -57,6 +57,69 @@ class BeatTimeline {
     ).normalize();
   }
 
+  BeatTimeline combine(BeatTimeline other) {
+    if (duration / divisions != other.duration / other.divisions) {
+      throw ArgumentError(
+        "Duration and divisions ratio of provided BeatTimeline is different",
+        "other.duration",
+      );
+    }
+
+    final List<BeatTimelineValue?> combined = [];
+
+    BeatTimeline bl1 = normalize();
+    BeatTimeline bl2 = other.normalize();
+    if (bl1.divisions < bl2.divisions) {
+      bl1 = bl1.changeDivisions(bl2.divisions);
+    }
+    if (bl2.divisions < bl1.divisions) {
+      bl2 = bl2.changeDivisions(bl1.divisions);
+    }
+
+    BeatTimelineValue? lastAdded;
+
+    for (int i = 0; i < bl1.values.length; i++) {
+      BeatTimelineValue? bl1Value = bl1.values.elementAtOrNull(i);
+      BeatTimelineValue? bl2Value = bl2.values.elementAtOrNull(i);
+
+      if (bl1Value == null && bl2Value == null) {
+        combined.add(null);
+      }
+      if (bl1Value != null && bl2Value == null) {
+        combined.add(
+          bl1Value.copyWith(
+            lastAttributeOffset:
+                lastAdded?.lastAttributeOffset ?? bl1Value.lastAttributeOffset,
+          ),
+        );
+        lastAdded = combined.last;
+      }
+      if (bl1Value == null && bl2Value != null) {
+        combined.add(
+          bl2Value.copyWith(
+            lastAttributeOffset:
+                lastAdded?.lastAttributeOffset ?? bl2Value.lastAttributeOffset,
+          ),
+        );
+        lastAdded = combined.last;
+      }
+      if (bl1Value != null && bl2Value != null) {
+        combined.add(BeatTimelineValue(
+          duration: [bl1Value.duration, bl2Value.duration].min,
+          width: [bl1Value.width, bl2Value.width].max,
+          leftOffset: [bl1Value.leftOffset, bl2Value.leftOffset].max,
+          lastAttributeOffset: [
+            bl1Value.lastAttributeOffset,
+            bl2Value.lastAttributeOffset,
+          ].max,
+        ));
+        lastAdded = combined.last;
+      }
+    }
+
+    return BeatTimeline(values: combined, divisions: bl1.divisions);
+  }
+
   BeatTimeline changeDivisions(double value) {
     if (value < divisions) {
       throw ArgumentError(

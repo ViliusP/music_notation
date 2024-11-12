@@ -2,6 +2,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:music_notation/src/notation_painter/spacing/timeline.dart';
 
 void main() {
+  // final font = FontMetadata(
+  //   fontName: "",
+  //   fontVersion: "",
+  //   engravingDefaults: EngravingDefaults(),
+  //   glyphBBoxes: {},
+  //   glyphsWithAnchors: [],
+  // );
   group("Divisions change", () {
     test("Simple case #1", () {
       final beatline = BeatTimeline(values: [
@@ -226,6 +233,134 @@ void main() {
         null,
       ], divisions: 2);
       expect(beatline.normalize(), beatline);
+    });
+  });
+  group("Beat time line combine", () {
+    test('Bad duration and divisions ratio', () async {
+      final beatline1 = BeatTimeline(values: [
+        BeatTimelineValue(
+            width: 18.65,
+            leftOffset: 0,
+            duration: 2,
+            lastAttributeOffset: 89.45),
+        BeatTimelineValue(
+            width: 18.65,
+            leftOffset: 0,
+            duration: 2,
+            lastAttributeOffset: 89.45),
+        BeatTimelineValue(
+            width: 18.65,
+            leftOffset: 0,
+            duration: 2,
+            lastAttributeOffset: 89.45),
+        BeatTimelineValue(
+            width: 18.65,
+            leftOffset: 0,
+            duration: 2,
+            lastAttributeOffset: 89.45),
+      ], divisions: 2);
+      final beatline2 = BeatTimeline(values: [
+        BeatTimelineValue(
+            width: 18.65,
+            leftOffset: 0,
+            duration: 2,
+            lastAttributeOffset: 89.45),
+        BeatTimelineValue(
+            width: 18.65,
+            leftOffset: 0,
+            duration: 2,
+            lastAttributeOffset: 89.45),
+        BeatTimelineValue(
+            width: 18.65,
+            leftOffset: 0,
+            duration: 2,
+            lastAttributeOffset: 89.45),
+        BeatTimelineValue(
+            width: 18.65,
+            leftOffset: 0,
+            duration: 2,
+            lastAttributeOffset: 89.45)
+      ], divisions: 4);
+
+      expect(() => beatline1.combine(beatline2), throwsA(isA<ArgumentError>()));
+    });
+    test("Simple case #1", () async {
+      final beatline1 = BeatTimeline(values: [
+        BeatTimelineValue(
+          width: 20,
+          leftOffset: 0,
+          duration: 2,
+          lastAttributeOffset: 89.45,
+        ),
+        BeatTimelineValue(
+          width: 20,
+          leftOffset: 0,
+          duration: 2,
+          lastAttributeOffset: 89.45,
+        ),
+      ], divisions: 2);
+      final beatline2 = BeatTimeline(values: [
+        BeatTimelineValue(
+          width: 25,
+          leftOffset: 0,
+          duration: 2,
+          lastAttributeOffset: 89.45,
+        ),
+        BeatTimelineValue(
+          width: 25,
+          leftOffset: 0,
+          duration: 2,
+          lastAttributeOffset: 89.45,
+        ),
+        BeatTimelineValue(
+          width: 25,
+          leftOffset: 0,
+          duration: 2,
+          lastAttributeOffset: 89.45,
+        ),
+        BeatTimelineValue(
+          width: 25,
+          leftOffset: 0,
+          duration: 2,
+          lastAttributeOffset: 89.45,
+        )
+      ], divisions: 4);
+
+      final expectedBeatline = BeatTimeline(values: [
+        BeatTimelineValue(
+          width: 25,
+          leftOffset: 0,
+          duration: 2,
+          lastAttributeOffset: 89.45,
+        ),
+        null,
+        BeatTimelineValue(
+          width: 25,
+          leftOffset: 0,
+          duration: 2,
+          lastAttributeOffset: 89.45,
+        ),
+        null,
+        BeatTimelineValue(
+          width: 25,
+          leftOffset: 0,
+          duration: 2,
+          lastAttributeOffset: 89.45,
+        ),
+        null,
+        BeatTimelineValue(
+          width: 25,
+          leftOffset: 0,
+          duration: 2,
+          lastAttributeOffset: 89.45,
+        ),
+        null,
+      ], divisions: 4);
+
+      expect(
+        beatline1.combine(beatline2),
+        expectedBeatline,
+      );
     });
   });
 }
