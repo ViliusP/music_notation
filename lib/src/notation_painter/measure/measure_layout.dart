@@ -318,6 +318,7 @@ class MeasureLayout extends StatelessWidget {
           children.add(CursorElement(duration: -backup.duration));
           break;
         case Forward forward:
+          if (staff != forward.staff) break;
           children.add(CursorElement(
             duration: forward.duration,
             voice: forward.editorialVoice.voice,

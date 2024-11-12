@@ -28,6 +28,8 @@ class MusicNotationCanvas extends StatelessWidget {
   /// Set this property to `false` if the score contains raw or incomplete
   /// musicXML data, allowing the renderer to determine beaming based on its
   /// internal logic or algorithms.
+  ///
+  /// Currently ignored!
   final bool useExplicitBeaming;
 
   final FontMetadata font;
