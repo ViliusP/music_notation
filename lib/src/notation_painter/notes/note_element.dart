@@ -1,3 +1,4 @@
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:music_notation/src/models/data_types/step.dart';
@@ -147,21 +148,12 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     return AlignmentPosition(
       top: top,
       bottom: bottom,
-      left: -_calculateAlignmentOffset(font),
+      left: _calculateAlignmentOffset(font),
     );
   }
 
   double _calculateAlignmentOffset(FontMetadata font) {
-    var noteheadSize = NoteheadElement(
-      note: note,
-    ).size(font);
-
-    var width = noteheadSize.width;
-    if (_stemmed) {
-      width += NotationLayoutProperties.stemStrokeWidth;
-    }
-
-    return width / 2;
+    return 0;
   }
 
   /// Relative offset from bounding box bottom left if [AlignmentPosition.top] is defined.
@@ -456,6 +448,22 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    DiagnosticLevel level = DiagnosticLevel.info;
+
+    properties.add(
+      StringProperty(
+        'Position',
+        position.toString(),
+        defaultValue: null,
+        level: level,
+        showName: true,
       ),
     );
   }

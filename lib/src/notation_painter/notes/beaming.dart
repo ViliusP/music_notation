@@ -87,8 +87,8 @@ class BeamGroup extends StatelessWidget {
     final List<({double? bottom, double? top})> verticalOffsets = [];
 
     const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
-    final inheritedPadding = InheritedPadding.of(context);
-    if (inheritedPadding == null) return SizedBox.shrink();
+    final padding = InheritedPadding.of(context)?.padding;
+    if (padding == null) return SizedBox.shrink();
 
     for (var child in children) {
       double? topOffset;
@@ -103,7 +103,7 @@ class BeamGroup extends StatelessWidget {
         intervalFromTheF5 -= child.position.numeric;
         topOffset += intervalFromTheF5 * offsetPerPosition;
 
-        topOffset += inheritedPadding.top;
+        topOffset += padding.top;
       }
       if (child.alignmentPosition.bottom != null) {
         bottomOffset = 0;
@@ -114,7 +114,7 @@ class BeamGroup extends StatelessWidget {
         intervalFromTheE4 -= child.position.numeric;
         bottomOffset -= intervalFromTheE4 * offsetPerPosition;
 
-        bottomOffset += inheritedPadding.bottom;
+        bottomOffset += padding.bottom;
       }
 
       verticalOffsets.add((bottom: bottomOffset, top: topOffset));

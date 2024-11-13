@@ -5,14 +5,21 @@ import 'package:music_notation/src/models/elements/score/score.dart';
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
 import 'package:music_notation/src/notation_painter/measure/inherited_padding.dart';
+import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_layout.dart';
+import 'package:music_notation/src/notation_painter/measure/notation_widgetization.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
+import 'package:music_notation/src/notation_painter/models/vertical_edge_insets.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
 import 'package:music_notation/src/notation_painter/notation_font.dart';
-import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 
 import 'package:music_notation/src/notation_painter/sync_width_column.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
+
+typedef _MeasureData = ({
+  List<MeasureWidget> children,
+  BarlineSettings barlineSettings
+});
 
 class MusicNotationCanvas extends StatelessWidget {
   final ScorePartwise scorePartwise;
@@ -27,11 +34,13 @@ class MusicNotationCanvas extends StatelessWidget {
   /// Set this property to `false` if the score contains raw or incomplete
   /// musicXML data, allowing the renderer to determine beaming based on its
   /// internal logic or algorithms.
+  ///
+  /// Currently ignored!
   final bool useExplicitBeaming;
 
   final FontMetadata font;
 
-  NotationGrid get grid => NotationGrid.fromScoreParts(
+  RawMeasureGrid get grid => RawMeasureGrid.fromScoreParts(
         scorePartwise.parts,
       );
 
@@ -46,55 +55,64 @@ class MusicNotationCanvas extends StatelessWidget {
   Widget build(BuildContext context) {
     var parts = <SyncWidthRowBuilder>[];
     for (int i = 0; i < grid.data.rowCount; i++) {
-      var measures = <MeasureLayout>[];
+      NotationContext lastNotationContext = NotationContext.empty();
       double maxTopPadding = 0;
       double maxBottomPadding = 0;
+      int? staff = grid.staffForRow(i);
+      List<_MeasureData> row = [];
+
       for (var j = 0; j < grid.data.columnCount; j++) {
         var barlineSettings = BarlineSettings.fromGridData(
           gridX: j,
           gridY: i,
           maxX: grid.data.columnCount,
           maxY: grid.data.rowCount,
-          staff: grid.staffForRow(i) ?? 1,
+          staff: staff ?? 1,
           staffCount: grid.staffCount(i) ?? 1,
         );
 
-        var measure = MeasureLayout.fromMeasureData(
-          font: font,
+        var children = NotationWidgetization.widgetsFromMeasure(
+          context: lastNotationContext,
+          staff: staff,
           measure: grid.data.getValue(i, j),
-          staff: grid.staffForRow(i),
-          barlineSettings: barlineSettings,
-          notationContext: j != 0
-              ? measures.last.contextAfter
-              : const NotationContext(
-                  divisions: null,
-                  clef: null,
-                  time: null,
-                  lastKey: null,
-                ),
+          font: font,
         );
+
+        row.add((children: children, barlineSettings: barlineSettings));
+
+        lastNotationContext = NotationWidgetization.contextFromWidgets(
+          children,
+          lastNotationContext,
+        );
+
+        var padding = MeasureLayout.calculateVerticalPadding(children);
+
         maxTopPadding = [
           maxTopPadding,
-          measure.verticalPadding.top,
+          padding.top,
         ].max;
         maxBottomPadding = [
           maxBottomPadding,
-          measure.verticalPadding.bottom,
+          padding.bottom,
         ].max;
+      }
+      var measures = <MeasureLayout>[];
 
+      for (var data in row) {
+        var measure = MeasureLayout(
+          barlineSettings: data.barlineSettings,
+          children: data.children,
+        );
         measures.add(measure);
       }
       parts.add(SyncWidthRowBuilder(
         builder: (context, children) {
           return InheritedPadding(
-            top: maxTopPadding,
-            bottom: maxBottomPadding,
+            padding: VerticalEdgeInsets(
+              top: maxTopPadding,
+              bottom: maxBottomPadding,
+            ),
             child: SizedBox(
-              height: [
-                maxTopPadding,
-                maxBottomPadding,
-                NotationLayoutProperties.staveHeight,
-              ].sum,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: children,
@@ -109,7 +127,10 @@ class MusicNotationCanvas extends StatelessWidget {
       paintBBoxAboveStaff: false,
       paintBBoxBelowStaff: false,
       extraStaveLineCount: 0,
+      verticalStaveLineSpacingMultiplier: 0,
       extraStaveLines: ExtraStaveLines.none,
+      beatMarkerMultiplier: 1,
+      beatMarker: true,
       child: NotationFont(
         value: font,
         child: SyncWidthColumn(

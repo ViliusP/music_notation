@@ -1,13 +1,12 @@
 import 'package:flutter/widgets.dart';
+import 'package:music_notation/src/notation_painter/models/vertical_edge_insets.dart';
 
 class InheritedPadding extends InheritedWidget {
-  final double top;
-  final double bottom;
+  final VerticalEdgeInsets padding;
 
   const InheritedPadding({
     super.key,
-    required this.top,
-    required this.bottom,
+    required this.padding,
     required super.child,
   });
 
@@ -17,6 +16,6 @@ class InheritedPadding extends InheritedWidget {
 
   @override
   bool updateShouldNotify(InheritedPadding oldWidget) {
-    return top != oldWidget.top || bottom != oldWidget.bottom;
+    return padding != oldWidget.padding || padding != oldWidget.padding;
   }
 }

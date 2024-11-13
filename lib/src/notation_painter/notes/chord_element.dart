@@ -345,7 +345,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
       (p) => p == NoteheadPosition.right,
     );
     int rightLowest = _noteheadsPositions.indexWhere(
-      (p) => p == NoteheadPosition.left,
+      (p) => p == NoteheadPosition.right,
     );
 
     for (var (index, note) in sortedNotes.indexed) {
