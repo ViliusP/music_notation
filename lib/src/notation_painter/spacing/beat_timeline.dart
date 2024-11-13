@@ -215,27 +215,27 @@ class BeatTimeline {
     return BeatTimeline(values: normalized, divisions: divisions);
   }
 
-  /// Converts the timeline into a list of spatial values based on time units for rendering.
+  /// Converts the beat timeline into a list of offsets from the measure start for rendering.
   ///
-  /// This method processes the internal timeline data to produce a list of `double` values
-  /// that represent the spatial distribution of musical elements (e.g., notes, rests) within the timeline.
-  /// Each value corresponds to the position of an element on the timeline, calculated based on the provided
-  /// spacing configuration for each division of time.
+  /// This method generates a list of `double` values representing the offset positions of musical elements
+  /// (e.g., notes, rests) within the measure. Each value in the list corresponds to the horizontal position
+  /// of an element on the timeline, calculated based on each division’s spatial allocation for consistent
+  /// element spacing.
   ///
   /// ### Parameters:
   /// - [children] - A list of [MeasureWidget] elements representing musical components within the measure.
   ///
   /// ### Returns:
-  /// A list of spatial values as `double` values, corresponding to the positions of elements on the timeline.
-  /// The returned list has a size of `[children.length] + 1`, where each index aligns with a child in the [children] list.
-  /// An additional index at the end represents the cumulative width (or end) of the measure.
+  /// A list of offset values as `double`, where each index corresponds to the position of a `MeasureWidget`
+  /// in the [children] list. The list includes an additional final entry representing the cumulative width
+  /// (or end position) of the measure.
   ///
   /// ### Example:
   /// ```dart
   /// Timeline timeline = Timeline(divisions: 4.0);
   /// // Populate the timeline with beats and elements
   /// List<double> spacings = timeline.toSpacings(measureWidgets);
-  /// // spacings now contains spatial positions for each MeasureWidget based on timeline divisions
+  /// // spacings now contains horizontal positions for each MeasureWidget in the measure
   /// ```
   List<double> toSpacings(List<MeasureWidget> children) {
     var tValues = Timeline.fromMeasureElements(children)._values;
@@ -278,14 +278,14 @@ class BeatTimeline {
     return spacings;
   }
 
-  /// Computes the spacing between each division of the timeline for accurate positioning of elements.
+  /// Computes the cumulative spacing for each division in the timeline, defining element positioning.
   ///
-  /// This method calculates the spatial offsets for each beat division based on the value of
-  /// [_spaceBetweenQuarters] and the [divisions] in the measure, creating a list of
-  /// cumulative spacings for element alignment.
+  /// This method calculates spatial offsets across the timeline’s beat divisions based on the
+  /// defined [_spaceBetweenQuarters] and [divisions], resulting in a list of cumulative spacing
+  /// values to guide element alignment.
   ///
   /// ### Returns:
-  /// A list of `double` values, each representing the cumulative spacing at each beat division.
+  /// A list of `double` values, where each value represents the cumulative offset at each beat division.
   List<double> toDivisionsSpacing() {
     List<double> spacings = [];
     final double spacePerBeat = _spaceBetweenQuarters / divisions;
