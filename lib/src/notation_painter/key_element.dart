@@ -161,12 +161,11 @@ final _flatSequence = [
 ];
 
 class AccidentalElement extends StatelessWidget {
-  final PitchedKeyAccidental accidental;
+  final AccidentalValue accidental;
   final FontMetadata font;
 
   AlignmentPosition get alignmentPosition {
-    AccidentalValue accidentalValue =
-        accidental.accidental?.value ?? AccidentalValue.other;
+    AccidentalValue accidentalValue = accidental;
 
     SmuflGlyph glyph = _accidentalSmuflMapping[accidentalValue]!;
 
@@ -180,11 +179,10 @@ class AccidentalElement extends StatelessWidget {
   Size get size => calculateSize(accidental, font);
 
   static Size calculateSize(
-    PitchedKeyAccidental accidental,
+    AccidentalValue accidental,
     FontMetadata font,
   ) {
-    SmuflGlyph glyph = _accidentalSmuflMapping[
-        accidental.accidental?.value ?? AccidentalValue.other]!;
+    SmuflGlyph glyph = _accidentalSmuflMapping[accidental]!;
 
     Rect headRect = font.glyphBBoxes[glyph]!.toRect();
     return Size(headRect.width, headRect.height);
@@ -206,9 +204,8 @@ class AccidentalElement extends StatelessWidget {
     return CustomPaint(
       size: size,
       painter: SimpleGlyphPainter(
-        accidental.accidental?.smufl ?? smufl(accidental.accidental?.value),
-        font.glyphBBoxes[
-            _accidentalSmuflMapping[accidental.accidental?.value]]!,
+        smufl(accidental),
+        font.glyphBBoxes[_accidentalSmuflMapping[accidental]]!,
       ),
     );
   }
@@ -282,7 +279,7 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
     var offsets = <double>[];
     for (var accidental in accidentals) {
       Size accidentalSize = AccidentalElement(
-        accidental: accidental,
+        accidental: accidental.accidental?.value ?? AccidentalValue.other,
         font: font,
       ).size;
 
@@ -323,7 +320,7 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
     double height = range * _offsetPerPosition;
     for (var (i, accidental) in accidentals.indexed) {
       Size accidentalSize = AccidentalElement(
-        accidental: accidental,
+        accidental: accidental.accidental?.value ?? AccidentalValue.other,
         font: font,
       ).size;
 
@@ -389,7 +386,7 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
 
     for (var (index, accidental) in accidentals.indexed) {
       var accidentalWidget = AccidentalElement(
-        accidental: accidental,
+        accidental: accidental.accidental?.value ?? AccidentalValue.other,
         font: font,
       );
 
