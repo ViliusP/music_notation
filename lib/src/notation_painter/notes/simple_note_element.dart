@@ -54,9 +54,12 @@ class StemElement extends StatelessWidget {
     this.length = NotationLayoutProperties.standardStemLength,
     this.direction = StemDirection.up,
     this.showFlag = true,
+    required this.font,
   });
 
   final NoteTypeValue type;
+
+  final FontMetadata font;
 
   /// By default value is up.
   final StemDirection direction;
@@ -67,57 +70,28 @@ class StemElement extends StatelessWidget {
 
   Size get size {
     return Size(
-      StemPainter.strokeWidth + (showFlag ? type.flagWidth : 0),
+      StemPainter.strokeWidth + (showFlag ? _flagWidth : 0),
       length,
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    String? flagSmufl = type.upwardFlag?.codepoint;
+  SmuflGlyph? get _glyph {
+    if (!showFlag) {
+      return null;
+    }
 
     if (direction == StemDirection.down) {
-      flagSmufl = type.downwardFlag?.codepoint;
+      return _downwardFlag;
     }
-
-    if (!showFlag) {
-      flagSmufl = null;
-    }
-
-    return CustomPaint(
-      size: size,
-      painter: StemPainter(
-        flagSmufl: flagSmufl,
-        direction: direction,
-      ),
-    );
-  }
-}
-
-extension NoteVisualInformation on NoteTypeValue {
-  bool get stemmed {
-    switch (this) {
-      case NoteTypeValue.n1024th:
-      case NoteTypeValue.n512th:
-      case NoteTypeValue.n256th:
-      case NoteTypeValue.n128th:
-      case NoteTypeValue.n64th:
-      case NoteTypeValue.n32nd:
-      case NoteTypeValue.n16th:
-      case NoteTypeValue.eighth:
-      case NoteTypeValue.quarter:
-      case NoteTypeValue.half:
-        return true;
-      case NoteTypeValue.whole:
-      case NoteTypeValue.breve:
-      case NoteTypeValue.long:
-      case NoteTypeValue.maxima:
-        return false;
-    }
+    return _upwardFlag;
   }
 
-  SmuflGlyph? get upwardFlag {
-    switch (this) {
+  GlyphBBox _bBox(FontMetadata font) {
+    return font.glyphBBoxes[_glyph]!;
+  }
+
+  SmuflGlyph? get _upwardFlag {
+    switch (type) {
       case NoteTypeValue.n1024th:
         return CombiningStaffPositions.flag1024thUp;
       case NoteTypeValue.n512th:
@@ -146,36 +120,13 @@ extension NoteVisualInformation on NoteTypeValue {
     }
   }
 
-  int get flagWidth {
-    switch (this) {
-      case NoteTypeValue.n1024th:
-        return 13;
-      case NoteTypeValue.n512th:
-        return 13;
-      case NoteTypeValue.n256th:
-        return 13;
-      case NoteTypeValue.n128th:
-        return 13;
-      case NoteTypeValue.n64th:
-        return 13;
-      case NoteTypeValue.n32nd:
-        return 13;
-      case NoteTypeValue.n16th:
-        return 13;
-      case NoteTypeValue.eighth:
-        return 13;
-      case NoteTypeValue.quarter:
-      case NoteTypeValue.half:
-      case NoteTypeValue.whole:
-      case NoteTypeValue.breve:
-      case NoteTypeValue.long:
-      case NoteTypeValue.maxima:
-        return 0;
-    }
+  double get _flagWidth {
+    if (_glyph == null) return 0;
+    return _bBox(font).toRect().width;
   }
 
-  SmuflGlyph? get downwardFlag {
-    switch (this) {
+  SmuflGlyph? get _downwardFlag {
+    switch (type) {
       case NoteTypeValue.n1024th:
         return CombiningStaffPositions.flag1024thDown;
       case NoteTypeValue.n512th:
@@ -201,6 +152,19 @@ extension NoteVisualInformation on NoteTypeValue {
         return null;
     }
   }
+
+  @override
+  Widget build(BuildContext context) {
+    SmuflGlyph? flagGlyph = _glyph;
+
+    return CustomPaint(
+      size: size,
+      painter: StemPainter(
+        flagSmufl: flagGlyph?.codepoint,
+        direction: direction,
+      ),
+    );
+  }
 }
 
 /// Painting noteheads, it should fill the space between two lines, touching
@@ -210,7 +174,6 @@ extension NoteVisualInformation on NoteTypeValue {
 class NoteheadElement extends StatelessWidget {
   final Note note;
   NoteTypeValue get _noteType => note.type?.value ?? NoteTypeValue.quarter;
-  NoteheadValue get _notehead => note.notehead?.value ?? NoteheadValue.normal;
 
   final LedgerLines? ledgerLines;
 
