@@ -91,6 +91,9 @@ class Clef {
     this.id,
   }) : _line = line;
 
+  Clef.G() : this(sign: ClefSign.G);
+  Clef.F() : this(sign: ClefSign.F);
+
   // Field(s): quantifier
   static const Map<dynamic, XmlQuantifier> _xmlExpectedOrder = {
     'sign': XmlQuantifier.required,
