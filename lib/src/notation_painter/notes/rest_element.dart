@@ -127,6 +127,8 @@ class RestElement extends StatelessWidget implements RhythmicElement {
     required this.font,
   });
 
+  bool get isMeasure => (note.form as Rest).measure == true;
+
   static SmuflGlyph _determineGlyph(NoteTypeValue type, ElementPosition pos) {
     switch (type) {
       case NoteTypeValue.n1024th:
