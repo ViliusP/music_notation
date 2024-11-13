@@ -6,6 +6,7 @@ import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
 import 'package:music_notation/src/notation_painter/measure/inherited_padding.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_layout.dart';
+import 'package:music_notation/src/notation_painter/measure/notation_widgetization.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
 import 'package:music_notation/src/notation_painter/notation_font.dart';
@@ -49,6 +50,7 @@ class MusicNotationCanvas extends StatelessWidget {
     var parts = <SyncWidthRowBuilder>[];
     for (int i = 0; i < grid.data.rowCount; i++) {
       var measures = <MeasureLayout>[];
+      NotationContext lastNotationContext = NotationContext.empty();
       double maxTopPadding = 0;
       double maxBottomPadding = 0;
       for (var j = 0; j < grid.data.columnCount; j++) {
@@ -61,19 +63,21 @@ class MusicNotationCanvas extends StatelessWidget {
           staffCount: grid.staffCount(i) ?? 1,
         );
 
-        var measure = MeasureLayout.fromMeasureData(
-          font: font,
-          measure: grid.data.getValue(i, j),
+        var children = NotationWidgetization.widgetsFromMeasure(
+          context: lastNotationContext,
           staff: grid.staffForRow(i),
+          measure: grid.data.getValue(i, j),
+          font: font,
+        );
+
+        lastNotationContext = NotationWidgetization.contextFromWidgets(
+          children,
+          lastNotationContext,
+        );
+
+        var measure = MeasureLayout(
           barlineSettings: barlineSettings,
-          notationContext: j != 0
-              ? measures.last.contextAfter
-              : const NotationContext(
-                  divisions: null,
-                  clef: null,
-                  time: null,
-                  lastKey: null,
-                ),
+          children: children,
         );
         maxTopPadding = [
           maxTopPadding,

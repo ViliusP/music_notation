@@ -15,6 +15,14 @@ class NotationContext {
     required this.lastKey,
   });
 
+  const NotationContext.empty()
+      : this(
+          divisions: null,
+          clef: null,
+          time: null,
+          lastKey: null,
+        );
+
   NotationContext copyWith({
     Clef? clef,
     double? divisions,
