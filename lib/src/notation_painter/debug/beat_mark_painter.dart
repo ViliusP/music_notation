@@ -27,6 +27,12 @@ class BeatMarkPainter extends CustomPainter {
           beatTimeline.divisions.toInt(),
         );
     for (var leftOffset in spacings) {
+      canvas.drawLine(
+        Offset(leftOffset, 0),
+        Offset(leftOffset, size.height),
+        Paint()..color = Color.fromRGBO(2, 0, 122, .5),
+      );
+
       paintMarker(canvas, Offset(leftOffset, size.height / 2));
     }
   }
@@ -34,13 +40,13 @@ class BeatMarkPainter extends CustomPainter {
   void paintMarker(Canvas canvas, Offset offset) {
     canvas.drawCircle(
       offset,
-      6,
-      Paint()..color = Color.fromRGBO(191, 191, 253, 1),
+      5,
+      Paint()..color = Color.fromRGBO(9, 255, 0, .5),
     );
     canvas.drawCircle(
       offset,
       3,
-      Paint()..color = Color.fromRGBO(0, 0, 255, 1),
+      Paint()..color = Color.fromRGBO(0, 0, 255, .8),
     );
   }
 
