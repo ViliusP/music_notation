@@ -382,9 +382,7 @@ class MeasureLayout extends StatelessWidget {
     final BeatTimeline measureBeatline = beatTimeline ??
         BeatTimeline.fromTimeline(Timeline.fromMeasureElements(children));
 
-    List<double> spacings = measureBeatline.toSpacings(
-      Timeline.fromMeasureElements(children),
-    );
+    List<double> spacings = measureBeatline.toSpacings(children);
 
     double width = spacings.last;
 

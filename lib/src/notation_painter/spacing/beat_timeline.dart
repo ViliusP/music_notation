@@ -24,7 +24,27 @@ class BeatTimeline {
   ///
   /// Iterates through each value in the [timeline] and includes elements matching the specified [voice].
   /// Adjusts offsets for accurate beat placements.
-  factory BeatTimeline.fromTimeline({
+  factory BeatTimeline.fromTimeline(Timeline timeline) {
+    BeatTimeline? finalBeatline;
+
+    for (var voice in timeline.uniqueVoices) {
+      if ((int.tryParse(voice) ?? 0) > 0) {
+        BeatTimeline beatTimeline = BeatTimeline._fromVoiceTimeline(
+          timeline: timeline,
+          voice: voice,
+        );
+        finalBeatline ??= beatTimeline;
+        finalBeatline = beatTimeline.combine(finalBeatline);
+      }
+    }
+    return finalBeatline!;
+  }
+
+  /// Creates a [BeatTimeline] from a [Timeline] and filters by a specified voice.
+  ///
+  /// Iterates through each value in the [timeline] and includes elements matching the specified [voice].
+  /// Adjusts offsets for accurate beat placements.
+  factory BeatTimeline._fromVoiceTimeline({
     required Timeline timeline,
     required String voice,
   }) {
@@ -64,6 +84,9 @@ class BeatTimeline {
     /// Remove last if it is cursor to back
     if (values.last.duration < 0) {
       values.removeLast();
+    }
+    while (values.first.duration < 0) {
+      values.removeAt(0);
     }
     return BeatTimeline(
       values: values,
@@ -213,13 +236,19 @@ class BeatTimeline {
 
       for (var (i, val) in values.indexed) {
         List<String> col = [];
+
+        String width = val?.width.toString() ?? " > ";
+        if (val?.width == 0) {
+          width = ">F>";
+        }
+
         col.addAll([
           i.toString(),
           '----',
-          val?.duration.toString() ?? "",
-          val?.width.toString() ?? "",
-          val?.leftOffset.toString() ?? "",
-          val?.lastAttributeOffset.toString() ?? ""
+          val?.duration.toString() ?? " > ",
+          width,
+          val?.leftOffset.toString() ?? " > ",
+          val?.lastAttributeOffset.toString() ?? " > "
         ]);
         table.add(col.toList());
       }
@@ -245,11 +274,6 @@ class BeatTimeline {
       return "\n$generalInfo\n${stringTable.join("\n")}";
     }
     return super.toString();
-  }
-
-  List<double> toSpacings(Timeline timeline) {
-    NotationLayoutProperties.staveHeight * 1.5;
-    return [];
   }
 }
 
