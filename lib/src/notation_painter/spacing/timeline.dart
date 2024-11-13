@@ -12,6 +12,7 @@ import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rest_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/notation_painter/time_beat_element.dart';
+import 'package:music_notation/src/notation_painter/utilities/list_extensions.dart';
 
 part "beat_timeline.dart";
 
@@ -70,8 +71,15 @@ class Timeline {
   /// - [children] - A list of [MeasureWidget] instances representing musical elements.
   factory Timeline.fromMeasureElements(
     List<MeasureWidget> children,
-    double divisions,
   ) {
+    double divisions = 1;
+    for (var child in children.reversed) {
+      if (child is RhythmicElement) {
+        divisions = child.notationContext.divisions!;
+        break;
+      }
+    }
+
     Map<_TimelinePosition, List<_TimelineValue>> values = {};
     int cursor = 0;
     _TimelineValue? valueToAdd;
