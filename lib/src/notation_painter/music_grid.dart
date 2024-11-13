@@ -145,7 +145,7 @@ class _RowIterator<T> implements Iterator<List<T>> {
 /// The grid structure provided by this class allows for efficient access to the
 /// musical data, making it an effective choice for operations such as rendering the
 /// score or performing musical analysis.
-class NotationGrid {
+class RawMeasureGrid {
   /// Represents the musical score as a grid. Each row corresponds to a part or
   /// a staff within a part, and each column represents a measure.
   final Grid<Measure> data;
@@ -180,7 +180,7 @@ class NotationGrid {
   }
 
   /// Private constructor used to initialize an instance with required properties.
-  NotationGrid._({
+  RawMeasureGrid._({
     required this.data,
     required List<List<int>> commonStaves,
   }) : _commonStaves = commonStaves;
@@ -191,7 +191,7 @@ class NotationGrid {
   /// corresponding number of rows to the grid. Then, it iterates through the
   /// measures in each part, creating MeasureSequence instances and adding them
   /// to the corresponding row in the grid.
-  factory NotationGrid.fromScoreParts(List<Part> parts) {
+  factory RawMeasureGrid.fromScoreParts(List<Part> parts) {
     Grid<Measure> data = Grid();
     List<List<int>> commonStaves = [];
     for (var part in parts) {
@@ -212,7 +212,7 @@ class NotationGrid {
         }
       }
     }
-    return NotationGrid._(
+    return RawMeasureGrid._(
       data: data,
       commonStaves: commonStaves,
     );

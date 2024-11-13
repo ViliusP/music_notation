@@ -85,8 +85,8 @@ class MeasureLayout extends StatelessWidget {
 
     const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
 
-    final inheritedPadding = InheritedPadding.of(context);
-    if (inheritedPadding == null) return SizedBox.shrink();
+    final padding = InheritedPadding.of(context)?.padding;
+    if (padding == null) return SizedBox.shrink();
 
     DebugSettings? dSettings = DebugSettings.of(context);
 
@@ -120,7 +120,7 @@ class MeasureLayout extends StatelessWidget {
           intervalFromTheF5 -= child.position.numeric;
           topOffset += intervalFromTheF5 * offsetPerPosition;
 
-          topOffset += inheritedPadding.top;
+          topOffset += padding.top;
         }
         if (child.alignmentPosition.bottom != null) {
           bottomOffset = 0;
@@ -131,7 +131,7 @@ class MeasureLayout extends StatelessWidget {
           intervalFromTheE4 -= child.position.numeric;
           bottomOffset -= intervalFromTheE4 * offsetPerPosition;
 
-          bottomOffset += inheritedPadding.bottom;
+          bottomOffset += padding.bottom;
         }
 
         if (beamingResult == null || beamingResult == BeamingResult.skipped) {
@@ -151,8 +151,7 @@ class MeasureLayout extends StatelessWidget {
             positionedElements.add(
               Positioned(
                 left: spacings[index],
-                top:
-                    inheritedPadding.top + NotationLayoutProperties.staveHeight,
+                top: padding.top + NotationLayoutProperties.staveHeight,
                 child: Container(
                   width: boxBelow.width,
                   height: [boxBelow.height, 0].max.toDouble(),
@@ -167,8 +166,7 @@ class MeasureLayout extends StatelessWidget {
             positionedElements.add(
               Positioned(
                 left: spacings[index],
-                bottom: inheritedPadding.bottom +
-                    NotationLayoutProperties.staveHeight,
+                bottom: padding.bottom + NotationLayoutProperties.staveHeight,
                 child: Container(
                   width: boxAbove.width,
                   height: [boxAbove.height, 0].max.toDouble(),
@@ -180,16 +178,11 @@ class MeasureLayout extends StatelessWidget {
         }
       }
 
-      EdgeInsets measurePadding = EdgeInsets.only(
-        top: inheritedPadding.top,
-        bottom: inheritedPadding.bottom,
-      );
-
       return Stack(
         fit: StackFit.loose,
         children: [
           Padding(
-            padding: measurePadding,
+            padding: padding,
             child: SizedBox.fromSize(
               size: Size(
                 constraints.maxWidth.isFinite ? constraints.maxWidth : width,
@@ -198,13 +191,13 @@ class MeasureLayout extends StatelessWidget {
               child: StaffLines(
                 startExtension: barlineSettings.startExtension,
                 endExtension: barlineSettings.endExtension,
-                measurePadding: measurePadding,
+                measurePadding: padding,
               ),
             ),
           ),
           if (dSettings?.beatMarker != false)
             Padding(
-              padding: measurePadding,
+              padding: padding,
               child: CustomPaint(
                 size: Size(
                   constraints.maxWidth.isFinite ? constraints.maxWidth : width,
