@@ -55,41 +55,12 @@ class MeasureLayout extends StatelessWidget {
   final List<MeasureWidget> children;
 
   final NotationContext notationContext;
-  NotationContext get contextAfter {
-    NotationContext contextAfter = notationContext.copyWith();
-    for (var measureElement in children) {
-      switch (measureElement) {
-        case ClefElement clefElement:
-          contextAfter = contextAfter.copyWith(
-            clef: clefElement.clef,
-          );
-          break;
-        case RhythmicElement _:
-          contextAfter = contextAfter.copyWith(
-            divisions: measureElement.notationContext.divisions,
-          );
-          break;
-        case TimeBeatElement _:
-          contextAfter = contextAfter.copyWith(
-            time: measureElement.timeBeat,
-          );
-        case KeySignatureElement _:
-          contextAfter = contextAfter.copyWith(
-            lastKey: measureElement.musicKey,
-          );
-          break;
-      }
-    }
-    return contextAfter;
-  }
 
-  double? get _cachedWidth => _initialSpacings?.last;
+  final BeatTimeline? beatTimeline;
 
   EdgeInsets get verticalPadding {
     return _calculateVerticalPadding();
   }
-
-  final List<double>? _initialSpacings;
 
   final int? staff;
   final String? number;
@@ -102,13 +73,13 @@ class MeasureLayout extends StatelessWidget {
     super.key,
     required this.children,
     required this.font,
-    required List<double> initialSpacings,
     required this.notationContext,
     this.useExplicitBeaming = false,
     this.staff,
     this.number,
     this.barlineSettings = const BarlineSettings(),
-  }) : _initialSpacings = initialSpacings;
+    this.beatTimeline,
+  });
 
   factory MeasureLayout.fromMeasureData({
     Key? key,
@@ -118,6 +89,7 @@ class MeasureLayout extends StatelessWidget {
     required NotationContext notationContext,
     bool useExplicitBeaming = false,
     BarlineSettings barlineSettings = const BarlineSettings(),
+    BeatTimeline? beatTimeline,
   }) {
     var children = _computeChildren(
       context: notationContext,
@@ -125,17 +97,16 @@ class MeasureLayout extends StatelessWidget {
       font: font,
       staff: staff,
     );
-    var spacings = _computeSpacings(children);
 
     return MeasureLayout._(
       key: key,
-      initialSpacings: spacings,
       font: font,
       notationContext: notationContext,
       useExplicitBeaming: useExplicitBeaming,
       staff: staff,
       number: measure.attributes.number,
       barlineSettings: barlineSettings,
+      beatTimeline: beatTimeline,
       children: children,
     );
   }
@@ -362,33 +333,32 @@ class MeasureLayout extends StatelessWidget {
     return children;
   }
 
-  static List<double> _computeSpacings(
-    List<MeasureWidget> children,
-  ) {
-    double divisions = 1;
-    for (var child in children.reversed) {
-      if (child is RhythmicElement) {
-        divisions = child.notationContext.divisions!;
-        break;
+  NotationContext get contextAfter {
+    NotationContext contextAfter = notationContext.copyWith();
+    for (var measureElement in children) {
+      switch (measureElement) {
+        case ClefElement clefElement:
+          contextAfter = contextAfter.copyWith(
+            clef: clefElement.clef,
+          );
+          break;
+        case RhythmicElement _:
+          contextAfter = contextAfter.copyWith(
+            divisions: measureElement.notationContext.divisions,
+          );
+          break;
+        case TimeBeatElement _:
+          contextAfter = contextAfter.copyWith(
+            time: measureElement.timeBeat,
+          );
+        case KeySignatureElement _:
+          contextAfter = contextAfter.copyWith(
+            lastKey: measureElement.musicKey,
+          );
+          break;
       }
     }
-
-    final Timeline timeline = Timeline.fromMeasureElements(children, divisions);
-    print(timeline);
-    for (var voice in timeline.uniqueVoices) {
-      if ((int.tryParse(voice) ?? 0) > 0) {
-        print("--------------");
-        print("Voice: $voice");
-        print("--------------");
-
-        BeatTimeline beatTimeline = BeatTimeline.fromTimeline(
-          timeline: timeline,
-          voice: voice,
-        );
-        print(beatTimeline);
-      }
-    }
-    return timeline.toSpacings(NotationLayoutProperties.staveHeight * 1.5);
+    return contextAfter;
   }
 
 // Calculate the vertical padding based on the highest note above and below the staff.
@@ -409,11 +379,16 @@ class MeasureLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<double> spacings = _initialSpacings!;
+    final BeatTimeline measureBeatline = beatTimeline ??
+        BeatTimeline.fromTimeline(Timeline.fromMeasureElements(children));
+
+    List<double> spacings = measureBeatline.toSpacings(
+      Timeline.fromMeasureElements(children),
+    );
+
+    double width = spacings.last;
 
     const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
-
-    double width = _cachedWidth ?? spacings.last;
 
     final inheritedPadding = InheritedPadding.of(context);
     if (inheritedPadding == null) return SizedBox.shrink();
