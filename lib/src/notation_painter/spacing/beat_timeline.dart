@@ -19,6 +19,8 @@ class BeatTimeline {
   static const double _spaceBetweenQuarters =
       NotationLayoutProperties.staveHeight * 1.5;
 
+  double get spacePerBeat => _spaceBetweenQuarters / divisions;
+
   const BeatTimeline({
     required this.values,
     required this.divisions,
@@ -219,7 +221,7 @@ class BeatTimeline {
     );
   }
 
-  List<double> toBeatSpacing() {
+  List<double> toDivisionsSpacing() {
     List<double> spacings = [];
     final double spacePerBeat = _spaceBetweenQuarters / divisions;
     double lastAttributeOffset = 0;
@@ -239,7 +241,7 @@ class BeatTimeline {
         lastAttributeOffset = value.lastAttributeOffset;
       }
     }
-    return spacings.everyNth(divisions.toInt());
+    return spacings;
   }
 
   @override
