@@ -44,6 +44,10 @@ enum NotationExample {
   rests(
     displayName: "Rests",
     path: "assets/scores/rests.musicxml",
+  ),
+  accidentalsAndComplexPositioning(
+    displayName: "Accidentals and more complex positioning",
+    path: "assets/scores/accidentals_and_more_complex_positioning.musicxml",
   );
 
   const NotationExample({
