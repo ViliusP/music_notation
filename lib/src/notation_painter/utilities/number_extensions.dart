@@ -1,4 +1,4 @@
-extension NumberExtensions on num {
+extension NumExtensions on num {
   /// Finds the nearest multiple of base [of], rounding up if base [of] is positive
   /// or rounding down if [base] is negative.
   ///
@@ -11,7 +11,7 @@ extension NumberExtensions on num {
   ///
   /// Throws:
   /// - `ArgumentError` if base [of] is zero.
-  num nearestMultiple({required num of}) {
+  int nearestMultiple({required int of}) {
     if (of == 0) {
       throw ArgumentError("Base must be non-zero");
     }
@@ -21,4 +21,8 @@ extension NumberExtensions on num {
         ? (this / of).ceil() * of // Round up for positive base
         : (this / of.abs()).floor() * of.abs(); // Round down for negative base
   }
+}
+
+class NumberConstants {
+  static const int maxFiniteInt = -1 >>> 1;
 }

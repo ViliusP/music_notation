@@ -1,6 +1,7 @@
 import 'package:flutter/rendering.dart';
 import 'package:music_notation/src/notation_painter/spacing/timeline.dart';
 import 'package:music_notation/src/notation_painter/utilities/list_extensions.dart';
+import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 
 /// A custom painter that draws guiding lines within a box, based on provided guides.
 ///
@@ -8,7 +9,7 @@ import 'package:music_notation/src/notation_painter/utilities/list_extensions.da
 /// (left, right, middle for vertical; top, bottom, middle for horizontal) and an offset.
 class BeatMarkPainter extends CustomPainter {
   /// A list of guides that define which lines to draw within the box.
-  final int multiplier;
+  final double multiplier;
 
   final BeatTimeline beatTimeline;
 
@@ -24,7 +25,9 @@ class BeatMarkPainter extends CustomPainter {
   ) {
     int every = beatTimeline.divisions.toInt();
     every = (every / multiplier).floor();
-    every = every.clamp(1, beatTimeline.divisions.toInt());
+    every = every.clamp(1, NumberConstants.maxFiniteInt);
+
+    every = every.nearestMultiple(of: beatTimeline.divisions.toInt());
     List<double> spacings = beatTimeline.toDivisionsSpacing().everyNth(every);
     for (var leftOffset in spacings) {
       canvas.drawLine(
