@@ -87,7 +87,7 @@ class BeatTimeline {
       }
     }
 
-    /// Remove last if it is cursor to back
+    // Remove last if it is backup cursor
     if (values.last.duration < 0) {
       values.removeLast();
     }
