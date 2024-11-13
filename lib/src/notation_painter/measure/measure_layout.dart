@@ -506,12 +506,18 @@ class MeasureLayout extends StatelessWidget {
             ),
           ),
           if (dSettings?.beatGuideType != null)
-            CustomPaint(
-              size: Size(
-                constraints.maxWidth.isFinite ? constraints.maxWidth : width,
-                NotationLayoutProperties.staveHeight,
+            Padding(
+              padding: measurePadding,
+              child: CustomPaint(
+                size: Size(
+                  constraints.maxWidth.isFinite ? constraints.maxWidth : width,
+                  NotationLayoutProperties.staveHeight,
+                ),
+                painter: BeatMarkPainter(
+                  dSettings!.beatGuideType!,
+                  measureBeatline,
+                ),
               ),
-              painter: BeatMarkPainter(dSettings!.beatGuideType!, 0),
             ),
           ...beamGroups,
           ...positionedElements,

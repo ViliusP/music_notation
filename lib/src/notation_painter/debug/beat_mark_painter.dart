@@ -1,5 +1,6 @@
 import 'package:flutter/rendering.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
+import 'package:music_notation/src/notation_painter/spacing/timeline.dart';
 
 /// A custom painter that draws guiding lines within a box, based on provided guides.
 ///
@@ -9,11 +10,11 @@ class BeatMarkPainter extends CustomPainter {
   /// A list of guides that define which lines to draw within the box.
   final NoteTypeValue type;
 
-  final double startFrom;
+  final BeatTimeline beatTimeline;
 
   const BeatMarkPainter(
     this.type,
-    this.startFrom,
+    this.beatTimeline,
   );
 
   @override
@@ -21,11 +22,10 @@ class BeatMarkPainter extends CustomPainter {
     Canvas canvas,
     Size size,
   ) {
-    // final Paint markPainter = Paint()
-    //   ..color = color
-    //   ..strokeWidth = 1;
-
-    paintMarker(canvas, Offset(0, 0));
+    List<double> spacings = beatTimeline.toBeatSpacing();
+    for (var leftOffset in spacings) {
+      paintMarker(canvas, Offset(leftOffset, size.height / 2));
+    }
   }
 
   void paintMarker(Canvas canvas, Offset offset) {

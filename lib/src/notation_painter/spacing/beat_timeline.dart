@@ -15,6 +15,10 @@ class BeatTimeline {
         (double duration, element) => duration + (element?.duration ?? 0),
       );
 
+  /// Space between two quarter notes measured from their alignment axes.
+  static const double _spaceBetweenQuarters =
+      NotationLayoutProperties.staveHeight * 1.5;
+
   const BeatTimeline({
     required this.values,
     required this.divisions,
@@ -207,6 +211,35 @@ class BeatTimeline {
       }
     }
     return BeatTimeline(values: normalized, divisions: divisions);
+  }
+
+  List<double> toSpacings(List<MeasureWidget> children) {
+    return Timeline.fromMeasureElements(children).toSpacings(
+      NotationLayoutProperties.staveHeight * 1.5,
+    );
+  }
+
+  List<double> toBeatSpacing() {
+    List<double> spacings = [];
+    final double spacePerBeat = _spaceBetweenQuarters / divisions;
+    double lastAttributeOffset = 0;
+    for (var (i, value) in values.indexed) {
+      double spacingFromLeft = 0;
+
+      if (lastAttributeOffset != value?.lastAttributeOffset && value != null) {
+        spacingFromLeft += (value.lastAttributeOffset - lastAttributeOffset);
+      }
+      if (i != 0) {
+        spacingFromLeft += spacePerBeat;
+      }
+      spacingFromLeft += spacings.lastOrNull ?? 0;
+
+      spacings.add(spacingFromLeft);
+      if (value != null) {
+        lastAttributeOffset = value.lastAttributeOffset;
+      }
+    }
+    return spacings.everyNth(divisions.toInt());
   }
 
   @override
