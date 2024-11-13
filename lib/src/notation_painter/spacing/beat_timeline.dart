@@ -241,7 +241,7 @@ class BeatTimeline {
     var tValues = Timeline.fromMeasureElements(children)._values;
     List<double> spacings = List.generate(children.length, (_) => 0);
     List<double> beatSpacing = toDivisionsSpacing();
-
+    int? measureRestIndex;
     double lastAttributeOffset = 0;
     for (var entry in tValues.entries) {
       List<_TimelineValue> beatCol = entry.value.sorted(
@@ -253,6 +253,11 @@ class BeatTimeline {
       double attributeOffset = lastAttributeOffset;
       for (_TimelineValue value in beatCol) {
         if (value.duration != 0) {
+          // Check if the element is a measure rest and store its index
+          if (children[value.index].tryAs<RestElement>()?.isMeasure == true) {
+            measureRestIndex = value.index;
+            break;
+          }
           int beatIndex = beat.clamp(0, beatSpacing.length - 1);
           spacings[value.index] = beatSpacing[beatIndex];
         }
@@ -266,11 +271,27 @@ class BeatTimeline {
       if (values.elementAtOrNull(beat)?.lastAttributeOffset != null) {
         lastAttributeOffset = values[beat]!.lastAttributeOffset;
       }
+      // Stop further processing if a measure rest has been found
+      if (measureRestIndex != null) {
+        break;
+      }
     }
 
     // Calculate final spacing to mark measure width based on last beat offset.
     // and increase width for whole division.
     spacings.add(beatSpacing.last + spacePerDivision);
+
+    if (measureRestIndex != null) {
+      // Start the rest positioning from the first beat offset.
+      double restPosition = beatSpacing[0];
+      // Adjust rest to start after any initial attribute spacing.
+      restPosition -= NotationLayoutProperties.staveSpace;
+      // Move the rest to the center of the measure, between attribute end and barline or between two barlines.
+      restPosition += (beatSpacing.last - restPosition) / 2;
+      // Center-align the rest by adjusting for half of its width.
+      restPosition -= children[measureRestIndex].size.width / 2;
+      spacings[measureRestIndex] = restPosition;
+    }
     return spacings;
   }
 

@@ -12,6 +12,7 @@ import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rest_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/notation_painter/time_beat_element.dart';
+import 'package:music_notation/src/notation_painter/utilities/type_extensions.dart';
 
 part "beat_timeline.dart";
 
