@@ -123,15 +123,17 @@ class NotationWidgetization {
         );
       }
 
-      Clef clef = element.clefs.firstWhere(
+      Clef? clef = element.clefs.firstWhereOrNull(
         (element) => staff != null ? element.number == staff : true,
       );
 
-      notationContext = notationContext.copyWith(
-        clef: clef,
-        divisions: element.divisions,
-      );
-      attributes.add(ClefElement(clef: clef!, font: font));
+      if (clef != null) {
+        notationContext = notationContext.copyWith(
+          clef: clef,
+          divisions: element.divisions,
+        );
+        attributes.add(ClefElement(clef: clef, font: font));
+      }
     }
     // -----------------------------
     // Keys
