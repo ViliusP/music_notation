@@ -35,9 +35,7 @@ class MeasureLayout extends StatelessWidget {
 
   final BeatTimeline? beatTimeline;
 
-  EdgeInsets get verticalPadding {
-    return _calculateVerticalPadding();
-  }
+  EdgeInsets get verticalPadding => calculateVerticalPadding(children);
 
   final BarlineSettings barlineSettings;
 
@@ -49,8 +47,19 @@ class MeasureLayout extends StatelessWidget {
     required this.children,
   });
 
-// Calculate the vertical padding based on the highest note above and below the staff.
-  EdgeInsets _calculateVerticalPadding() {
+  /// Calculates the vertical padding needed based on the largest bounding box
+  /// extensions above and below the staff across all child elements.
+  ///
+  /// This method iterates through each child widget and finds the maximum height
+  /// required for padding above and below the staff, ensuring adequate space for
+  /// elements that extend beyond the staff lines.
+  ///
+  /// Parameters:
+  /// - [children] - A list of [MeasureWidget] elements to evaluate.
+  ///
+  /// Returns:
+  /// An [EdgeInsets] object with calculated top and bottom padding.
+  static EdgeInsets calculateVerticalPadding(List<MeasureWidget> children) {
     double topPadding = 0;
     double bottomPadding = 0;
 

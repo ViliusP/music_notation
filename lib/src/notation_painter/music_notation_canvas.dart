@@ -5,6 +5,7 @@ import 'package:music_notation/src/models/elements/score/score.dart';
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
 import 'package:music_notation/src/notation_painter/measure/inherited_padding.dart';
+import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_layout.dart';
 import 'package:music_notation/src/notation_painter/measure/notation_widgetization.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
@@ -14,6 +15,11 @@ import 'package:music_notation/src/notation_painter/notation_layout_properties.d
 
 import 'package:music_notation/src/notation_painter/sync_width_column.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
+
+typedef _MeasureData = ({
+  List<MeasureWidget> children,
+  BarlineSettings barlineSettings
+});
 
 class MusicNotationCanvas extends StatelessWidget {
   final ScorePartwise scorePartwise;
@@ -49,45 +55,54 @@ class MusicNotationCanvas extends StatelessWidget {
   Widget build(BuildContext context) {
     var parts = <SyncWidthRowBuilder>[];
     for (int i = 0; i < grid.data.rowCount; i++) {
-      var measures = <MeasureLayout>[];
       NotationContext lastNotationContext = NotationContext.empty();
       double maxTopPadding = 0;
       double maxBottomPadding = 0;
+      int? staff = grid.staffForRow(i);
+      List<_MeasureData> column = [];
+
       for (var j = 0; j < grid.data.columnCount; j++) {
         var barlineSettings = BarlineSettings.fromGridData(
           gridX: j,
           gridY: i,
           maxX: grid.data.columnCount,
           maxY: grid.data.rowCount,
-          staff: grid.staffForRow(i) ?? 1,
+          staff: staff ?? 1,
           staffCount: grid.staffCount(i) ?? 1,
         );
 
         var children = NotationWidgetization.widgetsFromMeasure(
           context: lastNotationContext,
-          staff: grid.staffForRow(i),
+          staff: staff,
           measure: grid.data.getValue(i, j),
           font: font,
         );
+
+        column.add((children: children, barlineSettings: barlineSettings));
 
         lastNotationContext = NotationWidgetization.contextFromWidgets(
           children,
           lastNotationContext,
         );
 
-        var measure = MeasureLayout(
-          barlineSettings: barlineSettings,
-          children: children,
-        );
+        var padding = MeasureLayout.calculateVerticalPadding(children);
+
         maxTopPadding = [
           maxTopPadding,
-          measure.verticalPadding.top,
+          padding.top,
         ].max;
         maxBottomPadding = [
           maxBottomPadding,
-          measure.verticalPadding.bottom,
+          padding.bottom,
         ].max;
+      }
+      var measures = <MeasureLayout>[];
 
+      for (var data in column) {
+        var measure = MeasureLayout(
+          barlineSettings: data.barlineSettings,
+          children: data.children,
+        );
         measures.add(measure);
       }
       parts.add(SyncWidthRowBuilder(
