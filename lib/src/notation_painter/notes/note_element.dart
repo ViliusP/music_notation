@@ -1,5 +1,6 @@
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:music_notation/src/models/data_types/accidental_value.dart';
 
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
@@ -7,6 +8,7 @@ import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/music_data/note/notehead.dart';
 import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
+import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
@@ -153,7 +155,18 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
   }
 
   double _calculateAlignmentOffset(FontMetadata font) {
-    return 0;
+    double leftOffset = 0;
+
+    AccidentalValue? accidental = note.accidental?.value;
+
+    if (accidental != null) {
+      Size accidentalSize = AccidentalElement.calculateSize(accidental, font);
+      leftOffset -= accidentalSize.width;
+      // Space between notehead and accidental.
+      leftOffset -= NotationLayoutProperties.staveSpace / 4;
+    }
+
+    return leftOffset;
   }
 
   /// Relative offset from bounding box bottom left if [AlignmentPosition.top] is defined.
@@ -168,6 +181,11 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
 
     if (stemDirection == StemDirection.down) {
       offsetX = NotationLayoutProperties.stemStrokeWidth / 2;
+    }
+
+    if (_accidental != null) {
+      offsetX ??= noteheadSize.width;
+      offsetX -= alignmentPosition.left;
     }
 
     return Offset(
@@ -309,6 +327,15 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       }
     }
 
+    AccidentalValue? accidental = note.accidental?.value;
+
+    if (accidental != null) {
+      Size accidentalSize = AccidentalElement.calculateSize(accidental, font);
+      width += accidentalSize.width;
+      // Space between notehead and accidental.
+      width += NotationLayoutProperties.staveSpace / 4;
+    }
+
     return Size(width, height);
   }
 
@@ -360,6 +387,8 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     return glyphSize ?? scaledDefaultSize;
   }
 
+  AccidentalValue? get _accidental => note.accidental?.value;
+
   @override
   Widget build(BuildContext context) {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
@@ -384,6 +413,8 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       stemTopPadding = 0;
       stemBottomPadding = NotationLayoutProperties.defaultNoteheadHeight / 2;
     }
+
+    stemLeftPadding += alignmentPosition.left.abs();
 
     double? dotsTopPosition;
     double? dotsBottomPosition;
@@ -421,6 +452,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
           Positioned(
             top: stemDirection == StemDirection.down ? dotVerticalOffset : null,
             bottom: stemDirection == StemDirection.up ? 0 : null,
+            left: alignmentPosition.left.abs(),
             child: notehead,
           ),
           if (_dots > 0)
@@ -431,6 +463,18 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
               child: CustomPaint(
                 size: _dotsSize,
                 painter: DotsPainter(_dots, AugmentationDot.defaultSpacing),
+              ),
+            ),
+          if (_accidental != null)
+            Positioned(
+              left: 0,
+              top: stemDirection == StemDirection.down
+                  ? dotVerticalOffset
+                  : null,
+              bottom: stemDirection == StemDirection.up ? 0 : null,
+              child: AccidentalElement(
+                accidental: _accidental!,
+                font: font,
               ),
             ),
           if (_stemmed)
