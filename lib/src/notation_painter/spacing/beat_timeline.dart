@@ -19,7 +19,7 @@ class BeatTimeline {
   static const double _spaceBetweenQuarters =
       NotationLayoutProperties.staveHeight * 1.5;
 
-  double get spacePerBeat => _spaceBetweenQuarters / divisions;
+  double get spacePerDivision => _spaceBetweenQuarters / divisions;
 
   const BeatTimeline({
     required this.values,
@@ -269,12 +269,8 @@ class BeatTimeline {
     }
 
     // Calculate final spacing to mark measure width based on last beat offset.
-    double lastSpacing = beatSpacing.last;
-    // Increase width if last beat has a note
-    lastSpacing += (values.last?.width ?? 0);
-    // Padding to avoid barline overlap
-    lastSpacing += NotationLayoutProperties.staveSpace;
-    spacings.add(lastSpacing);
+    // and increase width for whole division.
+    spacings.add(beatSpacing.last + spacePerDivision);
     return spacings;
   }
 
@@ -288,7 +284,6 @@ class BeatTimeline {
   /// A list of `double` values, where each value represents the cumulative offset at each beat division.
   List<double> toDivisionsSpacing() {
     List<double> spacings = [];
-    final double spacePerBeat = _spaceBetweenQuarters / divisions;
     double lastAttributeOffset = 0;
     for (var (i, value) in values.indexed) {
       double spacingFromLeft = 0;
@@ -297,7 +292,7 @@ class BeatTimeline {
         spacingFromLeft += (value.lastAttributeOffset - lastAttributeOffset);
       }
       if (i != 0) {
-        spacingFromLeft += spacePerBeat;
+        spacingFromLeft += spacePerDivision;
       }
       spacingFromLeft += spacings.lastOrNull ?? 0;
 
