@@ -30,7 +30,7 @@ class StaffLinesPainter extends CustomPainter {
       );
     }
 
-    // For ledger lines debugginb
+    // For ledger lines debugging
     if (extraStaveLines != ExtraStaveLines.none) {
       bottom -= NotationLayoutProperties.staveSpace;
 
