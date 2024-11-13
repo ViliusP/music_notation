@@ -1,4 +1,5 @@
 import 'package:flutter/rendering.dart';
+import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
@@ -11,7 +12,7 @@ class SimpleGlyphPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    PainterUtilities.drawSmuflSymbolV2(canvas, smufl, bBox);
+    drawSmuflSymbol(canvas, smufl, bBox);
   }
 
   @override
@@ -21,4 +22,68 @@ class SimpleGlyphPainter extends CustomPainter {
 
   @override
   bool shouldRebuildSemantics(SimpleGlyphPainter oldDelegate) => false;
+
+  static void drawSmuflSymbol(
+    Canvas canvas,
+    String symbol,
+    GlyphBBox bBox, {
+    Color color = const Color.fromRGBO(0, 0, 0, 1.0),
+    bool drawBBox = false,
+  }) {
+    // -------------------------
+    // BBox painting
+    // --------------------------
+    final paint = Paint()
+      ..color = Color.fromRGBO(0, 0, 0, 0.5)
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+
+    var (o1, o2) = bBox.toOffsets();
+
+    o1 = o1
+        .scale(
+          NotationLayoutProperties.staveSpace,
+          NotationLayoutProperties.staveSpace,
+        )
+        .translate(0, NotationLayoutProperties.staveHeight / 2);
+
+    o2 = o2
+        .scale(
+          NotationLayoutProperties.staveSpace,
+          NotationLayoutProperties.staveSpace,
+        )
+        .translate(0, NotationLayoutProperties.staveHeight / 2);
+
+    double verticalOffset = -o1.dy;
+    double horizontalOffset = -o1.dx;
+
+    if (drawBBox) {
+      canvas.drawRect(
+        Rect.fromPoints(
+          o1.translate(horizontalOffset, verticalOffset),
+          o2.translate(horizontalOffset, verticalOffset),
+        ),
+        paint,
+      );
+    }
+    // -------------------------
+    // Glyph painting
+    // --------------------------
+    TextStyle textStyle = TextStyle(
+      fontFamily: 'Leland',
+      fontSize: NotationLayoutProperties.staveHeight,
+      color: color,
+      // backgroundColor: Color.fromRGBO(124, 100, 0, 0.2),
+      height: 1,
+    );
+    final textPainter = TextPainter(
+      text: TextSpan(text: symbol, style: textStyle),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+    textPainter.paint(
+      canvas,
+      Offset(horizontalOffset, verticalOffset),
+    );
+  }
 }
