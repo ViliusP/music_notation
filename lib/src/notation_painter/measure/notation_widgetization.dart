@@ -111,7 +111,7 @@ class NotationWidgetization {
     NotationContext notationContext,
     FontMetadata font,
   ) {
-    List<MeasureWidget> widgets = [];
+    List<MeasureWidget> attributes = [];
     // -----------------------------
     // Clef
     // -----------------------------
@@ -131,13 +131,13 @@ class NotationWidgetization {
         clef: clef,
         divisions: element.divisions,
       );
-      widgets.add(ClefElement(clef: clef, font: font));
+      attributes.add(ClefElement(clef: clef!, font: font));
     }
     // -----------------------------
     // Keys
     // -----------------------------
     var keys = element.keys;
-    if (keys.isEmpty) return widgets;
+    if (keys.isEmpty) return attributes;
     musicxml.Key? musicKey;
     if (keys.length == 1 && keys.first.number == null) {
       musicKey = keys.first;
@@ -158,7 +158,7 @@ class NotationWidgetization {
       font: font,
     );
     if (keySignature.accidentals.isNotEmpty) {
-      widgets.add(keySignature);
+      attributes.add(keySignature);
     }
     // -----------------------------
     // Time
@@ -168,7 +168,7 @@ class NotationWidgetization {
       switch (times) {
         case TimeBeat _:
           var timeBeatWidget = TimeBeatElement(timeBeat: times);
-          widgets.add(timeBeatWidget);
+          attributes.add(timeBeatWidget);
           break;
         case SenzaMisura _:
           throw UnimplementedError(
@@ -176,7 +176,7 @@ class NotationWidgetization {
           );
       }
     }
-    return widgets;
+    return attributes;
   }
 
   static NotationContext _contextAfterAttributes(
