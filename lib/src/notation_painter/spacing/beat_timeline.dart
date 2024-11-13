@@ -215,12 +215,77 @@ class BeatTimeline {
     return BeatTimeline(values: normalized, divisions: divisions);
   }
 
+  /// Converts the timeline into a list of spatial values based on time units for rendering.
+  ///
+  /// This method processes the internal timeline data to produce a list of `double` values
+  /// that represent the spatial distribution of musical elements (e.g., notes, rests) within the timeline.
+  /// Each value corresponds to the position of an element on the timeline, calculated based on the provided
+  /// spacing configuration for each division of time.
+  ///
+  /// ### Parameters:
+  /// - [children] - A list of [MeasureWidget] elements representing musical components within the measure.
+  ///
+  /// ### Returns:
+  /// A list of spatial values as `double` values, corresponding to the positions of elements on the timeline.
+  /// The returned list has a size of `[children.length] + 1`, where each index aligns with a child in the [children] list.
+  /// An additional index at the end represents the cumulative width (or end) of the measure.
+  ///
+  /// ### Example:
+  /// ```dart
+  /// Timeline timeline = Timeline(divisions: 4.0);
+  /// // Populate the timeline with beats and elements
+  /// List<double> spacings = timeline.toSpacings(measureWidgets);
+  /// // spacings now contains spatial positions for each MeasureWidget based on timeline divisions
+  /// ```
   List<double> toSpacings(List<MeasureWidget> children) {
-    return Timeline.fromMeasureElements(children).toSpacings(
-      NotationLayoutProperties.staveHeight * 1.5,
-    );
+    var tValues = Timeline.fromMeasureElements(children)._values;
+    List<double> spacings = List.generate(children.length, (_) => 0);
+    List<double> beatSpacing = toDivisionsSpacing();
+
+    double lastAttributeOffset = 0;
+    for (var entry in tValues.entries) {
+      List<_TimelineValue> beatCol = entry.value.sorted(
+        (a, b) => a.voice.compareTo(b.voice),
+      );
+
+      int beat = entry.key.value;
+
+      double attributeOffset = lastAttributeOffset;
+      for (_TimelineValue value in beatCol) {
+        if (value.duration != 0) {
+          int beatIndex = beat.clamp(0, beatSpacing.length - 1);
+          spacings[value.index] = beatSpacing[beatIndex];
+        }
+
+        if (value.duration == 0) {
+          attributeOffset += NotationLayoutProperties.staveSpace;
+          spacings[value.index] = attributeOffset;
+          attributeOffset += value.width;
+        }
+      }
+      if (values.elementAtOrNull(beat)?.lastAttributeOffset != null) {
+        lastAttributeOffset = values[beat]!.lastAttributeOffset;
+      }
+    }
+
+    // Calculate final spacing to mark measure width based on last beat offset.
+    double lastSpacing = beatSpacing.last;
+    // Increase width if last beat has a note
+    lastSpacing += (values.last?.width ?? 0);
+    // Padding to avoid barline overlap
+    lastSpacing += NotationLayoutProperties.staveSpace;
+    spacings.add(lastSpacing);
+    return spacings;
   }
 
+  /// Computes the spacing between each division of the timeline for accurate positioning of elements.
+  ///
+  /// This method calculates the spatial offsets for each beat division based on the value of
+  /// [_spaceBetweenQuarters] and the [divisions] in the measure, creating a list of
+  /// cumulative spacings for element alignment.
+  ///
+  /// ### Returns:
+  /// A list of `double` values, each representing the cumulative spacing at each beat division.
   List<double> toDivisionsSpacing() {
     List<double> spacings = [];
     final double spacePerBeat = _spaceBetweenQuarters / divisions;
