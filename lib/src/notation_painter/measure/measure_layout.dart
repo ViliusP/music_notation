@@ -505,7 +505,7 @@ class MeasureLayout extends StatelessWidget {
               ),
             ),
           ),
-          if (dSettings?.beatGuideType != null)
+          if (dSettings?.beatMarker != false)
             Padding(
               padding: measurePadding,
               child: CustomPaint(
@@ -514,7 +514,7 @@ class MeasureLayout extends StatelessWidget {
                   NotationLayoutProperties.staveHeight,
                 ),
                 painter: BeatMarkPainter(
-                  dSettings!.beatGuideType!,
+                  dSettings!.beatMarkerMultiplier,
                   measureBeatline,
                 ),
               ),

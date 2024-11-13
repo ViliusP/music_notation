@@ -1,5 +1,4 @@
 import 'package:flutter/rendering.dart';
-import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/notation_painter/spacing/timeline.dart';
 import 'package:music_notation/src/notation_painter/utilities/list_extensions.dart';
 
@@ -9,12 +8,12 @@ import 'package:music_notation/src/notation_painter/utilities/list_extensions.da
 /// (left, right, middle for vertical; top, bottom, middle for horizontal) and an offset.
 class BeatMarkPainter extends CustomPainter {
   /// A list of guides that define which lines to draw within the box.
-  final NoteTypeValue type;
+  final int multiplier;
 
   final BeatTimeline beatTimeline;
 
   const BeatMarkPainter(
-    this.type,
+    this.multiplier,
     this.beatTimeline,
   );
 
@@ -52,7 +51,8 @@ class BeatMarkPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(BeatMarkPainter oldDelegate) {
-    return oldDelegate.type != type;
+    return oldDelegate.multiplier != multiplier ||
+        oldDelegate.beatTimeline != beatTimeline;
   }
 
   @override

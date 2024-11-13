@@ -27,8 +27,15 @@ class DebugSettings extends InheritedWidget {
   /// - `3`: Vertical lines are drawn at intervals of [NotationProperties.staveSpace] * 3 from the start of the measure.
   final int verticalStaveLineSpacingMultiplier;
 
-  /// Defines how often beat dot is drawn for debug purposes
-  final NoteTypeValue? beatGuideType;
+  /// Defines if beat guide is drawn onto staff.
+  final bool beatMarker;
+
+  /// Defines how many [beatMarker]s are drawn per quarter note.
+  ///
+  /// For example:
+  /// `2` - beat marker will be render every eight note.
+  /// `0.25` beat marker will appear every whole note.
+  final int beatMarkerMultiplier;
 
   /// Creates a [DebugSettings] widget with specified debugging options.
   ///
@@ -43,7 +50,8 @@ class DebugSettings extends InheritedWidget {
     this.extraStaveLines = ExtraStaveLines.none,
     this.extraStaveLineCount = 0,
     this.verticalStaveLineSpacingMultiplier = 0,
-    this.beatGuideType,
+    this.beatMarker = false,
+    this.beatMarkerMultiplier = 1,
     required super.child,
   });
 
