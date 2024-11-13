@@ -22,9 +22,10 @@ class BeatMarkPainter extends CustomPainter {
     Canvas canvas,
     Size size,
   ) {
-    List<double> spacings = beatTimeline.toDivisionsSpacing().everyNth(
-          beatTimeline.divisions.toInt(),
-        );
+    int every = beatTimeline.divisions.toInt();
+    every = (every / multiplier).floor();
+    every = every.clamp(1, beatTimeline.divisions.toInt());
+    List<double> spacings = beatTimeline.toDivisionsSpacing().everyNth(every);
     for (var leftOffset in spacings) {
       canvas.drawLine(
         Offset(leftOffset, 0),

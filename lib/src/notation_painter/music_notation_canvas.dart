@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:collection/collection.dart';
-import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
@@ -114,7 +113,8 @@ class MusicNotationCanvas extends StatelessWidget {
       extraStaveLineCount: 0,
       verticalStaveLineSpacingMultiplier: 0,
       extraStaveLines: ExtraStaveLines.none,
-      beatGuideType: NoteTypeValue.quarter,
+      beatMarkerMultiplier: 0.5,
+      beatMarker: true,
       child: NotationFont(
         value: font,
         child: SyncWidthColumn(

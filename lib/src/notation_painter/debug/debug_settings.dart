@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 
 /// An inherited widget providing debugging options for rendering musical notation,
 /// including options to paint bounding boxes and additional imaginary stave lines
@@ -35,7 +34,7 @@ class DebugSettings extends InheritedWidget {
   /// For example:
   /// `2` - beat marker will be render every eight note.
   /// `0.25` beat marker will appear every whole note.
-  final int beatMarkerMultiplier;
+  final double beatMarkerMultiplier;
 
   /// Creates a [DebugSettings] widget with specified debugging options.
   ///
