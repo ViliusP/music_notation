@@ -164,10 +164,16 @@ class AccidentalElement extends StatelessWidget {
   final AccidentalValue accidental;
   final FontMetadata font;
 
-  AlignmentPosition get alignmentPosition {
-    AccidentalValue accidentalValue = accidental;
+  AlignmentPosition get alignmentPosition => calculateAlignmentPosition(
+        accidental,
+        font,
+      );
 
-    SmuflGlyph glyph = _accidentalSmuflMapping[accidentalValue]!;
+  static AlignmentPosition calculateAlignmentPosition(
+    AccidentalValue accidental,
+    FontMetadata font,
+  ) {
+    SmuflGlyph glyph = _accidentalSmuflMapping[accidental]!;
 
     return AlignmentPosition(
       top: -NotationLayoutProperties.staveSpace *
