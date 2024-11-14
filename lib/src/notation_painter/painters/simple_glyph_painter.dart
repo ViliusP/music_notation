@@ -2,6 +2,7 @@ import 'package:flutter/rendering.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
+import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
 class SimpleGlyphPainter extends CustomPainter {
@@ -40,6 +41,11 @@ class SimpleGlyphPainter extends CustomPainter {
 
     var (o1, o2) = bBox.toOffsets();
 
+    print(bBox);
+    print(bBox.toRect());
+    print(bBox.toRect().size);
+    print(o1.dy);
+
     o1 = o1
         .scale(
           NotationLayoutProperties.staveSpace,
@@ -47,17 +53,21 @@ class SimpleGlyphPainter extends CustomPainter {
         )
         .translate(0, NotationLayoutProperties.staveHeight / 2);
 
-    o2 = o2
-        .scale(
-          NotationLayoutProperties.staveSpace,
-          NotationLayoutProperties.staveSpace,
-        )
-        .translate(0, NotationLayoutProperties.staveHeight / 2);
+    print(o1.dy);
 
-    double verticalOffset = -o1.dy;
-    double horizontalOffset = -o1.dx;
+    double verticalOffset = -o1.dy.directionalCeilToDouble() + 1;
+    double horizontalOffset = -(o1.dx.directionalCeilToDouble());
+
+    print(verticalOffset);
 
     if (drawBBox) {
+      o2 = o2
+          .scale(
+            NotationLayoutProperties.staveSpace,
+            NotationLayoutProperties.staveSpace,
+          )
+          .translate(0, NotationLayoutProperties.staveHeight / 2);
+
       canvas.drawRect(
         Rect.fromPoints(
           o1.translate(horizontalOffset, verticalOffset),
@@ -66,6 +76,8 @@ class SimpleGlyphPainter extends CustomPainter {
         paint,
       );
     }
+
+    print("--------");
     // -------------------------
     // Glyph painting
     // --------------------------

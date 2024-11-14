@@ -34,14 +34,10 @@ class PainterUtilities {
 
 extension FontPainting on GlyphBBox {
   Rect toRect([double staveSpace = NotationLayoutProperties.staveSpace]) {
-    return Rect.fromPoints(
-      Offset(
-        topRight.x * staveSpace,
-        NotationLayoutProperties.staveHeight -
-            staveSpace * (topRight.y - bottomLeft.y),
-      ),
-      Offset(bottomLeft.x * staveSpace, NotationLayoutProperties.staveHeight),
-    );
+    var (o1, o2) = toOffsets();
+    o1 = o1.scale(staveSpace, staveSpace);
+    o2 = o2.scale(staveSpace, staveSpace);
+    return Rect.fromPoints(o1, o2);
   }
 
   /// This function takes a `GlyphBBox` object and converts its bounding box coordinates
@@ -68,4 +64,6 @@ extension FontPainting on GlyphBBox {
 
     return (o1, o2);
   }
+
+  double get topOffset => (NotationLayoutProperties.staveSpace * bBoxNE.y);
 }

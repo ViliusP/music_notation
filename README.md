@@ -72,26 +72,25 @@ MusicNotation(score: score)
 
 ### Golden Tests
 
-This project uses golden tests alongside [Alchemist](https://pub.dev/packages/alchemist) package to check if rendered components are visually correct.
+This project uses golden tests with the [Alchemist](https://pub.dev/packages/alchemist) package to ensure that components are rendered correctly.
 
-To generate the golden files:
+To generate or update the golden files:
 
 ```sh
-flutter test --update-goldens
+flutter test --update-goldens --tags golden
 ```
 
-To run only golden tests
+To run only the golden tests:
 
 ```sh
 flutter test --tags golden
 ```
 
-To run all tests except golden tests.
+To run all tests except for the golden tests:
 
 ```sh
 flutter test --exclude-tags golden
 ```
-
 
 ## Future
 

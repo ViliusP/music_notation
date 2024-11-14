@@ -322,7 +322,7 @@ class NoteheadElement extends StatelessWidget {
   }
 
   AlignmentPosition get alignmentPosition {
-    double top = NotationLayoutProperties.staveSpace * _bBox(font).bBoxNE.y;
+    double top = _bBox(font).topOffset;
 
     return AlignmentPosition(left: 0, top: top);
   }

@@ -32,7 +32,7 @@ class RestElement extends StatelessWidget implements RhythmicElement {
   }
 
   double get _verticalAlignmentAxisOffset {
-    double alignment = NotationLayoutProperties.staveSpace * _bBox.bBoxNE.y;
+    double alignment = _bBox.topOffset;
     if (_dots > 0) {
       double maybeDotOffset = alignment;
       maybeDotOffset -= AugmentationDot(

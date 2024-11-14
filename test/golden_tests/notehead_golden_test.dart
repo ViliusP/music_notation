@@ -19,16 +19,27 @@ void main() {
       'renders correctly',
       fileName: 'notehead_elements',
       builder: () => GoldenTestGroup(
-        scenarioConstraints: const BoxConstraints(maxWidth: 600),
-        children: [
-          NoteheadElement(type: NoteTypeValue.whole, font: font),
-          NoteheadElement(type: NoteTypeValue.half, font: font),
-          NoteheadElement(type: NoteTypeValue.quarter, font: font),
-          NoteheadElement(type: NoteTypeValue.eighth, font: font),
-          NoteheadElement(type: NoteTypeValue.n16th, font: font),
-          NoteheadElement(type: NoteTypeValue.n32nd, font: font),
-        ],
-      ),
+          columnWidthBuilder: (columns) => null,
+          columns: 3,
+          children: [
+            ...[
+              NoteTypeValue.whole,
+              NoteTypeValue.half,
+              NoteTypeValue.quarter,
+              NoteTypeValue.eighth,
+              NoteTypeValue.n16th,
+              NoteTypeValue.n32nd
+            ].map((v) => Padding(
+                  padding: EdgeInsets.all(5),
+                  child: ColoredBox(
+                    color: Color.fromRGBO(255, 255, 255, 1),
+                    child: NoteheadElement(
+                      type: v,
+                      font: font,
+                    ),
+                  ),
+                ))
+          ]),
     );
   });
 }
