@@ -59,14 +59,10 @@ void main() {
     });
 
     test("Whole numbers", () {
-      expect(
-          1.0.directionalCeilToDouble(), equals(1.0)); // Should return the same
-      expect(-1.0.directionalCeilToDouble(),
-          equals(-1.0)); // Should return the same
-      expect(10.0.directionalCeilToDouble(),
-          equals(10.0)); // Should return the same
-      expect(-10.0.directionalCeilToDouble(),
-          equals(-10.0)); // Should return the same
+      expect(1.0.directionalCeilToDouble(), equals(1.0));
+      expect(-1.0.directionalCeilToDouble(), equals(-1.0));
+      expect(10.0.directionalCeilToDouble(), equals(10.0));
+      expect(-10.0.directionalCeilToDouble(), equals(-10.0));
     });
 
     test("Edge cases with zero", () {
