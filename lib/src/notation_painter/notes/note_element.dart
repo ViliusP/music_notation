@@ -281,8 +281,9 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       );
 
   Size get noteheadSize => NoteheadElement(
-        note: note,
-      ).size(font);
+        font: font,
+        type: note.type?.value ?? NoteTypeValue.quarter,
+      ).size;
 
   static Size calculateSize({
     required Note note,
@@ -294,8 +295,9 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
 
     var noteheadSize = NoteheadElement(
-      note: note,
-    ).size(font);
+      font: font,
+      type: note.type?.value ?? NoteTypeValue.quarter,
+    ).size;
 
     double width = noteheadSize.width;
     double height = noteheadSize.height;
@@ -307,6 +309,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
         type: type,
         length: stemLength,
         showFlag: note.beams.isEmpty && showFlag,
+        font: font,
       );
 
       width += stemElement.size.width;
@@ -388,29 +391,6 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
   @override
   Widget build(BuildContext context) {
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
-    LedgerLines? ledgerLines;
-
-    if (showLedger) {
-      ledgerLines = LedgerLines.fromElementPosition(position);
-    }
-    var notehead = NoteheadElement(
-      note: note,
-      ledgerLines: ledgerLines,
-      // color: _voiceColors[note.editorialVoice.voice ?? "0"]!, // Colors by voice
-    );
-
-    var stemLeftPadding = NotationLayoutProperties.stemStrokeWidth / 2;
-    var stemTopPadding = NotationLayoutProperties.defaultNoteheadHeight / 2;
-    var stemBottomPadding = 0.0;
-
-    if (stemDirection == StemDirection.up) {
-      stemLeftPadding = noteheadSize.width;
-      stemLeftPadding -= NotationLayoutProperties.stemStrokeWidth / 2;
-      stemTopPadding = 0;
-      stemBottomPadding = NotationLayoutProperties.defaultNoteheadHeight / 2;
-    }
-
-    stemLeftPadding += alignmentPosition.left.abs();
 
     double? dotsTopPosition;
     double? dotsBottomPosition;
@@ -445,11 +425,13 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       size: size,
       child: Stack(
         children: [
-          Positioned(
-            top: stemDirection == StemDirection.down ? dotVerticalOffset : null,
-            bottom: stemDirection == StemDirection.up ? 0 : null,
-            left: alignmentPosition.left.abs(),
-            child: notehead,
+          SimpleNoteElement(
+            font: font,
+            type: type,
+            stemLength: stemLength,
+            showFlag: note.beams.isEmpty && showFlag,
+            ledgerLines: LedgerLines.fromElementPosition(position),
+            stemDirection: stemDirection,
           ),
           if (_dots > 0)
             Positioned(
@@ -468,24 +450,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
                   ? dotVerticalOffset
                   : null,
               bottom: stemDirection == StemDirection.up ? 0 : null,
-              child: AccidentalElement(
-                accidental: _accidental!,
-                font: font,
-              ),
-            ),
-          if (_stemmed)
-            Padding(
-              padding: EdgeInsets.only(
-                bottom: stemBottomPadding,
-                top: stemTopPadding + dotVerticalOffset,
-                left: stemLeftPadding,
-              ),
-              child: StemElement(
-                length: stemLength,
-                type: type,
-                direction: stemDirection!,
-                showFlag: note.beams.isEmpty && showFlag,
-              ),
+              child: AccidentalElement,
             ),
         ],
       ),
@@ -529,6 +494,29 @@ extension NoteWidgetization on Note {
         throw UnimplementedError(
           "This error shouldn't occur, TODO: make switch exhaustively matched",
         );
+    }
+  }
+}
+
+extension StemProperties on NoteTypeValue {
+  bool get stemmed {
+    switch (this) {
+      case NoteTypeValue.n1024th:
+      case NoteTypeValue.n512th:
+      case NoteTypeValue.n256th:
+      case NoteTypeValue.n128th:
+      case NoteTypeValue.n64th:
+      case NoteTypeValue.n32nd:
+      case NoteTypeValue.n16th:
+      case NoteTypeValue.eighth:
+      case NoteTypeValue.quarter:
+      case NoteTypeValue.half:
+        return true;
+      case NoteTypeValue.whole:
+      case NoteTypeValue.breve:
+      case NoteTypeValue.long:
+      case NoteTypeValue.maxima:
+        return false;
     }
   }
 }

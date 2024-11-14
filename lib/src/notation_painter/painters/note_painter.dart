@@ -5,6 +5,7 @@ import 'package:music_notation/src/notation_painter/notation_layout_properties.d
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 
 class NotePainter extends CustomPainter {
+  // TODO: change
   static const double _lengthOutside = 3;
 
   final String smufl;

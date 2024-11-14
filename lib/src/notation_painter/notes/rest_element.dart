@@ -32,9 +32,9 @@ class RestElement extends StatelessWidget implements RhythmicElement {
   }
 
   double get _verticalAlignmentAxisOffset {
-    double initial = NotationLayoutProperties.staveSpace * _bBox.bBoxNE.y;
+    double alignment = NotationLayoutProperties.staveSpace * _bBox.bBoxNE.y;
     if (_dots > 0) {
-      double maybeDotOffset = initial;
+      double maybeDotOffset = alignment;
       maybeDotOffset -= AugmentationDot(
             count: 1,
             font: font,
@@ -42,10 +42,10 @@ class RestElement extends StatelessWidget implements RhythmicElement {
           0;
       maybeDotOffset -= NotationLayoutProperties.staveSpace / 2;
       if (maybeDotOffset < 0) {
-        initial -= maybeDotOffset;
+        alignment -= maybeDotOffset;
       }
     }
-    return initial;
+    return alignment;
   }
 
   @override
