@@ -68,6 +68,31 @@ To display the parsed music notation, you can use the MusicNotation widget:
 MusicNotation(score: score)
 ```
 
+## Testing
+
+### Golden Tests
+
+This project uses golden tests alongside [Alchemist](https://pub.dev/packages/alchemist) package to check if rendered components are visually correct.
+
+To generate the golden files:
+
+```sh
+flutter test --update-goldens
+```
+
+To run only golden tests
+
+```sh
+flutter test --tags golden
+```
+
+To run all tests except golden tests.
+
+```sh
+flutter test --exclude-tags golden
+```
+
+
 ## Future
 
 We understand that everyone believes they are the center of the universe, but let's face it, this package has its limitations. It may not fulfill all your extravagant demands or cater to every whim and fancy. Life is tough, and so is software development.
