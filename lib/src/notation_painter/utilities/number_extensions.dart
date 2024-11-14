@@ -30,6 +30,15 @@ extension NumExtensions on num {
     // For positive values, use `ceilToDouble()`; for negative values, use `floorToDouble()`.
     return this > 0 ? ceilToDouble() : floorToDouble();
   }
+
+  /// Rounds the number down to the nearest double, moving towards zero.
+  ///
+  /// - Positive numbers round down to the previous whole number as a double.
+  /// - Negative numbers round up to the previous whole number as a double.
+  double directionalFloorToDouble() {
+    // For positive values, use `floorToDouble()`; for negative values, use `ceilToDouble()`.
+    return this > 0 ? floorToDouble() : ceilToDouble();
+  }
 }
 
 class NumberConstants {

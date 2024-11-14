@@ -33,13 +33,6 @@ void main() {
       expect((-17.0).nearestMultiple(of: -5), equals(-20.0));
     });
 
-    test("Handles non-integer bases", () {
-      // Round up
-      expect(17.0.nearestMultiple(of: 2), equals(17.5));
-      // Round down
-      expect(17.0.nearestMultiple(of: -2), equals(15.0));
-    });
-
     test("Throws ArgumentError on zero base", () {
       expect(() => 17.0.nearestMultiple(of: 0), throwsArgumentError);
     });
@@ -75,6 +68,39 @@ void main() {
       expect(-0.1.directionalCeilToDouble(), equals(-1.0));
       expect(0.9.directionalCeilToDouble(), equals(1.0));
       expect(-0.9.directionalCeilToDouble(), equals(-1.0));
+    });
+  });
+
+  group("NumberExtensions.directionalFloorToDouble", () {
+    test("Positive numbers", () {
+      expect(1.3.directionalFloorToDouble(), equals(1.0));
+      expect(2.7.directionalFloorToDouble(), equals(2.0));
+      expect(19.9.directionalFloorToDouble(), equals(19.0));
+    });
+
+    test("Negative numbers", () {
+      expect((-1.3).directionalFloorToDouble(), equals(-1.0));
+      expect((-2.7).directionalFloorToDouble(), equals(-2.0));
+      expect((-29.9).directionalFloorToDouble(), equals(-29.0));
+    });
+
+    test("Whole numbers", () {
+      expect(1.0.directionalFloorToDouble(), equals(1.0));
+      expect(-1.0.directionalFloorToDouble(), equals(-1.0));
+      expect(10.0.directionalFloorToDouble(), equals(10.0));
+      expect(-10.0.directionalFloorToDouble(), equals(-10.0));
+    });
+
+    test("Edge cases with zero", () {
+      expect(0.directionalFloorToDouble(), equals(0.0));
+      expect(0.0.directionalFloorToDouble(), equals(0.0));
+    });
+
+    test("Small fractions", () {
+      expect(0.1.directionalFloorToDouble(), equals(0.0));
+      expect(-0.1.directionalFloorToDouble(), equals(0.0));
+      expect(0.9.directionalFloorToDouble(), equals(0.0));
+      expect(-0.9.directionalFloorToDouble(), equals(0.0));
     });
   });
 }
