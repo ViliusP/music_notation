@@ -44,4 +44,41 @@ void main() {
       expect(() => 17.0.nearestMultiple(of: 0), throwsArgumentError);
     });
   });
+
+  group("NumberExtensions.directionalCeilToDouble", () {
+    test("Positive numbers", () {
+      expect(1.3.directionalCeilToDouble(), equals(2.0));
+      expect(2.7.directionalCeilToDouble(), equals(3.0));
+      expect(19.9.directionalCeilToDouble(), equals(20.0));
+    });
+
+    test("Negative numbers", () {
+      expect((-1.3).directionalCeilToDouble(), equals(-2.0));
+      expect((-2.7).directionalCeilToDouble(), equals(-3.0));
+      expect((-29.9).directionalCeilToDouble(), equals(-30.0));
+    });
+
+    test("Whole numbers", () {
+      expect(
+          1.0.directionalCeilToDouble(), equals(1.0)); // Should return the same
+      expect(-1.0.directionalCeilToDouble(),
+          equals(-1.0)); // Should return the same
+      expect(10.0.directionalCeilToDouble(),
+          equals(10.0)); // Should return the same
+      expect(-10.0.directionalCeilToDouble(),
+          equals(-10.0)); // Should return the same
+    });
+
+    test("Edge cases with zero", () {
+      expect(0.directionalCeilToDouble(), equals(0.0));
+      expect(0.0.directionalCeilToDouble(), equals(0.0));
+    });
+
+    test("Small fractions", () {
+      expect(0.1.directionalCeilToDouble(), equals(1.0));
+      expect(-0.1.directionalCeilToDouble(), equals(-1.0));
+      expect(0.9.directionalCeilToDouble(), equals(1.0));
+      expect(-0.9.directionalCeilToDouble(), equals(-1.0));
+    });
+  });
 }
