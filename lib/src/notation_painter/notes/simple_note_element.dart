@@ -33,6 +33,9 @@ class SimpleNoteElement extends StatelessWidget {
 
     if (stem != null && stem.length > 0) {
       height += stem.length - height / 2;
+      if (stem.direction == StemDirection.up) {
+        width += stem._flagWidth;
+      }
     }
 
     return Size(width, height);
@@ -46,7 +49,7 @@ class SimpleNoteElement extends StatelessWidget {
     }
     // If stem direction is null or down
     return AlignmentPosition(
-      left: NotationLayoutProperties.stemStrokeWidth / 2,
+      left: (NotationLayoutProperties.stemStrokeWidth / 2).ceilToDouble(),
       bottom: 0,
     );
   }
@@ -152,6 +155,7 @@ class StemElement extends StatelessWidget {
   }
 
   double get _flagWidth {
+    if (!showFlag) return 0;
     if (_glyph == null) return 0;
     return _bBox(font).toRect().width;
   }
