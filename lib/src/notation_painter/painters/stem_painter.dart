@@ -5,7 +5,7 @@ import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 class StemPainter extends CustomPainter {
   final StemDirection direction;
 
-  static const strokeWidth = NotationLayoutProperties.stemStrokeWidth;
+  static const strokeWidth = NotationLayoutProperties.defaultStemStrokeWidth;
 
   final Paint _paint = Paint()
     ..color = const Color.fromRGBO(0, 0, 0, 1.0)

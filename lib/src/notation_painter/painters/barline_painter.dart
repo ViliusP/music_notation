@@ -4,7 +4,7 @@ import 'package:music_notation/src/notation_painter/properties/layout_properties
 class BarlinePainter extends CustomPainter {
   // TODO: adjust correctly, currently it is magic number
   static const double strokeWidth =
-      NotationLayoutProperties.staffLineStrokeWidth * 1.6;
+      NotationLayoutProperties.defaultstaffLineStrokeWidth * 1.6;
 
   final Color color;
 

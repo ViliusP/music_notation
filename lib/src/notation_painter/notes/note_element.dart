@@ -115,7 +115,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     super.key,
     required this.note,
     required this.notationContext,
-    this.stemLength = NotationLayoutProperties.standardStemLength,
+    required this.stemLength,
     this.showFlag = true,
     this.showLedger = true,
     required this.duration,
@@ -183,7 +183,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     double offsetY = size.height;
 
     if (stemDirection == StemDirection.down) {
-      offsetX = NotationLayoutProperties.stemStrokeWidth / 2;
+      offsetX = NotationLayoutProperties.defaultStemStrokeWidth / 2;
     }
 
     if (_accidental != null) {

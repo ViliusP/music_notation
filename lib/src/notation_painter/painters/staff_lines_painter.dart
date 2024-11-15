@@ -16,7 +16,7 @@ class StaffLinesPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     Paint staffLinePainter = Paint()
       ..color = const Color.fromRGBO(0, 0, 0, 1.0)
-      ..strokeWidth = NotationLayoutProperties.staffLineStrokeWidth;
+      ..strokeWidth = NotationLayoutProperties.defaultstaffLineStrokeWidth;
 
     double top = 0;
     double bottom = 0;
@@ -68,8 +68,8 @@ class StaffLinesPainter extends CustomPainter {
   bool hitTest(Offset position) {
     var lineY = 0.0;
 
-    for (var i = 0; i < NotationLayoutProperties.staffLines; i++) {
-      double halfStroke = NotationLayoutProperties.staffLineStrokeWidth;
+    for (var i = 0; i < NotationLayoutProperties.staveLines; i++) {
+      double halfStroke = NotationLayoutProperties.defaultstaffLineStrokeWidth;
 
       if (position.dy > lineY - halfStroke &&
           position.dy < lineY + halfStroke) {

@@ -23,7 +23,7 @@ class BeamPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    double beamThickness = NotationLayoutProperties.beamThickness;
+    double beamThickness = NotationLayoutProperties.defaultBeamThickness;
 
     // Calculate start and end based on the beam direction
     Offset start;
@@ -42,8 +42,9 @@ class BeamPainter extends CustomPainter {
       double offsetX = noteBeams.leftOffset;
 
       for (var beams in noteBeams.values) {
-        double yOffset =
-            NotationLayoutProperties.beamSpacing * 1.5 * (beams.number - 1);
+        double yOffset = NotationLayoutProperties.defaultBeamSpacing *
+            1.5 *
+            (beams.number - 1);
 
         if (noteBeams.stemDirection == StemDirection.down) {
           yOffset = yOffset * (-1);
@@ -64,7 +65,7 @@ class BeamPainter extends CustomPainter {
             alignment: Alignment.start,
             alignmentLineByHorizontalSpan: true,
             beamByHorizontalSpan: true,
-            beamThickness: NotationLayoutProperties.beamThickness,
+            beamThickness: NotationLayoutProperties.defaultBeamThickness,
             color: color ?? const Color.fromRGBO(0, 0, 0, 1),
             debug: debug,
           );
@@ -80,7 +81,7 @@ class BeamPainter extends CustomPainter {
             alignment: Alignment.end,
             alignmentLineByHorizontalSpan: true,
             beamByHorizontalSpan: false,
-            beamThickness: NotationLayoutProperties.beamThickness,
+            beamThickness: NotationLayoutProperties.defaultBeamThickness,
             color: color ?? const Color.fromRGBO(0, 0, 0, 1),
             debug: debug,
           );

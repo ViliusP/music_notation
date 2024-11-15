@@ -25,7 +25,7 @@ class NotePainter extends CustomPainter {
 
   final Paint _ledgerLinePaint = Paint()
     ..color = const Color.fromRGBO(0, 0, 0, 1)
-    ..strokeWidth = NotationLayoutProperties.staffLineStrokeWidth;
+    ..strokeWidth = NotationLayoutProperties.defaultstaffLineStrokeWidth;
 
   @override
   void paint(Canvas canvas, Size size) {

@@ -46,7 +46,7 @@ class SimpleNoteElement extends StatelessWidget {
   }
 
   static final double _stemHorizontalOffset =
-      (NotationLayoutProperties.stemStrokeWidth / 2);
+      (NotationLayoutProperties.defaultStemStrokeWidth / 2);
 
   AlignmentPosition _stemPosition() {
     if (stem?.direction == StemDirection.up) {
@@ -97,7 +97,7 @@ class StemElement extends StatelessWidget {
     required this.type,
     required this.font,
     required this.direction,
-    this.length = NotationLayoutProperties.standardStemLength,
+    required this.length,
     this.showFlag = true,
   }) : assert(length >= 0, "Stem must have positive length");
 

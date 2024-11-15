@@ -48,11 +48,11 @@ class BeamGroup extends StatelessWidget {
     double canvasHeight =
         offsetPerPosition * firstPosition.distance(lastPosition);
 
-    canvasHeight += NotationLayoutProperties.beamThickness;
+    canvasHeight += NotationLayoutProperties.defaultBeamThickness;
     canvasHeight -= (lastStemLength - firstStemLength);
 
     double canvasWidth = leftOffsets.last - leftOffsets.first;
-    canvasWidth -= (NotationLayoutProperties.stemStrokeWidth / 2);
+    canvasWidth -= (NotationLayoutProperties.defaultStemStrokeWidth / 2);
 
     return Size(canvasWidth, canvasHeight);
   }
@@ -148,7 +148,7 @@ class BeamGroup extends StatelessWidget {
         beamTopOffset += firstNoteBeamOffset.dy;
       }
       if (firstNoteStemValue == StemDirection.down) {
-        beamTopOffset -= NotationLayoutProperties.beamThickness;
+        beamTopOffset -= NotationLayoutProperties.defaultBeamThickness;
       }
     }
 
@@ -163,7 +163,7 @@ class BeamGroup extends StatelessWidget {
         beamBottomOffset += lastNoteBeamOffset.dy;
         beamBottomOffset += verticalOffsets.last.bottom!;
       }
-      beamBottomOffset -= NotationLayoutProperties.beamThickness;
+      beamBottomOffset -= NotationLayoutProperties.defaultBeamThickness;
     }
 
     return Stack(
