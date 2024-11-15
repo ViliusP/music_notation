@@ -13,58 +13,26 @@ import 'package:music_notation/src/smufl/glyph_class.dart';
 
 // Note without accidentals, dots. Just notehead, stem and flag (if needed).
 class SimpleNoteElement extends StatelessWidget {
-  final NoteTypeValue type;
-
-  final FontMetadata font;
-
-  final StemDirection? stemDirection;
-
-  final double stemLength;
-
-  final bool showFlag;
-
-  final LedgerLines? ledgerLines;
+  final NoteheadElement notehead;
+  final StemElement? stem;
 
   const SimpleNoteElement({
     super.key,
-    required this.font,
-    required this.type,
-    this.stemDirection,
-    required this.stemLength,
-    required this.showFlag,
-    this.ledgerLines,
+    required this.notehead,
+    this.stem,
   });
 
-  Size get size => calculateSize(
-        stemLength: stemLength,
-        font: font,
-        showFlag: showFlag,
-        type: type,
-        stemDirection: stemDirection,
-      );
-
-  Size get noteheadSize => NoteheadElement(
-        font: font,
-        type: type,
-      ).size;
+  Size get size => calculateSize(notehead: notehead, stem: stem);
 
   static Size calculateSize({
-    required NoteTypeValue type,
-    required double stemLength,
-    required FontMetadata font,
-    required StemDirection? stemDirection,
-    bool showFlag = true,
+    required NoteheadElement notehead,
+    StemElement? stem,
   }) {
-    var noteheadSize = NoteheadElement(
-      font: font,
-      type: type,
-    ).size;
+    double width = notehead.size.width;
+    double height = notehead.size.height;
 
-    double width = noteheadSize.width;
-    double height = noteheadSize.height;
-
-    if (stemLength != 0 && stemDirection != null) {
-      height += stemLength - noteheadSize.height / 2;
+    if (stem != null && stem.length > 0) {
+      height += stem.length - height / 2;
     }
 
     return Size(width, height);
@@ -93,31 +61,18 @@ class SimpleNoteElement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    NoteheadElement notehead = NoteheadElement(
-      type: type,
-      font: font,
-      ledgerLines: ledgerLines,
-    );
-
     return SizedBox.fromSize(
       size: size,
       child: Stack(
         children: [
           AligmentPositioned(
-            position: _noteheadPosition(stemDirection),
+            position: _noteheadPosition(stem?.direction),
             child: notehead,
           ),
-          if (stemLength > 0 && stemDirection != null)
+          if (stem != null)
             AligmentPositioned(
-              position: _stemPosition(
-                stemDirection: stemDirection,
-              ),
-              child: StemElement(
-                type: type,
-                font: font,
-                length: stemLength,
-                showFlag: showFlag,
-              ),
+              position: _stemPosition(stemDirection: stem!.direction),
+              child: stem!,
             ),
         ],
       ),

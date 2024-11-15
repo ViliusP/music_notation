@@ -421,17 +421,29 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       dotsBottomPosition = dotsOffsetFromNotehead;
     }
 
+    StemElement? stem;
+
+    if (stemDirection != null) {
+      stem = StemElement(
+        type: type,
+        font: font,
+        length: stemLength,
+        showFlag: note.beams.isEmpty && showFlag,
+        direction: stemDirection!,
+      );
+    }
+
     return SizedBox.fromSize(
       size: size,
       child: Stack(
         children: [
           SimpleNoteElement(
+            stem: stem,
+            notehead: NoteheadElement(
+              type: type,
             font: font,
-            type: type,
-            stemLength: stemLength,
-            showFlag: note.beams.isEmpty && showFlag,
             ledgerLines: LedgerLines.fromElementPosition(position),
-            stemDirection: stemDirection,
+            ),
           ),
           if (_dots > 0)
             Positioned(
