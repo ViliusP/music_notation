@@ -109,45 +109,23 @@ class SimpleNoteElement extends StatelessWidget {
         children: [
           Positioned(
             top: stemDirection != StemDirection.up ? 0 : null,
-            // bottom: stemDirection == StemDirection.up ? 0 : null,
+            bottom: stemDirection == StemDirection.up ? 0 : null,
             child: notehead,
           ),
-          // if (stemLength > 0 && stemDirection != null)
-          //   Positioned(
-          //     left: stemLeft,
-          //     top: stemTop,
-          //     bottom: stemBottom,
-          //     child: StemElement(
-          //       type: type,
-          //       font: font,
-          //       length: stemLength,
-          //       showFlag: showFlag,
-          //     ),
-          //   ),
+          if (stemLength > 0 && stemDirection != null)
+            Positioned(
+              left: stemLeft,
+              top: stemTop,
+              bottom: stemBottom,
+              child: StemElement(
+                type: type,
+                font: font,
+                length: stemLength,
+                showFlag: showFlag,
+              ),
+            ),
         ],
       ),
-      // child: Stack(
-      //   children: [
-      //     Positioned(
-      //       top: stemDirection == StemDirection.down ? noteheadTop : null,
-      //       bottom: stemDirection == StemDirection.up ? 0 : null,
-      //       left: alignmentPosition.left.abs(),
-      //       child: notehead,
-      //     ),
-      //     if (_stemmed)
-      //       Positioned(
-      //         left: stemLeft,
-      //         top: stemTop,
-      //         bottom: stemBottom,
-      //         child: StemElement(
-      //           length: stemLength,
-      //           type: type,
-      //           direction: stemDirection!,
-      //           showFlag: note.beams.isEmpty && showFlag,
-      //         ),
-      //       ),
-      //   ],
-      // ),
     );
   }
 }
@@ -176,7 +154,7 @@ class StemElement extends StatelessWidget {
   Size get size {
     return Size(
       StemPainter.strokeWidth + (showFlag ? _flagWidth : 0),
-      length,
+      length.ceilToDouble(),
     );
   }
 
