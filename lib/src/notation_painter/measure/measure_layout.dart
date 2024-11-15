@@ -5,6 +5,8 @@ import 'package:flutter/widgets.dart';
 
 import 'package:music_notation/src/notation_painter/debug/beat_mark_painter.dart';
 import 'package:music_notation/src/notation_painter/measure/staff_lines.dart';
+import 'package:music_notation/src/notation_painter/models/vertical_edge_insets.dart';
+import 'package:music_notation/src/notation_painter/music_sheet/grid.dart';
 import 'package:music_notation/src/notation_painter/notes/beaming.dart';
 
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
@@ -59,7 +61,8 @@ class MeasureLayout extends StatelessWidget {
   ///
   /// Returns:
   /// An [EdgeInsets] object with calculated top and bottom padding.
-  static EdgeInsets calculateVerticalPadding(List<MeasureWidget> children) {
+  static VerticalEdgeInsets calculateVerticalPadding(
+      List<MeasureWidget> children) {
     double topPadding = 0;
     double bottomPadding = 0;
 
@@ -68,7 +71,7 @@ class MeasureLayout extends StatelessWidget {
       bottomPadding = max(bottomPadding, child.boxBelowStaff().height);
     }
 
-    return EdgeInsets.only(
+    return VerticalEdgeInsets(
       bottom: bottomPadding,
       top: topPadding,
     );
@@ -85,8 +88,8 @@ class MeasureLayout extends StatelessWidget {
 
     const offsetPerPosition = NotationLayoutProperties.defaultStaveSpace / 2;
 
-    final padding = InheritedPadding.of(context)?.padding;
-    if (padding == null) return SizedBox.shrink();
+    var padding = InheritedPadding.of(context)?.padding;
+    padding ??= calculateVerticalPadding(children);
 
     DebugSettings? dSettings = DebugSettings.of(context);
 
@@ -120,7 +123,7 @@ class MeasureLayout extends StatelessWidget {
           intervalFromTheF5 -= child.position.numeric;
           topOffset += intervalFromTheF5 * offsetPerPosition;
 
-          topOffset += padding.top;
+          topOffset += padding!.top;
         }
         if (child.alignmentPosition.bottom != null) {
           bottomOffset = 0;
@@ -131,7 +134,7 @@ class MeasureLayout extends StatelessWidget {
           intervalFromTheE4 -= child.position.numeric;
           bottomOffset -= intervalFromTheE4 * offsetPerPosition;
 
-          bottomOffset += padding.bottom;
+          bottomOffset += padding!.bottom;
         }
 
         if (beamingResult == null || beamingResult == BeamingResult.skipped) {
@@ -151,7 +154,7 @@ class MeasureLayout extends StatelessWidget {
             positionedElements.add(
               Positioned(
                 left: spacings[index],
-                top: padding.top + NotationLayoutProperties.defaultStaveHeight,
+                top: padding!.top + NotationLayoutProperties.defaultStaveHeight,
                 child: Container(
                   width: boxBelow.width,
                   height: [boxBelow.height, 0].max.toDouble(),
@@ -166,7 +169,7 @@ class MeasureLayout extends StatelessWidget {
             positionedElements.add(
               Positioned(
                 left: spacings[index],
-                bottom: padding.bottom +
+                bottom: padding!.bottom +
                     NotationLayoutProperties.defaultStaveHeight,
                 child: Container(
                   width: boxAbove.width,
@@ -183,20 +186,22 @@ class MeasureLayout extends StatelessWidget {
         fit: StackFit.loose,
         children: [
           Padding(
-            padding: padding,
-            child: SizedBox.fromSize(
-              size: Size(
-                constraints.maxWidth.isFinite ? constraints.maxWidth : width,
-                NotationLayoutProperties.defaultStaveHeight,
-              ),
-              child: StaffLines(
-                startExtension: barlineSettings.startExtension,
-                endExtension: barlineSettings.endExtension,
-                measurePadding: padding,
+            padding: padding!,
+            child: AlignTarget(
+              child: SizedBox.fromSize(
+                size: Size(
+                  width,
+                  NotationLayoutProperties.defaultStaveHeight,
+                ),
+                child: StaffLines(
+                  startExtension: barlineSettings.startExtension,
+                  endExtension: barlineSettings.endExtension,
+                  measurePadding: padding,
+                ),
               ),
             ),
           ),
-          if (dSettings?.beatMarker != false)
+          if (dSettings?.beatMarker == true)
             Padding(
               padding: padding,
               child: CustomPaint(
