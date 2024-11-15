@@ -64,28 +64,23 @@ class SimpleNoteElement extends StatelessWidget {
     double height = noteheadSize.height;
 
     if (stemLength != 0 && stemDirection != null) {
-      width = width - NotationLayoutProperties.stemStrokeWidth / 2;
-
-      var stemElement = StemElement(
-        type: type,
-        length: stemLength,
-        showFlag: showFlag,
-        font: font,
-      );
-
-      width += stemElement.size.width;
-      height += stemElement.size.height - noteheadSize.height / 1.75;
+      height += stemLength - noteheadSize.height / 2;
     }
 
     return Size(width, height);
   }
 
-  static AlignmentPosition _stemPosition(StemDirection? stemDirection) {
+  static AlignmentPosition _stemPosition({
+    required StemDirection? stemDirection,
+  }) {
     if (stemDirection == StemDirection.up) {
-      return AlignmentPosition(right: 0, bottom: 0);
+      return AlignmentPosition(right: 0, top: 0);
     }
     // If stem direction is null or down
-    return AlignmentPosition(left: 0, top: 0);
+    return AlignmentPosition(
+      left: NotationLayoutProperties.stemStrokeWidth / 2,
+      bottom: 0,
+    );
   }
 
   static AlignmentPosition _noteheadPosition(StemDirection? stemDirection) {
@@ -114,11 +109,13 @@ class SimpleNoteElement extends StatelessWidget {
           ),
           if (stemLength > 0 && stemDirection != null)
             AligmentPositioned(
-              position: _stemPosition(stemDirection),
+              position: _stemPosition(
+                stemDirection: stemDirection,
+              ),
               child: StemElement(
                 type: type,
                 font: font,
-                length: 42,
+                length: stemLength,
                 showFlag: showFlag,
               ),
             ),
@@ -152,7 +149,7 @@ class StemElement extends StatelessWidget {
   Size get size {
     return Size(
       StemPainter.strokeWidth + (showFlag ? _flagWidth : 0),
-      length.ceilToDouble(),
+      length,
     );
   }
 
