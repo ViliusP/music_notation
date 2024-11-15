@@ -289,32 +289,41 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     required Note note,
     required Clef? clef,
     required double stemLength,
+    required StemDirection? stemDirection,
     required FontMetadata font,
     bool showFlag = true,
   }) {
+    double width = 0;
+    double height = 0;
+
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
 
-    var noteheadSize = NoteheadElement(
+    NoteheadElement notehead = NoteheadElement(
       font: font,
       type: note.type?.value ?? NoteTypeValue.quarter,
-    ).size;
+    );
 
-    double width = noteheadSize.width;
-    double height = noteheadSize.height;
+    StemElement? stem;
 
-    if (stemLength != 0) {
-      width = width - NotationLayoutProperties.stemStrokeWidth;
-
-      var stemElement = StemElement(
+    if (stemLength != 0 && stemDirection != null) {
+      stem = StemElement(
         type: type,
         length: stemLength,
         showFlag: note.beams.isEmpty && showFlag,
+        direction: stemDirection,
         font: font,
       );
-
-      width += stemElement.size.width;
-      height += stemElement.size.height - noteheadSize.height / 2;
     }
+
+    SimpleNoteElement noteElement = SimpleNoteElement(
+      notehead: notehead,
+      stem: stem,
+    );
+
+    Size noteSize = noteElement.size;
+
+    height = noteSize.height;
+    width = notehead.size.width;
 
     if (note.dots.isNotEmpty) {
       width += dotsSize(font).width;
