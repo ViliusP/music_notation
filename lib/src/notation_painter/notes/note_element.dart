@@ -396,7 +396,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     const double referenceStaveHeight = 50;
     const Size defaultSize = Size(5, 4.95); // Size when stave height is 50;
     const double scaleFactor =
-        NotationLayoutProperties.staveHeight / referenceStaveHeight;
+        NotationLayoutProperties.defaultStaveHeight / referenceStaveHeight;
     Size scaledDefaultSize = Size(
       defaultSize.width * scaleFactor,
       defaultSize.height * scaleFactor,

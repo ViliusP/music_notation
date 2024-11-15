@@ -46,7 +46,7 @@ class SimpleGlyphPainter extends CustomPainter {
           NotationLayoutProperties.staveSpace,
           NotationLayoutProperties.staveSpace,
         )
-        .translate(0, NotationLayoutProperties.staveHeight / 2);
+        .translate(0, NotationLayoutProperties.defaultStaveHeight / 2);
 
     double verticalOffset = -o1.dy.roundTowardsZero();
     double horizontalOffset = -(o1.dx.roundAwayFromZero());
@@ -57,7 +57,7 @@ class SimpleGlyphPainter extends CustomPainter {
             NotationLayoutProperties.staveSpace,
             NotationLayoutProperties.staveSpace,
           )
-          .translate(0, NotationLayoutProperties.staveHeight / 2);
+          .translate(0, NotationLayoutProperties.defaultStaveHeight / 2);
 
       canvas.drawRect(
         Rect.fromPoints(
@@ -73,7 +73,7 @@ class SimpleGlyphPainter extends CustomPainter {
     // --------------------------
     TextStyle textStyle = TextStyle(
       fontFamily: 'Leland',
-      fontSize: NotationLayoutProperties.staveHeight,
+      fontSize: NotationLayoutProperties.defaultStaveHeight,
       color: color,
       // backgroundColor: Color.fromRGBO(124, 100, 0, 0.2),
       height: 1,

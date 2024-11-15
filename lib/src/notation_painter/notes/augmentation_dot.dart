@@ -31,7 +31,7 @@ class AugmentationDot extends StatelessWidget implements MeasureWidget {
   ///
   /// *Value taken from [_defaultSize].
   static const double defaultSpacing =
-      NotationLayoutProperties.staveHeight / 50 * 4.95 / 2;
+      NotationLayoutProperties.defaultStaveHeight / 50 * 4.95 / 2;
 
   /// Calculates the total [size] of the augmentation dots.
   ///
@@ -86,7 +86,7 @@ class AugmentationDot extends StatelessWidget implements MeasureWidget {
     const double referenceStaveHeight = 50;
     const Size defaultSize = Size(5, 4.95); // Size when stave height is 50
     const double scaleFactor =
-        NotationLayoutProperties.staveHeight / referenceStaveHeight;
+        NotationLayoutProperties.defaultStaveHeight / referenceStaveHeight;
     return Size(
       defaultSize.width * scaleFactor,
       defaultSize.height * scaleFactor,

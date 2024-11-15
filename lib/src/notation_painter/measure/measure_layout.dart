@@ -151,7 +151,7 @@ class MeasureLayout extends StatelessWidget {
             positionedElements.add(
               Positioned(
                 left: spacings[index],
-                top: padding.top + NotationLayoutProperties.staveHeight,
+                top: padding.top + NotationLayoutProperties.defaultStaveHeight,
                 child: Container(
                   width: boxBelow.width,
                   height: [boxBelow.height, 0].max.toDouble(),
@@ -166,7 +166,8 @@ class MeasureLayout extends StatelessWidget {
             positionedElements.add(
               Positioned(
                 left: spacings[index],
-                bottom: padding.bottom + NotationLayoutProperties.staveHeight,
+                bottom: padding.bottom +
+                    NotationLayoutProperties.defaultStaveHeight,
                 child: Container(
                   width: boxAbove.width,
                   height: [boxAbove.height, 0].max.toDouble(),
@@ -186,7 +187,7 @@ class MeasureLayout extends StatelessWidget {
             child: SizedBox.fromSize(
               size: Size(
                 constraints.maxWidth.isFinite ? constraints.maxWidth : width,
-                NotationLayoutProperties.staveHeight,
+                NotationLayoutProperties.defaultStaveHeight,
               ),
               child: StaffLines(
                 startExtension: barlineSettings.startExtension,
@@ -201,7 +202,7 @@ class MeasureLayout extends StatelessWidget {
               child: CustomPaint(
                 size: Size(
                   constraints.maxWidth.isFinite ? constraints.maxWidth : width,
-                  NotationLayoutProperties.staveHeight,
+                  NotationLayoutProperties.defaultStaveHeight,
                 ),
                 painter: BeatMarkPainter(
                   dSettings!.beatMarkerMultiplier,

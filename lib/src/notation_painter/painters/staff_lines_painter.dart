@@ -21,7 +21,7 @@ class StaffLinesPainter extends CustomPainter {
     double top = 0;
     double bottom = 0;
     for (bottom = top;
-        bottom <= NotationLayoutProperties.staveHeight;
+        bottom <= NotationLayoutProperties.defaultStaveHeight;
         bottom += NotationLayoutProperties.staveSpace) {
       canvas.drawLine(
         Offset(0, bottom),

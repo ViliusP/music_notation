@@ -18,7 +18,7 @@ class TimeBeatElement extends StatelessWidget implements MeasureWidget {
   }
 
   @override
-  Size get size => const Size(20, NotationLayoutProperties.staveHeight);
+  Size get size => const Size(20, NotationLayoutProperties.defaultStaveHeight);
 
   @override
   ElementPosition get position => const ElementPosition(
@@ -51,7 +51,8 @@ class TimeBeatElement extends StatelessWidget implements MeasureWidget {
       topSmufl = _integerToSmufl(int.parse(signature.beats));
       bottomSmufl = _integerToSmufl(int.parse(signature.beatType));
     }
-    Size smuflSize = const Size(20, NotationLayoutProperties.staveHeight / 2);
+    Size smuflSize =
+        const Size(20, NotationLayoutProperties.defaultStaveHeight / 2);
 
     return SizedBox.fromSize(
       size: size,

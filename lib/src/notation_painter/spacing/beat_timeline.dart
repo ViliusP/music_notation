@@ -17,7 +17,7 @@ class BeatTimeline {
 
   /// Space between two quarter notes measured from their alignment axes.
   static const double _spaceBetweenQuarters =
-      NotationLayoutProperties.staveHeight * 1.5;
+      NotationLayoutProperties.defaultStaveHeight * 1.5;
 
   double get spacePerDivision => _spaceBetweenQuarters / divisions;
 
