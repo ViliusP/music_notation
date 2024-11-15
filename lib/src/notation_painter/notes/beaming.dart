@@ -3,8 +3,8 @@ import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
 import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
+import 'package:music_notation/src/notation_painter/models/vertical_edge_insets.dart';
 import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
-import 'package:music_notation/src/notation_painter/measure/inherited_padding.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
@@ -16,16 +16,22 @@ import 'package:music_notation/src/notation_painter/painters/beam_painter.dart';
 class BeamGroup extends StatelessWidget {
   final List<RhythmicElement> children;
   final List<double> leftOffsets;
+  final VerticalEdgeInsets padding;
 
   const BeamGroup({
     super.key,
     required this.children,
     required this.leftOffsets,
+    required this.padding,
   });
 
-  factory BeamGroup.fromBeaming(BeamGrouping beaming) {
+  factory BeamGroup.fromBeaming(
+    BeamGrouping beaming,
+    VerticalEdgeInsets padding,
+  ) {
     return BeamGroup(
       leftOffsets: beaming._leftOffsets,
+      padding: padding,
       children: beaming._group,
     );
   }
@@ -87,8 +93,6 @@ class BeamGroup extends StatelessWidget {
     final List<({double? bottom, double? top})> verticalOffsets = [];
 
     const offsetPerPosition = NotationLayoutProperties.defaultStaveSpace / 2;
-    final padding = InheritedPadding.of(context)?.padding;
-    if (padding == null) return SizedBox.shrink();
 
     for (var child in children) {
       double? topOffset;

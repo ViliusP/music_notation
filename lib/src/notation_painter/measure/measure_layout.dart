@@ -107,7 +107,7 @@ class MeasureLayout extends StatelessWidget {
 
         if (beaming.isFinalized) {
           beamGroups.add(
-            Positioned.fill(child: BeamGroup.fromBeaming(beaming)),
+            Positioned.fill(child: BeamGroup.fromBeaming(beaming, padding!)),
           );
           beaming = BeamGrouping();
         }
