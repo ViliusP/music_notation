@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
@@ -9,222 +12,197 @@ import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/simple_note_element.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
+import '../test_path.dart';
+
+late FontMetadata fontMetadata;
+
 void main() {
-  final notes = [
-    const RegularNote(
-      form: Pitch(step: Step.G, octave: 3),
-      duration: 1,
+  final List<(RegularNote note, LedgerLines? gClef, LedgerLines? fClef)>
+      testCases = [
+    (
+      const RegularNote(form: Pitch(step: Step.G, octave: 3), duration: 1),
+      LedgerLines(
+          count: 2,
+          start: LedgerPlacement.above,
+          direction: LedgerDrawingDirection.up),
+      null
     ),
-    const RegularNote(
-      form: Pitch(step: Step.C, octave: 4),
-      duration: 1,
+    (
+      const RegularNote(form: Pitch(step: Step.C, octave: 4), duration: 1),
+      LedgerLines(
+          count: 1,
+          start: LedgerPlacement.center,
+          direction: LedgerDrawingDirection.up),
+      LedgerLines(
+          count: 1,
+          start: LedgerPlacement.center,
+          direction: LedgerDrawingDirection.down)
     ),
-    const RegularNote(
-      form: Pitch(step: Step.E, octave: 4, alter: -1),
-      duration: 1,
+    (
+      const RegularNote(
+        form: Pitch(step: Step.E, octave: 4, alter: -1),
+        duration: 1,
+      ),
+      null,
+      LedgerLines(
+          count: 2,
+          start: LedgerPlacement.center,
+          direction: LedgerDrawingDirection.down)
     ),
-    const RegularNote(
-      form: Pitch(step: Step.G, octave: 4),
-      duration: 1,
+    (
+      const RegularNote(form: Pitch(step: Step.G, octave: 4), duration: 1),
+      null,
+      LedgerLines(
+          count: 3,
+          start: LedgerPlacement.center,
+          direction: LedgerDrawingDirection.down)
     ),
-    const RegularNote(
-      form: Pitch(step: Step.A, octave: 3, alter: -1),
-      duration: 1,
+    (
+      const RegularNote(
+        form: Pitch(step: Step.A, octave: 3, alter: -1),
+        duration: 1,
+      ),
+      LedgerLines(
+          count: 2,
+          start: LedgerPlacement.center,
+          direction: LedgerDrawingDirection.up),
+      null
     ),
-    const RegularNote(
-      form: Pitch(step: Step.F, octave: 1),
-      duration: 1,
+    (
+      const RegularNote(form: Pitch(step: Step.F, octave: 1), duration: 1),
+      LedgerLines(
+          count: 10,
+          start: LedgerPlacement.center,
+          direction: LedgerDrawingDirection.up),
+      LedgerLines(
+          count: 4,
+          start: LedgerPlacement.center,
+          direction: LedgerDrawingDirection.up)
     ),
-    const RegularNote(
-      form: Pitch(step: Step.G, octave: 1),
-      duration: 1,
+    (
+      const RegularNote(form: Pitch(step: Step.G, octave: 1), duration: 1),
+      LedgerLines(
+          count: 9,
+          start: LedgerPlacement.above,
+          direction: LedgerDrawingDirection.up),
+      LedgerLines(
+          count: 3,
+          start: LedgerPlacement.above,
+          direction: LedgerDrawingDirection.up)
     ),
-    const RegularNote(
-      form: Pitch(step: Step.G, octave: 5),
-      duration: 1,
+    (
+      const RegularNote(form: Pitch(step: Step.G, octave: 5), duration: 1),
+      null,
+      LedgerLines(
+          count: 6,
+          start: LedgerPlacement.below,
+          direction: LedgerDrawingDirection.down)
     ),
-    const RegularNote(
-      form: Pitch(step: Step.B, octave: 5),
-      duration: 1,
+    (
+      const RegularNote(form: Pitch(step: Step.B, octave: 5), duration: 1),
+      LedgerLines(
+          count: 1,
+          start: LedgerPlacement.below,
+          direction: LedgerDrawingDirection.down),
+      LedgerLines(
+          count: 7,
+          start: LedgerPlacement.below,
+          direction: LedgerDrawingDirection.down)
     ),
-    const RegularNote(
-      form: Pitch(step: Step.C, octave: 6),
-      duration: 1,
+    (
+      const RegularNote(form: Pitch(step: Step.C, octave: 6), duration: 1),
+      LedgerLines(
+          count: 2,
+          start: LedgerPlacement.center,
+          direction: LedgerDrawingDirection.down),
+      LedgerLines(
+          count: 8,
+          start: LedgerPlacement.center,
+          direction: LedgerDrawingDirection.down)
     ),
-    const RegularNote(
-      form: Pitch(step: Step.D, octave: 4),
-      duration: 1,
+    (
+      const RegularNote(form: Pitch(step: Step.D, octave: 4), duration: 1),
+      null,
+      LedgerLines(
+          count: 1,
+          start: LedgerPlacement.below,
+          direction: LedgerDrawingDirection.down)
     ),
   ];
 
-  group("Ledger lines passed to notehead in clef G", () {
-    final expected = [
-      LedgerLines(
-        count: 2,
-        placement: LedgerPlacement.below,
-        extendsThroughNote: false,
-      ), // G3
-      LedgerLines(
-        count: 1,
-        placement: LedgerPlacement.below,
-        extendsThroughNote: true,
-      ), // C4
-      null, // E4
-      null, // G4
-      LedgerLines(
-        count: 2,
-        placement: LedgerPlacement.below,
-        extendsThroughNote: true,
-      ), // A3
-      LedgerLines(
-        count: 10,
-        placement: LedgerPlacement.below,
-        extendsThroughNote: true,
-      ), // F1
-      LedgerLines(
-        count: 9,
-        placement: LedgerPlacement.below,
-        extendsThroughNote: false,
-      ), // G1
-      null, // G5
-      LedgerLines(
-        count: 1,
-        placement: LedgerPlacement.above,
-        extendsThroughNote: false,
-      ), // B5
-      LedgerLines(
-        count: 2,
-        placement: LedgerPlacement.above,
-        extendsThroughNote: true,
-      ), // C6
-      null
-    ];
+  setUpAll(() async {
+    final file = File(testPath('/test_resources/font/leland_metadata.json'));
+    final json = jsonDecode(await file.readAsString());
+    fontMetadata = FontMetadata.fromJson(json);
+  });
 
-    for (var (index, note) in notes.indexed) {
-      final noteName = "${note.form.step}${note.form.octave}";
-      final lines = expected[index]?.count ?? 0;
+  group("Ledger lines in clef G", () {
+    for (final (note, ledgerLines, _) in testCases) {
+      var clef = Clef(sign: ClefSign.G);
 
-      final belowAbove = switch (expected[index]?.placement) {
-        null => "",
-        LedgerPlacement.above => "above staff",
-        LedgerPlacement.below => "below staff",
-      };
-      testWidgets("$noteName should have $lines ledger lines $belowAbove",
-          (WidgetTester tester) async {
-        Widget widget = NoteElement.fromNote(
-          note: note,
-          notationContext: NotationContext(
-            divisions: 1,
-            clef: Clef(sign: ClefSign.G),
-            time: null,
-            lastKey: null,
-          ),
-          font: FontMetadata.empty(),
-        );
+      testWidgets(
+        "Note ${note.form.step}${note.form.octave} in clef ${clef.sign.name} ledger lines",
+        (WidgetTester tester) async {
+          Widget widget = NoteElement.fromNote(
+            note: note,
+            notationContext: NotationContext(
+              divisions: 1,
+              clef: clef,
+              time: null,
+              lastKey: null,
+            ),
+            font: fontMetadata,
+          );
 
-        widget = Directionality(
-          textDirection: TextDirection.ltr,
-          child: widget,
-        );
+          widget = Directionality(
+            textDirection: TextDirection.ltr,
+            child: widget,
+          );
 
-        await tester.pumpWidget(widget);
+          await tester.pumpWidget(widget);
 
-        final childFinder = find.byType(NoteheadElement);
+          final childFinder = find.byType(NoteheadElement);
+          expect(childFinder, findsOneWidget);
 
-        expect(childFinder, findsOneWidget);
-
-        final notehead = tester.firstWidget(childFinder) as NoteheadElement;
-        expect(notehead.ledgerLines, expected[index]);
-      });
+          final notehead = tester.firstWidget(childFinder) as NoteheadElement;
+          expect(notehead.ledgerLines, ledgerLines);
+        },
+      );
     }
   });
-  group("Ledger lines passed to notehead in clef F", () {
-    final expected = [
-      null, // G3
-      LedgerLines(
-        count: 1,
-        placement: LedgerPlacement.above,
-        extendsThroughNote: true,
-      ), // C4
-      LedgerLines(
-        count: 2,
-        placement: LedgerPlacement.above,
-        extendsThroughNote: true,
-      ), // E4
-      LedgerLines(
-        count: 3,
-        placement: LedgerPlacement.above,
-        extendsThroughNote: true,
-      ), // G4
-      null, // A3
-      LedgerLines(
-        count: 4,
-        placement: LedgerPlacement.below,
-        extendsThroughNote: true,
-      ), // F1
-      LedgerLines(
-        count: 3,
-        placement: LedgerPlacement.below,
-        extendsThroughNote: false,
-      ), // G1
-      LedgerLines(
-        count: 6,
-        placement: LedgerPlacement.above,
-        extendsThroughNote: false,
-      ), // G5
-      LedgerLines(
-        count: 7,
-        placement: LedgerPlacement.above,
-        extendsThroughNote: false,
-      ), // B5
-      LedgerLines(
-        count: 8,
-        placement: LedgerPlacement.above,
-        extendsThroughNote: true,
-      ), // C6
-      LedgerLines(
-        count: 1,
-        placement: LedgerPlacement.above,
-        extendsThroughNote: false,
-      ), // D4
-    ];
 
-    for (var (index, note) in notes.indexed) {
-      final noteName = "${note.form.step}${note.form.octave}";
-      final lines = expected[index]?.count ?? 0;
+  group("Ledger lines in clef F", () {
+    for (final (note, _, ledgerLines) in testCases) {
+      var clef = Clef(sign: ClefSign.F);
 
-      final belowAbove = switch (expected[index]?.placement) {
-        null => "",
-        LedgerPlacement.above => "above staff",
-        LedgerPlacement.below => "below staff",
-      };
-      testWidgets("$noteName should have $lines ledger lines $belowAbove",
-          (WidgetTester tester) async {
-        Widget widget = NoteElement.fromNote(
-          note: note,
-          notationContext: NotationContext(
-            divisions: 1,
-            clef: Clef(sign: ClefSign.F),
-            time: null,
-            lastKey: null,
-          ),
-          font: FontMetadata.empty(),
-        );
+      testWidgets(
+        "Note ${note.form.step}${note.form.octave} in clef ${clef.sign.name} has correct ledger lines",
+        (WidgetTester tester) async {
+          Widget widget = NoteElement.fromNote(
+            note: note,
+            notationContext: NotationContext(
+              divisions: 1,
+              clef: clef,
+              time: null,
+              lastKey: null,
+            ),
+            font: fontMetadata,
+          );
 
-        widget = Directionality(
-          textDirection: TextDirection.ltr,
-          child: widget,
-        );
+          widget = Directionality(
+            textDirection: TextDirection.ltr,
+            child: widget,
+          );
 
-        await tester.pumpWidget(widget);
+          await tester.pumpWidget(widget);
 
-        final childFinder = find.byType(NoteheadElement);
+          final childFinder = find.byType(NoteheadElement);
+          expect(childFinder, findsOneWidget);
 
-        expect(childFinder, findsOneWidget);
-
-        final notehead = tester.firstWidget(childFinder) as NoteheadElement;
-        expect(notehead.ledgerLines, expected[index]);
-      });
+          final notehead = tester.firstWidget(childFinder) as NoteheadElement;
+          expect(notehead.ledgerLines, ledgerLines);
+        },
+      );
     }
   });
 }
