@@ -5,10 +5,6 @@ class NotationLayoutProperties {
   /// The height of a stave-space determines the size of all noteheads.
   static const defaultStaveSpace = defaultStaveHeight / (staffLines - 1);
 
-  /// Noteheads height is sum of stave space and staff line stroke width.
-  static const defaultNoteheadHeight =
-      NotationLayoutProperties.defaultStaveSpace;
-
   static const int staffLines = 5;
   static const double staffLineStrokeWidth =
       12 * NotationLayoutProperties.defaultStaveSpace / 100;

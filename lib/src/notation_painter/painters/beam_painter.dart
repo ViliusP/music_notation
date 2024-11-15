@@ -75,7 +75,7 @@ class BeamPainter extends CustomPainter {
             angle: angle,
             canvas: canvas,
             start: Offset(start.dx, start.dy + yOffset),
-            beamLength: NotationLayoutProperties.defaultNoteheadHeight,
+            beamLength: NotationLayoutProperties.defaultStaveSpace,
             alignmentLineLength: offsetX - beamsPattern[index - 1].leftOffset,
             alignment: Alignment.end,
             alignmentLineByHorizontalSpan: true,
