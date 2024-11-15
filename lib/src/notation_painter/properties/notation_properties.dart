@@ -23,13 +23,9 @@ class NotationProperties extends InheritedWidget {
     return context.dependOnInheritedWidgetOfExactType<NotationProperties>();
   }
 
-  /// Determines if widgets in the subtree should be rebuilt when the debug settings change.
+  /// Determines if widgets in the subtree should be rebuilt when the properties change.
   @override
   bool updateShouldNotify(NotationProperties oldWidget) {
-    return false;
-    // return paintBBoxBelowStaff != oldWidget.paintBBoxBelowStaff ||
-    //     paintBBoxAboveStaff != oldWidget.paintBBoxAboveStaff ||
-    //     extraStaveLines != oldWidget.extraStaveLines ||
-    //     extraStaveLineCount != oldWidget.extraStaveLineCount;
+    return layout != oldWidget.layout;
   }
 }
