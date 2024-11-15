@@ -67,7 +67,6 @@ class SimpleGlyphPainter extends CustomPainter {
         paint,
       );
     }
-    print(horizontalOffset);
     // -------------------------
     // Glyph painting
     // --------------------------

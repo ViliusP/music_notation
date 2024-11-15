@@ -51,7 +51,7 @@ class _ScorePageState extends State<ScorePage> {
 
     // String title = "${creator ?? 'No creator'}: ${movementTitle ?? 'unnamed'}";
 
-    FontMetadata? usedFont = widget.fontMetadata ?? font;
+    FontMetadata? fontToUse = widget.fontMetadata ?? font;
 
     return SingleChildScrollView(
       child: Column(
@@ -65,6 +65,15 @@ class _ScorePageState extends State<ScorePage> {
               ),
             ),
           Padding(
+            padding: const EdgeInsets.all(8),
+            child: fontToUse == null
+                ? SizedBox.shrink()
+                : MusicSheet.fromScore(
+                    score: widget.scorePartwise,
+                    font: fontToUse,
+                  ),
+          ),
+          Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Scrollbar(
               controller: scorePageScrollController,
@@ -77,11 +86,11 @@ class _ScorePageState extends State<ScorePage> {
                     vertical: 4,
                     horizontal: 16,
                   ),
-                  child: usedFont == null
+                  child: fontToUse == null
                       ? SizedBox.shrink()
                       : MusicNotationCanvas(
                           scorePartwise: widget.scorePartwise,
-                          font: usedFont,
+                          font: fontToUse,
                         ),
                 ),
               ),

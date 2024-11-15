@@ -11,7 +11,6 @@ import 'package:music_notation/src/notation_painter/measure/notation_widgetizati
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/models/vertical_edge_insets.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
-import 'package:music_notation/src/notation_painter/notation_font.dart';
 
 import 'package:music_notation/src/notation_painter/sync_width_column.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
@@ -131,11 +130,8 @@ class MusicNotationCanvas extends StatelessWidget {
       extraStaveLines: ExtraStaveLines.none,
       beatMarkerMultiplier: 1,
       beatMarker: false,
-      child: NotationFont(
-        value: font,
-        child: SyncWidthColumn(
-          builders: parts,
-        ),
+      child: SyncWidthColumn(
+        builders: parts,
       ),
     );
   }

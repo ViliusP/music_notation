@@ -24,29 +24,31 @@ class NotationLayoutProperties {
   static const double defaultBeamSpacing = defaultStaveSpace / 2;
 
   /// The reference size value that determines sizing of musical elements.
-  double get staveHeight => _effectiveStaveHeight;
+  double get staveHeight => _staveHeight;
 
-  final double _effectiveStaveHeight;
+  final double _staveHeight;
 
   /// The height of a stave-space determines the size of all noteheads.
-  double get staveSpace => _effectiveStaveHeight / (staveLines - 1);
+  double get staveSpace => _staveHeight / (staveLines - 1);
 
   /// The distance between elements when positional difference is 1.
   double get offsetPerPosition => staveSpace / 2;
 
   const NotationLayoutProperties({
     required double staveHeight,
-  }) : _effectiveStaveHeight = staveHeight;
+  }) : _staveHeight = staveHeight;
+
+  const NotationLayoutProperties.standard() : _staveHeight = defaultStaveHeight;
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is NotationLayoutProperties &&
-        _effectiveStaveHeight == other._effectiveStaveHeight;
+        _staveHeight == other._staveHeight;
   }
 
   @override
-  int get hashCode => _effectiveStaveHeight.hashCode;
+  int get hashCode => _staveHeight.hashCode;
 
   @override
   String toString() => 'NotationLayoutProperties(staveHeight: $staveHeight)';
