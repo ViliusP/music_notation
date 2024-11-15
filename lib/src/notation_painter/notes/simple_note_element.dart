@@ -80,6 +80,22 @@ class SimpleNoteElement extends StatelessWidget {
     return Size(width, height);
   }
 
+  static AlignmentPosition _stemPosition(StemDirection? stemDirection) {
+    if (stemDirection == StemDirection.up) {
+      return AlignmentPosition(right: 0, bottom: 0);
+    }
+    // If stem direction is null or down
+    return AlignmentPosition(left: 0, top: 0);
+  }
+
+  static AlignmentPosition _noteheadPosition(StemDirection? stemDirection) {
+    if (stemDirection == StemDirection.up) {
+      return AlignmentPosition(bottom: 0, left: 0);
+    }
+    // If stem direction is null or down
+    return AlignmentPosition(top: 0, left: 0);
+  }
+
   @override
   Widget build(BuildContext context) {
     NoteheadElement notehead = NoteheadElement(
@@ -88,39 +104,21 @@ class SimpleNoteElement extends StatelessWidget {
       ledgerLines: ledgerLines,
     );
 
-    double stemLeft = 0;
-    double? stemTop;
-    double? stemBottom;
-
-    if (stemDirection == StemDirection.down) {
-      stemLeft = NotationLayoutProperties.stemStrokeWidth / 2;
-      stemTop = NotationLayoutProperties.defaultNoteheadHeight / 1.75;
-    }
-
-    if (stemDirection == StemDirection.up) {
-      stemLeft = noteheadSize.width;
-      stemLeft -= NotationLayoutProperties.stemStrokeWidth / 2;
-      stemBottom = NotationLayoutProperties.defaultNoteheadHeight / 1.75;
-    }
-
     return SizedBox.fromSize(
       size: size,
       child: Stack(
         children: [
-          Positioned(
-            top: stemDirection != StemDirection.up ? 0 : null,
-            bottom: stemDirection == StemDirection.up ? 0 : null,
+          AligmentPositioned(
+            position: _noteheadPosition(stemDirection),
             child: notehead,
           ),
           if (stemLength > 0 && stemDirection != null)
-            Positioned(
-              left: stemLeft,
-              top: stemTop,
-              bottom: stemBottom,
+            AligmentPositioned(
+              position: _stemPosition(stemDirection),
               child: StemElement(
                 type: type,
                 font: font,
-                length: stemLength,
+                length: 42,
                 showFlag: showFlag,
               ),
             ),

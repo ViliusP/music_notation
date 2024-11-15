@@ -33,15 +33,37 @@ class AlignmentPosition {
 
   /// Horizontal offset from the left side of the element’s bounding box, aligning the
   /// element horizontally, typically at the visual or optical center.
-  final double left;
+  final double? left;
+
+  /// Horizontal offset from the right side of the element’s bounding box, aligning the
+  /// element horizontally, typically at the visual or optical center.
+  final double? right;
 
   const AlignmentPosition({
     this.top,
     this.bottom,
-    required this.left,
-  }) : assert(
+    this.left,
+    this.right,
+  })  : assert(
           (top == null) != (bottom == null),
           'Either top or bottom must be null, but not both.',
+        ),
+        assert(
+          (left == null) != (right == null),
+          'Either left or right must be null, but not both.',
+        );
+}
+
+class AligmentPositioned extends Positioned {
+  AligmentPositioned({
+    super.key,
+    required AlignmentPosition position,
+    required super.child,
+  }) : super(
+          bottom: position.bottom,
+          top: position.top,
+          left: position.left,
+          right: position.right,
         );
 }
 
