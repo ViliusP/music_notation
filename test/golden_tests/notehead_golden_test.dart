@@ -23,19 +23,21 @@ void main() {
           columns: 3,
           children: [
             ...[
+              NoteTypeValue.breve,
               NoteTypeValue.whole,
               NoteTypeValue.half,
               NoteTypeValue.quarter,
               NoteTypeValue.eighth,
               NoteTypeValue.n16th,
-              NoteTypeValue.n32nd
-            ].map((v) => Padding(
-                  padding: EdgeInsets.all(5),
-                  child: ColoredBox(
-                    color: Color.fromRGBO(255, 255, 255, 1),
-                    child: NoteheadElement(
-                      type: v,
-                      font: font,
+            ].map((v) => Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(3),
+                    child: ColoredBox(
+                      color: Color.fromRGBO(255, 255, 255, 1),
+                      child: NoteheadElement(
+                        type: v,
+                        font: font,
+                      ),
                     ),
                   ),
                 ))
