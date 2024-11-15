@@ -209,6 +209,48 @@ class StemElement extends StatelessWidget {
         ),
     ]);
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    DiagnosticLevel level = DiagnosticLevel.info;
+
+    properties.add(
+      EnumProperty<NoteTypeValue>(
+        "type",
+        type,
+        level: level,
+      ),
+    );
+
+    properties.add(
+      FlagProperty(
+        "showFlag",
+        value: showFlag,
+        ifTrue: "true",
+        ifFalse: "false",
+        level: level,
+        showName: true,
+      ),
+    );
+
+    properties.add(
+      DoubleProperty(
+        "length",
+        length,
+        level: level,
+        showName: true,
+      ),
+    );
+
+    properties.add(
+      EnumProperty<StemDirection>(
+        "direction",
+        direction,
+        level: level,
+      ),
+    );
+  }
 }
 
 /// Painting noteheads, it should fill the space between two lines, touching
@@ -286,6 +328,30 @@ class NoteheadElement extends StatelessWidget {
         ledgerLines: ledgerLines,
         color: color,
         bBox: _bBox(font),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    DiagnosticLevel level = DiagnosticLevel.info;
+
+    properties.add(
+      EnumProperty<NoteTypeValue>(
+        "type",
+        type,
+        level: level,
+      ),
+    );
+
+    properties.add(
+      IntProperty(
+        "ledgerLines.count",
+        ledgerLines?.count,
+        ifNull: "0",
+        level: level,
+        showName: true,
       ),
     );
   }
