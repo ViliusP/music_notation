@@ -253,8 +253,8 @@ void main() {
 
         var lengths = [
           0.0,
-          NotationLayoutProperties.standardStemLength,
-          NotationLayoutProperties.staveSpace * 4
+          NotationLayoutProperties.staveSpace * 4,
+          NotationLayoutProperties.staveSpace * 6
         ];
 
         var ledgerLines = [
