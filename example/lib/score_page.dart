@@ -42,6 +42,7 @@ class _ScorePageState extends State<ScorePage> {
   @override
   Widget build(BuildContext context) {
     final ScrollController scorePageScrollController = ScrollController();
+    final ScrollController scorePageScrollController2 = ScrollController();
 
     // ScoreHeader scoreHeader = widget.scorePartwise.scoreHeader;
     // String? movementTitle = scoreHeader.movementTitle;
@@ -64,36 +65,39 @@ class _ScorePageState extends State<ScorePage> {
                 data: widget.description,
               ),
             ),
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: fontToUse == null
-                ? SizedBox.shrink()
-                : MusicSheet.fromScore(
-                    score: widget.scorePartwise,
-                    font: fontToUse,
-                  ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Scrollbar(
-              controller: scorePageScrollController,
+          Scrollbar(
+              controller: scorePageScrollController2,
               thumbVisibility: true,
               child: SingleChildScrollView(
-                controller: scorePageScrollController,
+                controller: scorePageScrollController2,
                 scrollDirection: Axis.horizontal,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 4,
-                    horizontal: 16,
-                  ),
-                  child: fontToUse == null
-                      ? SizedBox.shrink()
-                      : MusicNotationCanvas(
-                          scorePartwise: widget.scorePartwise,
-                          font: fontToUse,
-                        ),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 4,
+                  horizontal: 16,
                 ),
+                child: fontToUse == null
+                    ? SizedBox.shrink()
+                    : MusicSheet.fromScore(
+                        score: widget.scorePartwise,
+                        font: fontToUse,
+                      ),
+              )),
+          Scrollbar(
+            controller: scorePageScrollController,
+            thumbVisibility: true,
+            child: SingleChildScrollView(
+              controller: scorePageScrollController,
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(
+                vertical: 4,
+                horizontal: 16,
               ),
+              child: fontToUse == null
+                  ? SizedBox.shrink()
+                  : MusicNotationCanvas(
+                      scorePartwise: widget.scorePartwise,
+                      font: fontToUse,
+                    ),
             ),
           ),
         ],
