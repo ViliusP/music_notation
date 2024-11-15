@@ -84,10 +84,10 @@ class StemElement extends StatelessWidget {
   const StemElement({
     super.key,
     required this.type,
+    required this.font,
     this.length = NotationLayoutProperties.standardStemLength,
     this.direction = StemDirection.up,
     this.showFlag = true,
-    required this.font,
   });
 
   final NoteTypeValue type;
@@ -214,9 +214,9 @@ class StemElement extends StatelessWidget {
 class NoteheadElement extends StatelessWidget {
   final NoteTypeValue type;
 
-  final LedgerLines? ledgerLines;
-
   final FontMetadata font;
+
+  final LedgerLines? ledgerLines;
 
   final Color color;
 
@@ -268,9 +268,9 @@ class NoteheadElement extends StatelessWidget {
   const NoteheadElement({
     super.key,
     required this.type,
+    required this.font,
     this.ledgerLines,
     this.color = const Color.fromRGBO(0, 0, 0, 1),
-    required this.font,
   });
 
   @override

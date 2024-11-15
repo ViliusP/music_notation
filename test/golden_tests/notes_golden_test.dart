@@ -8,14 +8,21 @@ import 'package:music_notation/src/models/elements/music_data/note/note_type.dar
 import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
 import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/simple_note_element.dart';
+import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
+import '../combinations_generation.dart';
 import '../test_path.dart';
 
 void main() {
-  final file = File(testPath('/test_resources/font/leland_metadata.json'));
-  final json = jsonDecode(file.readAsStringSync());
-  FontMetadata font = FontMetadata.fromJson(json);
+  late FontMetadata font;
+
+  setUpAll(() async {
+    final file = File(testPath('/test_resources/font/leland_metadata.json'));
+    final json = jsonDecode(await file.readAsString());
+    font = FontMetadata.fromJson(json);
+  });
+
   group('Notehead elements test', () {
     goldenTest(
       'only noteheads renders correctly',
@@ -156,6 +163,130 @@ void main() {
           columnWidthBuilder: (columns) => null,
           columns: 9,
           children: children.toList(),
+        );
+      },
+    );
+  });
+
+  group('Simple note rendering test', () {
+    goldenTest(
+      'only noteheads renders correctly',
+      fileName: 'notehead_elements',
+      builder: () => GoldenTestGroup(
+          columnWidthBuilder: (columns) => null,
+          columns: 3,
+          children: [
+            ...[
+              NoteTypeValue.breve,
+              NoteTypeValue.whole,
+              NoteTypeValue.half,
+              NoteTypeValue.quarter,
+              NoteTypeValue.eighth,
+              NoteTypeValue.n16th,
+            ].map((v) => Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(3),
+                    child: ColoredBox(
+                      color: Color.fromRGBO(255, 255, 255, 1),
+                      child: NoteheadElement(type: v, font: font),
+                    ),
+                  ),
+                ))
+          ]),
+    );
+    goldenTest(
+      'Simple notes',
+      fileName: 'simple_notes',
+      builder: () {
+        Widget goldenNote({
+          required NoteTypeValue type,
+          required StemDirection stemDirection,
+          required double stemLength,
+          required LedgerLines? ledgerLines,
+        }) {
+          EdgeInsets padding = EdgeInsets.only(
+            bottom: 1,
+            top: 1,
+            left: 5,
+            right: 5,
+          );
+
+          NoteheadElement notehead = NoteheadElement(
+            type: type,
+            font: font,
+            ledgerLines: ledgerLines,
+          );
+          StemElement stem = StemElement(
+            type: type,
+            font: font,
+            length: stemLength,
+            direction: stemDirection,
+          );
+
+          SimpleNoteElement note = SimpleNoteElement(
+            notehead: notehead,
+            stem: stem,
+          );
+
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(3.0),
+              child: ColoredBox(
+                color: Color.fromRGBO(255, 255, 255, 1),
+                child: Padding(
+                  padding: padding,
+                  child: note,
+                ),
+              ),
+            ),
+          );
+        }
+
+        var types = [
+          NoteTypeValue.half,
+          NoteTypeValue.quarter,
+          NoteTypeValue.eighth,
+          NoteTypeValue.n16th,
+        ];
+
+        var directions = [StemDirection.down, StemDirection.up];
+
+        var lengths = [
+          0.0,
+          NotationLayoutProperties.standardStemLength,
+          NotationLayoutProperties.staveSpace * 4
+        ];
+
+        var ledgerLines = [
+          null,
+          LedgerLines(
+            count: 1,
+            start: LedgerPlacement.center,
+            direction: LedgerDrawingDirection.up,
+          ),
+        ];
+
+        // Generate combinations of all parameters
+        var combinations = generateCombinations([
+          ledgerLines,
+          lengths,
+          types,
+          directions,
+        ]);
+
+        // Map combinations to widgets
+        var widgets = combinations.map((combination) {
+          return goldenNote(
+            type: combination[2] as NoteTypeValue,
+            stemDirection: combination[3] as StemDirection,
+            stemLength: combination[1] as double,
+            ledgerLines: combination[0] as LedgerLines?,
+          );
+        }).toList();
+
+        return GoldenTestGroup(
+          columns: 8,
+          children: widgets,
         );
       },
     );
