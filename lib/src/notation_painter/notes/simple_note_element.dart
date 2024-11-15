@@ -335,10 +335,7 @@ class NoteheadElement extends StatelessWidget {
   ///
   /// The height of all notehead types is same and equal to the sum of the staff
   /// line stroke width and stave space.
-  Size get size {
-    Rect headRect = _bBox(font).toRect();
-    return Size(headRect.width, headRect.height);
-  }
+  Size get size => _bBox(font).toSize();
 
   const NoteheadElement({
     super.key,
