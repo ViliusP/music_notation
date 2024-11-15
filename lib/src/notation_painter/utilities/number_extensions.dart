@@ -22,21 +22,49 @@ extension NumExtensions on num {
         : (this / of.abs()).floor() * of.abs(); // Round down for negative base
   }
 
-  /// Rounds the number up to the nearest double, moving away from zero.
+  /// Returns the nearest integer double value by rounding away from zero.
   ///
-  /// - Positive numbers round up to the next whole number as a double.
-  /// - Negative numbers round down to the next whole number as a double.
-  double directionalCeilToDouble() {
-    // For positive values, use `ceilToDouble()`; for negative values, use `floorToDouble()`.
+  /// - For positive numbers, it rounds up to the next whole number as a double.
+  /// - For negative numbers, it rounds down to the next whole number as a double.
+  ///
+  /// If this is already an integer-valued double, or it is not a finite value,
+  /// the value is returned unmodified.
+  ///
+  /// Examples:
+  /// ```dart
+  /// print(1.3.roundAwayFromZero()); // 2.0
+  /// print((-1.3).roundAwayFromZero()); // -2.0
+  /// print(19.9.roundAwayFromZero()); // 20.0
+  /// print((-29.9).roundAwayFromZero()); // -30.0
+  /// print(0.roundAwayFromZero()); // 0.0
+  /// print((-0.0).roundAwayFromZero()); // -0.0
+  /// print(1.roundAwayFromZero()); // 1.0
+  /// print(-10.roundAwayFromZero()); // -10.0
+  /// ```
+  double roundAwayFromZero() {
     return this > 0 ? ceilToDouble() : floorToDouble();
   }
 
-  /// Rounds the number down to the nearest double, moving towards zero.
+  /// Returns the nearest integer double value by rounding towards zero.
   ///
-  /// - Positive numbers round down to the previous whole number as a double.
-  /// - Negative numbers round up to the previous whole number as a double.
-  double directionalFloorToDouble() {
-    // For positive values, use `floorToDouble()`; for negative values, use `ceilToDouble()`.
+  /// - For positive numbers, it rounds down to the previous whole number as a double.
+  /// - For negative numbers, it rounds up to the previous whole number as a double.
+  ///
+  /// If this is already an integer-valued double, or it is not a finite value,
+  /// the value is returned unmodified.
+  ///
+  /// Examples:
+  /// ```dart
+  /// print(1.3.roundTowardsZero()); // 1.0
+  /// print((-1.3).roundTowardsZero()); // -1.0
+  /// print(19.9.roundTowardsZero()); // 19.0
+  /// print((-29.9).roundTowardsZero()); // -29.0
+  /// print(0.roundTowardsZero()); // 0.0
+  /// print((-0.0).roundTowardsZero()); // -0.0
+  /// print(1.roundTowardsZero()); // 1.0
+  /// print(-10.roundTowardsZero()); // -10.0
+  /// ```
+  double roundTowardsZero() {
     return this > 0 ? floorToDouble() : ceilToDouble();
   }
 }

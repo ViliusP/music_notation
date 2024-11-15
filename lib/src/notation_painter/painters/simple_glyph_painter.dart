@@ -55,8 +55,8 @@ class SimpleGlyphPainter extends CustomPainter {
 
     print(o1.dy);
 
-    double verticalOffset = -o1.dy.directionalCeilToDouble() + 1;
-    double horizontalOffset = -(o1.dx.directionalCeilToDouble());
+    double verticalOffset = -o1.dy.roundTowardsZero();
+    double horizontalOffset = -(o1.dx.roundAwayFromZero());
 
     print(verticalOffset);
 
