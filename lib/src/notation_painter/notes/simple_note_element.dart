@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
@@ -37,24 +38,26 @@ class SimpleNoteElement extends StatelessWidget {
       if (stem.direction == StemDirection.up) {
         width += stem._flagSize.width;
       }
+      width += _stemHorizontalOffset;
+      width = width = [stem._flagSize.width, width].max;
     }
 
     return Size(width, height);
   }
 
-  AlignmentPosition _stemPosition() {
-    double horizontalOffset =
-        (NotationLayoutProperties.stemStrokeWidth / 2).ceilToDouble();
+  static final double _stemHorizontalOffset =
+      (NotationLayoutProperties.stemStrokeWidth / 2).ceilToDouble();
 
+  AlignmentPosition _stemPosition() {
     if (stem?.direction == StemDirection.up) {
       return AlignmentPosition(
-        left: notehead.size.width - horizontalOffset,
+        left: notehead.size.width - _stemHorizontalOffset,
         top: 0,
       );
     }
     // If stem direction is null or down
     return AlignmentPosition(
-      left: horizontalOffset,
+      left: _stemHorizontalOffset,
       bottom: 0,
     );
   }
