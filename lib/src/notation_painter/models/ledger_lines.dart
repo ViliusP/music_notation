@@ -1,71 +1,99 @@
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 
 /// Enumerates the possible placements of ledger lines in relation to a note.
-/// Ledger lines can be positioned either above or below a note symbol.
+/// Ledger lines can be positioned above, below, or centered on a note symbol.
 enum LedgerPlacement {
-  /// Indicates that the ledger line(s) is positioned above the note symbol.
+  /// Indicates that the ledger line is positioned above the note symbol.
   above,
 
-  /// Indicates that the ledger line(s) is positioned below the note symbol.
+  /// Indicates that the ledger line is positioned below the note symbol.
   below,
+
+  /// Indicates that the ledger line is positioned at the center of the note symbol.
+  center;
 }
 
-/// Represents the configuration of ledger lines for a particular note or element.
+/// Specifies the direction in which ledger lines are drawn from the note.
+/// Lines are repeated upward or downward.
+enum LedgerDrawingDirection {
+  /// Ledger lines are drawn upwards from the starting point.
+  up,
+
+  /// Ledger lines are drawn downwards from the starting point.
+  down;
+}
+
+/// Represents the configuration of ledger lines for a specific note or element.
 class LedgerLines {
   /// The number of ledger lines needed for the note or element.
   final int count;
 
-  /// The placement of the ledger lines relative to the note or element.
-  final LedgerPlacement placement;
+  /// The placement of the first ledger line relative to the note or element.
+  final LedgerPlacement start;
 
-  /// Indicates whether the ledger line extends through or intersects the note's head.
-  /// When set to `true`, the ledger line will pass through the note's head, which is typically
-  /// seen for notes that are directly adjacent to the staff.
-  final bool extendsThroughNote;
+  /// The direction in which the ledger lines are drawn from the starting point.
+  final LedgerDrawingDirection direction;
 
+  /// Constructs a [LedgerLines] instance with the specified [count], [start], and [direction].
   LedgerLines({
     required this.count,
-    required this.placement,
-    required this.extendsThroughNote,
+    required this.start,
+    required this.direction,
   });
 
+  /// Creates a [LedgerLines] instance based on the [ElementPosition].
+  ///
+  /// Determines the number, placement, and direction of the ledger lines required
+  /// for a note or element depending on its position relative to the middle line
+  /// of the staff.
+  ///
+  /// - Returns `null` if no ledger lines are required for the position.
   static LedgerLines? fromElementPosition(ElementPosition position) {
-    const middleDistanceToOuterLine = 4;
-    int distance = position.distanceFromMiddle;
+    if (position >= ElementPosition.firstLedgerAbove) {
+      int distance = position.distance(ElementPosition.firstLedgerAbove);
 
-    var placement = LedgerPlacement.below;
-    // if positive
-    if (!distance.isNegative) {
-      placement = LedgerPlacement.above;
+      return LedgerLines(
+          count: (distance / 2).floor() + 1,
+          direction: LedgerDrawingDirection.down,
+          start: distance % 2 == 0
+              ? LedgerPlacement.center
+              : LedgerPlacement.below);
     }
-    distance = distance.abs();
 
-    if (distance <= middleDistanceToOuterLine + 1) return null;
-    distance -= middleDistanceToOuterLine;
+    if (position <= ElementPosition.firstLedgerBelow) {
+      int distance = position.distance(ElementPosition.firstLedgerBelow);
 
-    return LedgerLines(
-      count: (distance / 2).floor(),
-      placement: placement,
-      extendsThroughNote: ((distance / 2) % 1) == 0,
-    );
+      return LedgerLines(
+          count: (distance / 2).floor() + 1,
+          direction: LedgerDrawingDirection.up,
+          start: distance % 2 == 0
+              ? LedgerPlacement.center
+              : LedgerPlacement.above);
+    }
+
+    return null;
   }
 
   /// Creates a copy of the current [LedgerLines] instance with optional modifications.
+  ///
+  /// - [count]: The number of ledger lines.
+  /// - [start]: The placement of the first ledger line.
+  /// - [direction]: The drawing direction of the ledger lines.
   LedgerLines copyWith({
     int? count,
-    LedgerPlacement? placement,
-    bool? extendsThroughNote,
+    LedgerPlacement? start,
+    LedgerDrawingDirection? direction,
   }) {
     return LedgerLines(
       count: count ?? this.count,
-      placement: placement ?? this.placement,
-      extendsThroughNote: extendsThroughNote ?? this.extendsThroughNote,
+      start: start ?? this.start,
+      direction: direction ?? this.direction,
     );
   }
 
   @override
   String toString() =>
-      '_LedgerLines(count: $count, placement: $placement, extendsThroughNote: $extendsThroughNote)';
+      '_LedgerLines(count: $count, start: $start, direction: $direction)';
 
   @override
   bool operator ==(Object other) {
@@ -73,11 +101,10 @@ class LedgerLines {
 
     return other is LedgerLines &&
         other.count == count &&
-        other.placement == placement &&
-        other.extendsThroughNote == extendsThroughNote;
+        other.start == start &&
+        other.direction == direction;
   }
 
   @override
-  int get hashCode =>
-      count.hashCode ^ placement.hashCode ^ extendsThroughNote.hashCode;
+  int get hashCode => count.hashCode ^ start.hashCode ^ direction.hashCode;
 }
