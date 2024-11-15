@@ -1,3 +1,4 @@
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
@@ -22,9 +23,9 @@ class SimpleNoteElement extends StatelessWidget {
     this.stem,
   });
 
-  Size get size => calculateSize(notehead: notehead, stem: stem);
+  Size get size => _calculateSize(notehead: notehead, stem: stem);
 
-  static Size calculateSize({
+  static Size _calculateSize({
     required NoteheadElement notehead,
     StemElement? stem,
   }) {
@@ -34,28 +35,32 @@ class SimpleNoteElement extends StatelessWidget {
     if (stem != null && stem.length > 0) {
       height += stem.length - height / 2;
       if (stem.direction == StemDirection.up) {
-        width += stem._flagWidth;
+        width += stem._flagSize.width;
       }
     }
 
     return Size(width, height);
   }
 
-  static AlignmentPosition _stemPosition({
-    required StemDirection? stemDirection,
-  }) {
-    if (stemDirection == StemDirection.up) {
-      return AlignmentPosition(right: 0, top: 0);
+  AlignmentPosition _stemPosition() {
+    double horizontalOffset =
+        (NotationLayoutProperties.stemStrokeWidth / 2).ceilToDouble();
+
+    if (stem?.direction == StemDirection.up) {
+      return AlignmentPosition(
+        left: notehead.size.width - horizontalOffset,
+        top: 0,
+      );
     }
     // If stem direction is null or down
     return AlignmentPosition(
-      left: (NotationLayoutProperties.stemStrokeWidth / 2).ceilToDouble(),
+      left: horizontalOffset,
       bottom: 0,
     );
   }
 
-  static AlignmentPosition _noteheadPosition(StemDirection? stemDirection) {
-    if (stemDirection == StemDirection.up) {
+  AlignmentPosition _noteheadPosition() {
+    if (stem?.direction == StemDirection.up) {
       return AlignmentPosition(bottom: 0, left: 0);
     }
     // If stem direction is null or down
@@ -69,12 +74,12 @@ class SimpleNoteElement extends StatelessWidget {
       child: Stack(
         children: [
           AligmentPositioned(
-            position: _noteheadPosition(stem?.direction),
+            position: _noteheadPosition(),
             child: notehead,
           ),
           if (stem != null)
             AligmentPositioned(
-              position: _stemPosition(stemDirection: stem!.direction),
+              position: _stemPosition(),
               child: stem!,
             ),
         ],
@@ -216,9 +221,9 @@ class StemElement extends StatelessWidget {
           position: _flagPosition(direction),
           child: CustomPaint(
             size: _flagSize,
-          painter: SimpleGlyphPainter(
-            flagGlyph.codepoint,
-            _bBox(font),
+            painter: SimpleGlyphPainter(
+              flagGlyph.codepoint,
+              _bBox(font),
             ),
           ),
         ),
