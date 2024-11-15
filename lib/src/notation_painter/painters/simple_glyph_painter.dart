@@ -41,11 +41,6 @@ class SimpleGlyphPainter extends CustomPainter {
 
     var (o1, o2) = bBox.toOffsets();
 
-    print(bBox);
-    print(bBox.toRect());
-    print(bBox.toRect().size);
-    print(o1.dy);
-
     o1 = o1
         .scale(
           NotationLayoutProperties.staveSpace,
@@ -53,12 +48,8 @@ class SimpleGlyphPainter extends CustomPainter {
         )
         .translate(0, NotationLayoutProperties.staveHeight / 2);
 
-    print(o1.dy);
-
     double verticalOffset = -o1.dy.roundTowardsZero();
     double horizontalOffset = -(o1.dx.roundAwayFromZero());
-
-    print(verticalOffset);
 
     if (drawBBox) {
       o2 = o2
@@ -77,7 +68,6 @@ class SimpleGlyphPainter extends CustomPainter {
       );
     }
 
-    print("--------");
     // -------------------------
     // Glyph painting
     // --------------------------

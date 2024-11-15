@@ -34,10 +34,7 @@ void main() {
                     padding: EdgeInsets.all(3),
                     child: ColoredBox(
                       color: Color.fromRGBO(255, 255, 255, 1),
-                      child: NoteheadElement(
-                        type: v,
-                        font: font,
-                      ),
+                      child: NoteheadElement(type: v, font: font),
                     ),
                   ),
                 ))
