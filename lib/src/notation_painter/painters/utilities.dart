@@ -42,7 +42,7 @@ extension FontPainting on GlyphBBox {
   }
 
   Size toSize([double staveSpace = NotationLayoutProperties.staveSpace]) {
-    return toRect(staveSpace).size.round();
+    return toRect(staveSpace).size.ceil();
   }
 
   /// This function takes a `GlyphBBox` object and converts its bounding box coordinates

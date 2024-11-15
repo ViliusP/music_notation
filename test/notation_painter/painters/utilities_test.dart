@@ -15,7 +15,7 @@ void main() {
         bBoxSW: Coordinates(x: 0.0, y: -0.536),
       ).toSize(staveSpace);
 
-      expect(size, equals(Size(17, 14)));
+      expect(size, equals(Size(19, 14)));
     });
     test("Half notehead calculated size should have correct size", () {
       // Whole notehead
