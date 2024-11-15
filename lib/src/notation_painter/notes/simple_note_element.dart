@@ -88,8 +88,8 @@ class StemElement extends StatelessWidget {
     super.key,
     required this.type,
     required this.font,
+    required this.direction,
     this.length = NotationLayoutProperties.standardStemLength,
-    this.direction = StemDirection.up,
     this.showFlag = true,
   });
 
@@ -105,8 +105,13 @@ class StemElement extends StatelessWidget {
   final bool showFlag;
 
   Size get size {
+    double width = StemPainter.strokeWidth;
+    if (showFlag && length > 0) {
+      width = width / 2 + _flagSize.width;
+    }
+
     return Size(
-      StemPainter.strokeWidth + (showFlag ? _flagWidth : 0),
+      width,
       length,
     );
   }
@@ -154,10 +159,10 @@ class StemElement extends StatelessWidget {
     }
   }
 
-  double get _flagWidth {
-    if (!showFlag) return 0;
-    if (_glyph == null) return 0;
-    return _bBox(font).toRect().width;
+  Size get _flagSize {
+    if (!showFlag) return Size(0, 0);
+    if (_glyph == null) return Size(0, 0);
+    return _bBox(font).toSize();
   }
 
   SmuflGlyph? get _downwardFlag {
@@ -188,6 +193,13 @@ class StemElement extends StatelessWidget {
     }
   }
 
+  AlignmentPosition _flagPosition(StemDirection direction) {
+    if (direction == StemDirection.down) {
+      return AlignmentPosition(left: 0, bottom: 0);
+    }
+    return AlignmentPosition(left: 0, top: 0);
+  }
+
   @override
   Widget build(BuildContext context) {
     SmuflGlyph? flagGlyph = _glyph;
@@ -200,11 +212,14 @@ class StemElement extends StatelessWidget {
         ),
       ),
       if (flagGlyph != null)
-        CustomPaint(
-          size: size,
+        AligmentPositioned(
+          position: _flagPosition(direction),
+          child: CustomPaint(
+            size: _flagSize,
           painter: SimpleGlyphPainter(
             flagGlyph.codepoint,
             _bBox(font),
+            ),
           ),
         ),
     ]);
