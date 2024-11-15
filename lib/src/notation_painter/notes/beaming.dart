@@ -31,7 +31,7 @@ class BeamGroup extends StatelessWidget {
   }
 
   Size _beamSize() {
-    const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
+    const offsetPerPosition = NotationLayoutProperties.defaultStaveSpace / 2;
 
     ElementPosition? firstPosition;
     ElementPosition? lastPosition;
@@ -86,7 +86,7 @@ class BeamGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<({double? bottom, double? top})> verticalOffsets = [];
 
-    const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
+    const offsetPerPosition = NotationLayoutProperties.defaultStaveSpace / 2;
     final padding = InheritedPadding.of(context)?.padding;
     if (padding == null) return SizedBox.shrink();
 

@@ -176,7 +176,7 @@ class AccidentalElement extends StatelessWidget {
     SmuflGlyph glyph = _accidentalSmuflMapping[accidental]!;
 
     return AlignmentPosition(
-      top: -NotationLayoutProperties.staveSpace *
+      top: -NotationLayoutProperties.defaultStaveSpace *
           font.glyphBBoxes[glyph]!.bBoxNE.y,
       left: 0,
     );
@@ -223,14 +223,15 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
   final NotationContext notationContext;
 
   static const _spaceBetweenAccidentals = 6.0;
-  static const _offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
+  static const _offsetPerPosition =
+      NotationLayoutProperties.defaultStaveSpace / 2;
 
   @override
   AlignmentPosition get alignmentPosition {
     SmuflGlyph glyph = _accidentalSmuflMapping[
         accidentals.first.accidental?.value ?? AccidentalValue.other]!;
 
-    double top = -NotationLayoutProperties.staveSpace *
+    double top = -NotationLayoutProperties.defaultStaveSpace *
         font.glyphBBoxes[glyph]!.bBoxNE.y;
 
     return AlignmentPosition(

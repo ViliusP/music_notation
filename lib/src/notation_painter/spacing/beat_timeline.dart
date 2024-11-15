@@ -57,7 +57,7 @@ class BeatTimeline {
     int? parsedVoice = int.tryParse(voice);
     List<BeatTimelineValue> values = [];
 
-    double lastAttributeOffset = NotationLayoutProperties.staveSpace;
+    double lastAttributeOffset = NotationLayoutProperties.defaultStaveSpace;
     for (var entry in timeline._values.entries) {
       List<_TimelineValue> beatCol = entry.value.sorted(
         (a, b) => a.voice.compareTo(b.voice),
@@ -72,7 +72,7 @@ class BeatTimeline {
         }
         if (value.duration == 0) {
           lastAttributeOffset += value.width;
-          lastAttributeOffset += NotationLayoutProperties.staveSpace;
+          lastAttributeOffset += NotationLayoutProperties.defaultStaveSpace;
         }
         if (value.duration != 0) {
           values.add(BeatTimelineValue(
@@ -263,7 +263,7 @@ class BeatTimeline {
         }
 
         if (value.duration == 0) {
-          attributeOffset += NotationLayoutProperties.staveSpace;
+          attributeOffset += NotationLayoutProperties.defaultStaveSpace;
           spacings[value.index] = attributeOffset;
           attributeOffset += value.width;
         }
@@ -285,7 +285,7 @@ class BeatTimeline {
       // Start the rest positioning from the first beat offset.
       double restPosition = beatSpacing[0];
       // Adjust rest to start after any initial attribute spacing.
-      restPosition -= NotationLayoutProperties.staveSpace;
+      restPosition -= NotationLayoutProperties.defaultStaveSpace;
       // Move the rest to the center of the measure, between attribute end and barline or between two barlines.
       restPosition += (beatSpacing.last - restPosition) / 2;
       // Center-align the rest by adjusting for half of its width.

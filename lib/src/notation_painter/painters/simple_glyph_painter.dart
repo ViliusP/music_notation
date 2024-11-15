@@ -43,8 +43,8 @@ class SimpleGlyphPainter extends CustomPainter {
 
     o1 = o1
         .scale(
-          NotationLayoutProperties.staveSpace,
-          NotationLayoutProperties.staveSpace,
+          NotationLayoutProperties.defaultStaveSpace,
+          NotationLayoutProperties.defaultStaveSpace,
         )
         .translate(0, NotationLayoutProperties.defaultStaveHeight / 2);
 
@@ -54,8 +54,8 @@ class SimpleGlyphPainter extends CustomPainter {
     if (drawBBox) {
       o2 = o2
           .scale(
-            NotationLayoutProperties.staveSpace,
-            NotationLayoutProperties.staveSpace,
+            NotationLayoutProperties.defaultStaveSpace,
+            NotationLayoutProperties.defaultStaveSpace,
           )
           .translate(0, NotationLayoutProperties.defaultStaveHeight / 2);
 

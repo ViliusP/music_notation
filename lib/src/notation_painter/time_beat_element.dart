@@ -12,7 +12,7 @@ class TimeBeatElement extends StatelessWidget implements MeasureWidget {
   @override
   AlignmentPosition get alignmentPosition {
     return AlignmentPosition(
-      top: -NotationLayoutProperties.staveSpace * 2,
+      top: -NotationLayoutProperties.defaultStaveSpace * 2,
       left: 0,
     );
   }

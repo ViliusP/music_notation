@@ -21,7 +21,7 @@ class DotsPainter extends CustomPainter {
         SmuflGlyph.augmentationDot.codepoint,
         offset: Offset(
           spacing * i.toDouble(),
-          -NotationLayoutProperties.staveSpace * 2 + size.height / 2,
+          -NotationLayoutProperties.defaultStaveSpace * 2 + size.height / 2,
         ),
       );
     }

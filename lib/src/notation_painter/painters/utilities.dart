@@ -10,7 +10,7 @@ class PainterUtilities {
     String symbol, {
     Offset offset = const Offset(
       0,
-      (-NotationLayoutProperties.staveSpace * 1.5),
+      (-NotationLayoutProperties.defaultStaveSpace * 1.5),
     ),
     Color color = const Color.fromRGBO(0, 0, 0, 1.0),
   }) {
@@ -34,15 +34,17 @@ class PainterUtilities {
 }
 
 extension FontPainting on GlyphBBox {
-  Rect toRect([double staveSpace = NotationLayoutProperties.staveSpace]) {
+  Rect toRect(
+      [double defaultStaveSpace = NotationLayoutProperties.defaultStaveSpace]) {
     var (o1, o2) = toOffsets();
-    o1 = o1.scale(staveSpace, staveSpace);
-    o2 = o2.scale(staveSpace, staveSpace);
+    o1 = o1.scale(defaultStaveSpace, defaultStaveSpace);
+    o2 = o2.scale(defaultStaveSpace, defaultStaveSpace);
     return Rect.fromPoints(o1, o2);
   }
 
-  Size toSize([double staveSpace = NotationLayoutProperties.staveSpace]) {
-    return toRect(staveSpace).size.ceil();
+  Size toSize(
+      [double defaultStaveSpace = NotationLayoutProperties.defaultStaveSpace]) {
+    return toRect(defaultStaveSpace).size.ceil();
   }
 
   /// This function takes a `GlyphBBox` object and converts its bounding box coordinates
@@ -70,5 +72,6 @@ extension FontPainting on GlyphBBox {
     return (o1, o2);
   }
 
-  double get topOffset => (NotationLayoutProperties.staveSpace * bBoxNE.y);
+  double get topOffset =>
+      (NotationLayoutProperties.defaultStaveSpace * bBoxNE.y);
 }

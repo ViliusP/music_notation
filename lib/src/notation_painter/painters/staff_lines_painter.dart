@@ -22,7 +22,7 @@ class StaffLinesPainter extends CustomPainter {
     double bottom = 0;
     for (bottom = top;
         bottom <= NotationLayoutProperties.defaultStaveHeight;
-        bottom += NotationLayoutProperties.staveSpace) {
+        bottom += NotationLayoutProperties.defaultStaveSpace) {
       canvas.drawLine(
         Offset(0, bottom),
         Offset(size.width, bottom),
@@ -32,11 +32,11 @@ class StaffLinesPainter extends CustomPainter {
 
     // For ledger lines debugging
     if (extraStaveLines != ExtraStaveLines.none) {
-      bottom -= NotationLayoutProperties.staveSpace;
+      bottom -= NotationLayoutProperties.defaultStaveSpace;
 
       for (int i = 0; i < extraStaveLineCount; i++) {
-        top -= NotationLayoutProperties.staveSpace;
-        bottom += NotationLayoutProperties.staveSpace;
+        top -= NotationLayoutProperties.defaultStaveSpace;
+        bottom += NotationLayoutProperties.defaultStaveSpace;
 
         if (extraStaveLines == ExtraStaveLines.above ||
             extraStaveLines == ExtraStaveLines.double) {
@@ -75,7 +75,7 @@ class StaffLinesPainter extends CustomPainter {
           position.dy < lineY + halfStroke) {
         return true;
       }
-      lineY += NotationLayoutProperties.staveSpace;
+      lineY += NotationLayoutProperties.defaultStaveSpace;
     }
     return false;
   }

@@ -55,7 +55,7 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
   }
 
   double get _verticalAlignmentAxisOffset {
-    return NotationLayoutProperties.staveSpace * _bBox.bBoxNE.y;
+    return NotationLayoutProperties.defaultStaveSpace * _bBox.bBoxNE.y;
   }
 
   @override

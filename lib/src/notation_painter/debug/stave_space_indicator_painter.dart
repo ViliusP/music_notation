@@ -17,20 +17,20 @@ class StaveSpaceIndicatorPainter extends CustomPainter {
     if (verticalStaveLineSpacingMultiplier == 0) return;
 
     int i = 0;
-    double lineHeight = NotationLayoutProperties.staveSpace;
-    while (i * NotationLayoutProperties.staveSpace < size.width) {
+    double lineHeight = NotationLayoutProperties.defaultStaveSpace;
+    while (i * NotationLayoutProperties.defaultStaveSpace < size.width) {
       canvas.drawLine(
-        Offset(i * NotationLayoutProperties.staveSpace, -lineHeight),
-        Offset(i * NotationLayoutProperties.staveSpace, lineHeight / 2),
+        Offset(i * NotationLayoutProperties.defaultStaveSpace, -lineHeight),
+        Offset(i * NotationLayoutProperties.defaultStaveSpace, lineHeight / 2),
         _paint,
       );
       canvas.drawLine(
         Offset(
-          i * NotationLayoutProperties.staveSpace,
+          i * NotationLayoutProperties.defaultStaveSpace,
           size.height - lineHeight / 2,
         ),
         Offset(
-          i * NotationLayoutProperties.staveSpace,
+          i * NotationLayoutProperties.defaultStaveSpace,
           size.height + lineHeight,
         ),
         _paint,

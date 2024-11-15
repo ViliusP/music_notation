@@ -12,7 +12,7 @@ class TimeBeatPainter extends CustomPainter {
     PainterUtilities.drawSmuflSymbol(
       canvas,
       smufl,
-      offset: const Offset(0, -NotationLayoutProperties.staveSpace),
+      offset: const Offset(0, -NotationLayoutProperties.defaultStaveSpace),
     );
   }
 

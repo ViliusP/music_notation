@@ -61,7 +61,7 @@ void main() {
           double bottomPadding = 0;
 
           double padding = (ledgerLines.count - 1).clamp(0, 20) *
-              NotationLayoutProperties.staveSpace;
+              NotationLayoutProperties.defaultStaveSpace;
 
           padding = padding.ceilToDouble() + 1;
 
@@ -243,8 +243,8 @@ void main() {
 
         var lengths = [
           0.0,
-          NotationLayoutProperties.staveSpace * 4,
-          NotationLayoutProperties.staveSpace * 6
+          NotationLayoutProperties.defaultStaveSpace * 4,
+          NotationLayoutProperties.defaultStaveSpace * 6
         ];
 
         var ledgerLines = [

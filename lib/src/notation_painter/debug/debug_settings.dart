@@ -17,13 +17,13 @@ class DebugSettings extends InheritedWidget {
   /// Number of extra stave lines to render, controlled by the `extraStaveLines` setting.
   final int extraStaveLineCount;
 
-  /// Controls the spacing between vertical stave lines for debugging alignment, specified as a multiplier of [NotationProperties.staveSpace].
+  /// Controls the spacing between vertical stave lines for debugging alignment, specified as a multiplier of [NotationProperties.defaultStaveSpace].
   ///
   /// For example:
   /// - `0`: No vertical stave lines are drawn.
-  /// - `1`: Vertical lines are drawn at intervals of [NotationProperties.staveSpace] * 1 from the start of the measure.
-  /// - `2`: Vertical lines are drawn at intervals of [NotationProperties.staveSpace] * 2 from the start of the measure.
-  /// - `3`: Vertical lines are drawn at intervals of [NotationProperties.staveSpace] * 3 from the start of the measure.
+  /// - `1`: Vertical lines are drawn at intervals of [NotationProperties.defaultStaveSpace] * 1 from the start of the measure.
+  /// - `2`: Vertical lines are drawn at intervals of [NotationProperties.defaultStaveSpace] * 2 from the start of the measure.
+  /// - `3`: Vertical lines are drawn at intervals of [NotationProperties.defaultStaveSpace] * 3 from the start of the measure.
   final int verticalStaveLineSpacingMultiplier;
 
   /// Defines if beat guide is drawn onto staff.

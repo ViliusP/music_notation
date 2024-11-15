@@ -83,7 +83,7 @@ class MeasureLayout extends StatelessWidget {
 
     double width = spacings.last;
 
-    const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
+    const offsetPerPosition = NotationLayoutProperties.defaultStaveSpace / 2;
 
     final padding = InheritedPadding.of(context)?.padding;
     if (padding == null) return SizedBox.shrink();

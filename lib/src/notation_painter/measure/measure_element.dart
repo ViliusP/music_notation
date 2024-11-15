@@ -73,7 +73,7 @@ extension MeasureElementDimensions on MeasureWidget {
   /// Calculates a bounding box for elements extending below the staff,
   /// with consideration for the element's position and vertical alignment offset.
   Rect boxBelowStaff() {
-    const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
+    const offsetPerPosition = NotationLayoutProperties.defaultStaveSpace / 2;
 
     double belowStaffLength = 0;
 
@@ -105,7 +105,7 @@ extension MeasureElementDimensions on MeasureWidget {
   /// Calculates a bounding box for elements extending above the staff,
   /// considering the element's position and vertical alignment offset.
   Rect boxAboveStaff() {
-    const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
+    const offsetPerPosition = NotationLayoutProperties.defaultStaveSpace / 2;
 
     double aboveStaffLength = 0;
 

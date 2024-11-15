@@ -1,15 +1,17 @@
 class NotationLayoutProperties {
+  /// Default stave height for fallbacking;
   static const double defaultStaveHeight = 48;
 
   /// The height of a stave-space determines the size of all noteheads.
-  static const staveSpace = defaultStaveHeight / (staffLines - 1);
+  static const defaultStaveSpace = defaultStaveHeight / (staffLines - 1);
 
   /// Noteheads height is sum of stave space and staff line stroke width.
-  static const defaultNoteheadHeight = NotationLayoutProperties.staveSpace;
+  static const defaultNoteheadHeight =
+      NotationLayoutProperties.defaultStaveSpace;
 
   static const int staffLines = 5;
   static const double staffLineStrokeWidth =
-      12 * NotationLayoutProperties.staveSpace / 100;
+      12 * NotationLayoutProperties.defaultStaveSpace / 100;
   static const double ledgerLineWidth = 26;
 
   /// The standard length of a stem is one octave (3.5 stave-spaces) from the
@@ -27,21 +29,22 @@ class NotationLayoutProperties {
   /// Stems within the stave are one octave long (3.5 stave-spaces); stems for the
   /// notes on ledger lines reach to the middle line. Stems outside the stave are
   /// progressively shortened (as in double-stemmed writing, opposite).
-  static const double standardStemLength = staveSpace * 3.5;
+  static const double standardStemLength = defaultStaveSpace * 3.5;
 
   // Stems should be thinner than the stave-line, but not so thin as to
   // reproduce too faintly.
   static const double stemStrokeWidth = 1.5;
 
   /// Beam thicknes is 1/2 stave-space.
-  static const double beamThickness = staveSpace / 2;
+  static const double beamThickness = defaultStaveSpace / 2;
 
   /// The distance between beams is 1/4 stave space.
-  static const double beamSpacing = staveSpace / 2;
+  static const double beamSpacing = defaultStaveSpace / 2;
 
   /// The distance between between elements when positional difference is 1.
   static const double offsetPerPosition =
-      NotationLayoutProperties.staveSpace / 2;
+      NotationLayoutProperties.defaultStaveSpace / 2;
+
 }
 
 /// Manages the spacing of symbols in a system of musical notation. The spacing

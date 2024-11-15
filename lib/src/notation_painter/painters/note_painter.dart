@@ -39,7 +39,7 @@ class NotePainter extends CustomPainter {
 
     double level = size.height / 2;
     if (ledgerLines?.start != LedgerPlacement.center) {
-      double shift = NotationLayoutProperties.staveSpace / 2;
+      double shift = NotationLayoutProperties.defaultStaveSpace / 2;
       if (ledgerLines?.start == LedgerPlacement.above) {
         shift = -shift;
       }
@@ -54,10 +54,10 @@ class NotePainter extends CustomPainter {
       );
 
       if (ledgerLines!.direction == LedgerDrawingDirection.up) {
-        level -= NotationLayoutProperties.staveSpace;
+        level -= NotationLayoutProperties.defaultStaveSpace;
       }
       if (ledgerLines!.direction == LedgerDrawingDirection.down) {
-        level += NotationLayoutProperties.staveSpace;
+        level += NotationLayoutProperties.defaultStaveSpace;
       }
     }
   }
