@@ -1,7 +1,7 @@
 import 'package:flutter/rendering.dart';
 import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
-import 'package:music_notation/src/notation_painter/properties/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 
 class NotePainter extends CustomPainter {

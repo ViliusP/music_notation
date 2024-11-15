@@ -5,7 +5,7 @@ import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
-import 'package:music_notation/src/notation_painter/properties/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/painters/note_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';

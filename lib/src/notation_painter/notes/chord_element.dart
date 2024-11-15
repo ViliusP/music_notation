@@ -6,10 +6,11 @@ import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
-import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/adjacency.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
+import 'package:music_notation/src/notation_painter/notes/simple_note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
@@ -191,21 +192,16 @@ class Chord extends StatelessWidget implements RhythmicElement {
     double height = 0;
     bool beamed = isBeamed(notes);
 
-    if (stemDirection == StemDirection.up) {
+    if (stemDirection != null) {
+      Note ref = sortedNotes.first;
+      if (stemDirection == StemDirection.down) {
+        ref = sortedNotes.last;
+      }
       height = NoteElement.calculateSize(
-        note: sortedNotes.first,
+        note: ref,
         stemLength: _calculateStemLength(notes),
         clef: notationContext.clef,
-        font: font,
-        showFlag: !beamed,
-      ).height;
-    }
-
-    if (stemDirection == StemDirection.down) {
-      height = NoteElement.calculateSize(
-        note: sortedNotes.last,
-        clef: notationContext.clef,
-        stemLength: _calculateStemLength(notes),
+        stemDirection: stemDirection,
         font: font,
         showFlag: !beamed,
       ).height;
@@ -244,12 +240,11 @@ class Chord extends StatelessWidget implements RhythmicElement {
     double widthToLeft = 0;
     double widthToRight = 0;
     for (var (i, pos) in noteheadPositions.indexed) {
-      double width = NoteElement.calculateSize(
-        note: notes[i],
-        clef: null,
-        stemLength: 0,
+      if (notes[i].type?.value == null) continue;
+      double width = NoteheadElement(
+        type: notes[i].type!.value,
         font: font,
-      ).width;
+      ).size.width;
       if (pos == NoteheadPosition.left) {
         widthToLeft = [width, widthToLeft].max;
       }

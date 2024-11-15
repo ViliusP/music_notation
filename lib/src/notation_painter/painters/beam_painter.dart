@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/rendering.dart';
 import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/notation_painter/notes/beaming.dart';
-import 'package:music_notation/src/notation_painter/properties/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 
 class BeamPainter extends CustomPainter {

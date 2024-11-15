@@ -1,5 +1,5 @@
 import 'package:flutter/rendering.dart';
-import 'package:music_notation/src/notation_painter/properties/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 
 /// Paints [count] duration dots as SMUFL symbol.
 /// A duration dot that is larger than a staccato dot — often twice the size.

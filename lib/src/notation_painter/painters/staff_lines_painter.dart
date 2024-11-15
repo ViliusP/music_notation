@@ -1,7 +1,7 @@
 import 'package:flutter/rendering.dart';
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 
-import 'package:music_notation/src/notation_painter/properties/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 
 class StaffLinesPainter extends CustomPainter {
   final int extraStaveLineCount;
