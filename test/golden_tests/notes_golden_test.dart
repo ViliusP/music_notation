@@ -5,6 +5,8 @@ import 'package:alchemist/alchemist.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
+import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
+import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/simple_note_element.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
@@ -16,7 +18,7 @@ void main() {
   FontMetadata font = FontMetadata.fromJson(json);
   group('Notehead elements test', () {
     goldenTest(
-      'renders correctly',
+      'only noteheads renders correctly',
       fileName: 'notehead_elements',
       builder: () => GoldenTestGroup(
           columnWidthBuilder: (columns) => null,
@@ -39,6 +41,123 @@ void main() {
                   ),
                 ))
           ]),
+    );
+    goldenTest(
+      'noteheads with ledger lines renders correctly',
+      fileName: 'notehead_elements_with_ledgers',
+      builder: () {
+        Widget testNotehead({
+          required NoteTypeValue type,
+          required LedgerLines ledgerLines,
+        }) {
+          double topPadding = 0;
+          double bottomPadding = 0;
+
+          double padding = (ledgerLines.count - 1).clamp(0, 20) *
+              NotationLayoutProperties.staveSpace;
+
+          padding = padding.ceilToDouble() + 1;
+
+          if (ledgerLines.direction == LedgerDrawingDirection.down) {
+            bottomPadding = padding;
+          }
+
+          if (ledgerLines.direction == LedgerDrawingDirection.up) {
+            topPadding = padding;
+          }
+
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(3.0),
+              child: ColoredBox(
+                color: Color.fromRGBO(255, 255, 255, 1),
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    top: topPadding,
+                    left: 5,
+                    right: 5,
+                    bottom: bottomPadding,
+                  ),
+                  child: NoteheadElement(
+                    type: type,
+                    font: font,
+                    ledgerLines: ledgerLines,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+
+        var cases = [
+          LedgerLines(
+            count: 1,
+            start: LedgerPlacement.center,
+            direction: LedgerDrawingDirection.up,
+          ),
+          LedgerLines(
+            count: 1,
+            start: LedgerPlacement.above,
+            direction: LedgerDrawingDirection.up,
+          ),
+          LedgerLines(
+            count: 1,
+            start: LedgerPlacement.center,
+            direction: LedgerDrawingDirection.down,
+          ),
+          LedgerLines(
+            count: 2,
+            start: LedgerPlacement.center,
+            direction: LedgerDrawingDirection.up,
+          ),
+          LedgerLines(
+            count: 2,
+            start: LedgerPlacement.above,
+            direction: LedgerDrawingDirection.up,
+          ),
+          LedgerLines(
+            count: 2,
+            start: LedgerPlacement.center,
+            direction: LedgerDrawingDirection.down,
+          ),
+          LedgerLines(
+            count: 3,
+            start: LedgerPlacement.center,
+            direction: LedgerDrawingDirection.up,
+          ),
+          LedgerLines(
+            count: 3,
+            start: LedgerPlacement.above,
+            direction: LedgerDrawingDirection.up,
+          ),
+          LedgerLines(
+            count: 3,
+            start: LedgerPlacement.center,
+            direction: LedgerDrawingDirection.down,
+          ),
+        ];
+
+        const noteheads = [
+          NoteTypeValue.half,
+          NoteTypeValue.whole,
+          NoteTypeValue.half,
+        ];
+
+        var children = cases.expand((e) sync* {
+          for (var notehead in noteheads) {
+            yield testNotehead(
+              type: notehead,
+              ledgerLines: e,
+            );
+          }
+        });
+
+        return GoldenTestGroup(
+          columnWidthBuilder: (columns) => null,
+          columns: 9,
+          children: children.toList(),
+        );
+      },
     );
   });
 }
