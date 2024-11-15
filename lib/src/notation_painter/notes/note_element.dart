@@ -12,7 +12,7 @@ import 'package:music_notation/src/notation_painter/measure/measure_element.dart
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
-import 'package:music_notation/src/notation_painter/properties/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/augmentation_dot.dart';
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/notation_painter/notes/simple_note_element.dart';
@@ -139,6 +139,13 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       }
     }
 
+    if (_accidental != null && stemDirection == StemDirection.down) {
+      AlignmentPosition accidentalAlignmentPosition =
+          AccidentalElement.calculateAlignmentPosition(_accidental!, font);
+
+      top = (accidentalAlignmentPosition.top ?? 0);
+    }
+
     if (top == null && bottom == null) {
       top = -NotationLayoutProperties.staveSpace / 2;
     }
@@ -181,7 +188,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
 
     if (_accidental != null) {
       offsetX ??= noteheadSize.width;
-      offsetX -= alignmentPosition.left;
+      offsetX -= alignmentPosition.left!;
     }
 
     return Offset(
@@ -276,8 +283,9 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
         note: note,
         clef: notationContext.clef,
         stemLength: stemLength,
+        stemDirection: stemDirection,
         font: font,
-        showFlag: false,
+        showFlag: false, // ????
       );
 
   Size get noteheadSize => NoteheadElement(
@@ -342,6 +350,11 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       width += accidentalSize.width;
       // Space between notehead and accidental.
       width += NotationLayoutProperties.staveSpace / 4;
+
+      AlignmentPosition accidentalAlignmentPosition =
+          AccidentalElement.calculateAlignmentPosition(accidental, font);
+
+      height += (accidentalAlignmentPosition.top?.abs() ?? 0) / 2;
     }
 
     return Size(width, height);
@@ -413,14 +426,12 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       dotsOffsetFromNotehead -= (_dotsSize.height / 2).ceil();
       dotsTopPosition = dotsOffsetFromNotehead;
     }
-    double dotVerticalOffset = 0;
     // When note is on drawn the line and it's stem is drawn down,
     // it's dot needs to be positioned above note.
     if (stemDirection == StemDirection.down &&
         position.numeric % 2 == 0 &&
         _dots > 0) {
       dotsOffsetFromNotehead = 0;
-      dotVerticalOffset = _dotsSize.height / 2;
       dotsTopPosition = dotsOffsetFromNotehead;
     }
 
@@ -428,6 +439,15 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       // Somehow it works, probably because of pixel snapping nuances
       dotsOffsetFromNotehead -= (_dotsSize.height / 2).floor();
       dotsBottomPosition = dotsOffsetFromNotehead;
+    }
+
+    AccidentalElement? accidentalElement;
+
+    if (_accidental != null) {
+      accidentalElement = AccidentalElement(
+        accidental: _accidental!,
+        font: font,
+      );
     }
 
     StemElement? stem;
@@ -450,8 +470,8 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
             stem: stem,
             notehead: NoteheadElement(
               type: type,
-            font: font,
-            ledgerLines: LedgerLines.fromElementPosition(position),
+              font: font,
+              ledgerLines: LedgerLines.fromElementPosition(position),
             ),
           ),
           if (_dots > 0)
@@ -464,14 +484,12 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
                 painter: DotsPainter(_dots, AugmentationDot.defaultSpacing),
               ),
             ),
-          if (_accidental != null)
+          if (accidentalElement != null)
             Positioned(
               left: 0,
-              top: stemDirection == StemDirection.down
-                  ? dotVerticalOffset
-                  : null,
+              top: stemDirection == StemDirection.down ? 0 : null,
               bottom: stemDirection == StemDirection.up ? 0 : null,
-              child: AccidentalElement,
+              child: accidentalElement,
             ),
         ],
       ),
