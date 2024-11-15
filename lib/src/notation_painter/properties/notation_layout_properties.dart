@@ -1,5 +1,5 @@
 class NotationLayoutProperties {
-  static const double staveHeight = 50;
+  static const double staveHeight = 48;
 
   /// The height of a stave-space determines the size of all noteheads.
   static const staveSpace = staveHeight / (staffLines - 1);

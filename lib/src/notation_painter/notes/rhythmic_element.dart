@@ -1,7 +1,7 @@
 import 'package:flutter/rendering.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
-import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/properties/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 
 ///

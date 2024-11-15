@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
-import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/properties/notation_layout_properties.dart';
 
 /// An abstract base class representing a musical element within a measure,
 /// including properties for positioning, size, and alignment.

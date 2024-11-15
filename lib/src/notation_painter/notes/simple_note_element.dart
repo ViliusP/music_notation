@@ -5,7 +5,7 @@ import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
-import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/properties/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/painters/note_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
@@ -46,7 +46,7 @@ class SimpleNoteElement extends StatelessWidget {
   }
 
   static final double _stemHorizontalOffset =
-      (NotationLayoutProperties.stemStrokeWidth / 2).ceilToDouble();
+      (NotationLayoutProperties.stemStrokeWidth / 2);
 
   AlignmentPosition _stemPosition() {
     if (stem?.direction == StemDirection.up) {
@@ -99,7 +99,7 @@ class StemElement extends StatelessWidget {
     required this.direction,
     this.length = NotationLayoutProperties.standardStemLength,
     this.showFlag = true,
-  });
+  }) : assert(length >= 0, "Stem must have positive length");
 
   final NoteTypeValue type;
 
@@ -219,7 +219,7 @@ class StemElement extends StatelessWidget {
           direction: direction,
         ),
       ),
-      if (flagGlyph != null)
+      if (flagGlyph != null && length > 0)
         AligmentPositioned(
           position: _flagPosition(direction),
           child: CustomPaint(

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
-import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/properties/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/simple_note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
@@ -204,13 +204,6 @@ void main() {
           required double stemLength,
           required LedgerLines? ledgerLines,
         }) {
-          EdgeInsets padding = EdgeInsets.only(
-            bottom: 1,
-            top: 1,
-            left: 5,
-            right: 5,
-          );
-
           NoteheadElement notehead = NoteheadElement(
             type: type,
             font: font,
@@ -230,13 +223,10 @@ void main() {
 
           return Center(
             child: Padding(
-              padding: const EdgeInsets.all(3.0),
+              padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2),
               child: ColoredBox(
                 color: Color.fromRGBO(255, 255, 255, 1),
-                child: Padding(
-                  padding: padding,
-                  child: note,
-                ),
+                child: note,
               ),
             ),
           );
