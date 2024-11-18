@@ -30,7 +30,7 @@ class BeatTimeline {
   ///
   /// Iterates through each value in the [timeline] and includes elements matching the specified [voice].
   /// Adjusts offsets for accurate beat placements.
-  factory BeatTimeline.fromTimeline(Timeline timeline) {
+  factory BeatTimeline.fromTimeline(MeasureTimeline timeline) {
     BeatTimeline? finalBeatline;
 
     for (var voice in timeline.uniqueVoices) {
@@ -51,7 +51,7 @@ class BeatTimeline {
   /// Iterates through each value in the [timeline] and includes elements matching the specified [voice].
   /// Adjusts offsets for accurate beat placements.
   factory BeatTimeline._fromVoiceTimeline({
-    required Timeline timeline,
+    required MeasureTimeline timeline,
     required String voice,
   }) {
     int? parsedVoice = int.tryParse(voice);
@@ -238,7 +238,7 @@ class BeatTimeline {
   /// // spacings now contains horizontal positions for each MeasureWidget in the measure
   /// ```
   List<double> toSpacings(List<MeasureWidget> children) {
-    var tValues = Timeline.fromMeasureElements(children)._values;
+    var tValues = MeasureTimeline.fromMeasureElements(children)._values;
     List<double> spacings = List.generate(children.length, (_) => 0);
     List<double> beatSpacing = toDivisionsSpacing();
     int? measureRestIndex;

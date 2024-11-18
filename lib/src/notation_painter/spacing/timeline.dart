@@ -18,7 +18,7 @@ part "beat_timeline.dart";
 
 /// Represents a timeline for musical elements within a score.
 ///
-/// The [Timeline] class processes a list of [MeasureWidget] instances, categorizing
+/// The [MeasureTimeline] class processes a list of [MeasureWidget] instances, categorizing
 /// them based on their position in time and associating them with specific voices.
 /// This is particularly useful for rendering musical notation, analyzing score structure,
 /// or synchronizing musical events with other media.
@@ -30,7 +30,7 @@ part "beat_timeline.dart";
 /// List<double> spacings = timeline.toList(10.0);
 /// print(timeline);
 /// ```
-class Timeline {
+class MeasureTimeline {
   /// The number of divisions per measure.
   ///
   /// This value typically corresponds to the musical notation's time signature,
@@ -58,7 +58,7 @@ class Timeline {
   ///
   /// ### Parameters:
   /// - [divisions]: The number of divisions per measure, typically based on the time signature.
-  Timeline._(this._values, this.divisions);
+  MeasureTimeline._(this._values, this.divisions);
 
   /// Processes a list of [MeasureWidget] instances to populate the timeline.
   ///
@@ -69,7 +69,7 @@ class Timeline {
   ///
   /// ### Parameters:
   /// - [children] - A list of [MeasureWidget] instances representing musical elements.
-  factory Timeline.fromMeasureElements(
+  factory MeasureTimeline.fromMeasureElements(
     List<MeasureWidget> children,
   ) {
     double divisions = 1;
@@ -191,7 +191,10 @@ class Timeline {
       }
     }
 
-    return Timeline._(SplayTreeMap.from(values), divisions);
+    return MeasureTimeline._(
+      SplayTreeMap.from(values),
+      divisions,
+    );
   }
 
   /// Generates a string representation of the timeline for debugging purposes.

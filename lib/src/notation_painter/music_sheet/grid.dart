@@ -86,8 +86,9 @@ class AlignedRowRenderObject extends RenderBox
   void performLayout() {
     double maxTargetOffset = 0.0;
     double totalWidth = 0.0;
+    double maxHeight = 0.0;
 
-    // First pass: Layout children and find the maximum target offset
+    // First pass: Layout children and find the maximum target offset and height
     RenderBox? child = firstChild;
     while (child != null) {
       final AlignedRowParentData childParentData =
@@ -105,15 +106,33 @@ class AlignedRowRenderObject extends RenderBox
         }
       }
 
+      if (child.size.height > maxHeight) {
+        maxHeight = child.size.height;
+      }
+
       totalWidth += child.size.width;
 
       child = childParentData.nextSibling;
     }
 
-    // Second pass: Position children so that their target offsets align
+    // Second pass: Re-layout each child with maxHeight constraints
+    child = firstChild;
+    while (child != null) {
+      final AlignedRowParentData childParentData =
+          child.parentData as AlignedRowParentData;
+
+      BoxConstraints childConstraints = constraints.copyWith(
+        minHeight: maxHeight,
+        maxHeight: maxHeight,
+      );
+
+      child.layout(childConstraints, parentUsesSize: true);
+
+      child = childParentData.nextSibling;
+    }
+
+    // Now proceed to position the children
     double xPosition = 0.0;
-    double minY = double.infinity;
-    double maxY = double.negativeInfinity;
 
     child = firstChild;
     while (child != null) {
@@ -121,43 +140,15 @@ class AlignedRowRenderObject extends RenderBox
           child.parentData as AlignedRowParentData;
 
       double shift = maxTargetOffset - childParentData.targetOffset;
+
       childParentData.offset = Offset(xPosition, shift);
-
-      // Update minY and maxY based on shifted positions
-      double childTop = shift;
-      double childBottom = shift + child.size.height;
-
-      if (childTop < minY) {
-        minY = childTop;
-      }
-      if (childBottom > maxY) {
-        maxY = childBottom;
-      }
 
       xPosition += child.size.width;
 
       child = childParentData.nextSibling;
     }
 
-    // Adjust the offsets if necessary
-    double totalHeight = maxY - minY;
-
-    // If minY is negative, shift all children down
-    if (minY < 0) {
-      child = firstChild;
-      while (child != null) {
-        final AlignedRowParentData childParentData =
-            child.parentData as AlignedRowParentData;
-
-        childParentData.offset = childParentData.offset.translate(0, -minY);
-
-        child = childParentData.nextSibling;
-      }
-      minY = 0;
-      maxY = totalHeight;
-    }
-
-    size = constraints.constrain(Size(totalWidth, totalHeight));
+    size = constraints.constrain(Size(totalWidth, maxHeight));
   }
 
   @override

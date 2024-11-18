@@ -63,24 +63,26 @@ class MeasureLayout extends StatelessWidget {
   /// An [EdgeInsets] object with calculated top and bottom padding.
   static VerticalEdgeInsets calculateVerticalPadding(
       List<MeasureWidget> children) {
-    double topPadding = 0;
-    double bottomPadding = 0;
+    double top = 0;
+    double bottom = 0;
 
     for (var child in children) {
-      topPadding = max(topPadding, child.boxAboveStaff().height);
-      bottomPadding = max(bottomPadding, child.boxBelowStaff().height);
+      top = max(top, child.boxAboveStaff().height);
+      bottom = max(bottom, child.boxBelowStaff().height);
     }
 
     return VerticalEdgeInsets(
-      bottom: bottomPadding,
-      top: topPadding,
+      bottom: bottom,
+      top: top,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final BeatTimeline measureBeatline = beatTimeline ??
-        BeatTimeline.fromTimeline(Timeline.fromMeasureElements(children));
+        BeatTimeline.fromTimeline(MeasureTimeline.fromMeasureElements(
+          children,
+        ));
 
     List<double> spacings = measureBeatline.toSpacings(children);
 
@@ -88,8 +90,8 @@ class MeasureLayout extends StatelessWidget {
 
     const offsetPerPosition = NotationLayoutProperties.defaultStaveSpace / 2;
 
-    var padding = InheritedPadding.of(context)?.padding;
-    padding ??= calculateVerticalPadding(children);
+    var inheritedPadding = InheritedPadding.of(context)?.padding;
+    var padding = inheritedPadding ?? calculateVerticalPadding(children);
 
     DebugSettings? dSettings = DebugSettings.of(context);
 
@@ -107,7 +109,7 @@ class MeasureLayout extends StatelessWidget {
 
         if (beaming.isFinalized) {
           beamGroups.add(
-            Positioned.fill(child: BeamGroup.fromBeaming(beaming, padding!)),
+            Positioned.fill(child: BeamGroup.fromBeaming(beaming, padding)),
           );
           beaming = BeamGrouping();
         }
@@ -123,7 +125,7 @@ class MeasureLayout extends StatelessWidget {
           intervalFromTheF5 -= child.position.numeric;
           topOffset += intervalFromTheF5 * offsetPerPosition;
 
-          topOffset += padding!.top;
+          topOffset += padding.top;
         }
         if (child.alignmentPosition.bottom != null) {
           bottomOffset = 0;
@@ -134,7 +136,7 @@ class MeasureLayout extends StatelessWidget {
           intervalFromTheE4 -= child.position.numeric;
           bottomOffset -= intervalFromTheE4 * offsetPerPosition;
 
-          bottomOffset += padding!.bottom;
+          bottomOffset += padding.bottom;
         }
 
         if (beamingResult == null || beamingResult == BeamingResult.skipped) {
@@ -154,7 +156,7 @@ class MeasureLayout extends StatelessWidget {
             positionedElements.add(
               Positioned(
                 left: spacings[index],
-                top: padding!.top + NotationLayoutProperties.defaultStaveHeight,
+                top: padding.top + NotationLayoutProperties.defaultStaveHeight,
                 child: Container(
                   width: boxBelow.width,
                   height: [boxBelow.height, 0].max.toDouble(),
@@ -169,7 +171,7 @@ class MeasureLayout extends StatelessWidget {
             positionedElements.add(
               Positioned(
                 left: spacings[index],
-                bottom: padding!.bottom +
+                bottom: padding.bottom +
                     NotationLayoutProperties.defaultStaveHeight,
                 child: Container(
                   width: boxAbove.width,
@@ -186,21 +188,26 @@ class MeasureLayout extends StatelessWidget {
         fit: StackFit.loose,
         children: [
           Padding(
-            padding: padding!,
+            padding: padding,
             child: AlignTarget(
               child: SizedBox.fromSize(
                 size: Size(
                   width,
                   NotationLayoutProperties.defaultStaveHeight,
                 ),
-                child: StaffLines(
-                  startExtension: barlineSettings.startExtension,
-                  endExtension: barlineSettings.endExtension,
-                  measurePadding: padding,
-                ),
+                child: StaffLines(),
               ),
             ),
           ),
+          // SizedBox(
+          //   height: 0,
+          //   width: width,
+          //   child: Barlines(
+          //     startExtension: barlineSettings.startExtension,
+          //     endExtension: barlineSettings.endExtension,
+          //     padding: padding,
+          //   ),
+          // ),
           if (dSettings?.beatMarker == true)
             Padding(
               padding: padding,

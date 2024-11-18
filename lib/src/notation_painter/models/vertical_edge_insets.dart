@@ -5,4 +5,11 @@ class VerticalEdgeInsets extends EdgeInsets {
     required super.top,
     required super.bottom,
   }) : super.only();
+
+  VerticalEdgeInsets increase({double? top, double? bottom}) {
+    return VerticalEdgeInsets(
+      top: this.top + (top ?? 0),
+      bottom: this.bottom + (bottom ?? 0),
+    );
+  }
 }

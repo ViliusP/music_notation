@@ -2,19 +2,13 @@ import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/debug/stave_space_indicator_painter.dart';
 import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
+import 'package:music_notation/src/notation_painter/models/vertical_edge_insets.dart';
 import 'package:music_notation/src/notation_painter/painters/barline_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/staff_lines_painter.dart';
 
 class StaffLines extends StatelessWidget {
-  final BarlineExtension startExtension;
-  final BarlineExtension endExtension;
-  final EdgeInsets measurePadding;
-
   const StaffLines({
     super.key,
-    required this.startExtension,
-    required this.endExtension,
-    required this.measurePadding,
   });
 
   @override
@@ -26,37 +20,74 @@ class StaffLines extends StatelessWidget {
     //   BarlineExtension.top: Color.fromRGBO(4, 0, 255, .5),
     // };
 
+    DebugSettings? debugSettings = DebugSettings.of(context);
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        CustomPaint(
+          painter: StaffLinesPainter(
+            extraStaveLineCount: debugSettings?.extraStaveLineCount ?? 0,
+            extraStaveLines:
+                debugSettings?.extraStaveLines ?? ExtraStaveLines.none,
+          ),
+        ),
+        if ((debugSettings?.verticalStaveLineSpacingMultiplier ?? 0) != 0)
+          CustomPaint(
+            painter: StaveSpaceIndicatorPainter(
+              debugSettings?.verticalStaveLineSpacingMultiplier ?? 0,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class Barlines extends StatelessWidget {
+  final BarlineExtension startExtension;
+  final BarlineExtension endExtension;
+
+  // Measure padding
+  final VerticalEdgeInsets padding;
+
+  const Barlines({
+    super.key,
+    required this.startExtension,
+    required this.endExtension,
+    required this.padding,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     double calculatedStartOffset = 0;
     double calculatedStartHeight = BarlinePainter.size.height;
     if (startExtension == BarlineExtension.bottom) {
-      calculatedStartHeight += measurePadding.bottom;
+      calculatedStartHeight += padding.bottom;
     }
 
     if (startExtension == BarlineExtension.both) {
-      calculatedStartHeight += measurePadding.bottom;
-      calculatedStartOffset -= measurePadding.top;
+      calculatedStartHeight += padding.bottom;
+      calculatedStartOffset -= padding.top;
     }
 
     if (startExtension == BarlineExtension.top) {
-      calculatedStartOffset -= measurePadding.top;
+      calculatedStartOffset -= padding.top;
     }
 
     double calculatedEndOffset = 0;
     double calculatedEndHeight = BarlinePainter.size.height;
     if (endExtension == BarlineExtension.bottom) {
-      calculatedEndHeight += measurePadding.bottom;
+      calculatedEndHeight += padding.bottom;
     }
 
     if (endExtension == BarlineExtension.both) {
-      calculatedEndHeight += measurePadding.bottom;
-      calculatedEndOffset -= measurePadding.top;
+      calculatedEndHeight += padding.bottom;
+      calculatedEndOffset -= padding.top;
     }
 
     if (endExtension == BarlineExtension.top) {
-      calculatedEndOffset -= measurePadding.top;
+      calculatedEndOffset -= padding.top;
     }
-
-    DebugSettings? debugSettings = DebugSettings.of(context);
 
     return Stack(
       fit: StackFit.expand,
@@ -72,19 +103,6 @@ class StaffLines extends StatelessWidget {
                 height: calculatedStartHeight,
                 end: false,
               ),
-            ),
-          ),
-        CustomPaint(
-          painter: StaffLinesPainter(
-            extraStaveLineCount: debugSettings?.extraStaveLineCount ?? 0,
-            extraStaveLines:
-                debugSettings?.extraStaveLines ?? ExtraStaveLines.none,
-          ),
-        ),
-        if ((debugSettings?.verticalStaveLineSpacingMultiplier ?? 0) != 0)
-          CustomPaint(
-            painter: StaveSpaceIndicatorPainter(
-              debugSettings?.verticalStaveLineSpacingMultiplier ?? 0,
             ),
           ),
         Align(
