@@ -58,11 +58,11 @@ class BeatTimeline {
     List<BeatTimelineValue> values = [];
 
     double lastAttributeOffset = NotationLayoutProperties.defaultStaveSpace;
-    for (var entry in timeline._values.entries) {
-      List<_TimelineValue> beatCol = entry.value.sorted(
+    for (var entry in timeline.values.entries) {
+      List<TimelineValue> beatCol = entry.value.sorted(
         (a, b) => a.voice.compareTo(b.voice),
       );
-      for (_TimelineValue value in beatCol) {
+      for (TimelineValue value in beatCol) {
         int? valueVoice = int.tryParse(value.voice);
         // Skip if the voice does not match and it's not an unassigned voice.
         if (parsedVoice == null ||
@@ -238,20 +238,20 @@ class BeatTimeline {
   /// // spacings now contains horizontal positions for each MeasureWidget in the measure
   /// ```
   List<double> toSpacings(List<MeasureWidget> children) {
-    var tValues = MeasureTimeline.fromMeasureElements(children)._values;
+    var tValues = MeasureTimeline.fromMeasureElements(children).values;
     List<double> spacings = List.generate(children.length, (_) => 0);
     List<double> beatSpacing = toDivisionsSpacing();
     int? measureRestIndex;
     double lastAttributeOffset = 0;
     for (var entry in tValues.entries) {
-      List<_TimelineValue> beatCol = entry.value.sorted(
+      List<TimelineValue> beatCol = entry.value.sorted(
         (a, b) => a.voice.compareTo(b.voice),
       );
 
       int beat = entry.key.value;
 
       double attributeOffset = lastAttributeOffset;
-      for (_TimelineValue value in beatCol) {
+      for (TimelineValue value in beatCol) {
         if (value.duration != 0) {
           // Check if the element is a measure rest and store its index
           if (children[value.index].tryAs<RestElement>()?.isMeasure == true) {
