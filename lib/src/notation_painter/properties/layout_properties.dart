@@ -1,4 +1,8 @@
 class NotationLayoutProperties {
+  // ----------------------
+  // CONSTANTS
+  // ----------------------
+
   /// The default stave height for fallbacking;
   static const double _defaultStaveHeight = 48;
 
@@ -21,8 +25,9 @@ class NotationLayoutProperties {
   /// centre of the notehead.
   static const double baseStandardStemLength = 3.5;
 
-  /// The distance between beams is 1/4 stave space.
-  static const double defaultBeamSpacing = _defaultStaveSpace / 2;
+  // ----------------------
+  // GETTERS
+  // ----------------------
 
   /// The reference size value that determines sizing of musical elements.
   double get staveHeight => _staveHeight;
@@ -48,6 +53,9 @@ class NotationLayoutProperties {
 
   /// Beam thickness is 1/2 stave-space.
   double get beamThickness => staveSpace * baseBeamThickness;
+
+  /// The distance between beams is 1/4 stave space.
+  double get defaultBeamSpacing => staveSpace * .25;
 
   const NotationLayoutProperties({
     required double staveHeight,

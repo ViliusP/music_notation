@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/rendering.dart';
 import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/notation_painter/notes/beaming.dart';
-import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 
 class BeamPainter extends CustomPainter {
@@ -14,6 +13,7 @@ class BeamPainter extends CustomPainter {
 
   final double hookLength;
   final double thickness;
+  final double spacing;
 
   final bool debug;
 
@@ -24,6 +24,7 @@ class BeamPainter extends CustomPainter {
     required this.hookLength,
     required this.thickness,
     this.debug = false,
+    required this.spacing,
   });
 
   @override
@@ -45,9 +46,7 @@ class BeamPainter extends CustomPainter {
       double offsetX = noteBeams.leftOffset;
 
       for (var beams in noteBeams.values) {
-        double yOffset = NotationLayoutProperties.defaultBeamSpacing *
-            1.5 *
-            (beams.number - 1);
+        double yOffset = spacing * 1.5 * (beams.number - 1);
 
         if (noteBeams.stemDirection == StemDirection.down) {
           yOffset = yOffset * (-1);
