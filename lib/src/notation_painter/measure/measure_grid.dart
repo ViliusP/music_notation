@@ -230,7 +230,7 @@ class MeasureGrid {
   }
 
   int get heightAboveStave {
-    var highestPosition = _columns.values.first._values.keys.firstOrNull;
+    var highestPosition = _columns.values.last._values.keys.firstOrNull;
     highestPosition ??= ElementPosition.staffTop;
 
     int distance = ElementPosition.staffTop.distance(highestPosition);
@@ -239,7 +239,7 @@ class MeasureGrid {
   }
 
   int get heightBelowStave {
-    var lowestPosition = _columns.values.first._values.keys.firstOrNull;
+    var lowestPosition = _columns.values.last._values.keys.lastOrNull;
     lowestPosition ??= ElementPosition.staffBottom;
 
     int distance = ElementPosition.staffBottom.distance(lowestPosition);
@@ -266,7 +266,6 @@ class MeasureGrid {
     List<List<String>> representationGrid = List.generate(rows, (_) => []);
 
     for (var (i, entry) in _columns.entries.indexed) {
-      print(entry.value._values.length);
       for (var (j, colValue) in entry.value._values.entries.indexed) {
         if (i == 0) {
           representationGrid[j].add("${colValue.key.numeric}");
