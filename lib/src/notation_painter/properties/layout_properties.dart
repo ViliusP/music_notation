@@ -32,7 +32,7 @@ class NotationLayoutProperties {
   double get staveSpace => _staveHeight / (staveLines - 1);
 
   /// The distance between elements when positional difference is 1.
-  double get offsetPerPosition => staveSpace / 2;
+  double get spacePerPosition => staveSpace / 2;
 
   double get staveLineThickness =>
       12 * NotationLayoutProperties.defaultStaveSpace / 100;
