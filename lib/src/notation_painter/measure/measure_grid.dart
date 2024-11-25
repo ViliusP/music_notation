@@ -198,7 +198,7 @@ class MeasureGrid {
         heightBelowStaff = [
           heightBelowStaff,
           elementHeightBelowStaff,
-          children[value.index].boxBelowStaff().height.ceil() * 2,
+          (children[value.index].boxBelowStaff().height * 2).ceil(),
         ].max;
 
         var elementHeightAboveStaff = position.distanceFromTop.clamp(
@@ -209,7 +209,7 @@ class MeasureGrid {
         heightAboveStaff = [
           heightAboveStaff,
           elementHeightAboveStaff,
-          children[value.index].boxAboveStaff().height.ceil() * 2,
+          (children[value.index].boxAboveStaff().height * 2).ceil(),
         ].max;
       }
     }
