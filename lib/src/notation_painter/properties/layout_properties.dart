@@ -6,7 +6,7 @@ class NotationLayoutProperties {
   static const defaultStaveSpace = defaultStaveHeight / (staveLines - 1);
 
   static const int staveLines = 5;
-  static const double defaultstaffLineStrokeWidth =
+  static const double defaultStaveLineStrokeWidth =
       12 * NotationLayoutProperties.defaultStaveSpace / 100;
 
   /// The standard length of a stem is one octave (3.5 stave-spaces) from the
@@ -33,6 +33,9 @@ class NotationLayoutProperties {
 
   /// The distance between elements when positional difference is 1.
   double get offsetPerPosition => staveSpace / 2;
+
+  double get staveLineThickness =>
+      12 * NotationLayoutProperties.defaultStaveSpace / 100;
 
   const NotationLayoutProperties({
     required double staveHeight,
