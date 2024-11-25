@@ -26,10 +26,6 @@ class SimpleNoteElement extends StatelessWidget {
     this.stem,
   });
 
-  Size get size => _calculateBaseSize(notehead: notehead, stem: stem).scale(
-        NotationLayoutProperties.defaultStaveSpace,
-      );
-
   Size get baseSize => _calculateBaseSize(notehead: notehead, stem: stem);
 
   static Size _calculateBaseSize({
@@ -78,8 +74,12 @@ class SimpleNoteElement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
     return SizedBox.fromSize(
-      size: size,
+      size: baseSize.scale(layoutProperties.staveSpace),
       child: Stack(
         children: [
           AlignmentPositioned(
@@ -88,7 +88,7 @@ class SimpleNoteElement extends StatelessWidget {
           ),
           if (stem != null)
             AlignmentPositioned(
-              position: _stemPosition(),
+              position: _stemPosition().scale(layoutProperties.staveSpace),
               child: stem!,
             ),
         ],
