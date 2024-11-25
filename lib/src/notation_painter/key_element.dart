@@ -16,6 +16,7 @@ import 'package:music_notation/src/notation_painter/properties/layout_properties
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
+import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart';
 
@@ -183,7 +184,6 @@ class AccidentalElement extends StatelessWidget {
     );
   }
 
-  Size get size => baseSize.scale(NotationLayoutProperties.defaultStaveSpace);
   Size get baseSize => calculateSize(accidental, font);
 
   static Size calculateSize(
@@ -213,7 +213,7 @@ class AccidentalElement extends StatelessWidget {
             NotationLayoutProperties.standard();
 
     return CustomPaint(
-      size: size,
+      size: baseSize.scaledByContext(context),
       painter: SimpleGlyphPainter(
         smufl(accidental),
         font.glyphBBoxes[_accidentalSmuflMapping[accidental]]!,
@@ -229,8 +229,6 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
   final NotationContext notationContext;
 
   static const _baseSpaceBetweenAccidentals = 0.25;
-  static const _spaceBetweenAccidentals =
-      _baseSpaceBetweenAccidentals * NotationLayoutProperties.defaultStaveSpace;
 
   @override
   AlignmentPosition get alignmentPosition {
@@ -293,10 +291,10 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
       Size accidentalSize = AccidentalElement(
         accidental: accidental.accidental?.value ?? AccidentalValue.other,
         font: font,
-      ).size;
+      ).baseSize;
 
       offsets.add(leftOffset);
-      leftOffset += accidentalSize.width + _spaceBetweenAccidentals;
+      leftOffset += accidentalSize.width + _baseSpaceBetweenAccidentals;
     }
     return offsets;
   }

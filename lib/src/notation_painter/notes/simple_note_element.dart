@@ -120,8 +120,6 @@ class StemElement extends StatelessWidget {
   /// Determines if flag should be shown with stem. By default it is true;
   final bool showFlag;
 
-  Size get size => baseSize.scale(NotationLayoutProperties.defaultStaveSpace);
-
   Size get baseSize {
     double width = NotationLayoutProperties.baseStemStrokeWidth;
     if (showFlag && length > 0) {

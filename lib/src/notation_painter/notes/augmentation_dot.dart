@@ -27,9 +27,6 @@ class AugmentationDot extends StatelessWidget {
   /// The default offset for positioning [AugmentationDot] on the right side of the note.
   /// This offset is typically half of the stave space and is added to the note size,
   /// so the dot aligns correctly in musical notation.
-  static const double defaultOffset =
-      defaultBaseOffset * NotationLayoutProperties.defaultStaveSpace;
-
   static const double defaultBaseOffset = 1 / 2;
 
   /// The default spacing between two augmentation dots.

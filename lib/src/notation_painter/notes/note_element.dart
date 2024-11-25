@@ -135,7 +135,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     if (_stemmed && stemDirection == StemDirection.down) {
       top = -1 / 2;
       if (position.numeric % 2 == 0 && _dots > 0) {
-        top -= _dotsSize.height / 2;
+        top -= baseDotsSize(font).height / 2;
       }
     }
 
@@ -166,7 +166,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       Size accidentalSize = AccidentalElement.calculateSize(accidental, font);
       leftOffset -= accidentalSize.width;
       // Space between notehead and accidental.
-      leftOffset -= NotationLayoutProperties.defaultStaveSpace / 4;
+      leftOffset -= 1 / 4;
     }
 
     return leftOffset;
@@ -335,7 +335,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
 
     if (note.dots.isNotEmpty) {
       width += baseDotsSize(font).width;
-      width += dotsOffset();
+      width += baseDotsOffset;
 
       ElementPosition position = determinePosition(note, clef);
       if (note.stem?.value == StemValue.down && position.numeric % 2 == 0) {
@@ -349,7 +349,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       Size accidentalSize = AccidentalElement.calculateSize(accidental, font);
       width += accidentalSize.width;
       // Space between notehead and accidental.
-      width += NotationLayoutProperties.defaultStaveSpace / 4;
+      width += 1 / 4;
 
       AlignmentPosition accidentalAlignmentPosition =
           AccidentalElement.calculateAlignmentPosition(accidental, font);
@@ -370,30 +370,21 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     if (stemDirection == StemDirection.down &&
         position.numeric % 2 == 0 &&
         _dots > 0) {
-      return NotationLayoutProperties.defaultStaveSpace / 2 +
-          _dotsSize.height / 2;
+      return 1 / 2 + baseDotsSize(font).height / 2;
     }
-    return NotationLayoutProperties.defaultStaveSpace / 2;
+    return 1 / 2;
   }
 
   int get _dots {
     return note.dots.length;
   }
 
-  double get _dotsRightOffset => dotsOffset();
-
   /// Calculates the offset for [_dots] based on the right side of the note.
   /// This offset is typically half of the stave space and is added to the note size.
-  static double dotsOffset() {
-    // Distance from note to dot is conventionally half the stave space.
-    double defaultOffset = NotationLayoutProperties.defaultStaveSpace / 2;
+  ///
+  /// Distance from note to dot is conventionally half the stave space.
 
-    return defaultOffset;
-  }
-
-  Size get _dotsSize => baseDotsSize(font).scale(
-        NotationLayoutProperties.defaultStaveSpace,
-      );
+  static double get baseDotsOffset => 1 / 2;
 
   static Size baseDotsSize(FontMetadata font) {
     return AugmentationDot(count: 1, font: font).baseSize;
@@ -416,11 +407,11 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
 
     double dotsOffsetFromNotehead = position.numeric % 2 != 0
         ? noteheadSize.height / 2 // Between lines
-        : NotationLayoutProperties.defaultStaveSpace; // On the line
+        : layoutProperties.staveSpace; // On the line
 
     if (stemDirection == StemDirection.down) {
       // Somehow it works, probably because of pixel snapping nuances
-      dotsOffsetFromNotehead -= (_dotsSize.height / 2).ceil();
+      dotsOffsetFromNotehead -= (dotsSize.height / 2).ceil();
       dotsTopPosition = dotsOffsetFromNotehead;
     }
     // When note is on drawn the line and it's stem is drawn down,
@@ -434,7 +425,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
 
     if (stemDirection == StemDirection.up) {
       // Somehow it works, probably because of pixel snapping nuances
-      dotsOffsetFromNotehead -= (_dotsSize.height / 2).floor();
+      dotsOffsetFromNotehead -= (dotsSize.height / 2).floor();
       dotsBottomPosition = dotsOffsetFromNotehead;
     }
 

@@ -132,10 +132,8 @@ class Chord extends StatelessWidget implements RhythmicElement {
 
     if (maxDotsNote.dots.isNotEmpty) {
       offsetX = baseSize.width;
-      offsetX -= NoteElement.dotsOffset();
-      offsetX -= NoteElement.baseDotsSize(font)
-          .scale(NotationLayoutProperties.defaultStaveSpace)
-          .width;
+      offsetX -= NoteElement.baseDotsOffset;
+      offsetX -= NoteElement.baseDotsSize(font).width;
     }
 
     var (leftWidth, rightWidth) = _noteheadSizesBySide(
@@ -149,10 +147,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
     }
 
     if (stemDirection == StemDirection.down) {
-      offsetX = (NotationLayoutProperties.defaultStaveSpace *
-                  NotationLayoutProperties.baseStemStrokeWidth) /
-              2 +
-          leftWidth;
+      offsetX = (NotationLayoutProperties.baseStemStrokeWidth) / 2 + leftWidth;
     }
 
     if (alignmentPosition.top != null && stemDirection != StemDirection.down) {
@@ -374,8 +369,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
       double interval =
           ((element.position.numeric - position.numeric)).toDouble();
 
-      double distanceFromRef =
-          interval * NotationLayoutProperties.defaultStaveSpace / 2;
+      double distanceFromRef = interval * 1 / 2;
 
       // When note is on drawn the line and it's stem is drawn down,
       // the dots size must be taken in the account.
@@ -385,7 +379,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
           note.dots.isNotEmpty &&
           index != referenceNoteIndex) {
         distanceFromRef += element.verticalAlignmentAxisOffset;
-        distanceFromRef -= NotationLayoutProperties.defaultStaveSpace / 2;
+        distanceFromRef -= 1 / 2;
       }
 
       final NoteheadPosition noteheadPos = _noteheadsPositions[index];

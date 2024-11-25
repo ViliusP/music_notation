@@ -197,6 +197,7 @@ class BeamGroup extends StatelessWidget {
               beamsPattern: beamsPattern(),
               // color: color,
               downward: _isBeamDownward(),
+              hookLength: layoutProperties.staveSpace,
             ),
           ),
         ),

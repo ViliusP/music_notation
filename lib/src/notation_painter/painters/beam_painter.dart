@@ -12,12 +12,15 @@ class BeamPainter extends CustomPainter {
   final bool downward;
   final Color? color;
 
+  final double hookLength;
+
   final bool debug;
 
   BeamPainter({
     required this.beamsPattern,
     required this.downward,
     this.color,
+    required this.hookLength,
     this.debug = false,
   });
 
@@ -76,7 +79,7 @@ class BeamPainter extends CustomPainter {
             angle: angle,
             canvas: canvas,
             start: Offset(start.dx, start.dy + yOffset),
-            beamLength: NotationLayoutProperties.defaultStaveSpace,
+            beamLength: hookLength,
             alignmentLineLength: offsetX - beamsPattern[index - 1].leftOffset,
             alignment: Alignment.end,
             alignmentLineByHorizontalSpan: true,

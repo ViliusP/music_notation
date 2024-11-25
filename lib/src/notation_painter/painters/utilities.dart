@@ -1,6 +1,5 @@
 import 'package:flutter/rendering.dart';
 
-import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
 class PainterUtilities {
@@ -8,12 +7,11 @@ class PainterUtilities {
     Canvas canvas,
     String symbol,
     double size, {
-    Offset offset = const Offset(
-      0,
-      (-NotationLayoutProperties.defaultStaveSpace * 1.5),
-    ),
+    Offset? offset,
     Color color = const Color.fromRGBO(0, 0, 0, 1.0),
   }) {
+    var defaultOffset = Offset(0, (-size * 1.5));
+
     TextStyle textStyle = TextStyle(
       fontFamily: 'Leland',
       fontSize: size * 4,
@@ -28,7 +26,7 @@ class PainterUtilities {
     textPainter.layout();
     textPainter.paint(
       canvas,
-      offset,
+      offset ?? defaultOffset,
     );
   }
 }

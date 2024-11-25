@@ -71,14 +71,14 @@ class StaffLinesPainter extends CustomPainter {
   bool hitTest(Offset position) {
     var lineY = 0.0;
 
-    for (var i = 0; i < NotationLayoutProperties.staveLines; i++) {
+    for (var i = 0; i < 5; i++) {
       double halfStroke = NotationLayoutProperties.defaultStaveLineStrokeWidth;
 
       if (position.dy > lineY - halfStroke &&
           position.dy < lineY + halfStroke) {
         return true;
       }
-      lineY += NotationLayoutProperties.defaultStaveSpace;
+      lineY += spacing;
     }
     return false;
   }

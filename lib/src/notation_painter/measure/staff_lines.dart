@@ -46,7 +46,9 @@ class StaffLines extends StatelessWidget {
           if ((debugSettings?.verticalStaveLineSpacingMultiplier ?? 0) != 0)
             CustomPaint(
               painter: StaveSpaceIndicatorPainter(
-                debugSettings?.verticalStaveLineSpacingMultiplier ?? 0,
+                multiplier:
+                    debugSettings?.verticalStaveLineSpacingMultiplier ?? 0,
+                spacing: spacing,
               ),
             ),
         ],

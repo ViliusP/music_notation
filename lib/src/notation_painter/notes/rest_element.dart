@@ -14,6 +14,7 @@ import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
+import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 
 class RestElement extends StatelessWidget implements RhythmicElement {
@@ -87,14 +88,14 @@ class RestElement extends StatelessWidget implements RhythmicElement {
 
   double get _dotsVerticalOffset {
     // Alignment line of rest.
-    double top = NotationLayoutProperties.defaultStaveSpace * _bBox.bBoxNE.y;
+    double top = _bBox.bBoxNE.y;
 
     top -= AugmentationDot(
           count: 1,
           font: font,
         ).alignmentPosition.top ??
         0;
-    top -= NotationLayoutProperties.defaultStaveSpace / 2;
+    top -= .5;
     return top;
   }
 
