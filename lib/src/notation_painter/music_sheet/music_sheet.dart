@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
+import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_grid.dart';
@@ -27,21 +28,16 @@ class MusicSheet extends StatelessWidget {
 
   final FontMetadata font;
 
-  final NotationLayoutProperties layoutProperties;
-
   const MusicSheet._({
     super.key,
     required this.grid,
     required this.font,
-    required this.layoutProperties,
   });
 
   factory MusicSheet.fromScore({
     Key? key,
     required ScorePartwise score,
     required FontMetadata font,
-    NotationLayoutProperties layoutProperties =
-        const NotationLayoutProperties.standard(),
   }) {
     var grid = RawMeasureGrid.fromScoreParts(score.parts);
     MusicSheetGrid musicSheetGrid = MusicSheetGrid(grid.data.rowCount);
@@ -93,27 +89,30 @@ class MusicSheet extends StatelessWidget {
       key: key,
       grid: musicSheetGrid,
       font: font,
-      layoutProperties: layoutProperties,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      direction: Axis.horizontal,
-      alignment: WrapAlignment.start,
-      spacing: 0,
-      runAlignment: WrapAlignment.start,
-      runSpacing: 0,
-      crossAxisAlignment: WrapCrossAlignment.start,
-      textDirection: TextDirection.ltr,
-      verticalDirection: VerticalDirection.up,
-      clipBehavior: Clip.none,
-      children: grid.values
-          .map((col) => _SheetMeasuresColumn(
-                values: col,
-              ))
-          .toList(),
+    return DebugSettings(
+      extraStaveLineCount: 0,
+      extraStaveLines: ExtraStaveLines.none,
+      child: Wrap(
+        direction: Axis.horizontal,
+        alignment: WrapAlignment.start,
+        spacing: 0,
+        runAlignment: WrapAlignment.start,
+        runSpacing: 0,
+        crossAxisAlignment: WrapCrossAlignment.start,
+        textDirection: TextDirection.ltr,
+        verticalDirection: VerticalDirection.up,
+        clipBehavior: Clip.none,
+        children: grid.values
+            .map((col) => _SheetMeasuresColumn(
+                  values: col,
+                ))
+            .toList(),
+      ),
     );
   }
 }

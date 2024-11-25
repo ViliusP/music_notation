@@ -77,11 +77,12 @@ class _ScorePageState extends State<ScorePage> {
                 ),
                 child: fontToUse == null
                     ? SizedBox.shrink()
-                    : MusicSheet.fromScore(
-                        score: widget.scorePartwise,
+                    : NotationProperties(
+                        layout: NotationLayoutProperties(staveHeight: 60),
                         font: fontToUse,
-                        layoutProperties: NotationLayoutProperties(
-                          staveHeight: 100,
+                        child: MusicSheet.fromScore(
+                          score: widget.scorePartwise,
+                          font: fontToUse,
                         ),
                       ),
               )),
