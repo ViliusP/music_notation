@@ -29,35 +29,12 @@ class RestElement extends StatelessWidget implements RhythmicElement {
     return AlignmentPosition(left: 0, top: -_verticalAlignmentAxisOffset);
   }
 
-  @override
-  // TODO: implement alignmentPositionV2
-  AlignmentPositionV2 get alignmentPositionV2 {
-    double alignment = _bBox.bBoxNE.y;
-    if (_dots > 0) {
-      double maybeDotOffset = alignment;
-      maybeDotOffset -= AugmentationDot(
-            count: 1,
-            font: font,
-          ).alignmentPositionV2.top ??
-          0;
-      maybeDotOffset -= 1 / 2;
-      if (maybeDotOffset < 0) {
-        alignment -= maybeDotOffset;
-      }
-    }
-
-    return AlignmentPositionV2(
-      left: 0,
-      top: alignment,
-    );
-  }
-
   GlyphBBox get _bBox {
     return font.glyphBBoxes[_glyph]!;
   }
 
   double get _verticalAlignmentAxisOffset {
-    double alignment = _bBox.topOffset;
+    double alignment = _bBox.bBoxNE.y;
     if (_dots > 0) {
       double maybeDotOffset = alignment;
       maybeDotOffset -= AugmentationDot(
@@ -65,7 +42,7 @@ class RestElement extends StatelessWidget implements RhythmicElement {
             font: font,
           ).alignmentPosition.top ??
           0;
-      maybeDotOffset -= NotationLayoutProperties.defaultStaveSpace / 2;
+      maybeDotOffset -= 1 / 2;
       if (maybeDotOffset < 0) {
         alignment -= maybeDotOffset;
       }

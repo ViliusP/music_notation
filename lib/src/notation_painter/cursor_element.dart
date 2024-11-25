@@ -20,12 +20,6 @@ class CursorElement extends StatelessWidget implements MeasureWidget {
         top: 0,
       );
 
-  @override
-  AlignmentPositionV2 get alignmentPositionV2 => AlignmentPositionV2(
-        left: 0,
-        top: 0,
-      );
-
   /// Generic position as `<forward>` does not correspond to a specific musical position.
   @override
   ElementPosition get position => ElementPosition.staffMiddle;

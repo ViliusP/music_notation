@@ -53,46 +53,13 @@ class Chord extends StatelessWidget implements RhythmicElement {
     if (stemDirection == StemDirection.down &&
         position.numeric % 2 == 0 &&
         maxDotsNote.dots.isNotEmpty) {
-      top = NotationLayoutProperties.defaultStaveSpace / 2 +
-          NoteElement.baseDotsSize(font)
-                  .scale(NotationLayoutProperties.defaultStaveSpace)
-                  .height /
-              2;
-    }
-    if (top == 0) {
-      top = NotationLayoutProperties.defaultStaveSpace / 2;
-    }
-
-    return AlignmentPosition(
-      left: 0,
-      top: -top,
-    );
-  }
-
-  @override
-  // TODO: implement alignmentPositionV2
-  AlignmentPositionV2 get alignmentPositionV2 {
-    double top = 0;
-    if (stemDirection == StemDirection.up) {
-      top = _calculateStemLength(notes);
-    }
-
-    Note maxDotsNote = notes.reduce(
-      (a, b) => a.dots.length > b.dots.length ? a : b,
-    );
-
-    // When note is on drawn the line and it's stem is drawn down,
-    // the dots size must be taken in the account.
-    if (stemDirection == StemDirection.down &&
-        position.numeric % 2 == 0 &&
-        maxDotsNote.dots.isNotEmpty) {
       top = .5 + NoteElement.baseDotsSize(font).height / 2;
     }
     if (top == 0) {
       top = .5;
     }
 
-    return AlignmentPositionV2(
+    return AlignmentPosition(
       left: 0,
       top: -top,
     );

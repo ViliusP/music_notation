@@ -3,7 +3,6 @@ import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
-import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
@@ -17,18 +16,8 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
 
   @override
   AlignmentPosition get alignmentPosition {
-    return AlignmentPosition(
-      left: 0,
-      top: -_verticalAlignmentAxisOffset *
-          NotationLayoutProperties.defaultStaveSpace,
-    );
+    return AlignmentPosition(left: 0, top: -_verticalAlignmentAxisOffset);
   }
-
-  @override
-  AlignmentPositionV2 get alignmentPositionV2 => AlignmentPositionV2(
-        left: 0,
-        top: -_verticalAlignmentAxisOffset,
-      );
 
   const ClefElement({
     super.key,

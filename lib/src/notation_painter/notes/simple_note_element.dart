@@ -52,12 +52,12 @@ class SimpleNoteElement extends StatelessWidget {
   }
 
   static final double _stemHorizontalOffset =
-      (NotationLayoutProperties.baseStemStrokeWidth / 2);
+      NotationLayoutProperties.baseStemStrokeWidth / 2;
 
   AlignmentPosition _stemPosition() {
     if (stem?.direction == StemDirection.up) {
       return AlignmentPosition(
-        left: notehead.size.width - _stemHorizontalOffset,
+        left: notehead.baseSize.width - _stemHorizontalOffset,
         top: 0,
       );
     }
@@ -331,9 +331,9 @@ class NoteheadElement extends StatelessWidget {
   }
 
   AlignmentPosition get alignmentPosition {
-    double top = _bBox(font).topOffset;
+    double top = _bBox(font).bBoxNE.y;
 
-    return AlignmentPosition(left: 0, top: top);
+    return AlignmentPosition(left: 0, top: -top);
   }
 
   /// Size of notehead symbol.

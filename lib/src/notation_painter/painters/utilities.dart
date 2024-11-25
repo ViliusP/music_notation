@@ -68,7 +68,4 @@ extension FontPainting on GlyphBBox {
 
     return (o1, o2);
   }
-
-  double get topOffset =>
-      (NotationLayoutProperties.defaultStaveSpace * bBoxNE.y);
 }
