@@ -367,6 +367,7 @@ class NoteheadElement extends StatelessWidget {
         color: color,
         staveSpace: layoutProperties.staveSpace,
         bBox: _bBox(font),
+        ledgerLinesThickness: layoutProperties.staveLineThickness,
       ),
     );
   }

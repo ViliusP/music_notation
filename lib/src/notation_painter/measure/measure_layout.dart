@@ -204,10 +204,7 @@ class MeasureLayout extends StatelessWidget {
             child: AlignTarget(
               child: SizedBox.fromSize(
                 size: Size(width, layoutProperties.staveHeight),
-                child: StaffLines(
-                  height: layoutProperties.staveHeight,
-                  spacing: layoutProperties.staveSpace,
-                ),
+                child: StaffLines(),
               ),
             ),
           ),

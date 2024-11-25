@@ -1,11 +1,6 @@
 import 'package:flutter/rendering.dart';
-import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 
 class BarlinePainter extends CustomPainter {
-  // TODO: adjust correctly, currently it is magic number
-  static const double strokeWidth =
-      NotationLayoutProperties.defaultStaveLineStrokeWidth * 1.6;
-
   final Color color;
 
   final double offset;
@@ -14,23 +9,21 @@ class BarlinePainter extends CustomPainter {
 
   final bool end;
 
+  final double thicknes;
+
   BarlinePainter({
     this.color = const Color.fromRGBO(0, 0, 0, 1.0),
     required this.offset,
     required this.height,
+    required this.thicknes,
     this.end = true,
   });
-
-  static const Size size = Size(
-    strokeWidth,
-    4,
-  );
 
   @override
   void paint(Canvas canvas, Size size) {
     final Paint linePainter = Paint()
       ..color = color
-      ..strokeWidth = strokeWidth;
+      ..strokeWidth = thicknes;
 
     double x = end ? size.width : 0;
 

@@ -1,11 +1,10 @@
 import 'package:flutter/rendering.dart';
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 
-import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
-
 class StaffLinesPainter extends CustomPainter {
   final double height;
   final double spacing;
+  final double thickness;
   final int extraStaveLineCount;
   final ExtraStaveLines extraStaveLines;
 
@@ -13,6 +12,7 @@ class StaffLinesPainter extends CustomPainter {
     required this.height,
     required this.spacing,
     this.extraStaveLineCount = 0,
+    required this.thickness,
     this.extraStaveLines = ExtraStaveLines.none,
   });
 
@@ -20,7 +20,7 @@ class StaffLinesPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     Paint staffLinePainter = Paint()
       ..color = const Color.fromRGBO(0, 0, 0, 1.0)
-      ..strokeWidth = NotationLayoutProperties.defaultStaveLineStrokeWidth;
+      ..strokeWidth = thickness;
 
     double bottom = 0;
     for (; bottom <= height; bottom += spacing) {
@@ -72,7 +72,7 @@ class StaffLinesPainter extends CustomPainter {
     var lineY = 0.0;
 
     for (var i = 0; i < 5; i++) {
-      double halfStroke = NotationLayoutProperties.defaultStaveLineStrokeWidth;
+      double halfStroke = thickness;
 
       if (position.dy > lineY - halfStroke &&
           position.dy < lineY + halfStroke) {

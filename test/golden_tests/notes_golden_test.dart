@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
-import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/simple_note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
@@ -60,8 +59,7 @@ void main() {
           double topPadding = 0;
           double bottomPadding = 0;
 
-          double padding = (ledgerLines.count - 1).clamp(0, 20) *
-              NotationLayoutProperties.defaultStaveSpace;
+          double padding = (ledgerLines.count - 1).clamp(0, 20) * 12;
 
           padding = padding.ceilToDouble() + 1;
 

@@ -6,8 +6,7 @@ class NotationLayoutProperties {
   static const _defaultStaveSpace = _defaultStaveHeight / (staveLines - 1);
 
   static const int staveLines = 5;
-  static const double defaultStaveLineStrokeWidth =
-      12 * _defaultStaveSpace / 100;
+  static const double _baseStaveLineStrokeWidth = 12 * 1 / 100;
 
   /// Stems should be thinner than the stave-line, but not so thin as to
   /// reproduce too faintly.
@@ -37,13 +36,16 @@ class NotationLayoutProperties {
   /// The distance between elements when positional difference is 1.
   double get spacePerPosition => staveSpace * baseSpacePerPosition;
 
-  double get staveLineThickness => 12 * staveSpace / 100;
-
   double get standardStemLength => baseStandardStemLength * staveSpace;
 
   /// Stems should be thinner than the stave-line, but not so thin as to
   /// reproduce too faintly.
   double get stemStrokeWidth => baseStemStrokeWidth * staveSpace;
+
+  double get staveLineThickness => _baseStaveLineStrokeWidth * staveSpace;
+
+  // TODO: adjust correctly, currently it is magic number
+  double get barlineThickness => staveLineThickness * 1.6;
 
   const NotationLayoutProperties({
     required double staveHeight,

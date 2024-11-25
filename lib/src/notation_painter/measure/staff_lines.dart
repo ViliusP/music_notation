@@ -5,16 +5,13 @@ import 'package:music_notation/src/notation_painter/measure/barline_painting.dar
 import 'package:music_notation/src/notation_painter/models/vertical_edge_insets.dart';
 import 'package:music_notation/src/notation_painter/painters/barline_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/staff_lines_painter.dart';
-import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
+import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
+import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
+import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 
 class StaffLines extends StatelessWidget {
-  final double height;
-  final double spacing;
-
   const StaffLines({
     super.key,
-    required this.height,
-    required this.spacing,
   });
 
   @override
@@ -28,8 +25,12 @@ class StaffLines extends StatelessWidget {
 
     DebugSettings? debugSettings = DebugSettings.of(context);
 
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
     return SizedBox(
-      height: height,
+      height: layoutProperties.staveHeight,
       child: Stack(
         fit: StackFit.loose,
         children: [
@@ -39,8 +40,9 @@ class StaffLines extends StatelessWidget {
               extraStaveLineCount: debugSettings?.extraStaveLineCount ?? 0,
               extraStaveLines:
                   debugSettings?.extraStaveLines ?? ExtraStaveLines.none,
-              height: height,
-              spacing: spacing,
+              height: layoutProperties.staveHeight,
+              spacing: layoutProperties.staveSpace,
+              thickness: layoutProperties.staveLineThickness,
             ),
           ),
           if ((debugSettings?.verticalStaveLineSpacingMultiplier ?? 0) != 0)
@@ -48,7 +50,7 @@ class StaffLines extends StatelessWidget {
               painter: StaveSpaceIndicatorPainter(
                 multiplier:
                     debugSettings?.verticalStaveLineSpacingMultiplier ?? 0,
-                spacing: spacing,
+                spacing: layoutProperties.staveHeight,
               ),
             ),
         ],
@@ -73,10 +75,17 @@ class Barlines extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Size size = BarlinePainter.size.scaledByContext(context);
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
+    Size size = Size(
+      layoutProperties.barlineThickness,
+      4.0.scaledByContext(context), // must be corrected
+    );
 
     double calculatedStartOffset = 0;
-    double calculatedStartHeight = BarlinePainter.size.height;
+    double calculatedStartHeight = size.height;
     if (startExtension == BarlineExtension.bottom) {
       calculatedStartHeight += padding.bottom;
     }
@@ -91,7 +100,7 @@ class Barlines extends StatelessWidget {
     }
 
     double calculatedEndOffset = 0;
-    double calculatedEndHeight = BarlinePainter.size.height;
+    double calculatedEndHeight = size.height;
     if (endExtension == BarlineExtension.bottom) {
       calculatedEndHeight += padding.bottom;
     }
@@ -117,7 +126,7 @@ class Barlines extends StatelessWidget {
                 // color: colors[startExtension]!,
                 offset: calculatedStartOffset,
                 height: calculatedStartHeight,
-                end: false,
+                end: false, thicknes: layoutProperties.barlineThickness,
               ),
             ),
           ),
@@ -129,6 +138,7 @@ class Barlines extends StatelessWidget {
               // color: colors[endExtension]!,
               offset: calculatedEndOffset,
               height: calculatedEndHeight,
+              thicknes: layoutProperties.barlineThickness,
             ),
           ),
         ),

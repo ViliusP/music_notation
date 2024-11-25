@@ -1,7 +1,6 @@
 import 'package:flutter/rendering.dart';
 import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
-import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 
 class NotePainter extends CustomPainter {
@@ -14,6 +13,8 @@ class NotePainter extends CustomPainter {
 
   final LedgerLines? ledgerLines;
 
+  final double ledgerLinesThickness;
+
   final Color color;
 
   final double staveSpace;
@@ -22,13 +23,10 @@ class NotePainter extends CustomPainter {
     required this.smufl,
     required this.bBox,
     this.ledgerLines,
+    required this.ledgerLinesThickness,
     required this.staveSpace,
     this.color = const Color.fromRGBO(0, 0, 0, 1),
   });
-
-  final Paint _ledgerLinePaint = Paint()
-    ..color = const Color.fromRGBO(0, 0, 0, 1)
-    ..strokeWidth = NotationLayoutProperties.defaultStaveLineStrokeWidth;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -40,6 +38,10 @@ class NotePainter extends CustomPainter {
       color: color,
     );
     if (ledgerLines == null || ledgerLines?.count == 0) return;
+
+    Paint ledgerLinePaint = Paint()
+      ..color = const Color.fromRGBO(0, 0, 0, 1)
+      ..strokeWidth = ledgerLinesThickness;
 
     double level = size.height / 2;
     if (ledgerLines?.start != LedgerPlacement.center) {
@@ -54,7 +56,7 @@ class NotePainter extends CustomPainter {
       canvas.drawLine(
         Offset(-_lengthOutside, level),
         Offset(_lengthOutside + size.width, level),
-        _ledgerLinePaint,
+        ledgerLinePaint,
       );
 
       if (ledgerLines!.direction == LedgerDrawingDirection.up) {

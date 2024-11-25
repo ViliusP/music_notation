@@ -195,10 +195,7 @@ class _MeasureColumn extends StatelessWidget {
         children: [
           Positioned(
             bottom: staveRef.distance(bottomRef) * spacePerPosition,
-            child: StaffLines(
-              height: layoutProperties.staveHeight,
-              spacing: layoutProperties.staveSpace,
-            ),
+            child: StaffLines(),
           ),
           ...flattend.where((cell) => cell.value != null).map((cell) {
             var element = cell.value!;
