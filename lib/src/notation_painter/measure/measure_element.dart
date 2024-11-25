@@ -16,6 +16,9 @@ abstract class MeasureWidget extends Widget {
   /// Optional positioning and alignment information for precise element placement.
   AlignmentPosition get alignmentPosition;
 
+  /// Optional positioning and alignment information for precise element placement.
+  AlignmentPositionV2 get alignmentPositionV2;
+
   /// Constant constructor for the [MeasureWidget] base class.
   const MeasureWidget({super.key});
 }
@@ -51,6 +54,31 @@ class AlignmentPosition {
         assert(
           (left == null) != (right == null),
           'Either left or right must be null, but not both.',
+        );
+}
+
+/// Defines specific alignment offsets for musical elements, used for vertical and
+/// horizontal positioning within their container.
+class AlignmentPositionV2 {
+  /// Vertical offset from the top of the bounding box, aligning the element with
+  /// the staff line when positioned at `Y=0`. If null, alignment is based on [bottom].
+  final double? top;
+
+  /// Vertical offset from the bottom of the bounding box, aligning the element with
+  /// the staff line when positioned at `Y=container.height`. If null, alignment is based on [top].
+  final double? bottom;
+
+  /// Horizontal offset from the left side of the element’s bounding box, aligning the
+  /// element horizontally, typically at the visual or optical center.
+  final double left;
+
+  const AlignmentPositionV2({
+    this.top,
+    this.bottom,
+    required this.left,
+  }) : assert(
+          (top == null) != (bottom == null),
+          'Either top or bottom must be null, but not both.',
         );
 }
 
@@ -92,6 +120,36 @@ extension MeasureElementDimensions on MeasureWidget {
     if (alignmentPosition.bottom != null) {
       belowStaffLength = [
         -offsetPerPosition * position.numeric,
+        distanceToStaffBottom,
+        -alignmentPosition.bottom!,
+      ].sum;
+    }
+
+    belowStaffLength = [0.0, belowStaffLength].max;
+
+    return Rect.fromPoints(Offset(0, 0), Offset(size.width, belowStaffLength));
+  }
+
+  /// Calculates a cell count for elements extending below the staff,
+  /// with consideration for the element's position and vertical alignment offset.
+  Rect staveSpacesBelowStaff() {
+    double belowStaffLength = 0;
+
+    double distanceToStaffBottom =
+        ElementPosition.staffBottom.numeric.toDouble();
+
+    if (alignmentPosition.top != null) {
+      belowStaffLength = [
+        -position.numeric.toDouble(),
+        distanceToStaffBottom,
+        size.height,
+        alignmentPosition.top!,
+      ].sum;
+    }
+
+    if (alignmentPosition.bottom != null) {
+      belowStaffLength = [
+        -position.numeric.toDouble(),
         distanceToStaffBottom,
         -alignmentPosition.bottom!,
       ].sum;

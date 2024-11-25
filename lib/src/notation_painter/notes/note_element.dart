@@ -157,6 +157,41 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     );
   }
 
+  @override
+  // TODO: implement alignmentPositionV2
+  AlignmentPositionV2 get alignmentPositionV2 {
+    double? bottom;
+    double? top;
+
+    if (_stemmed && stemDirection == StemDirection.up) {
+      bottom = -1 / 2;
+    }
+
+    if (_stemmed && stemDirection == StemDirection.down) {
+      top = -1 / 2;
+      if (position.numeric % 2 == 0 && _dots > 0) {
+        top -= _dotsSize.height / 2;
+      }
+    }
+
+    if (_accidental != null && stemDirection == StemDirection.down) {
+      AlignmentPositionV2 accidentalAlignmentPosition =
+          AccidentalElement.calculateAlignmentPositionV2(_accidental!, font);
+
+      top = (accidentalAlignmentPosition.top ?? 0);
+    }
+
+    if (top == null && bottom == null) {
+      top = -1 / 2;
+    }
+
+    return AlignmentPositionV2(
+      top: top,
+      bottom: bottom,
+      left: _calculateAlignmentOffset(font),
+    );
+  }
+
   double _calculateAlignmentOffset(FontMetadata font) {
     double leftOffset = 0;
 

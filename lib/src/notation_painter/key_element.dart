@@ -182,6 +182,18 @@ class AccidentalElement extends StatelessWidget {
     );
   }
 
+  static AlignmentPositionV2 calculateAlignmentPositionV2(
+    AccidentalValue accidental,
+    FontMetadata font,
+  ) {
+    SmuflGlyph glyph = _accidentalSmuflMapping[accidental]!;
+
+    return AlignmentPositionV2(
+      top: -font.glyphBBoxes[glyph]!.bBoxNE.y,
+      left: 0,
+    );
+  }
+
   Size get size => calculateSize(accidental, font);
 
   static Size calculateSize(
@@ -236,6 +248,17 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
 
     return AlignmentPosition(
       top: top,
+      left: 0,
+    );
+  }
+
+  @override
+  AlignmentPositionV2 get alignmentPositionV2 {
+    SmuflGlyph glyph = _accidentalSmuflMapping[
+        accidentals.first.accidental?.value ?? AccidentalValue.other]!;
+
+    return AlignmentPositionV2(
+      top: -font.glyphBBoxes[glyph]!.bBoxNE.y,
       left: 0,
     );
   }

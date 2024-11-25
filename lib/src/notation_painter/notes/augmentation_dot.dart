@@ -12,7 +12,7 @@ import 'package:music_notation/src/smufl/glyph_class.dart';
 /// Augmentation dots indicate rhythmic extensions to a note's duration.
 /// This widget calculates the required size based on the number of dots,
 /// spacing, and font metadata for rendering the dots accurately.
-class AugmentationDot extends StatelessWidget implements MeasureWidget {
+class AugmentationDot extends StatelessWidget {
   /// The number of augmentation dots to display.
   final int count;
 
@@ -38,7 +38,6 @@ class AugmentationDot extends StatelessWidget implements MeasureWidget {
   ///
   /// This method determines the combined width of all dots, factoring in
   /// spacing between them, and returns the required [Size] object.
-  @override
   Size get size {
     Size singleDotSize = _singleDotSize(font);
     double width = count * singleDotSize.width + (spacing * (count - 1));
@@ -46,13 +45,16 @@ class AugmentationDot extends StatelessWidget implements MeasureWidget {
     return Size(width, singleDotSize.height);
   }
 
-  @override
   AlignmentPosition get alignmentPosition => AlignmentPosition(
         left: 0,
         top: size.height / 2,
       );
 
-  @override
+  AlignmentPositionV2 get alignmentPositionV2 => AlignmentPositionV2(
+        left: 0,
+        top: size.height / 2,
+      );
+
   ElementPosition get position => ElementPosition.staffMiddle;
 
   /// Constructor for [AugmentationDot].
