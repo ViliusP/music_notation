@@ -71,4 +71,7 @@ extension NumExtensions on num {
 
 class NumberConstants {
   static const int maxFiniteInt = -1 >>> 1;
+
+  /// From https://stackoverflow.com/a/50429767
+  static const int minFiniteInt = -0x8000000000000000;
 }
