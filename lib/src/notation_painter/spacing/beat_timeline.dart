@@ -16,10 +16,9 @@ class BeatTimeline {
       );
 
   /// Space between two quarter notes measured from their alignment axes.
-  static const double _spaceBetweenQuarters =
-      NotationLayoutProperties.defaultStaveHeight * 1.5;
+  static const double _baseSpaceBetweenQuarters = 1.5;
 
-  double get spacePerDivision => _spaceBetweenQuarters / divisions;
+  double get spacePerDivision => _baseSpaceBetweenQuarters / divisions;
 
   const BeatTimeline({
     required this.values,
@@ -57,7 +56,7 @@ class BeatTimeline {
     int? parsedVoice = int.tryParse(voice);
     List<BeatTimelineValue> values = [];
 
-    double lastAttributeOffset = NotationLayoutProperties.defaultStaveSpace;
+    double lastAttributeOffset = 1;
     for (var entry in timeline.values.entries) {
       List<TimelineValue> beatCol = entry.value.sorted(
         (a, b) => a.voice.compareTo(b.voice),
@@ -72,7 +71,7 @@ class BeatTimeline {
         }
         if (value.duration == 0) {
           lastAttributeOffset += value.width;
-          lastAttributeOffset += NotationLayoutProperties.defaultStaveSpace;
+          lastAttributeOffset += 1;
         }
         if (value.duration != 0) {
           values.add(BeatTimelineValue(
@@ -263,7 +262,7 @@ class BeatTimeline {
         }
 
         if (value.duration == 0) {
-          attributeOffset += NotationLayoutProperties.defaultStaveSpace;
+          attributeOffset += 1;
           spacings[value.index] = attributeOffset;
           attributeOffset += value.width;
         }
@@ -285,7 +284,7 @@ class BeatTimeline {
       // Start the rest positioning from the first beat offset.
       double restPosition = beatSpacing[0];
       // Adjust rest to start after any initial attribute spacing.
-      restPosition -= NotationLayoutProperties.defaultStaveSpace;
+      restPosition -= 1;
       // Move the rest to the center of the measure, between attribute end and barline or between two barlines.
       restPosition += (beatSpacing.last - restPosition) / 2;
       // Center-align the rest by adjusting for half of its width.

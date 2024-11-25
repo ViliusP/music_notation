@@ -90,7 +90,10 @@ class MeasureLayout extends StatelessWidget {
           children,
         ));
 
-    List<double> spacings = measureBeatline.toSpacings(children);
+    List<double> spacings = measureBeatline
+        .toSpacings(children)
+        .map((s) => s * layoutProperties.staveSpace)
+        .toList();
 
     double width = spacings.last;
 
