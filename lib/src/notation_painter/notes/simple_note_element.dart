@@ -235,7 +235,7 @@ class StemElement extends StatelessWidget {
         AligmentPositioned(
           position: _flagPosition(direction),
           child: CustomPaint(
-            size: _baseFlagSize.scale(layoutProperties.staveSpace),
+            size: _baseFlagSize.byContext(context),
             painter: SimpleGlyphPainter(
               flagGlyph.codepoint,
               _bBox(font),

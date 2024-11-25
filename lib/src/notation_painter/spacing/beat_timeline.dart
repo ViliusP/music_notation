@@ -289,7 +289,7 @@ class BeatTimeline {
       // Move the rest to the center of the measure, between attribute end and barline or between two barlines.
       restPosition += (beatSpacing.last - restPosition) / 2;
       // Center-align the rest by adjusting for half of its width.
-      restPosition -= children[measureRestIndex].size.width / 2;
+      restPosition -= children[measureRestIndex].baseSize.width / 2;
       spacings[measureRestIndex] = restPosition;
     }
     return spacings;

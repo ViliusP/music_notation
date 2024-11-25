@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
+import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 
 /// An abstract base class representing a musical element within a measure,
 /// including properties for positioning, size, and alignment.
@@ -10,11 +11,7 @@ abstract class MeasureWidget extends Widget {
   /// object to define note pitch and octave. This allows accurate placement on the staff.
   ElementPosition get position;
 
-  /// The size of the element, defining its width and height within the measure.
-  @deprecated
-  Size get size;
-
-  /// The size of the element, defining its width and height within the measure.
+  /// The size of the element, in stave spaces, defining its width and height within the measure.
   Size get baseSize;
 
   /// Optional positioning and alignment information for precise element placement.
@@ -107,6 +104,8 @@ extension MeasureElementDimensions on MeasureWidget {
   Rect boxBelowStaff() {
     const offsetPerPosition = NotationLayoutProperties.defaultStaveSpace / 2;
 
+    Size size = baseSize.scale(NotationLayoutProperties.defaultStaveSpace);
+
     double belowStaffLength = 0;
 
     double distanceToStaffBottom =
@@ -170,6 +169,8 @@ extension MeasureElementDimensions on MeasureWidget {
     const offsetPerPosition = NotationLayoutProperties.defaultStaveSpace / 2;
 
     double aboveStaffLength = 0;
+
+    Size size = baseSize.scale(NotationLayoutProperties.defaultStaveSpace);
 
     double distanceToStaffTop =
         offsetPerPosition * ElementPosition.staffTop.numeric;

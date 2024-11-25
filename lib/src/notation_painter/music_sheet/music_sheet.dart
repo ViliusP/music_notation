@@ -179,7 +179,10 @@ class _MeasureColumn extends StatelessWidget {
     double width = 0;
     for (var cell in flattend) {
       if (cell.value != null) {
-        width = max(width, cell.value!.size.width);
+        width = max(
+          width,
+          cell.value!.baseSize.width * layoutProperties.staveSpace,
+        );
       }
     }
     width += padding?.horizontal ?? 0;

@@ -5,7 +5,6 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
-import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart';
 
@@ -101,11 +100,7 @@ class AugmentationDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    NotationLayoutProperties layoutProperties =
-        NotationProperties.of(context)?.layout ??
-            NotationLayoutProperties.standard();
-
-    Size singleDotSize = _baseDotSize(font).scale(layoutProperties.staveSpace);
+    Size singleDotSize = _baseDotSize(font).byContext(context);
 
     return SizedBox.fromSize(
       size: size,

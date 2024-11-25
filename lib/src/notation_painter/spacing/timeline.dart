@@ -94,7 +94,7 @@ class MeasureTimeline {
             child.duration,
             voice: voice,
             widgetType: RhythmicElement,
-            width: note.size.width,
+            width: note.baseSize.width,
             name: child.position.toString().replaceFirst(
                   "ElementPosition  ",
                   "",
@@ -107,7 +107,7 @@ class MeasureTimeline {
             index,
             child.duration,
             voice: voice,
-            width: rest.size.width,
+            width: rest.baseSize.width,
             widgetType: RhythmicElement,
             name: "R",
             leftOffset: rest.alignmentPosition.left!,
@@ -119,7 +119,7 @@ class MeasureTimeline {
             child.duration,
             voice: voice,
             widgetType: RhythmicElement,
-            width: chord.size.width,
+            width: chord.baseSize.width,
             name:
                 "C${child.position.toString().replaceFirst("ElementPosition  ", "")}",
             leftOffset: chord.alignmentPosition.left!,
@@ -140,7 +140,7 @@ class MeasureTimeline {
           valueToAdd = TimelineValue(
             index,
             0,
-            width: timeBeatElement.size.width,
+            width: timeBeatElement.baseSize.width,
             voice: "-1", // The "-1" indicates attributes sector
             name: "TB",
             widgetType: TimeBeatElement,
@@ -150,7 +150,7 @@ class MeasureTimeline {
           valueToAdd = TimelineValue(
             index,
             0,
-            width: clefElement.size.width,
+            width: clefElement.baseSize.width,
             voice: "-1", // The "-1" indicates attributes sector
             name: "CLF",
             widgetType: ClefElement,
@@ -160,7 +160,7 @@ class MeasureTimeline {
           valueToAdd = TimelineValue(
             index,
             0,
-            width: keyElement.size.width,
+            width: keyElement.baseSize.width,
             voice: "-1", // The "-1" indicates attributes sector
             name: "KeS",
             widgetType: KeySignatureElement,
@@ -172,7 +172,7 @@ class MeasureTimeline {
             0,
             voice: "-1", // The "-1" indicates attributes sector
             name: child.runtimeType.toString().substring(0, 2),
-            width: child.size.width,
+            width: child.baseSize.width,
             leftOffset: child.alignmentPosition.left!,
           );
       }

@@ -214,7 +214,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
   @override
   Offset get offsetForBeam {
     double? offsetX;
-    double offsetY = size.height;
+    double offsetY = baseSize.height;
 
     if (stemDirection == StemDirection.down) {
       offsetX = NotationLayoutProperties.baseStemStrokeWidth / 2;
@@ -313,9 +313,6 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
   }
 
   @override
-  Size get size => baseSize.scale(NotationLayoutProperties.defaultStaveSpace);
-
-  @override
   Size get baseSize => calculateBaseSize(
         note: note,
         clef: notationContext.clef,
@@ -328,7 +325,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
   Size get noteheadSize => NoteheadElement(
         font: font,
         type: note.type?.value ?? NoteTypeValue.quarter,
-      ).size;
+      ).baseSize;
 
   static Size calculateBaseSize({
     required Note note,
@@ -491,7 +488,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     }
 
     return SizedBox.fromSize(
-      size: size,
+      size: baseSize.byContext(context),
       child: Stack(
         children: [
           SimpleNoteElement(

@@ -87,10 +87,6 @@ class RestElement extends StatelessWidget implements RhythmicElement {
 
   @override
   ElementPosition get position => _determinePosition();
-
-  @override
-  Size get size => baseSize.scale(NotationLayoutProperties.defaultStaveSpace);
-
   @override
   Size get baseSize {
     Size restSymbolSize = _bBox.toRect(1).size;
@@ -244,7 +240,7 @@ class RestElement extends StatelessWidget implements RhythmicElement {
             NotationLayoutProperties.standard();
 
     return SizedBox.fromSize(
-      size: size,
+      size: baseSize.byContext(context),
       child: Stack(
         children: [
           if (_dots > 0)

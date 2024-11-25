@@ -158,13 +158,13 @@ class Chord extends StatelessWidget implements RhythmicElement {
   @override
   Offset get offsetForBeam {
     double? offsetX;
-    double? offsetY = size.height;
+    double? offsetY = baseSize.height;
     Note maxDotsNote = notes.reduce(
       (a, b) => a.dots.length > b.dots.length ? a : b,
     );
 
     if (maxDotsNote.dots.isNotEmpty) {
-      offsetX = size.width;
+      offsetX = baseSize.width;
       offsetX -= NoteElement.dotsOffset();
       offsetX -= NoteElement.baseDotsSize(font)
           .scale(NotationLayoutProperties.defaultStaveSpace)
@@ -193,7 +193,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
     }
 
     return Offset(
-      offsetX ?? size.width,
+      offsetX ?? baseSize.width,
       offsetY,
     );
   }
@@ -320,9 +320,6 @@ class Chord extends StatelessWidget implements RhythmicElement {
   }
 
   @override
-  Size get size => baseSize;
-
-  @override
   Size get baseSize => _calculateBaseSize(
         notes: notes,
         notationContext: notationContext,
@@ -443,7 +440,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
     }
 
     return SizedBox.fromSize(
-      size: size,
+      size: baseSize.byContext(context),
       child: Stack(
         children: children,
       ),

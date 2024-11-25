@@ -92,16 +92,12 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
   }
 
   @override
-  Size get size => baseSize.scale(NotationLayoutProperties.defaultStaveSpace);
-
-  @override
-  // TODO: implement baseSize
   Size get baseSize => _bBox.toRect(1).size;
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      size: size,
+      size: baseSize.byContext(context),
       painter: SimpleGlyphPainter(_glyph.codepoint, _bBox),
     );
   }

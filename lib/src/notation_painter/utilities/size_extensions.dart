@@ -1,4 +1,6 @@
-import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
+import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
+import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
 
 extension SizeExtensions on Size {
   Size round() {
@@ -11,5 +13,13 @@ extension SizeExtensions on Size {
 
   Size scale(double scale) {
     return Size(width * scale, height * scale);
+  }
+
+  Size byContext(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
+    return scale(layoutProperties.staveSpace);
   }
 }

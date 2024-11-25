@@ -241,11 +241,7 @@ void main() {
 
         var directions = [StemDirection.down, StemDirection.up];
 
-        var lengths = [
-          0.0,
-          NotationLayoutProperties.defaultStaveSpace * 4,
-          NotationLayoutProperties.defaultStaveSpace * 6
-        ];
+        var lengths = [0.0, 3.5, 5];
 
         var ledgerLines = [
           null,

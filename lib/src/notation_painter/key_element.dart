@@ -341,9 +341,6 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
   }
 
   @override
-  Size get size => baseSize.scale(NotationLayoutProperties.defaultStaveSpace);
-
-  @override
   Size get baseSize {
     if (accidentals.isEmpty) {
       return const Size(0, 0);
@@ -446,7 +443,7 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
     }
 
     return SizedBox.fromSize(
-      size: size,
+      size: baseSize.byContext(context),
       child: Stack(
         alignment: Alignment.centerLeft,
         children: children,

@@ -27,9 +27,6 @@ class TimeBeatElement extends StatelessWidget implements MeasureWidget {
   }
 
   @override
-  Size get size => baseSize.scale(NotationLayoutProperties.defaultStaveSpace);
-
-  @override
   Size get baseSize => const Size(20 / 12, 4);
 
   @override
@@ -67,7 +64,7 @@ class TimeBeatElement extends StatelessWidget implements MeasureWidget {
         const Size(20, NotationLayoutProperties.defaultStaveHeight / 2);
 
     return SizedBox.fromSize(
-      size: size,
+      size: baseSize.byContext(context),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
