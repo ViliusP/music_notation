@@ -89,12 +89,12 @@ class MeasureLayout extends StatelessWidget {
           children,
         ));
 
-    List<double> spacings = measureBeatline
-        .toSpacings(children)
-        .map((s) => s * layoutProperties.staveSpace)
-        .toList();
+    List<double> spacings = measureBeatline.toSpacings(children);
 
-    double width = spacings.last;
+    List<double> scaledSpacings =
+        spacings.map((s) => s * layoutProperties.staveSpace).toList();
+
+    double width = scaledSpacings.last;
 
     double spacePerPosition = layoutProperties.spacePerPosition;
 
@@ -155,7 +155,7 @@ class MeasureLayout extends StatelessWidget {
         if (beamingResult == null || beamingResult == BeamingResult.skipped) {
           positionedElements.add(
             Positioned(
-              left: spacings[index],
+              left: scaledSpacings[index],
               top: topOffset,
               bottom: bottomOffset,
               child: child,
@@ -168,7 +168,7 @@ class MeasureLayout extends StatelessWidget {
           if (dSettings.paintBBoxBelowStaff && boxBelow.height > 0) {
             positionedElements.add(
               Positioned(
-                left: spacings[index],
+                left: scaledSpacings[index],
                 top: padding.top + layoutProperties.staveHeight,
                 child: Container(
                   width: boxBelow.width,
@@ -183,7 +183,7 @@ class MeasureLayout extends StatelessWidget {
           if (dSettings.paintBBoxAboveStaff && boxAbove.height > 0) {
             positionedElements.add(
               Positioned(
-                left: spacings[index],
+                left: scaledSpacings[index],
                 bottom: padding.bottom + layoutProperties.staveHeight,
                 child: Container(
                   width: boxAbove.width,

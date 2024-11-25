@@ -13,6 +13,7 @@ import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart'
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/painters/beam_painter.dart';
 import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
+import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 
 class BeamGroup extends StatelessWidget {
@@ -69,20 +70,22 @@ class BeamGroup extends StatelessWidget {
     return children.first.position > children.last.position;
   }
 
-  List<NoteBeams> beamsPattern() {
+  List<NoteBeams> beamsPattern(BuildContext context) {
     List<NoteBeams> pattern = [];
     for (var (i, child) in children.indexed) {
       if (child is NoteElement) {
         pattern.add(NoteBeams(
           values: child.note.beams,
-          leftOffset: (leftOffsets[i] - leftOffsets[0]),
+          leftOffset:
+              (leftOffsets[i] - leftOffsets[0]).scaledByContext(context),
           stemDirection: child.stemDirection!,
         ));
       }
       if (child is Chord) {
         pattern.add(NoteBeams(
           values: child.notes.firstWhere((x) => x.beams.isNotEmpty).beams,
-          leftOffset: leftOffsets[i] - leftOffsets[0],
+          leftOffset:
+              (leftOffsets[i] - leftOffsets[0]).scaledByContext(context),
           stemDirection: child.stemDirection!,
         ));
       }
@@ -98,7 +101,7 @@ class BeamGroup extends StatelessWidget {
 
     double beamThickness = layoutProperties.beamThickness;
 
-    final List<({double? bottom, double? top})> verticalOffsets = [];
+    List<({double? bottom, double? top})> verticalOffsets = [];
 
     double spacePerPosition = layoutProperties.spacePerPosition;
 
@@ -106,9 +109,13 @@ class BeamGroup extends StatelessWidget {
       double? topOffset;
       double? bottomOffset;
 
-      if (child.alignmentPosition.top != null) {
+      var alignmentPosition = child.alignmentPosition.scale(
+        layoutProperties.staveSpace,
+      );
+
+      if (alignmentPosition.top != null) {
         topOffset = 0;
-        topOffset = child.alignmentPosition.top!;
+        topOffset = alignmentPosition.top!;
 
         // Calculate the interval from staff top to the child's position.
         int intervalFromTheF5 = ElementPosition.staffTop.numeric;
@@ -117,9 +124,9 @@ class BeamGroup extends StatelessWidget {
 
         topOffset += padding.top;
       }
-      if (child.alignmentPosition.bottom != null) {
+      if (alignmentPosition.bottom != null) {
         bottomOffset = 0;
-        bottomOffset = child.alignmentPosition.bottom!;
+        bottomOffset = alignmentPosition.bottom!;
 
         // Calculate the interval from staff bottom to the child's position.
         int intervalFromTheE4 = ElementPosition.staffBottom.numeric;
@@ -141,11 +148,16 @@ class BeamGroup extends StatelessWidget {
     StemDirection? firstNoteStemValue;
     // StemValue? lastNoteStemValue;
 
-    firstNoteBeamOffset = first.offsetForBeam;
+    firstNoteBeamOffset = first.offsetForBeam.scale(
+      layoutProperties.staveSpace,
+      layoutProperties.staveSpace,
+    );
     firstNoteStemValue = first.stemDirection;
 
-    lastNoteBeamOffset = last.offsetForBeam;
-    // lastNoteStemValue = last.stem!.value;
+    lastNoteBeamOffset = last.offsetForBeam.scale(
+      layoutProperties.staveSpace,
+      layoutProperties.staveSpace,
+    );
 
     double? beamTopOffset;
     if (verticalOffsets[0].top != null) {
@@ -183,25 +195,26 @@ class BeamGroup extends StatelessWidget {
       children: [
         ...children.mapIndexed(
           (i, x) => Positioned(
-            left: leftOffsets[i],
+            left: leftOffsets[i].scaledByContext(context),
             bottom: verticalOffsets[i].bottom,
             top: verticalOffsets[i].top,
             child: x,
           ),
         ),
         Positioned(
-          left: leftOffsets[0] + firstNoteBeamOffset.dx,
+          left:
+              leftOffsets[0].scaledByContext(context) + firstNoteBeamOffset.dx,
           top: beamTopOffset,
           bottom: beamBottomOffset,
           child: CustomPaint(
             size: _baseBeamSize.scale(layoutProperties.staveSpace),
             painter: BeamPainter(
-              beamsPattern: beamsPattern(),
+              beamsPattern: beamsPattern(context),
               // color: color,
               downward: _isBeamDownward(),
               hookLength: layoutProperties.staveSpace,
               thickness: beamThickness,
-              spacing: layoutProperties.beamThickness,
+              spacing: layoutProperties.beamSpacing,
             ),
           ),
         ),
