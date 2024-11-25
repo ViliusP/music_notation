@@ -174,7 +174,7 @@ class _MeasureColumn extends StatelessWidget {
     double spacePerPosition = layoutProperties.spacePerPosition;
     ElementPosition bottomRef = columns.first.values.keys.last;
     ElementPosition topRef = columns.first.values.keys.first;
-    const staveRef = ElementPosition(step: Step.F, octave: 4);
+    const staveRef = ElementPosition(step: Step.E, octave: 4);
 
     double width = 0;
     for (var cell in flattend) {
@@ -188,13 +188,13 @@ class _MeasureColumn extends StatelessWidget {
     width += padding?.horizontal ?? 0;
 
     return SizedBox(
-      height: columns.first.values.length * spacePerPosition,
+      height: (topRef.numeric - bottomRef.numeric) * spacePerPosition,
       width: width,
       child: Stack(
         fit: StackFit.loose,
         children: [
           Positioned(
-            bottom: staveRef.distance(bottomRef) * spacePerPosition,
+            bottom: (staveRef.distance(bottomRef)) * spacePerPosition,
             child: SizedBox(
               width: double.maxFinite,
               child: StaffLines(),
@@ -209,8 +209,8 @@ class _MeasureColumn extends StatelessWidget {
             double? bottom;
 
             if (alignment.top == null) {
-              bottom = -alignment.bottom!.scaledByContext(context);
-              bottom += pos.distance(bottomRef) * spacePerPosition;
+              bottom = alignment.bottom!.scaledByContext(context);
+              bottom += bottomRef.distance(pos) * spacePerPosition;
             } else {
               top = alignment.top!.scaledByContext(context);
               top += topRef.distance(pos) * spacePerPosition;
