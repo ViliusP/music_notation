@@ -14,6 +14,7 @@ import 'package:music_notation/src/notation_painter/models/notation_context.dart
 import 'package:music_notation/src/notation_painter/music_grid.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
+import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
 typedef _MeasureData = ({
@@ -195,7 +196,10 @@ class _MeasureColumn extends StatelessWidget {
         children: [
           Positioned(
             bottom: staveRef.distance(bottomRef) * spacePerPosition,
-            child: StaffLines(),
+            child: SizedBox(
+              width: double.maxFinite,
+              child: StaffLines(),
+            ),
           ),
           ...flattend.where((cell) => cell.value != null).map((cell) {
             var element = cell.value!;
@@ -206,10 +210,10 @@ class _MeasureColumn extends StatelessWidget {
             double? bottom;
 
             if (alignment.top == null) {
-              bottom = -alignment.bottom!;
+              bottom = -alignment.bottom!.scaledByContext(context);
               bottom += pos.distance(bottomRef) * spacePerPosition;
             } else {
-              top = alignment.top!;
+              top = alignment.top!.scaledByContext(context);
               top += topRef.distance(pos) * spacePerPosition;
             }
 

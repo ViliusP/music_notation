@@ -80,8 +80,12 @@ class _ScorePageState extends State<ScorePage> {
                     : MusicSheet.fromScore(
                         score: widget.scorePartwise,
                         font: fontToUse,
+                        layoutProperties: NotationLayoutProperties(
+                          staveHeight: 100,
+                        ),
                       ),
               )),
+          Padding(padding: EdgeInsets.symmetric(vertical: 24)),
           Scrollbar(
             controller: scorePageScrollController,
             thumbVisibility: true,
@@ -94,9 +98,13 @@ class _ScorePageState extends State<ScorePage> {
               ),
               child: fontToUse == null
                   ? SizedBox.shrink()
-                  : MusicNotationCanvas(
-                      scorePartwise: widget.scorePartwise,
+                  : NotationProperties(
+                      layout: NotationLayoutProperties(staveHeight: 48),
                       font: fontToUse,
+                      child: MusicNotationCanvas(
+                        scorePartwise: widget.scorePartwise,
+                        font: fontToUse,
+                      ),
                     ),
             ),
           ),

@@ -70,7 +70,7 @@ class AlignmentPositioned extends Positioned {
 extension MeasureElementDimensions on MeasureWidget {
   /// Calculates a bounding box for elements extending below the staff,
   /// with consideration for the element's position and vertical alignment offset.
-  Rect boxBelowStaff(double scale) {
+  Rect boxBelowStaff([double scale = 1]) {
     double spacePerPosition = scale / 2;
 
     Size size = baseSize.scale(scale);
@@ -105,7 +105,7 @@ extension MeasureElementDimensions on MeasureWidget {
 
   /// Calculates a bounding box for elements extending above the staff,
   /// considering the element's position and vertical alignment offset.
-  Rect boxAboveStaff(double scale) {
+  Rect boxAboveStaff([double scale = 1]) {
     double spacePerPosition = scale / 2;
 
     double aboveStaffLength = 0;

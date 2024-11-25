@@ -195,14 +195,22 @@ class MeasureGrid {
             .clamp(NumberConstants.minFiniteInt, 0)
             .abs();
 
-        heightBelowStaff = max(heightBelowStaff, elementHeightBelowStaff);
+        heightBelowStaff = [
+          heightBelowStaff,
+          elementHeightBelowStaff,
+          children[value.index].boxBelowStaff().height.ceil() * 2,
+        ].max;
 
         var elementHeightAboveStaff = position.distanceFromTop.clamp(
           0,
           NumberConstants.maxFiniteInt,
         );
 
-        heightAboveStaff = max(heightAboveStaff, elementHeightAboveStaff);
+        heightAboveStaff = [
+          heightAboveStaff,
+          elementHeightAboveStaff,
+          children[value.index].boxAboveStaff().height.ceil() * 2,
+        ].max;
       }
     }
     for (var e in columns.entries) {
