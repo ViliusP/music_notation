@@ -33,14 +33,14 @@ class PainterUtilities {
 }
 
 extension FontPainting on GlyphBBox {
-  Rect toRect(double scale) {
+  Rect toRect([double scale = 1]) {
     var (o1, o2) = toOffsets();
     o1 = o1.scale(scale, scale);
     o2 = o2.scale(scale, scale);
     return Rect.fromPoints(o1, o2);
   }
 
-  Size toSize(double scale) {
+  Size toSize([double scale = 1]) {
     return toRect(scale).size;
   }
 

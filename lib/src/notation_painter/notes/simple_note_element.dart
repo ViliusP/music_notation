@@ -239,6 +239,7 @@ class StemElement extends StatelessWidget {
             painter: SimpleGlyphPainter(
               flagGlyph.codepoint,
               _bBox(font),
+              layoutProperties.staveSpace,
             ),
           ),
         ),
@@ -344,7 +345,6 @@ class NoteheadElement extends StatelessWidget {
   ///
   /// The height of all notehead types is same and equal to the sum of the staff
   /// line stroke width and stave space.
-  Size get size => baseSize.scale(NotationLayoutProperties.defaultStaveSpace);
   Size get baseSize => _bBox(font).toSize(1);
 
   const NoteheadElement({
@@ -357,12 +357,17 @@ class NoteheadElement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
     return CustomPaint(
-      size: size,
+      size: baseSize.byContext(context),
       painter: NotePainter(
         smufl: _glyph.codepoint,
         ledgerLines: ledgerLines,
         color: color,
+        staveSpace: layoutProperties.staveSpace,
         bBox: _bBox(font),
       ),
     );

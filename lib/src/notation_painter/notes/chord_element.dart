@@ -249,7 +249,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
       double width = NoteheadElement(
         type: notes[i].type!.value,
         font: font,
-      ).size.width;
+      ).baseSize.width;
       if (pos == NoteheadPosition.left) {
         widthToLeft = [width, widthToLeft].max;
       }

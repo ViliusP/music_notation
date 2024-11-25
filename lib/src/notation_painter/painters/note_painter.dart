@@ -16,10 +16,13 @@ class NotePainter extends CustomPainter {
 
   final Color color;
 
+  final double staveSpace;
+
   NotePainter({
     required this.smufl,
     required this.bBox,
     this.ledgerLines,
+    required this.staveSpace,
     this.color = const Color.fromRGBO(0, 0, 0, 1),
   });
 
@@ -33,6 +36,7 @@ class NotePainter extends CustomPainter {
       canvas,
       smufl,
       bBox,
+      staveSpace,
       color: color,
     );
     if (ledgerLines == null || ledgerLines?.count == 0) return;

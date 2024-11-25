@@ -1,5 +1,4 @@
 import 'package:flutter/rendering.dart';
-import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
@@ -9,11 +8,14 @@ class SimpleGlyphPainter extends CustomPainter {
   final String smufl;
   final GlyphBBox bBox;
 
-  SimpleGlyphPainter(this.smufl, this.bBox);
+  // Stave space
+  final double height;
+
+  SimpleGlyphPainter(this.smufl, this.bBox, this.height);
 
   @override
   void paint(Canvas canvas, Size size) {
-    drawSmuflSymbol(canvas, smufl, bBox);
+    drawSmuflSymbol(canvas, smufl, bBox, height);
   }
 
   @override
@@ -27,7 +29,8 @@ class SimpleGlyphPainter extends CustomPainter {
   static void drawSmuflSymbol(
     Canvas canvas,
     String symbol,
-    GlyphBBox bBox, {
+    GlyphBBox bBox,
+    double height, {
     Color color = const Color.fromRGBO(0, 0, 0, 1.0),
     bool drawBBox = false,
   }) {
@@ -41,23 +44,13 @@ class SimpleGlyphPainter extends CustomPainter {
 
     var (o1, o2) = bBox.toOffsets();
 
-    o1 = o1
-        .scale(
-          NotationLayoutProperties.defaultStaveSpace,
-          NotationLayoutProperties.defaultStaveSpace,
-        )
-        .translate(0, NotationLayoutProperties.defaultStaveHeight / 2);
+    o1 = o1.scale(height, height).translate(0, height * 2);
 
     double verticalOffset = -o1.dy.roundTowardsZero();
     double horizontalOffset = -(o1.dx.roundAwayFromZero());
 
     if (drawBBox) {
-      o2 = o2
-          .scale(
-            NotationLayoutProperties.defaultStaveSpace,
-            NotationLayoutProperties.defaultStaveSpace,
-          )
-          .translate(0, NotationLayoutProperties.defaultStaveHeight / 2);
+      o2 = o2.scale(height, height).translate(0, height * 2);
 
       canvas.drawRect(
         Rect.fromPoints(
@@ -72,7 +65,7 @@ class SimpleGlyphPainter extends CustomPainter {
     // --------------------------
     TextStyle textStyle = TextStyle(
       fontFamily: 'Leland',
-      fontSize: NotationLayoutProperties.defaultStaveHeight,
+      fontSize: height,
       color: color,
       // backgroundColor: Color.fromRGBO(124, 100, 0, 0.2),
       height: 1,

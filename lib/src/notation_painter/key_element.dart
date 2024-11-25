@@ -208,11 +208,16 @@ class AccidentalElement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
     return CustomPaint(
       size: size,
       painter: SimpleGlyphPainter(
         smufl(accidental),
         font.glyphBBoxes[_accidentalSmuflMapping[accidental]]!,
+        layoutProperties.staveSpace,
       ),
     );
   }

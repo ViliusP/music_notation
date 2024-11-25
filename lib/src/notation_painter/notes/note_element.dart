@@ -331,7 +331,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     Size noteSize = noteElement.baseSize;
 
     height = noteSize.height;
-    width = notehead.size.width;
+    width = notehead.baseSize.width;
 
     if (note.dots.isNotEmpty) {
       width += baseDotsSize(font).width;

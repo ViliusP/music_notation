@@ -231,7 +231,11 @@ class RestElement extends StatelessWidget implements RhythmicElement {
             bottom: 0,
             child: CustomPaint(
               size: _bBox.toRect(layoutProperties.staveSpace).size,
-              painter: SimpleGlyphPainter(_glyph.codepoint, _bBox),
+              painter: SimpleGlyphPainter(
+                _glyph.codepoint,
+                _bBox,
+                layoutProperties.staveSpace,
+              ),
             ),
           ),
         ],
