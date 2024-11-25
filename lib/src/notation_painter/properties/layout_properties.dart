@@ -18,7 +18,7 @@ class NotationLayoutProperties {
 
   /// The standard length of a stem is one octave (3.5 stave-spaces) from the
   /// centre of the notehead.
-  static double get standardStemLength => defaultStaveSpace * 3.5;
+  static const double baseStandardStemLength = 3.5;
 
   /// Beam thickness is 1/2 stave-space.
   static const double defaultBeamThickness = defaultStaveSpace / 2;
@@ -37,8 +37,9 @@ class NotationLayoutProperties {
   /// The distance between elements when positional difference is 1.
   double get spacePerPosition => staveSpace * baseSpacePerPosition;
 
-  double get staveLineThickness =>
-      12 * NotationLayoutProperties.defaultStaveSpace / 100;
+  double get staveLineThickness => 12 * staveSpace / 100;
+
+  double get standardStemLength => baseStandardStemLength * staveSpace;
 
   /// Stems should be thinner than the stave-line, but not so thin as to
   /// reproduce too faintly.

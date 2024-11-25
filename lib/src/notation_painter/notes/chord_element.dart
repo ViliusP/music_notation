@@ -30,9 +30,9 @@ class Chord extends StatelessWidget implements RhythmicElement {
   final double duration;
 
   @override
-  final double stemLength;
+  final double baseStemLength;
 
-  bool get _stemmed => stemLength != 0;
+  bool get _stemmed => baseStemLength != 0;
 
   @override
   final StemDirection? stemDirection;
@@ -78,7 +78,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
     required this.notes,
     required this.notationContext,
     required this.font,
-    required this.stemLength,
+    required this.baseStemLength,
     required this.duration,
     this.stemDirection,
   });
@@ -111,7 +111,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
       notes: notes,
       notationContext: notationContext,
       font: font,
-      stemLength: _calculateStemLength(notes),
+      baseStemLength: _calculateStemLength(notes),
       duration: notes.first.determineDuration(),
       stemDirection: stemDirection,
     );
@@ -278,10 +278,10 @@ class Chord extends StatelessWidget implements RhythmicElement {
     ).numeric;
 
     int positionDifference = highestPosition - lowestPosition;
-    const heightPerPosition = NotationLayoutProperties.defaultStaveSpace / 2;
+    const heightPerPosition = .5;
 
     double stemLength = positionDifference.abs() * heightPerPosition;
-    stemLength += NotationLayoutProperties.standardStemLength;
+    stemLength += NotationLayoutProperties.baseStandardStemLength;
 
     return stemLength;
   }
@@ -290,7 +290,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
   Size get baseSize => _calculateBaseSize(
         notes: notes,
         notationContext: notationContext,
-        stemLength: stemLength,
+        stemLength: baseStemLength,
         font: font,
       );
 
@@ -332,7 +332,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
       font: font,
       notationContext: notationContext,
       showLedger: false,
-      stemLength: stemLength,
+      stemLength: baseStemLength,
     );
 
     int leftHighest = _noteheadsPositions.lastIndexWhere(

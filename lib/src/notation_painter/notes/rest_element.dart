@@ -60,7 +60,7 @@ class RestElement extends StatelessWidget implements RhythmicElement {
   StemDirection? get stemDirection => null;
 
   @override
-  double get stemLength => 0;
+  double get baseStemLength => 0;
 
   @override
   ElementPosition get position => _determinePosition();

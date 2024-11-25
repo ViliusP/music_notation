@@ -48,10 +48,10 @@ class BeamGroup extends StatelessWidget {
     double lastStemLength = 0;
 
     firstPosition = children.first.position;
-    firstStemLength = children.first.stemLength;
+    firstStemLength = children.first.baseStemLength;
 
     lastPosition = children.last.position;
-    lastStemLength = children.last.stemLength;
+    lastStemLength = children.last.baseStemLength;
 
     double canvasHeight =
         spacePerPosition * firstPosition.distance(lastPosition);

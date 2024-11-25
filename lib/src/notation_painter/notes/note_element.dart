@@ -58,12 +58,12 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
   final StemDirection? stemDirection;
 
   @override
-  final double stemLength;
+  final double baseStemLength;
 
   @override
   final double duration;
 
-  bool get _stemmed => stemLength != 0;
+  bool get _stemmed => baseStemLength != 0;
 
   final bool showLedger;
   final bool showFlag;
@@ -100,7 +100,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       note: note,
       notationContext: notationContext,
       font: font,
-      stemLength: stemLength ?? _calculateStemLength(note, notationContext),
+      baseStemLength: stemLength ?? _calculateStemLength(note, notationContext),
       showLedger: showLedger,
       showFlag: showFlag,
       duration: note.determineDuration(),
@@ -114,7 +114,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     super.key,
     required this.note,
     required this.notationContext,
-    required this.stemLength,
+    required this.baseStemLength,
     this.showFlag = true,
     this.showLedger = true,
     required this.duration,
@@ -156,7 +156,6 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     );
   }
 
-  @override
   double _calculateAlignmentOffset(FontMetadata font) {
     double leftOffset = 0;
 
@@ -188,7 +187,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
 
     if (_accidental != null) {
       offsetX ??= noteheadSize.width;
-      offsetX -= alignmentPosition.left!;
+      offsetX -= alignmentPosition.left;
     }
 
     return Offset(
@@ -205,7 +204,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       return 0.0;
     }
 
-    double stemLength = NotationLayoutProperties.standardStemLength;
+    double stemLength = NotationLayoutProperties.baseStandardStemLength;
 
     var position = determinePosition(note, context.clef);
 
@@ -219,7 +218,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       distance = position.distance(ElementPosition.secondLedgerBelow) + 1;
     }
 
-    stemLength += distance * NotationLayoutProperties.defaultStaveSpace / 2;
+    stemLength += distance * .5;
     return stemLength;
   }
 
@@ -282,7 +281,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
   Size get baseSize => calculateBaseSize(
         note: note,
         clef: notationContext.clef,
-        stemLength: stemLength,
+        stemLength: baseStemLength,
         stemDirection: stemDirection,
         font: font,
         showFlag: false, // ????
@@ -362,7 +361,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
 
   double get verticalAlignmentAxisOffset {
     if (_stemmed && stemDirection == StemDirection.up) {
-      return stemLength;
+      return baseStemLength;
     }
 
     // When note is on drawn the line and it's stem is drawn down,
@@ -447,7 +446,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       stem = StemElement(
         type: type,
         font: font,
-        length: stemLength,
+        length: baseStemLength,
         showFlag: note.beams.isEmpty && showFlag,
         direction: stemDirection!,
       );
