@@ -7,8 +7,13 @@ import 'package:music_notation/src/notation_painter/painters/barline_painter.dar
 import 'package:music_notation/src/notation_painter/painters/staff_lines_painter.dart';
 
 class StaffLines extends StatelessWidget {
+  final double height;
+  final double spacing;
+
   const StaffLines({
     super.key,
+    required this.height,
+    required this.spacing,
   });
 
   @override
@@ -22,23 +27,29 @@ class StaffLines extends StatelessWidget {
 
     DebugSettings? debugSettings = DebugSettings.of(context);
 
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        CustomPaint(
-          painter: StaffLinesPainter(
-            extraStaveLineCount: debugSettings?.extraStaveLineCount ?? 0,
-            extraStaveLines:
-                debugSettings?.extraStaveLines ?? ExtraStaveLines.none,
-          ),
-        ),
-        if ((debugSettings?.verticalStaveLineSpacingMultiplier ?? 0) != 0)
+    return SizedBox(
+      height: height,
+      child: Stack(
+        fit: StackFit.loose,
+        children: [
           CustomPaint(
-            painter: StaveSpaceIndicatorPainter(
-              debugSettings?.verticalStaveLineSpacingMultiplier ?? 0,
+            size: Size.infinite,
+            painter: StaffLinesPainter(
+              extraStaveLineCount: debugSettings?.extraStaveLineCount ?? 0,
+              extraStaveLines:
+                  debugSettings?.extraStaveLines ?? ExtraStaveLines.none,
+              height: height,
+              spacing: spacing,
             ),
           ),
-      ],
+          if ((debugSettings?.verticalStaveLineSpacingMultiplier ?? 0) != 0)
+            CustomPaint(
+              painter: StaveSpaceIndicatorPainter(
+                debugSettings?.verticalStaveLineSpacingMultiplier ?? 0,
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

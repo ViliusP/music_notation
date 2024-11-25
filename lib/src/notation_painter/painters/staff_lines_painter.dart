@@ -4,10 +4,14 @@ import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 
 class StaffLinesPainter extends CustomPainter {
+  final double height;
+  final double spacing;
   final int extraStaveLineCount;
   final ExtraStaveLines extraStaveLines;
 
   StaffLinesPainter({
+    required this.height,
+    required this.spacing,
     this.extraStaveLineCount = 0,
     this.extraStaveLines = ExtraStaveLines.none,
   });
@@ -19,9 +23,7 @@ class StaffLinesPainter extends CustomPainter {
       ..strokeWidth = NotationLayoutProperties.defaultStaveLineStrokeWidth;
 
     double bottom = 0;
-    for (;
-        bottom <= NotationLayoutProperties.defaultStaveHeight;
-        bottom += NotationLayoutProperties.defaultStaveSpace) {
+    for (; bottom <= height; bottom += spacing) {
       canvas.drawLine(
         Offset(0, bottom),
         Offset(size.width, bottom),
@@ -33,11 +35,11 @@ class StaffLinesPainter extends CustomPainter {
     if (extraStaveLines != ExtraStaveLines.none) {
       double top = 0;
 
-      bottom -= NotationLayoutProperties.defaultStaveSpace;
+      bottom -= spacing;
 
       for (int i = 0; i < extraStaveLineCount; i++) {
-        top -= NotationLayoutProperties.defaultStaveSpace;
-        bottom += NotationLayoutProperties.defaultStaveSpace;
+        top -= spacing;
+        bottom += spacing;
 
         if (extraStaveLines == ExtraStaveLines.above ||
             extraStaveLines == ExtraStaveLines.double) {
