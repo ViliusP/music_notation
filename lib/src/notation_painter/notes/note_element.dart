@@ -18,9 +18,8 @@ import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart'
 import 'package:music_notation/src/notation_painter/notes/simple_note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/painters/dots_painter.dart';
-import 'package:music_notation/src/notation_painter/painters/utilities.dart';
+import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
-import 'package:music_notation/src/smufl/glyph_class.dart';
 
 const Map<String, Color> _voiceColors = {
   "0": Color.fromRGBO(0, 0, 0, 1),
@@ -218,7 +217,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     double offsetY = size.height;
 
     if (stemDirection == StemDirection.down) {
-      offsetX = NotationLayoutProperties.defaultStemStrokeWidth / 2;
+      offsetX = NotationLayoutProperties.baseStemStrokeWidth / 2;
     }
 
     if (_accidental != null) {
@@ -314,7 +313,10 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
   }
 
   @override
-  Size get size => calculateSize(
+  Size get size => baseSize.scale(NotationLayoutProperties.defaultStaveSpace);
+
+  @override
+  Size get baseSize => calculateBaseSize(
         note: note,
         clef: notationContext.clef,
         stemLength: stemLength,
@@ -328,7 +330,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
         type: note.type?.value ?? NoteTypeValue.quarter,
       ).size;
 
-  static Size calculateSize({
+  static Size calculateBaseSize({
     required Note note,
     required Clef? clef,
     required double stemLength,
@@ -363,18 +365,18 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       stem: stem,
     );
 
-    Size noteSize = noteElement.size;
+    Size noteSize = noteElement.baseSize;
 
     height = noteSize.height;
     width = notehead.size.width;
 
     if (note.dots.isNotEmpty) {
-      width += dotsSize(font).width;
+      width += baseDotsSize(font).width;
       width += dotsOffset();
 
       ElementPosition position = determinePosition(note, clef);
       if (note.stem?.value == StemValue.down && position.numeric % 2 == 0) {
-        height += dotsSize(font).height / 2;
+        height += baseDotsSize(font).height / 2;
       }
     }
 
@@ -426,22 +428,12 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     return defaultOffset;
   }
 
-  Size get _dotsSize => dotsSize(font);
+  Size get _dotsSize => baseDotsSize(font).scale(
+        NotationLayoutProperties.defaultStaveSpace,
+      );
 
-  static Size dotsSize(FontMetadata font) {
-    const double referenceStaveHeight = 50;
-    const Size defaultSize = Size(5, 4.95); // Size when stave height is 50;
-    const double scaleFactor =
-        NotationLayoutProperties.defaultStaveHeight / referenceStaveHeight;
-    Size scaledDefaultSize = Size(
-      defaultSize.width * scaleFactor,
-      defaultSize.height * scaleFactor,
-    );
-
-    Size? glyphSize = font.glyphBBoxes[CombiningStaffPositions.augmentationDot]
-        ?.toRect()
-        .size;
-    return glyphSize ?? scaledDefaultSize;
+  static Size baseDotsSize(FontMetadata font) {
+    return AugmentationDot(count: 1, font: font).baseSize;
   }
 
   AccidentalValue? get _accidental => note.accidental?.value;

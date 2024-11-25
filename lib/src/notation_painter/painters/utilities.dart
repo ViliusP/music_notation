@@ -1,7 +1,6 @@
 import 'package:flutter/rendering.dart';
 
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
-import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
 class PainterUtilities {
@@ -34,17 +33,15 @@ class PainterUtilities {
 }
 
 extension FontPainting on GlyphBBox {
-  Rect toRect(
-      [double defaultStaveSpace = NotationLayoutProperties.defaultStaveSpace]) {
+  Rect toRect(double scale) {
     var (o1, o2) = toOffsets();
-    o1 = o1.scale(defaultStaveSpace, defaultStaveSpace);
-    o2 = o2.scale(defaultStaveSpace, defaultStaveSpace);
+    o1 = o1.scale(scale, scale);
+    o2 = o2.scale(scale, scale);
     return Rect.fromPoints(o1, o2);
   }
 
-  Size toSize(
-      [double defaultStaveSpace = NotationLayoutProperties.defaultStaveSpace]) {
-    return toRect(defaultStaveSpace).size.ceil();
+  Size toSize(double scale) {
+    return toRect(scale).size;
   }
 
   /// This function takes a `GlyphBBox` object and converts its bounding box coordinates

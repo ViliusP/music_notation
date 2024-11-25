@@ -5,6 +5,8 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
+import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
+import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart';
 
 /// A widget that displays augmentation dots next to a musical note.
@@ -26,7 +28,9 @@ class AugmentationDot extends StatelessWidget {
   /// This offset is typically half of the stave space and is added to the note size,
   /// so the dot aligns correctly in musical notation.
   static const double defaultOffset =
-      NotationLayoutProperties.defaultStaveSpace / 2;
+      defaultBaseOffset * NotationLayoutProperties.defaultStaveSpace;
+
+  static const double defaultBaseOffset = 1 / 2;
 
   /// The default spacing between two augmentation dots.
   ///
@@ -38,8 +42,14 @@ class AugmentationDot extends StatelessWidget {
   ///
   /// This method determines the combined width of all dots, factoring in
   /// spacing between them, and returns the required [Size] object.
-  Size get size {
-    Size singleDotSize = _singleDotSize(font);
+  Size get size => baseSize.scale(NotationLayoutProperties.defaultStaveSpace);
+
+  /// Calculates the total [size] of the augmentation dots.
+  ///
+  /// This method determines the combined width of all dots, factoring in
+  /// spacing between them, and returns the required [Size] object.
+  Size get baseSize {
+    Size singleDotSize = _baseDotSize(font);
     double width = count * singleDotSize.width + (spacing * (count - 1));
 
     return Size(width, singleDotSize.height);
@@ -74,31 +84,28 @@ class AugmentationDot extends StatelessWidget {
   ///
   /// If the font provides specific glyph dimensions, those are used. Otherwise,
   /// a default size scaled to the current stave height is calculated and returned.
-  static Size _singleDotSize(FontMetadata font) {
+  static Size _baseDotSize(FontMetadata font) {
     Size? glyphSize = font.glyphBBoxes[CombiningStaffPositions.augmentationDot]
-        ?.toRect()
+        ?.toRect(1)
         .size;
 
     if (glyphSize != null) return glyphSize;
 
-    return _defaultSize();
+    return _defaultBaseSize;
   }
 
-  static Size _defaultSize() {
-    // Otherwise, use a default size scaled to the current stave height
-    const double referenceStaveHeight = 50;
-    const Size defaultSize = Size(5, 4.95); // Size when stave height is 50
-    const double scaleFactor =
-        NotationLayoutProperties.defaultStaveHeight / referenceStaveHeight;
-    return Size(
-      defaultSize.width * scaleFactor,
-      defaultSize.height * scaleFactor,
-    );
-  }
+  static const Size _defaultBaseSize = Size(
+    0.4,
+    0.396,
+  );
 
   @override
   Widget build(BuildContext context) {
-    Size singleDotSize = _singleDotSize(font);
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
+    Size singleDotSize = _baseDotSize(font).scale(layoutProperties.staveSpace);
 
     return SizedBox.fromSize(
       size: size,

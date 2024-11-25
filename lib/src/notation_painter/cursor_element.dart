@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
+import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
+import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 
 /// Represents the `<forward>` and `<backup>` element in MusicXML, which moves the cursor
 /// backward or forward in time by a specified duration without rendering any visual element.
@@ -32,7 +34,10 @@ class CursorElement extends StatelessWidget implements MeasureWidget {
 
   /// `<forward>` does not occupy any visual space.
   @override
-  Size get size => const Size(10, 10);
+  Size get size => baseSize.scale(NotationLayoutProperties.defaultStaveSpace);
+
+  @override
+  Size get baseSize => const Size(0.25, 0.25);
 
   /// Creates a [CursorElement] with the given [duration] data.
   const CursorElement({

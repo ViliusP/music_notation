@@ -13,6 +13,8 @@ import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart'
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
+import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
+import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 
 class RestElement extends StatelessWidget implements RhythmicElement {
   final Note note;
@@ -87,14 +89,17 @@ class RestElement extends StatelessWidget implements RhythmicElement {
   ElementPosition get position => _determinePosition();
 
   @override
-  Size get size {
-    Size restSymbolSize = _bBox.toRect().size;
+  Size get size => baseSize.scale(NotationLayoutProperties.defaultStaveSpace);
+
+  @override
+  Size get baseSize {
+    Size restSymbolSize = _bBox.toRect(1).size;
     double width = restSymbolSize.width;
     double height = restSymbolSize.height;
     if (_dots > 0) {
-      width += AugmentationDot.defaultOffset;
+      width += AugmentationDot.defaultBaseOffset;
       var dots = AugmentationDot(count: _dots, font: font);
-      width += dots.size.width;
+      width += dots.baseSize.width;
 
       if (_dotsVerticalOffset < 0) {
         height += _dotsVerticalOffset.abs();
@@ -234,6 +239,10 @@ class RestElement extends StatelessWidget implements RhythmicElement {
 
   @override
   Widget build(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
     return SizedBox.fromSize(
       size: size,
       child: Stack(
@@ -248,7 +257,7 @@ class RestElement extends StatelessWidget implements RhythmicElement {
             left: 0,
             bottom: 0,
             child: CustomPaint(
-              size: _bBox.toRect().size,
+              size: _bBox.toRect(layoutProperties.staveSpace).size,
               painter: SimpleGlyphPainter(_glyph.codepoint, _bBox),
             ),
           ),

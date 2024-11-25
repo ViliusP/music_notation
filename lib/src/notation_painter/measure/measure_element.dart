@@ -11,7 +11,11 @@ abstract class MeasureWidget extends Widget {
   ElementPosition get position;
 
   /// The size of the element, defining its width and height within the measure.
+  @deprecated
   Size get size;
+
+  /// The size of the element, defining its width and height within the measure.
+  Size get baseSize;
 
   /// Optional positioning and alignment information for precise element placement.
   AlignmentPosition get alignmentPosition;

@@ -5,6 +5,7 @@ import 'package:music_notation/src/notation_painter/measure/measure_element.dart
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/time_beat_painter.dart';
+import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 
 class TimeBeatElement extends StatelessWidget implements MeasureWidget {
   final TimeBeat timeBeat;
@@ -26,7 +27,10 @@ class TimeBeatElement extends StatelessWidget implements MeasureWidget {
   }
 
   @override
-  Size get size => const Size(20, NotationLayoutProperties.defaultStaveHeight);
+  Size get size => baseSize.scale(NotationLayoutProperties.defaultStaveSpace);
+
+  @override
+  Size get baseSize => const Size(20 / 12, 4);
 
   @override
   ElementPosition get position => const ElementPosition(

@@ -1,23 +1,22 @@
 import 'package:flutter/rendering.dart';
-import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 
 class StemPainter extends CustomPainter {
+  final double thickness;
   final StemDirection direction;
-
-  static const strokeWidth = NotationLayoutProperties.defaultStemStrokeWidth;
-
-  final Paint _paint = Paint()
-    ..color = const Color.fromRGBO(0, 0, 0, 1.0)
-    ..strokeWidth = strokeWidth;
 
   StemPainter({
     this.direction = StemDirection.up,
+    required this.thickness,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawLine(Offset.zero, Offset(0, size.height), _paint);
+    final Paint paint = Paint()
+      ..color = const Color.fromRGBO(0, 0, 0, 1.0)
+      ..strokeWidth = thickness;
+
+    canvas.drawLine(Offset.zero, Offset(0, size.height), paint);
   }
 
   @override

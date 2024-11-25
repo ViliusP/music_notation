@@ -11,6 +11,8 @@ import 'package:music_notation/src/notation_painter/painters/note_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
+import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
+import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart';
 
 // Note without accidentals, dots. Just notehead, stem and flag (if needed).
@@ -24,29 +26,33 @@ class SimpleNoteElement extends StatelessWidget {
     this.stem,
   });
 
-  Size get size => _calculateSize(notehead: notehead, stem: stem);
+  Size get size => _calculateBaseSize(notehead: notehead, stem: stem).scale(
+        NotationLayoutProperties.defaultStaveSpace,
+      );
 
-  static Size _calculateSize({
+  Size get baseSize => _calculateBaseSize(notehead: notehead, stem: stem);
+
+  static Size _calculateBaseSize({
     required NoteheadElement notehead,
     StemElement? stem,
   }) {
-    double width = notehead.size.width;
-    double height = notehead.size.height;
+    double width = notehead.baseSize.width;
+    double height = notehead.baseSize.height;
 
     if (stem != null && stem.length > 0) {
       height += stem.length - height / 2;
       if (stem.direction == StemDirection.up) {
-        width += stem._flagSize.width;
+        width += stem._baseFlagSize.width;
       }
       width += _stemHorizontalOffset;
-      width = width = [stem._flagSize.width, width].max;
+      width = width = [stem._baseFlagSize.width, width].max;
     }
 
     return Size(width, height);
   }
 
   static final double _stemHorizontalOffset =
-      (NotationLayoutProperties.defaultStemStrokeWidth / 2);
+      (NotationLayoutProperties.baseStemStrokeWidth / 2);
 
   AlignmentPosition _stemPosition() {
     if (stem?.direction == StemDirection.up) {
@@ -107,21 +113,22 @@ class StemElement extends StatelessWidget {
 
   /// By default value is up.
   final StemDirection direction;
+
+  /// Length in stave spaces
   final double length;
 
   /// Determines if flag should be shown with stem. By default it is true;
   final bool showFlag;
 
-  Size get size {
-    double width = StemPainter.strokeWidth;
+  Size get size => baseSize.scale(NotationLayoutProperties.defaultStaveSpace);
+
+  Size get baseSize {
+    double width = NotationLayoutProperties.baseStemStrokeWidth;
     if (showFlag && length > 0) {
-      width = width / 2 + _flagSize.width;
+      width = width / 2 + _baseFlagSize.width;
     }
 
-    return Size(
-      width,
-      length,
-    );
+    return Size(width, length);
   }
 
   SmuflGlyph? get _glyph {
@@ -167,10 +174,10 @@ class StemElement extends StatelessWidget {
     }
   }
 
-  Size get _flagSize {
+  Size get _baseFlagSize {
     if (!showFlag) return Size(0, 0);
     if (_glyph == null) return Size(0, 0);
-    return _bBox(font).toSize();
+    return _bBox(font).toSize(1);
   }
 
   SmuflGlyph? get _downwardFlag {
@@ -210,6 +217,10 @@ class StemElement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
     SmuflGlyph? flagGlyph = _glyph;
 
     return Stack(children: [
@@ -217,13 +228,14 @@ class StemElement extends StatelessWidget {
         size: size,
         painter: StemPainter(
           direction: direction,
+          thickness: layoutProperties.stemStrokeWidth,
         ),
       ),
       if (flagGlyph != null && length > 0)
         AligmentPositioned(
           position: _flagPosition(direction),
           child: CustomPaint(
-            size: _flagSize,
+            size: _baseFlagSize.scale(layoutProperties.staveSpace),
             painter: SimpleGlyphPainter(
               flagGlyph.codepoint,
               _bBox(font),
@@ -332,7 +344,8 @@ class NoteheadElement extends StatelessWidget {
   ///
   /// The height of all notehead types is same and equal to the sum of the staff
   /// line stroke width and stave space.
-  Size get size => _bBox(font).toSize();
+  Size get size => baseSize.scale(NotationLayoutProperties.defaultStaveSpace);
+  Size get baseSize => _bBox(font).toSize(1);
 
   const NoteheadElement({
     super.key,

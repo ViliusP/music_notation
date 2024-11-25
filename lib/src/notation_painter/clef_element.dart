@@ -6,6 +6,7 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
+import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart';
 import 'package:music_notation/src/smufl/smufl_glyph.dart';
@@ -91,9 +92,11 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
   }
 
   @override
-  Size get size {
-    return _bBox.toRect().size;
-  }
+  Size get size => baseSize.scale(NotationLayoutProperties.defaultStaveSpace);
+
+  @override
+  // TODO: implement baseSize
+  Size get baseSize => _bBox.toRect(1).size;
 
   @override
   Widget build(BuildContext context) {

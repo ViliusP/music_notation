@@ -12,6 +12,8 @@ import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/painters/beam_painter.dart';
+import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
+import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 
 class BeamGroup extends StatelessWidget {
   final List<RhythmicElement> children;
@@ -36,8 +38,8 @@ class BeamGroup extends StatelessWidget {
     );
   }
 
-  Size _beamSize() {
-    const offsetPerPosition = NotationLayoutProperties.defaultStaveSpace / 2;
+  Size get _baseBeamSize {
+    const spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
 
     ElementPosition? firstPosition;
     ElementPosition? lastPosition;
@@ -52,13 +54,13 @@ class BeamGroup extends StatelessWidget {
     lastStemLength = children.last.stemLength;
 
     double canvasHeight =
-        offsetPerPosition * firstPosition.distance(lastPosition);
+        spacePerPosition * firstPosition.distance(lastPosition);
 
     canvasHeight += NotationLayoutProperties.defaultBeamThickness;
     canvasHeight -= (lastStemLength - firstStemLength);
 
     double canvasWidth = leftOffsets.last - leftOffsets.first;
-    canvasWidth -= (NotationLayoutProperties.defaultStemStrokeWidth / 2);
+    canvasWidth -= (NotationLayoutProperties.baseStemStrokeWidth / 2);
 
     return Size(canvasWidth, canvasHeight);
   }
@@ -90,9 +92,13 @@ class BeamGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
     final List<({double? bottom, double? top})> verticalOffsets = [];
 
-    const offsetPerPosition = NotationLayoutProperties.defaultStaveSpace / 2;
+    double spacePerPosition = layoutProperties.spacePerPosition;
 
     for (var child in children) {
       double? topOffset;
@@ -105,7 +111,7 @@ class BeamGroup extends StatelessWidget {
         // Calculate the interval from staff top to the child's position.
         int intervalFromTheF5 = ElementPosition.staffTop.numeric;
         intervalFromTheF5 -= child.position.numeric;
-        topOffset += intervalFromTheF5 * offsetPerPosition;
+        topOffset += intervalFromTheF5 * spacePerPosition;
 
         topOffset += padding.top;
       }
@@ -116,7 +122,7 @@ class BeamGroup extends StatelessWidget {
         // Calculate the interval from staff bottom to the child's position.
         int intervalFromTheE4 = ElementPosition.staffBottom.numeric;
         intervalFromTheE4 -= child.position.numeric;
-        bottomOffset -= intervalFromTheE4 * offsetPerPosition;
+        bottomOffset -= intervalFromTheE4 * spacePerPosition;
 
         bottomOffset += padding.bottom;
       }
@@ -186,7 +192,7 @@ class BeamGroup extends StatelessWidget {
           top: beamTopOffset,
           bottom: beamBottomOffset,
           child: CustomPaint(
-            size: _beamSize(),
+            size: _baseBeamSize.scale(layoutProperties.staveSpace),
             painter: BeamPainter(
               beamsPattern: beamsPattern(),
               // color: color,

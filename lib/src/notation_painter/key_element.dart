@@ -15,6 +15,8 @@ import 'package:music_notation/src/notation_painter/models/octaved_key_accidenta
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
+import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
+import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart';
 
 const Map<AccidentalValue, SmuflGlyph> _accidentalSmuflMapping = {
@@ -194,7 +196,8 @@ class AccidentalElement extends StatelessWidget {
     );
   }
 
-  Size get size => calculateSize(accidental, font);
+  Size get size => baseSize.scale(NotationLayoutProperties.defaultStaveSpace);
+  Size get baseSize => calculateSize(accidental, font);
 
   static Size calculateSize(
     AccidentalValue accidental,
@@ -202,8 +205,7 @@ class AccidentalElement extends StatelessWidget {
   ) {
     SmuflGlyph glyph = _accidentalSmuflMapping[accidental]!;
 
-    Rect headRect = font.glyphBBoxes[glyph]!.toRect();
-    return Size(headRect.width, headRect.height);
+    return font.glyphBBoxes[glyph]!.toSize(1);
   }
 
   const AccidentalElement({
@@ -234,9 +236,9 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
   final TraditionalKey musicKey;
   final NotationContext notationContext;
 
-  static const _spaceBetweenAccidentals = 6.0;
-  static const _offsetPerPosition =
-      NotationLayoutProperties.defaultStaveSpace / 2;
+  static const _baseSpaceBetweenAccidentals = 0.25;
+  static const _spaceBetweenAccidentals =
+      _baseSpaceBetweenAccidentals * NotationLayoutProperties.defaultStaveSpace;
 
   @override
   AlignmentPosition get alignmentPosition {
@@ -339,7 +341,10 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
   }
 
   @override
-  Size get size {
+  Size get size => baseSize.scale(NotationLayoutProperties.defaultStaveSpace);
+
+  @override
+  Size get baseSize {
     if (accidentals.isEmpty) {
       return const Size(0, 0);
     }
@@ -347,22 +352,22 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
     var width = 0.0;
 
     int range = _range.highest.numeric - _range.lowest.numeric;
-    double height = range * _offsetPerPosition;
+    double height = range * .5;
     for (var (i, accidental) in accidentals.indexed) {
       Size accidentalSize = AccidentalElement(
         accidental: accidental.accidental?.value ?? AccidentalValue.other,
         font: font,
-      ).size;
+      ).baseSize;
 
       if (i == 0) {
         height += accidentalSize.height;
       }
 
-      width += accidentalSize.width + _spaceBetweenAccidentals;
+      width += accidentalSize.width + _baseSpaceBetweenAccidentals;
     }
 
     // Remove last width
-    width = width - _spaceBetweenAccidentals;
+    width = width - _baseSpaceBetweenAccidentals;
 
     return Size(width, height);
   }
@@ -410,6 +415,10 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
 
   @override
   Widget build(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
     var children = <Widget>[];
 
     int highestAccidentalPosition = _range.highest.numeric;
@@ -425,7 +434,7 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
 
       children.add(
         Positioned(
-          top: distanceFromHighest * _offsetPerPosition,
+          top: distanceFromHighest * layoutProperties.spacePerPosition,
           child: Padding(
             padding: EdgeInsets.only(
               left: _leftOffsets[index],

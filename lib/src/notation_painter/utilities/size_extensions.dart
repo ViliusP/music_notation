@@ -8,4 +8,8 @@ extension SizeExtensions on Size {
   Size ceil() {
     return Size(width.ceilToDouble(), height.ceilToDouble());
   }
+
+  Size scale(double scale) {
+    return Size(width * scale, height * scale);
+  }
 }
