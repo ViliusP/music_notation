@@ -92,7 +92,7 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
             NotationLayoutProperties.standard();
 
     return CustomPaint(
-      size: baseSize.byContext(context),
+      size: baseSize.scaledByContext(context),
       painter: SimpleGlyphPainter(
         _glyph.codepoint,
         _bBox,

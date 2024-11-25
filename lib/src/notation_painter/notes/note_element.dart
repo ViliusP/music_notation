@@ -407,6 +407,8 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
         NotationProperties.of(context)?.layout ??
             NotationLayoutProperties.standard();
 
+    Size dotsSize = baseDotsSize(font).scaledByContext(context);
+
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
 
     double? dotsTopPosition;
@@ -458,7 +460,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     }
 
     return SizedBox.fromSize(
-      size: baseSize.byContext(context),
+      size: baseSize.scaledByContext(context),
       child: Stack(
         children: [
           SimpleNoteElement(
@@ -475,7 +477,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
               top: dotsTopPosition,
               bottom: dotsBottomPosition,
               child: CustomPaint(
-                size: _dotsSize,
+                size: dotsSize,
                 painter: DotsPainter(
                   _dots,
                   AugmentationDot.defaultSpacing,

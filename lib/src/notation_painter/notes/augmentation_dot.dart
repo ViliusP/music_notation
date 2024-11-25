@@ -93,10 +93,10 @@ class AugmentationDot extends StatelessWidget {
         NotationProperties.of(context)?.layout ??
             NotationLayoutProperties.standard();
 
-    Size singleDotSize = _baseDotSize(font).byContext(context);
+    Size singleDotSize = _baseDotSize(font).scaledByContext(context);
 
     return SizedBox.fromSize(
-      size: baseSize.byContext(context),
+      size: baseSize.scaledByContext(context),
       child: Stack(
         children: [
           for (int i = 0; i < count; i++)

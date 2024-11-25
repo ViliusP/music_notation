@@ -225,7 +225,7 @@ class StemElement extends StatelessWidget {
 
     return Stack(children: [
       CustomPaint(
-        size: size,
+        size: baseSize.scaledByContext(context),
         painter: StemPainter(
           direction: direction,
           thickness: layoutProperties.stemStrokeWidth,
@@ -235,7 +235,7 @@ class StemElement extends StatelessWidget {
         AlignmentPositioned(
           position: _flagPosition(direction),
           child: CustomPaint(
-            size: _baseFlagSize.byContext(context),
+            size: _baseFlagSize.scaledByContext(context),
             painter: SimpleGlyphPainter(
               flagGlyph.codepoint,
               _bBox(font),
@@ -362,7 +362,7 @@ class NoteheadElement extends StatelessWidget {
             NotationLayoutProperties.standard();
 
     return CustomPaint(
-      size: baseSize.byContext(context),
+      size: baseSize.scaledByContext(context),
       painter: NotePainter(
         smufl: _glyph.codepoint,
         ledgerLines: ledgerLines,

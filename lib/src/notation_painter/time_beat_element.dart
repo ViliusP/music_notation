@@ -57,10 +57,10 @@ class TimeBeatElement extends StatelessWidget implements MeasureWidget {
       topSmufl = _integerToSmufl(int.parse(signature.beats));
       bottomSmufl = _integerToSmufl(int.parse(signature.beatType));
     }
-    Size smuflSize = Size(20 / 12, 2).byContext(context);
+    Size smuflSize = Size(20 / 12, 2).scaledByContext(context);
 
     return SizedBox.fromSize(
-      size: baseSize.byContext(context),
+      size: baseSize.scaledByContext(context),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

@@ -71,7 +71,7 @@ class Barlines extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Size size = BarlinePainter.size.byContext(context);
+    Size size = BarlinePainter.size.scaledByContext(context);
 
     double calculatedStartOffset = 0;
     double calculatedStartHeight = BarlinePainter.size.height;

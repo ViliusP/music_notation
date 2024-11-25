@@ -15,7 +15,7 @@ extension SizeExtensions on Size {
     return Size(width * scale, height * scale);
   }
 
-  Size byContext(BuildContext context) {
+  Size scaledByContext(BuildContext context) {
     NotationLayoutProperties layoutProperties =
         NotationProperties.of(context)?.layout ??
             NotationLayoutProperties.standard();

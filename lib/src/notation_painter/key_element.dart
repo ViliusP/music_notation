@@ -414,7 +414,7 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
           top: distanceFromHighest * layoutProperties.spacePerPosition,
           child: Padding(
             padding: EdgeInsets.only(
-              left: _leftOffsets[index],
+              left: _leftOffsets[index].scaledByContext(context),
             ),
             child: accidentalWidget,
           ),
@@ -423,7 +423,7 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
     }
 
     return SizedBox.fromSize(
-      size: baseSize.byContext(context),
+      size: baseSize.scaledByContext(context),
       child: Stack(
         alignment: Alignment.centerLeft,
         children: children,

@@ -407,7 +407,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
     }
 
     return SizedBox.fromSize(
-      size: baseSize.byContext(context),
+      size: baseSize.scaledByContext(context),
       child: Stack(
         children: children,
       ),

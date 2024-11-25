@@ -217,7 +217,7 @@ class RestElement extends StatelessWidget implements RhythmicElement {
             NotationLayoutProperties.standard();
 
     return SizedBox.fromSize(
-      size: baseSize.byContext(context),
+      size: baseSize.scaledByContext(context),
       child: Stack(
         children: [
           if (_dots > 0)
