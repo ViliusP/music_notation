@@ -65,7 +65,7 @@ class SimpleGlyphPainter extends CustomPainter {
     // --------------------------
     TextStyle textStyle = TextStyle(
       fontFamily: 'Leland',
-      fontSize: height,
+      fontSize: height * 4,
       color: color,
       // backgroundColor: Color.fromRGBO(124, 100, 0, 0.2),
       height: 1,
