@@ -44,10 +44,18 @@ class AlignmentPosition {
           (top == null) != (bottom == null),
           'Either top or bottom must be null, but not both.',
         );
+
+  AlignmentPosition scale(double scale) {
+    return AlignmentPosition(
+      left: left * scale,
+      top: top != null ? top! * scale : null,
+      bottom: bottom != null ? bottom! * scale : null,
+    );
+  }
 }
 
-class AligmentPositioned extends Positioned {
-  AligmentPositioned({
+class AlignmentPositioned extends Positioned {
+  AlignmentPositioned({
     super.key,
     required AlignmentPosition position,
     required super.child,

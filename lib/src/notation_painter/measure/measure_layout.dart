@@ -17,6 +17,7 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
+import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
 import 'package:music_notation/src/notation_painter/spacing/timeline.dart';
 
 /// A widget that lays out musical measures with notes, chords, beams, and staff lines.
@@ -62,7 +63,8 @@ class MeasureLayout extends StatelessWidget {
   /// Returns:
   /// An [EdgeInsets] object with calculated top and bottom padding.
   static VerticalEdgeInsets calculateVerticalPadding(
-      List<MeasureWidget> children) {
+    List<MeasureWidget> children,
+  ) {
     double top = 0;
     double bottom = 0;
 
@@ -79,6 +81,10 @@ class MeasureLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
     final BeatTimeline measureBeatline = beatTimeline ??
         BeatTimeline.fromTimeline(MeasureTimeline.fromMeasureElements(
           children,
@@ -88,7 +94,7 @@ class MeasureLayout extends StatelessWidget {
 
     double width = spacings.last;
 
-    const offsetPerPosition = NotationLayoutProperties.defaultStaveSpace / 2;
+    double spacePerPosition = layoutProperties.spacePerPosition;
 
     var inheritedPadding = InheritedPadding.of(context)?.padding;
     var padding = inheritedPadding ?? calculateVerticalPadding(children);
@@ -117,24 +123,28 @@ class MeasureLayout extends StatelessWidget {
         double? topOffset;
         double? bottomOffset;
 
-        if (child.alignmentPosition.top != null) {
-          topOffset = child.alignmentPosition.top!;
+        AlignmentPosition alignmentPosition = child.alignmentPosition.scale(
+          layoutProperties.staveSpace,
+        );
+
+        if (alignmentPosition.top != null) {
+          topOffset = alignmentPosition.top!;
 
           // Calculate the interval from staff top to the child's position.
           int intervalFromTheF5 = ElementPosition.staffTop.numeric;
           intervalFromTheF5 -= child.position.numeric;
-          topOffset += intervalFromTheF5 * offsetPerPosition;
+          topOffset += intervalFromTheF5 * spacePerPosition;
 
           topOffset += padding.top;
         }
-        if (child.alignmentPosition.bottom != null) {
+        if (alignmentPosition.bottom != null) {
           bottomOffset = 0;
-          bottomOffset = child.alignmentPosition.bottom ?? 0;
+          bottomOffset = alignmentPosition.bottom ?? 0;
 
           // Calculate the interval from staff bottom to the child's position.
           int intervalFromTheE4 = ElementPosition.staffBottom.numeric;
           intervalFromTheE4 -= child.position.numeric;
-          bottomOffset -= intervalFromTheE4 * offsetPerPosition;
+          bottomOffset -= intervalFromTheE4 * spacePerPosition;
 
           bottomOffset += padding.bottom;
         }
@@ -156,7 +166,7 @@ class MeasureLayout extends StatelessWidget {
             positionedElements.add(
               Positioned(
                 left: spacings[index],
-                top: padding.top + NotationLayoutProperties.defaultStaveHeight,
+                top: padding.top + layoutProperties.staveHeight,
                 child: Container(
                   width: boxBelow.width,
                   height: [boxBelow.height, 0].max.toDouble(),
@@ -171,8 +181,7 @@ class MeasureLayout extends StatelessWidget {
             positionedElements.add(
               Positioned(
                 left: spacings[index],
-                bottom: padding.bottom +
-                    NotationLayoutProperties.defaultStaveHeight,
+                bottom: padding.bottom + layoutProperties.staveHeight,
                 child: Container(
                   width: boxAbove.width,
                   height: [boxAbove.height, 0].max.toDouble(),
@@ -191,10 +200,7 @@ class MeasureLayout extends StatelessWidget {
             padding: padding,
             child: AlignTarget(
               child: SizedBox.fromSize(
-                size: Size(
-                  width,
-                  NotationLayoutProperties.defaultStaveHeight,
-                ),
+                size: Size(width, layoutProperties.staveHeight),
                 child: StaffLines(),
               ),
             ),
@@ -214,7 +220,7 @@ class MeasureLayout extends StatelessWidget {
               child: CustomPaint(
                 size: Size(
                   constraints.maxWidth.isFinite ? constraints.maxWidth : width,
-                  NotationLayoutProperties.defaultStaveHeight,
+                  layoutProperties.staveHeight,
                 ),
                 painter: BeatMarkPainter(
                   dSettings!.beatMarkerMultiplier,

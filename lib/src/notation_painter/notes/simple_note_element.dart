@@ -82,12 +82,12 @@ class SimpleNoteElement extends StatelessWidget {
       size: size,
       child: Stack(
         children: [
-          AligmentPositioned(
+          AlignmentPositioned(
             position: _noteheadPosition(),
             child: notehead,
           ),
           if (stem != null)
-            AligmentPositioned(
+            AlignmentPositioned(
               position: _stemPosition(),
               child: stem!,
             ),
@@ -232,7 +232,7 @@ class StemElement extends StatelessWidget {
         ),
       ),
       if (flagGlyph != null && length > 0)
-        AligmentPositioned(
+        AlignmentPositioned(
           position: _flagPosition(direction),
           child: CustomPaint(
             size: _baseFlagSize.byContext(context),
