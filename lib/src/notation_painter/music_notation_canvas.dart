@@ -11,6 +11,8 @@ import 'package:music_notation/src/notation_painter/measure/notation_widgetizati
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/models/vertical_edge_insets.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
+import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
+import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
 
 import 'package:music_notation/src/notation_painter/sync_width_column.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
@@ -52,6 +54,10 @@ class MusicNotationCanvas extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
     var parts = <SyncWidthRowBuilder>[];
     for (int i = 0; i < grid.data.rowCount; i++) {
       NotationContext lastNotationContext = NotationContext.empty();
@@ -84,7 +90,10 @@ class MusicNotationCanvas extends StatelessWidget {
           lastNotationContext,
         );
 
-        var padding = MeasureLayout.calculateVerticalPadding(children);
+        var padding = MeasureLayout.calculateVerticalPadding(
+          children,
+          layoutProperties.staveSpace,
+        );
 
         maxTopPadding = [
           maxTopPadding,

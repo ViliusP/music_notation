@@ -1,7 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
-import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 
 /// An abstract base class representing a musical element within a measure,
@@ -71,60 +70,31 @@ class AlignmentPositioned extends Positioned {
 extension MeasureElementDimensions on MeasureWidget {
   /// Calculates a bounding box for elements extending below the staff,
   /// with consideration for the element's position and vertical alignment offset.
-  Rect boxBelowStaff() {
-    const offsetPerPosition = NotationLayoutProperties.defaultStaveSpace / 2;
+  Rect boxBelowStaff(double scale) {
+    double spacePerPosition = scale / 2;
 
-    Size size = baseSize.scale(NotationLayoutProperties.defaultStaveSpace);
+    Size size = baseSize.scale(scale);
+    AlignmentPosition alignmentScaled = alignmentPosition.scale(scale);
 
     double belowStaffLength = 0;
 
     double distanceToStaffBottom =
-        offsetPerPosition * ElementPosition.staffBottom.numeric;
+        spacePerPosition * ElementPosition.staffBottom.numeric;
 
-    if (alignmentPosition.top != null) {
+    if (alignmentScaled.top != null) {
       belowStaffLength = [
-        -offsetPerPosition * position.numeric,
+        -spacePerPosition * position.numeric,
         distanceToStaffBottom,
         size.height,
-        alignmentPosition.top!,
+        alignmentScaled.top!,
       ].sum;
     }
 
-    if (alignmentPosition.bottom != null) {
+    if (alignmentScaled.bottom != null) {
       belowStaffLength = [
-        -offsetPerPosition * position.numeric,
+        -spacePerPosition * position.numeric,
         distanceToStaffBottom,
-        -alignmentPosition.bottom!,
-      ].sum;
-    }
-
-    belowStaffLength = [0.0, belowStaffLength].max;
-
-    return Rect.fromPoints(Offset(0, 0), Offset(size.width, belowStaffLength));
-  }
-
-  /// Calculates a cell count for elements extending below the staff,
-  /// with consideration for the element's position and vertical alignment offset.
-  Rect staveSpacesBelowStaff() {
-    double belowStaffLength = 0;
-
-    double distanceToStaffBottom =
-        ElementPosition.staffBottom.numeric.toDouble();
-
-    if (alignmentPosition.top != null) {
-      belowStaffLength = [
-        -position.numeric.toDouble(),
-        distanceToStaffBottom,
-        size.height,
-        alignmentPosition.top!,
-      ].sum;
-    }
-
-    if (alignmentPosition.bottom != null) {
-      belowStaffLength = [
-        -position.numeric.toDouble(),
-        distanceToStaffBottom,
-        -alignmentPosition.bottom!,
+        -alignmentScaled.bottom!,
       ].sum;
     }
 
@@ -135,30 +105,31 @@ extension MeasureElementDimensions on MeasureWidget {
 
   /// Calculates a bounding box for elements extending above the staff,
   /// considering the element's position and vertical alignment offset.
-  Rect boxAboveStaff() {
-    const offsetPerPosition = NotationLayoutProperties.defaultStaveSpace / 2;
+  Rect boxAboveStaff(double scale) {
+    double spacePerPosition = scale / 2;
 
     double aboveStaffLength = 0;
 
-    Size size = baseSize.scale(NotationLayoutProperties.defaultStaveSpace);
+    Size size = baseSize.scale(scale);
+    AlignmentPosition alignmentScaled = alignmentPosition.scale(scale);
 
     double distanceToStaffTop =
-        offsetPerPosition * ElementPosition.staffTop.numeric;
+        spacePerPosition * ElementPosition.staffTop.numeric;
 
-    if (alignmentPosition.top != null) {
+    if (alignmentScaled.top != null) {
       aboveStaffLength = [
-        offsetPerPosition * position.numeric,
-        -alignmentPosition.top!,
+        spacePerPosition * position.numeric,
+        -alignmentScaled.top!,
         -distanceToStaffTop,
       ].sum;
     }
 
-    if (alignmentPosition.bottom != null) {
+    if (alignmentScaled.bottom != null) {
       aboveStaffLength = [
-        offsetPerPosition * position.numeric,
+        spacePerPosition * position.numeric,
         -distanceToStaffTop,
         size.height,
-        alignmentPosition.bottom!,
+        alignmentScaled.bottom!,
       ].sum;
     }
 

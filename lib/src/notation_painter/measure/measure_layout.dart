@@ -38,8 +38,6 @@ class MeasureLayout extends StatelessWidget {
 
   final BeatTimeline? beatTimeline;
 
-  EdgeInsets get verticalPadding => calculateVerticalPadding(children);
-
   final BarlineSettings barlineSettings;
 
   const MeasureLayout({
@@ -64,13 +62,14 @@ class MeasureLayout extends StatelessWidget {
   /// An [EdgeInsets] object with calculated top and bottom padding.
   static VerticalEdgeInsets calculateVerticalPadding(
     List<MeasureWidget> children,
+    double scale,
   ) {
     double top = 0;
     double bottom = 0;
 
     for (var child in children) {
-      top = max(top, child.boxAboveStaff().height);
-      bottom = max(bottom, child.boxBelowStaff().height);
+      top = max(top, child.boxAboveStaff(scale).height);
+      bottom = max(bottom, child.boxBelowStaff(scale).height);
     }
 
     return VerticalEdgeInsets(
@@ -100,7 +99,8 @@ class MeasureLayout extends StatelessWidget {
     double spacePerPosition = layoutProperties.spacePerPosition;
 
     var inheritedPadding = InheritedPadding.of(context)?.padding;
-    var padding = inheritedPadding ?? calculateVerticalPadding(children);
+    var padding = inheritedPadding ??
+        calculateVerticalPadding(children, layoutProperties.staveSpace);
 
     DebugSettings? dSettings = DebugSettings.of(context);
 
@@ -164,7 +164,7 @@ class MeasureLayout extends StatelessWidget {
         }
 
         if (dSettings != null) {
-          Rect boxBelow = child.boxBelowStaff();
+          Rect boxBelow = child.boxBelowStaff(layoutProperties.staveSpace);
           if (dSettings.paintBBoxBelowStaff && boxBelow.height > 0) {
             positionedElements.add(
               Positioned(
@@ -179,7 +179,7 @@ class MeasureLayout extends StatelessWidget {
             );
           }
 
-          Rect boxAbove = child.boxAboveStaff();
+          Rect boxAbove = child.boxAboveStaff(layoutProperties.staveSpace);
           if (dSettings.paintBBoxAboveStaff && boxAbove.height > 0) {
             positionedElements.add(
               Positioned(
