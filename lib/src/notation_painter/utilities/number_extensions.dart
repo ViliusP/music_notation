@@ -1,3 +1,7 @@
+import 'package:flutter/widgets.dart';
+import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
+import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
+
 extension NumExtensions on num {
   /// Finds the nearest multiple of base [of], rounding up if base [of] is positive
   /// or rounding down if [base] is negative.
@@ -66,6 +70,13 @@ extension NumExtensions on num {
   /// ```
   double roundTowardsZero() {
     return this > 0 ? floorToDouble() : ceilToDouble();
+  }
+
+  double scaledByContext(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+    return this * layoutProperties.staveSpace;
   }
 }
 

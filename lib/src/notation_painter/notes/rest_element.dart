@@ -222,7 +222,9 @@ class RestElement extends StatelessWidget implements RhythmicElement {
         children: [
           if (_dots > 0)
             Positioned(
-              top: _dotsVerticalOffset.clamp(0, double.maxFinite),
+              top: _dotsVerticalOffset
+                  .scaledByContext(context)
+                  .clamp(0, double.maxFinite),
               right: 0,
               child: AugmentationDot(count: _dots, font: font),
             ),
