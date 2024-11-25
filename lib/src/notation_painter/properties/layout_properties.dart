@@ -51,7 +51,7 @@ class NotationLayoutProperties {
   double get beamThickness => staveSpace * baseBeamThickness;
 
   /// The distance between beams is 1/4 stave space.
-  double get defaultBeamSpacing => staveSpace * .25;
+  double get beamSpacing => staveSpace * .25;
 
   const NotationLayoutProperties({
     required double staveHeight,
