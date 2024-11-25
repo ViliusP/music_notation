@@ -18,9 +18,8 @@ class StaffLinesPainter extends CustomPainter {
       ..color = const Color.fromRGBO(0, 0, 0, 1.0)
       ..strokeWidth = NotationLayoutProperties.defaultStaveLineStrokeWidth;
 
-    double top = 0;
     double bottom = 0;
-    for (bottom = top;
+    for (;
         bottom <= NotationLayoutProperties.defaultStaveHeight;
         bottom += NotationLayoutProperties.defaultStaveSpace) {
       canvas.drawLine(
@@ -32,6 +31,8 @@ class StaffLinesPainter extends CustomPainter {
 
     // For ledger lines debugging
     if (extraStaveLines != ExtraStaveLines.none) {
+      double top = 0;
+
       bottom -= NotationLayoutProperties.defaultStaveSpace;
 
       for (int i = 0; i < extraStaveLineCount; i++) {
