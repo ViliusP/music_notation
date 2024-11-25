@@ -56,7 +56,7 @@ class BeamGroup extends StatelessWidget {
     double canvasHeight =
         spacePerPosition * firstPosition.distance(lastPosition);
 
-    canvasHeight += NotationLayoutProperties.defaultBeamThickness;
+    canvasHeight += NotationLayoutProperties.baseBeamThickness;
     canvasHeight -= (lastStemLength - firstStemLength);
 
     double canvasWidth = leftOffsets.last - leftOffsets.first;
@@ -95,6 +95,8 @@ class BeamGroup extends StatelessWidget {
     NotationLayoutProperties layoutProperties =
         NotationProperties.of(context)?.layout ??
             NotationLayoutProperties.standard();
+
+    double beamThickness = layoutProperties.beamThickness;
 
     final List<({double? bottom, double? top})> verticalOffsets = [];
 
@@ -158,7 +160,7 @@ class BeamGroup extends StatelessWidget {
         beamTopOffset += firstNoteBeamOffset.dy;
       }
       if (firstNoteStemValue == StemDirection.down) {
-        beamTopOffset -= NotationLayoutProperties.defaultBeamThickness;
+        beamTopOffset -= beamThickness;
       }
     }
 
@@ -173,7 +175,7 @@ class BeamGroup extends StatelessWidget {
         beamBottomOffset += lastNoteBeamOffset.dy;
         beamBottomOffset += verticalOffsets.last.bottom!;
       }
-      beamBottomOffset -= NotationLayoutProperties.defaultBeamThickness;
+      beamBottomOffset -= beamThickness;
     }
 
     return Stack(
@@ -197,7 +199,7 @@ class BeamGroup extends StatelessWidget {
               beamsPattern: beamsPattern(),
               // color: color,
               downward: _isBeamDownward(),
-              hookLength: layoutProperties.staveSpace,
+              hookLength: layoutProperties.staveSpace, thickness: beamThickness,
             ),
           ),
         ),

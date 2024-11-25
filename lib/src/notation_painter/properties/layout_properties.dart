@@ -8,6 +8,8 @@ class NotationLayoutProperties {
   static const int staveLines = 5;
   static const double _baseStaveLineStrokeWidth = 12 * 1 / 100;
 
+  static const double baseBeamThickness = .5;
+
   /// Stems should be thinner than the stave-line, but not so thin as to
   /// reproduce too faintly.
   static const double baseStemStrokeWidth = 0.125;
@@ -18,9 +20,6 @@ class NotationLayoutProperties {
   /// The standard length of a stem is one octave (3.5 stave-spaces) from the
   /// centre of the notehead.
   static const double baseStandardStemLength = 3.5;
-
-  /// Beam thickness is 1/2 stave-space.
-  static const double defaultBeamThickness = _defaultStaveSpace / 2;
 
   /// The distance between beams is 1/4 stave space.
   static const double defaultBeamSpacing = _defaultStaveSpace / 2;
@@ -46,6 +45,9 @@ class NotationLayoutProperties {
 
   // TODO: adjust correctly, currently it is magic number
   double get barlineThickness => staveLineThickness * 1.6;
+
+  /// Beam thickness is 1/2 stave-space.
+  double get beamThickness => staveSpace * baseBeamThickness;
 
   const NotationLayoutProperties({
     required double staveHeight,

@@ -13,6 +13,7 @@ class BeamPainter extends CustomPainter {
   final Color? color;
 
   final double hookLength;
+  final double thickness;
 
   final bool debug;
 
@@ -21,22 +22,21 @@ class BeamPainter extends CustomPainter {
     required this.downward,
     this.color,
     required this.hookLength,
+    required this.thickness,
     this.debug = false,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    double beamThickness = NotationLayoutProperties.defaultBeamThickness;
-
     // Calculate start and end based on the beam direction
     Offset start;
     Offset end;
     if (!downward) {
-      start = Offset(0, size.height - beamThickness);
+      start = Offset(0, size.height - thickness);
       end = Offset(size.width, 0);
     } else {
       start = Offset(0, 0);
-      end = Offset(size.width, size.height - beamThickness);
+      end = Offset(size.width, size.height - thickness);
     }
     // Calculate beam angle
     double angle = atan2(end.dy - start.dy, end.dx - start.dx);
@@ -68,7 +68,7 @@ class BeamPainter extends CustomPainter {
             alignment: Alignment.start,
             alignmentLineByHorizontalSpan: true,
             beamByHorizontalSpan: true,
-            beamThickness: NotationLayoutProperties.defaultBeamThickness,
+            beamThickness: thickness,
             color: color ?? const Color.fromRGBO(0, 0, 0, 1),
             debug: debug,
           );
@@ -84,7 +84,7 @@ class BeamPainter extends CustomPainter {
             alignment: Alignment.end,
             alignmentLineByHorizontalSpan: true,
             beamByHorizontalSpan: false,
-            beamThickness: NotationLayoutProperties.defaultBeamThickness,
+            beamThickness: thickness,
             color: color ?? const Color.fromRGBO(0, 0, 0, 1),
             debug: debug,
           );
