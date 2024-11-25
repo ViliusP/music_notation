@@ -6,11 +6,7 @@ class NotationLayoutProperties {
   /// The default stave height for fallbacking;
   static const double _defaultStaveHeight = 48;
 
-  /// The default height of a stave-space determines the size of all noteheads.
-  static const _defaultStaveSpace = _defaultStaveHeight / (staveLines - 1);
-
   static const int staveLines = 5;
-  static const double _baseStaveLineStrokeWidth = 12 * 1 / 100;
 
   static const double baseBeamThickness = .5;
 
@@ -46,7 +42,7 @@ class NotationLayoutProperties {
   /// reproduce too faintly.
   double get stemStrokeWidth => baseStemStrokeWidth * staveSpace;
 
-  double get staveLineThickness => _baseStaveLineStrokeWidth * staveSpace;
+  double get staveLineThickness => 12 * 1 / 100 * staveSpace;
 
   // TODO: adjust correctly, currently it is magic number
   double get barlineThickness => staveLineThickness * 1.6;
