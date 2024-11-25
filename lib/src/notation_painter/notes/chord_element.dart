@@ -12,6 +12,8 @@ import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/notation_painter/notes/simple_note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
+import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
+import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
@@ -318,6 +320,10 @@ class Chord extends StatelessWidget implements RhythmicElement {
 
   @override
   Widget build(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
     var children = <Widget>[];
 
     double calculatedStemLength = _calculateStemLength(notes);
@@ -369,7 +375,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
       double interval =
           ((element.position.numeric - position.numeric)).toDouble();
 
-      double distanceFromRef = interval * 1 / 2;
+      double distanceFromRef = interval * layoutProperties.staveSpace / 2;
 
       // When note is on drawn the line and it's stem is drawn down,
       // the dots size must be taken in the account.
@@ -378,8 +384,10 @@ class Chord extends StatelessWidget implements RhythmicElement {
           refnote.position.numeric % 2 != 0 &&
           note.dots.isNotEmpty &&
           index != referenceNoteIndex) {
-        distanceFromRef += element.verticalAlignmentAxisOffset;
-        distanceFromRef -= 1 / 2;
+        distanceFromRef += element.verticalAlignmentAxisOffset.scaledByContext(
+          context,
+        );
+        distanceFromRef -= layoutProperties.staveSpace / 2;
       }
 
       final NoteheadPosition noteheadPos = _noteheadsPositions[index];
