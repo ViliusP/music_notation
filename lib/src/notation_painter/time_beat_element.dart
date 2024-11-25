@@ -3,8 +3,9 @@ import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
-import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/time_beat_painter.dart';
+import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
+import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 
 class TimeBeatElement extends StatelessWidget implements MeasureWidget {
@@ -39,6 +40,10 @@ class TimeBeatElement extends StatelessWidget implements MeasureWidget {
 
   @override
   Widget build(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
     if (timeBeat.timeSignatures.length > 1) {
       throw UnimplementedError(
         "multiple beat and beat type in one time-beat are not implemented in renderer yet",
@@ -52,8 +57,7 @@ class TimeBeatElement extends StatelessWidget implements MeasureWidget {
       topSmufl = _integerToSmufl(int.parse(signature.beats));
       bottomSmufl = _integerToSmufl(int.parse(signature.beatType));
     }
-    Size smuflSize =
-        const Size(20, NotationLayoutProperties.defaultStaveHeight / 2);
+    Size smuflSize = Size(20 / 12, 2).byContext(context);
 
     return SizedBox.fromSize(
       size: baseSize.byContext(context),
@@ -63,12 +67,18 @@ class TimeBeatElement extends StatelessWidget implements MeasureWidget {
           if (topSmufl != null)
             CustomPaint(
               size: smuflSize,
-              painter: TimeBeatPainter(topSmufl),
+              painter: TimeBeatPainter(
+                topSmufl,
+                layoutProperties.staveSpace,
+              ),
             ),
           if (bottomSmufl != null)
             CustomPaint(
               size: smuflSize,
-              painter: TimeBeatPainter(bottomSmufl),
+              painter: TimeBeatPainter(
+                bottomSmufl,
+                layoutProperties.staveSpace,
+              ),
             ),
         ],
       ),

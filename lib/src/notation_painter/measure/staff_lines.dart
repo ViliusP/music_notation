@@ -5,6 +5,7 @@ import 'package:music_notation/src/notation_painter/measure/barline_painting.dar
 import 'package:music_notation/src/notation_painter/models/vertical_edge_insets.dart';
 import 'package:music_notation/src/notation_painter/painters/barline_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/staff_lines_painter.dart';
+import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 
 class StaffLines extends StatelessWidget {
   final double height;
@@ -70,6 +71,8 @@ class Barlines extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Size size = BarlinePainter.size.byContext(context);
+
     double calculatedStartOffset = 0;
     double calculatedStartHeight = BarlinePainter.size.height;
     if (startExtension == BarlineExtension.bottom) {
@@ -107,7 +110,7 @@ class Barlines extends StatelessWidget {
           Align(
             alignment: Alignment.centerLeft,
             child: CustomPaint(
-              size: Size.fromWidth(BarlinePainter.size.width),
+              size: Size.fromWidth(size.width),
               painter: BarlinePainter(
                 // color: colors[startExtension]!,
                 offset: calculatedStartOffset,
@@ -119,7 +122,7 @@ class Barlines extends StatelessWidget {
         Align(
           alignment: Alignment.centerRight,
           child: CustomPaint(
-            size: Size.fromWidth(BarlinePainter.size.width),
+            size: Size.fromWidth(size.width),
             painter: BarlinePainter(
               // color: colors[endExtension]!,
               offset: calculatedEndOffset,

@@ -35,8 +35,7 @@ class AugmentationDot extends StatelessWidget {
   /// The default spacing between two augmentation dots.
   ///
   /// *Value taken from [_defaultSize].
-  static const double defaultSpacing =
-      NotationLayoutProperties.defaultStaveHeight / 50 * 4.95 / 2;
+  static const double defaultSpacing = 48 / 50 * 4.95 / 2;
 
   /// Calculates the total [size] of the augmentation dots.
   ///

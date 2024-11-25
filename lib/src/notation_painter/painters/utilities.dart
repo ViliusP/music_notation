@@ -6,7 +6,8 @@ import 'package:music_notation/src/smufl/font_metadata.dart';
 class PainterUtilities {
   static void drawSmuflSymbol(
     Canvas canvas,
-    String symbol, {
+    String symbol,
+    double size, {
     Offset offset = const Offset(
       0,
       (-NotationLayoutProperties.defaultStaveSpace * 1.5),
@@ -15,7 +16,7 @@ class PainterUtilities {
   }) {
     TextStyle textStyle = TextStyle(
       fontFamily: 'Leland',
-      fontSize: NotationLayoutProperties.defaultStaveHeight,
+      fontSize: size * 4,
       color: color,
       // backgroundColor: Color.fromRGBO(124, 100, 0, 0.2),
       height: 1,

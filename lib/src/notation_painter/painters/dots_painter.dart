@@ -1,5 +1,4 @@
 import 'package:flutter/rendering.dart';
-import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 import 'package:music_notation/src/smufl/smufl_glyph.dart';
 
@@ -8,10 +7,12 @@ import 'package:music_notation/src/smufl/smufl_glyph.dart';
 class DotsPainter extends CustomPainter {
   final int count;
 
+  final double symbolSize;
+
   /// The distance between two dots.
   final double spacing;
 
-  DotsPainter(this.count, this.spacing);
+  DotsPainter(this.count, this.spacing, this.symbolSize);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -19,9 +20,10 @@ class DotsPainter extends CustomPainter {
       PainterUtilities.drawSmuflSymbol(
         canvas,
         SmuflGlyph.augmentationDot.codepoint,
+        symbolSize,
         offset: Offset(
           spacing * i.toDouble(),
-          -NotationLayoutProperties.defaultStaveSpace * 2 + size.height / 2,
+          -symbolSize * 2 + size.height / 2,
         ),
       );
     }

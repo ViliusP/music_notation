@@ -1,9 +1,9 @@
 class NotationLayoutProperties {
   /// The default stave height for fallbacking;
-  static const double defaultStaveHeight = 48;
+  static const double _defaultStaveHeight = 48;
 
   /// The default height of a stave-space determines the size of all noteheads.
-  static const defaultStaveSpace = defaultStaveHeight / (staveLines - 1);
+  static const defaultStaveSpace = _defaultStaveHeight / (staveLines - 1);
 
   static const int staveLines = 5;
   static const double defaultStaveLineStrokeWidth =
@@ -50,7 +50,8 @@ class NotationLayoutProperties {
     required double staveHeight,
   }) : _staveHeight = staveHeight;
 
-  const NotationLayoutProperties.standard() : _staveHeight = defaultStaveHeight;
+  const NotationLayoutProperties.standard()
+      : _staveHeight = _defaultStaveHeight;
 
   @override
   bool operator ==(Object other) {

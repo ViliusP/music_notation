@@ -23,7 +23,7 @@ class BarlinePainter extends CustomPainter {
 
   static const Size size = Size(
     strokeWidth,
-    NotationLayoutProperties.defaultStaveHeight,
+    4,
   );
 
   @override
