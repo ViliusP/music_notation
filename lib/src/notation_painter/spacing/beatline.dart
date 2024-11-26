@@ -1,40 +1,41 @@
 part of 'timeline.dart';
 
 /// Represents the timeline for rhythmic elements (notes, rests, chords) within a measure for a single voice.
-class BeatTimelineV2 {
+class Beatline {
   /// Divisions per beat in the timeline, used to determine placement accuracy.
   final double divisions;
 
   /// Stores the beat values for each position in the timeline.
   /// Each element represents a beat position and may be `null` to indicate empty or unoccupied slots.
-  final List<BeatTimelineValueV2?> values;
+  final List<BeatlineValue?> values;
+
+  final bool normalized;
 
   /// Calculates the total duration covered by this timeline, summing all durations of non-null beats.
-  double get duration => values.fold(
-        0,
-        (double duration, element) => duration + (element?.duration ?? 0),
-      );
+  final double duration;
 
   /// Space between two quarter notes measured from their alignment axes.
   // static const double _spaceBetweenQuarters = 1.5;
 
   // double get spacePerDivision => _spaceBetweenQuarters / divisions;
 
-  const BeatTimelineV2({
+  const Beatline({
     required this.values,
     required this.divisions,
+    required this.duration,
+    this.normalized = false,
   });
 
   /// Creates a [BeatTimeline] from a [Timeline] and filters by a specified voice.
   ///
   /// Iterates through each value in the [timeline] and includes elements matching the specified [voice].
   /// Adjusts offsets for accurate beat placements.
-  factory BeatTimelineV2.fromTimeline(MeasureTimeline timeline) {
-    BeatTimelineV2? finalBeatline;
+  factory Beatline.fromTimeline(MeasureTimeline timeline) {
+    Beatline? finalBeatline;
 
     for (var voice in timeline.uniqueVoices) {
       if ((int.tryParse(voice) ?? 0) > 0) {
-        BeatTimelineV2 beatTimeline = BeatTimelineV2._fromVoiceTimeline(
+        Beatline beatTimeline = Beatline._fromVoiceTimeline(
           timeline: timeline,
           voice: voice,
         );
@@ -45,16 +46,16 @@ class BeatTimelineV2 {
     return finalBeatline!;
   }
 
-  /// Creates a [BeatTimelineV2] from a [MeasureTimeline] and filters by a specified voice.
+  /// Creates a [Beatline] from a [MeasureTimeline] and filters by a specified voice.
   ///
   /// Iterates through each value in the [timeline] and includes elements matching the specified [voice].
   /// Adjusts offsets for accurate beat placements.
-  factory BeatTimelineV2._fromVoiceTimeline({
+  factory Beatline._fromVoiceTimeline({
     required MeasureTimeline timeline,
     required String voice,
   }) {
     int? parsedVoice = int.tryParse(voice);
-    List<BeatTimelineValueV2> values = [];
+    List<BeatlineValue> values = [];
 
     int attributes = 0;
     for (var entry in timeline.values.entries) {
@@ -73,7 +74,7 @@ class BeatTimelineV2 {
           attributes++;
         }
         if (value.duration != 0) {
-          values.add(BeatTimelineValueV2(
+          values.add(BeatlineValue(
             duration: value.duration,
             attributesBefore: attributes,
           ));
@@ -88,27 +89,45 @@ class BeatTimelineV2 {
     while (values.first.duration < 0) {
       values.removeAt(0);
     }
-    return BeatTimelineV2(
+
+    var lastRhytmhic = timeline.values.entries.lastWhere(
+      (e) => e.key.isRhytmic,
+    );
+
+    double lastDuration = lastRhytmhic.value.map((v) => v.duration).max;
+
+    int duration = lastDuration.toInt();
+    if (duration < 0) duration = 0;
+
+    duration += lastRhytmhic.key.index;
+    return Beatline(
       values: values,
       divisions: timeline.divisions,
+      normalized: true,
+      duration: duration.toDouble(),
     ).normalize();
   }
 
   /// Combines this timeline with another [BeatTimeline] and returns a new timeline with adjusted values.
   ///
   /// Requires that both timelines have compatible `duration` and `divisions`.
-  BeatTimelineV2 combine(BeatTimelineV2 other) {
+  Beatline combine(Beatline other) {
     if (duration / divisions != other.duration / other.divisions) {
       throw ArgumentError(
-        "Duration and divisions ratio of provided BeatTimeline is different",
+        "Duration and divisions ratio of provided BeatTimeline is different:\nduration: $duration, other.duration: ${other.duration} \ndivisions: $divisions, other.divisions ${other.divisions}",
         "other.duration",
       );
     }
 
-    final List<BeatTimelineValueV2?> combined = [];
+    final List<BeatlineValue?> combined = [];
 
-    BeatTimelineV2 bl1 = normalize();
-    BeatTimelineV2 bl2 = other.normalize();
+    Beatline bl1 = normalize();
+    Beatline bl2 = other.normalize();
+
+    // print("-------------------------");
+    // print("Before: $duration After ${bl1.duration} bl1");
+    // print("Before: ${other.duration} After ${bl2.duration} bl2");
+
     // Ensure both timelines share the same number of divisions.
     if (bl1.divisions < bl2.divisions) {
       bl1 = bl1.changeDivisions(bl2.divisions);
@@ -117,11 +136,15 @@ class BeatTimelineV2 {
       bl2 = bl2.changeDivisions(bl1.divisions);
     }
 
-    BeatTimelineValueV2? lastAdded;
+    // print("-----Divisions-------");
+    // print("Before: $divisions After ${bl1.divisions} bl1");
+    // print("Before: ${other.divisions} After ${bl2.divisions} bl2");
+
+    BeatlineValue? lastAdded;
 
     for (int i = 0; i < bl1.values.length; i++) {
-      BeatTimelineValueV2? bl1Value = bl1.values.elementAtOrNull(i);
-      BeatTimelineValueV2? bl2Value = bl2.values.elementAtOrNull(i);
+      BeatlineValue? bl1Value = bl1.values.elementAtOrNull(i);
+      BeatlineValue? bl2Value = bl2.values.elementAtOrNull(i);
 
       if (bl1Value == null && bl2Value == null) {
         combined.add(null);
@@ -145,7 +168,7 @@ class BeatTimelineV2 {
         lastAdded = combined.last;
       }
       if (bl1Value != null && bl2Value != null) {
-        combined.add(BeatTimelineValueV2(
+        combined.add(BeatlineValue(
           duration: [bl1Value.duration, bl2Value.duration].min,
           attributesBefore: [
             bl1Value.attributesBefore,
@@ -155,14 +178,19 @@ class BeatTimelineV2 {
         lastAdded = combined.last;
       }
     }
-
-    return BeatTimelineV2(values: combined, divisions: bl1.divisions);
+    // print("After everything: ${bl1.duration}");
+    return Beatline(
+      values: combined,
+      divisions: bl1.divisions,
+      normalized: true,
+      duration: bl1.duration,
+    );
   }
 
   /// Changes the divisions of this timeline to the specified [value] and returns a new [BeatTimeline].
   ///
   /// The new divisions value must be greater than the current one.
-  BeatTimelineV2 changeDivisions(double value) {
+  Beatline changeDivisions(double value) {
     if (value < divisions) {
       throw ArgumentError(
         "The new value of divisions must be bigger than the old value",
@@ -172,7 +200,7 @@ class BeatTimelineV2 {
     if (value == divisions) return this;
     double ratio = value / divisions;
 
-    final List<BeatTimelineValueV2?> modified = List.generate(
+    final List<BeatlineValue?> modified = List.generate(
       (duration * ratio).toInt(),
       (i) => null,
     );
@@ -186,25 +214,33 @@ class BeatTimelineV2 {
       }
     }
 
-    return BeatTimelineV2(values: modified, divisions: value);
+    return Beatline(
+      values: modified,
+      divisions: value,
+      normalized: true,
+      duration: duration * ratio,
+    );
   }
 
   /// Normalizes the timeline, ensuring each duration unit has a corresponding position, including `null` slots for rests.
-  BeatTimelineV2 normalize() {
-    final List<BeatTimelineValueV2?> normalized = [];
-    int i = 0;
-    for (final value in values) {
-      if (value != null) {
-        normalized.add(value);
-        i++;
-      }
+  Beatline normalize() {
+    final List<BeatlineValue?> normalized = List.generate(
+      duration.toInt(),
+      (_) => null,
+    );
 
-      // Add `null` slots for gaps between beat positions.
-      for (int j = 1; j < (value?.duration ?? 0); j++, i++) {
-        normalized.add(null);
+    for (int i = 0; i < normalized.length; i++) {
+      if (values.elementAtOrNull(i) != null) {
+        normalized[i] = values[i];
       }
     }
-    return BeatTimelineV2(values: normalized, divisions: divisions);
+
+    return Beatline(
+      values: normalized,
+      divisions: divisions,
+      normalized: true,
+      duration: duration,
+    );
   }
 
   @override
@@ -272,24 +308,24 @@ class BeatTimelineV2 {
 }
 
 /// Represents a single beat position in the timeline, including width, offset, and duration details.
-class BeatTimelineValueV2 {
+class BeatlineValue {
   final int attributesBefore;
 
   // final double width;
   final double duration;
 
-  const BeatTimelineValueV2({
+  const BeatlineValue({
     required this.duration,
     required this.attributesBefore,
   });
 
   /// Creates a copy of this BeatTimelineValue with optional new values for
   /// each field.
-  BeatTimelineValueV2 copyWith({
+  BeatlineValue copyWith({
     double? duration,
     int? attributesBefore,
   }) {
-    return BeatTimelineValueV2(
+    return BeatlineValue(
       duration: duration ?? this.duration,
       attributesBefore: attributesBefore ?? this.attributesBefore,
     );
@@ -298,7 +334,7 @@ class BeatTimelineValueV2 {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is BeatTimelineValueV2 &&
+      other is BeatlineValue &&
           runtimeType == other.runtimeType &&
           duration == other.duration &&
           attributesBefore == other.attributesBefore;

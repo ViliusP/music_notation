@@ -26,15 +26,30 @@ class MusicSheetGrid {
 
     List<MeasureGrid> syncedWidth = _syncMeasuresWidth(column);
     List<MeasureGrid> syncedHeight = [];
+
     for (var (i, measure) in syncedWidth.indexed) {
-      syncedHeight.add(_syncMeasureHeight(measure, i));
+      var synced = _syncMeasureHeight(measure, i);
+      syncedHeight.add(synced);
     }
 
     _values.add(syncedHeight);
   }
 
   List<MeasureGrid> _syncMeasuresWidth(List<MeasureGrid> measures) {
-    return List.from(measures, growable: false);
+    if (measures.length == 1) {
+      return [...measures];
+    }
+    List<MeasureGrid> synced = [];
+    Beatline combined = measures.first._beatline;
+    for (var measure in measures.skip(1)) {
+      combined = combined.combine(measure._beatline);
+    }
+    for (var measure in measures) {
+      var adjusted = measure.adjustByBeatline(combined);
+      synced.add(adjusted);
+    }
+
+    return synced;
   }
 
   MeasureGrid _syncMeasureHeight(MeasureGrid measure, int staff) {
@@ -80,22 +95,23 @@ class MusicSheetGrid {
     int length = _values.elementAtOrNull(0)?.length ?? 0;
 
     List<List<String>> repr = List.generate(length, (_) => []);
+    List<int> widths = List.generate(_values.length, (_) => 0);
     for (var (i, col) in _values.indexed) {
-      for (var (j, _) in col.indexed) {
-        repr[j].add("($j,$i)");
+      for (var (j, measure) in col.indexed) {
+        repr[j].add(
+          "($j,$i) ↑${measure.heightAboveStave}↓${measure.heightBelowStave} ↔${measure.columns.length}",
+        );
+        widths[i] = max(widths[i], repr[j].last.length);
       }
     }
 
     String representation = "";
     for (var row in repr) {
-      int colWidth = row.elementAtOrNull(0)?.length ?? 0;
       representation += "\n| ";
 
-      for (var col in row) {
-        colWidth = max(colWidth, col.length);
-      }
-      for (var col in row) {
-        representation += "$col | ".padLeft(colWidth);
+      for (var (j, col) in row.indexed) {
+        representation += col.padLeft(widths[j]);
+        representation += " | ";
       }
     }
 
@@ -125,7 +141,7 @@ class MusicSheetGrid {
 class MeasureGrid {
   final List<MeasureWidget> _children;
   final BarlineSettings _barlineSettings;
-  final BeatTimelineV2 _beatTimelineV2;
+  final Beatline _beatline;
   final MeasureTimeline _timeline;
   final int minHeightAbove;
   final int minHeightBelow;
@@ -136,13 +152,13 @@ class MeasureGrid {
 
   const MeasureGrid._({
     required List<MeasureWidget> children,
-    required BeatTimelineV2 beatTimelineV2,
+    required Beatline beatline,
     required BarlineSettings barlineSettings,
     required MeasureTimeline timeline,
     required SplayTreeMap<ColumnIndex, MeasureGridColumn> columns,
     this.minHeightAbove = 0,
     this.minHeightBelow = 0,
-  })  : _beatTimelineV2 = beatTimelineV2,
+  })  : _beatline = beatline,
         _barlineSettings = barlineSettings,
         _timeline = timeline,
         _columns = columns,
@@ -155,7 +171,7 @@ class MeasureGrid {
     int minHeightBelow = 0,
   }) {
     MeasureTimeline timeline = MeasureTimeline.fromMeasureElements(children);
-    BeatTimelineV2 beatTimeline = BeatTimelineV2.fromTimeline(timeline);
+    Beatline beatline = Beatline.fromTimeline(timeline);
 
     SplayTreeMap<ColumnIndex, MeasureGridColumn> columns = SplayTreeMap.of({});
     int heightBelowStaff = minHeightBelow;
@@ -221,7 +237,7 @@ class MeasureGrid {
     return MeasureGrid._(
       barlineSettings: barlineSettings,
       timeline: timeline,
-      beatTimelineV2: beatTimeline,
+      beatline: beatline,
       children: children,
       minHeightAbove: minHeightBelow,
       minHeightBelow: minHeightBelow,
@@ -283,7 +299,7 @@ class MeasureGrid {
     String repr = "\n";
     for (var col in representationGrid) {
       for (var row in col) {
-        repr += "| ${row} ";
+        repr += "| $row ";
       }
       repr += "|\n";
     }
@@ -304,11 +320,65 @@ class MeasureGrid {
   }
 
   MeasureGrid copyWith() {
-    return MeasureGrid.fromMeasureWidgets(
+    return MeasureGrid._(
       children: _children,
       barlineSettings: _barlineSettings,
       minHeightAbove: minHeightAbove,
       minHeightBelow: minHeightBelow,
+      beatline: _beatline,
+      timeline: _timeline,
+      columns: _columns,
+    );
+  }
+
+  MeasureGrid adjustByBeatline(Beatline beatline) {
+    SplayTreeMap<ColumnIndex, MeasureGridColumn> adjusted = SplayTreeMap.from(
+      {},
+    );
+
+    int attributesBefore = 0;
+
+    int index = 0;
+    var iterator = _columns.entries.iterator;
+    bool exists = iterator.moveNext();
+
+    for (var beat in beatline.values) {
+      int attributes = (beat?.attributesBefore ?? 0) - attributesBefore;
+      for (int i = 0; i < attributes; i++) {
+        if (exists && !iterator.current.key.isRhytmic) {
+          adjusted[ColumnIndex(index, false)] = iterator.current.value;
+          exists = iterator.moveNext();
+        } else {
+          adjusted[ColumnIndex(index, false)] = MeasureGridColumn.fromHeights(
+            heightAboveStave: heightAboveStave,
+            heightBelowStave: heightBelowStave,
+          );
+        }
+
+        index++;
+      }
+      if (attributesBefore == beat?.attributesBefore && exists) {
+        adjusted[ColumnIndex(index, false)] = iterator.current.value;
+        exists = iterator.moveNext();
+        index++;
+      } else {
+        adjusted[ColumnIndex(index, false)] = MeasureGridColumn.fromHeights(
+          heightAboveStave: heightAboveStave,
+          heightBelowStave: heightBelowStave,
+        );
+        index++;
+      }
+      if (beat?.attributesBefore != null) {
+        attributesBefore = beat!.attributesBefore;
+      }
+    }
+
+    return MeasureGrid._(
+      children: _children,
+      beatline: beatline,
+      barlineSettings: _barlineSettings,
+      timeline: _timeline,
+      columns: adjusted,
     );
   }
 }

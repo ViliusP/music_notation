@@ -247,7 +247,7 @@ class BeatTimeline {
         (a, b) => a.voice.compareTo(b.voice),
       );
 
-      int beat = entry.key.value;
+      int beat = entry.key.index;
 
       double attributeOffset = lastAttributeOffset;
       for (TimelineValue value in beatCol) {

@@ -186,6 +186,9 @@ class _MeasureColumn extends StatelessWidget {
       }
     }
     width += padding?.horizontal ?? 0;
+    // if (width < 50) {
+    //   print(width);
+    // }
 
     return SizedBox(
       height: (topRef.numeric - bottomRef.numeric) * spacePerPosition,
