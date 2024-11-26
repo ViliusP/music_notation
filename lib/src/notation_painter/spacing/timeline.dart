@@ -223,7 +223,7 @@ class MeasureTimeline {
         if (toGenerate < 0) toGenerate = 0;
 
         for (var i in List.generate((toGenerate), (i) => i + 1)) {
-          int cellNumber = lastKey.value + i;
+          int cellNumber = lastKey.index + i;
           row1 += "${_centerPad((cellNumber).toString(), 3)}|";
         }
       }
@@ -319,18 +319,18 @@ class TimelineValue {
 }
 
 class TimelinePosition implements Comparable<TimelinePosition> {
-  final int value;
+  final int index;
   final bool isRhytmic;
 
   TimelinePosition(
-    this.value, [
+    this.index, [
     this.isRhytmic = true,
   ]);
 
   @override
   int compareTo(TimelinePosition other) {
-    if (value != other.value) {
-      return value.compareTo(other.value); // Compare by value first
+    if (index != other.index) {
+      return index.compareTo(other.index); // Compare by value first
     }
     return isRhytmic == other.isRhytmic
         ? 0
@@ -342,12 +342,12 @@ class TimelinePosition implements Comparable<TimelinePosition> {
       identical(this, other) ||
       other is TimelinePosition &&
           runtimeType == other.runtimeType &&
-          value == other.value &&
+          index == other.index &&
           isRhytmic == other.isRhytmic;
 
   @override
-  int get hashCode => Object.hash(value, isRhytmic);
+  int get hashCode => Object.hash(index, isRhytmic);
 
   @override
-  String toString() => "$value${!isRhytmic ? "*" : ""}";
+  String toString() => "$index${!isRhytmic ? "*" : ""}";
 }
