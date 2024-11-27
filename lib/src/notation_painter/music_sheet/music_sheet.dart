@@ -153,6 +153,7 @@ class _SheetMeasuresColumn extends StatelessWidget {
           rightPadding = layoutProperties.staveSpace;
         }
 
+        return _MultiPartMeasuresColumn(
           columns: col,
           padding: EdgeInsets.only(left: leftPadding, right: rightPadding),
           startBarlines: startBarlines,
@@ -163,13 +164,13 @@ class _SheetMeasuresColumn extends StatelessWidget {
   }
 }
 
-class _MeasureColumn extends StatelessWidget {
+class _MultiPartMeasuresColumn extends StatelessWidget {
   final EdgeInsets? padding;
   final List<MeasureGridColumn> columns;
   final List<BarlineExtension>? startBarlines;
   final List<BarlineExtension>? endBarlines;
 
-  const _MeasureColumn({
+  const _MultiPartMeasuresColumn({
     super.key,
     required this.columns,
     this.padding,
@@ -179,19 +180,12 @@ class _MeasureColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var flattend = columns.expand((i) => i.values.entries).toList();
-
     NotationLayoutProperties layoutProperties =
         NotationProperties.of(context)?.layout ??
             NotationLayoutProperties.standard();
 
-    double spacePerPosition = layoutProperties.spacePerPosition;
-    ElementPosition bottomRef = columns.first.values.keys.last;
-    ElementPosition topRef = columns.first.values.keys.first;
-    const staveRef = ElementPosition(step: Step.E, octave: 4);
-
     double width = 0;
-    for (var cell in flattend) {
+    for (var cell in columns.expand((i) => i.values.entries)) {
       if (cell.value != null) {
         width = max(
           width,
@@ -199,25 +193,79 @@ class _MeasureColumn extends StatelessWidget {
         );
       }
     }
-    width += padding?.horizontal ?? 0;
-    // if (width < 50) {
-    //   print(width);
-    // }
+
+    // Temp fix for spaces between painted stave line
+    width = width.ceilToDouble();
+
+    return Column(
+      children: columns.mapIndexed((i, column) {
+        ({BarlineLocation location, BarlineExtension type})? barline;
+        if (startBarlines?.elementAt(i) != null) {
+          barline = (location: BarlineLocation.start, type: startBarlines![i]);
+        } else if (endBarlines?.elementAt(i) != null) {
+          barline = (location: BarlineLocation.end, type: endBarlines![i]);
+        }
+
+        return _MeasureColumn(
+          column: column,
+          width: width,
+          padding: padding,
+          barline: barline,
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _MeasureColumn extends StatelessWidget {
+  final EdgeInsets? padding;
+  final MeasureGridColumn column;
+  final double width;
+  final ({BarlineLocation location, BarlineExtension type})? barline;
+
+  const _MeasureColumn({
+    super.key,
+    required this.column,
+    required this.width,
+    this.padding,
+    this.barline,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
+    double spacePerPosition = layoutProperties.spacePerPosition;
+    ElementPosition bottomRef = column.values.keys.last;
+    ElementPosition topRef = column.values.keys.first;
+    const staveRef = ElementPosition(step: Step.E, octave: 4);
+    double staveBottom = (staveRef.distance(bottomRef)) * spacePerPosition;
 
     return SizedBox(
       height: (topRef.numeric - bottomRef.numeric) * spacePerPosition,
-      width: width,
+      width: width + (padding?.horizontal ?? 0),
       child: Stack(
         fit: StackFit.loose,
         children: [
+          if (barline != null)
+            Barline(
+              type: barline!.type,
+              location: barline!.location,
+              baseline: staveBottom,
+              baseHeight: layoutProperties.staveHeight,
+            ),
           Positioned(
-            bottom: (staveRef.distance(bottomRef)) * spacePerPosition,
+            bottom: staveBottom,
             child: SizedBox(
               width: double.maxFinite,
               child: StaffLines(),
             ),
           ),
-          ...flattend.where((cell) => cell.value != null).map((cell) {
+          ...column.values.entries
+              .where((cell) => cell.value != null)
+              .map((cell) {
             var element = cell.value!;
 
             ElementPosition pos = element.position;
