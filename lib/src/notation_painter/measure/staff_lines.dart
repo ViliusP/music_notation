@@ -1,13 +1,11 @@
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/debug/stave_space_indicator_painter.dart';
-import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
-import 'package:music_notation/src/notation_painter/models/vertical_edge_insets.dart';
+import 'package:music_notation/src/notation_painter/measure/measure_barlines.dart';
 import 'package:music_notation/src/notation_painter/painters/barline_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/staff_lines_painter.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
-import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 
 class StaffLines extends StatelessWidget {
   const StaffLines({
@@ -59,18 +57,21 @@ class StaffLines extends StatelessWidget {
   }
 }
 
-class Barlines extends StatelessWidget {
-  final BarlineExtension startExtension;
-  final BarlineExtension endExtension;
+class Barline extends StatelessWidget {
+  /// Bottom position of base baseline.
+  final double baseline;
 
-  // Measure padding
-  final VerticalEdgeInsets padding;
+  /// Height of base barline
+  final double baseHeight;
+  final BarlineExtension type;
+  final BarlineLocation location;
 
-  const Barlines({
+  const Barline({
     super.key,
-    required this.startExtension,
-    required this.endExtension,
-    required this.padding,
+    required this.type,
+    required this.location,
+    required this.baseline,
+    required this.baseHeight,
   });
 
   @override
@@ -79,67 +80,48 @@ class Barlines extends StatelessWidget {
         NotationProperties.of(context)?.layout ??
             NotationLayoutProperties.standard();
 
-    Size size = Size(
-      layoutProperties.barlineThickness,
-      4.0.scaledByContext(context), // must be corrected
-    );
-
-    double calculatedStartOffset = 0;
-    double calculatedStartHeight = size.height;
-    if (startExtension == BarlineExtension.bottom) {
-      calculatedStartHeight += padding.bottom;
+    double? left;
+    double? right;
+    switch (location) {
+      case BarlineLocation.start:
+        left = 0;
+        break;
+      case BarlineLocation.end:
+        right = 0;
+        break;
     }
 
-    if (startExtension == BarlineExtension.both) {
-      calculatedStartHeight += padding.bottom;
-      calculatedStartOffset -= padding.top;
-    }
-
-    if (startExtension == BarlineExtension.top) {
-      calculatedStartOffset -= padding.top;
-    }
-
-    double calculatedEndOffset = 0;
-    double calculatedEndHeight = size.height;
-    if (endExtension == BarlineExtension.bottom) {
-      calculatedEndHeight += padding.bottom;
-    }
-
-    if (endExtension == BarlineExtension.both) {
-      calculatedEndHeight += padding.bottom;
-      calculatedEndOffset -= padding.top;
-    }
-
-    if (endExtension == BarlineExtension.top) {
-      calculatedEndOffset -= padding.top;
+    double bottom;
+    double height;
+    switch (type) {
+      case BarlineExtension.none:
+        height = baseHeight;
+        bottom = baseline;
+        break;
+      case BarlineExtension.both:
+        height = double.maxFinite;
+        bottom = 0;
+        break;
+      case BarlineExtension.top:
+        bottom = baseline;
+        height = double.maxFinite;
+        break;
+      case BarlineExtension.bottom:
+        height = baseline + baseHeight;
+        bottom = 0;
+        break;
     }
 
     return Stack(
       fit: StackFit.expand,
       children: [
-        if (startExtension != BarlineExtension.none)
-          Align(
-            alignment: Alignment.centerLeft,
-            child: CustomPaint(
-              size: Size.fromWidth(size.width),
-              painter: BarlinePainter(
-                // color: colors[startExtension]!,
-                offset: calculatedStartOffset,
-                height: calculatedStartHeight,
-                end: false, thicknes: layoutProperties.barlineThickness,
-              ),
-            ),
-          ),
-        Align(
-          alignment: Alignment.centerRight,
+        Positioned(
+          bottom: bottom,
+          left: left,
+          right: right,
           child: CustomPaint(
-            size: Size.fromWidth(size.width),
-            painter: BarlinePainter(
-              // color: colors[endExtension]!,
-              offset: calculatedEndOffset,
-              height: calculatedEndHeight,
-              thicknes: layoutProperties.barlineThickness,
-            ),
+            size: Size(layoutProperties.barlineThickness, height),
+            painter: BarlinePainter(),
           ),
         ),
       ],

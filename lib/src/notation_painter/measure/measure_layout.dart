@@ -10,7 +10,7 @@ import 'package:music_notation/src/notation_painter/music_sheet/grid.dart';
 import 'package:music_notation/src/notation_painter/notes/beaming.dart';
 
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
-import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
+import 'package:music_notation/src/notation_painter/measure/measure_barlines.dart';
 import 'package:music_notation/src/notation_painter/measure/inherited_padding.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
@@ -38,12 +38,12 @@ class MeasureLayout extends StatelessWidget {
 
   final BeatTimeline? beatTimeline;
 
-  final BarlineSettings barlineSettings;
+  final MeasureBarlines barlineSettings;
 
   const MeasureLayout({
     super.key,
     this.useExplicitBeaming = false,
-    this.barlineSettings = const BarlineSettings(),
+    this.barlineSettings = const MeasureBarlines(),
     this.beatTimeline,
     required this.children,
   });

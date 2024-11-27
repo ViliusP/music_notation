@@ -5,7 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
-import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
+import 'package:music_notation/src/notation_painter/measure/measure_barlines.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_grid.dart';
 import 'package:music_notation/src/notation_painter/measure/notation_widgetization.dart';
@@ -20,7 +20,7 @@ import 'package:music_notation/src/smufl/font_metadata.dart';
 
 typedef _MeasureData = ({
   List<MeasureWidget> children,
-  BarlineSettings barlineSettings
+  MeasureBarlines barlineSettings
 });
 
 class MusicSheet extends StatelessWidget {
@@ -50,7 +50,7 @@ class MusicSheet extends StatelessWidget {
       for (var i = 0; i < grid.data.rowCount; i++) {
         int? staff = grid.staffForRow(i);
 
-        var barlineSettings = BarlineSettings.fromGridData(
+        var barlineSettings = MeasureBarlines.fromGridData(
           gridX: j,
           gridY: i,
           maxX: grid.data.columnCount,
@@ -134,19 +134,29 @@ class _SheetMeasuresColumn extends StatelessWidget {
 
     return Row(
       children: columnColumns.mapIndexed((i, col) {
+        List<BarlineExtension>? startBarlines;
+        List<BarlineExtension>? endBarlines;
+
         double leftPadding = 0;
         double rightPadding = 0;
 
+        if (i == 0) {
+          leftPadding = layoutProperties.staveSpace;
+          startBarlines = values.map((value) => value.barlines.start).toList();
+        }
+
+        if (i == columnColumns.length - 1) {
+          endBarlines = values.map((value) => value.barlines.end).toList();
+        }
         if (!values.first.columns.keys.elementAt(i).isRhytmic ||
             i == columnColumns.length - 1) {
           rightPadding = layoutProperties.staveSpace;
         }
-        if (i == 0) {
-          leftPadding = layoutProperties.staveSpace;
-        }
-        return _MeasureColumn(
+
           columns: col,
           padding: EdgeInsets.only(left: leftPadding, right: rightPadding),
+          startBarlines: startBarlines,
+          endBarlines: endBarlines,
         );
       }).toList(),
     );
@@ -156,11 +166,15 @@ class _SheetMeasuresColumn extends StatelessWidget {
 class _MeasureColumn extends StatelessWidget {
   final EdgeInsets? padding;
   final List<MeasureGridColumn> columns;
+  final List<BarlineExtension>? startBarlines;
+  final List<BarlineExtension>? endBarlines;
 
   const _MeasureColumn({
     super.key,
     required this.columns,
     this.padding,
+    this.startBarlines,
+    this.endBarlines,
   });
 
   @override

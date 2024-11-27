@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
-import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
+import 'package:music_notation/src/notation_painter/measure/measure_barlines.dart';
 import 'package:music_notation/src/notation_painter/measure/inherited_padding.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_layout.dart';
@@ -19,7 +19,7 @@ import 'package:music_notation/src/smufl/font_metadata.dart';
 
 typedef _MeasureData = ({
   List<MeasureWidget> children,
-  BarlineSettings barlineSettings
+  MeasureBarlines barlineSettings
 });
 
 class MusicNotationCanvas extends StatelessWidget {
@@ -67,7 +67,7 @@ class MusicNotationCanvas extends StatelessWidget {
       List<_MeasureData> row = [];
 
       for (var j = 0; j < grid.data.columnCount; j++) {
-        var barlineSettings = BarlineSettings.fromGridData(
+        var barlineSettings = MeasureBarlines.fromGridData(
           gridX: j,
           gridY: i,
           maxX: grid.data.columnCount,

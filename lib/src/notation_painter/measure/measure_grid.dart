@@ -2,7 +2,7 @@ import 'dart:collection';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
-import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
+import 'package:music_notation/src/notation_painter/measure/measure_barlines.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/spacing/timeline.dart';
@@ -140,7 +140,7 @@ class MusicSheetGrid {
 /// `|` - cell vertical and cell's left/right boundary
 class MeasureGrid {
   final List<MeasureWidget> _children;
-  final BarlineSettings _barlineSettings;
+  final MeasureBarlines barlines;
   final Beatline _beatline;
   final MeasureTimeline _timeline;
   final int minHeightAbove;
@@ -153,20 +153,19 @@ class MeasureGrid {
   const MeasureGrid._({
     required List<MeasureWidget> children,
     required Beatline beatline,
-    required BarlineSettings barlineSettings,
+    required this.barlines,
     required MeasureTimeline timeline,
     required SplayTreeMap<ColumnIndex, MeasureGridColumn> columns,
     this.minHeightAbove = 0,
     this.minHeightBelow = 0,
   })  : _beatline = beatline,
-        _barlineSettings = barlineSettings,
         _timeline = timeline,
         _columns = columns,
         _children = children;
 
   factory MeasureGrid.fromMeasureWidgets({
     required List<MeasureWidget> children,
-    required BarlineSettings barlineSettings,
+    required MeasureBarlines barlineSettings,
     int minHeightAbove = 0,
     int minHeightBelow = 0,
   }) {
@@ -235,7 +234,7 @@ class MeasureGrid {
     }
 
     return MeasureGrid._(
-      barlineSettings: barlineSettings,
+      barlines: barlineSettings,
       timeline: timeline,
       beatline: beatline,
       children: children,
@@ -322,7 +321,7 @@ class MeasureGrid {
   MeasureGrid copyWith() {
     return MeasureGrid._(
       children: _children,
-      barlineSettings: _barlineSettings,
+      barlines: barlines,
       minHeightAbove: minHeightAbove,
       minHeightBelow: minHeightBelow,
       beatline: _beatline,
@@ -376,7 +375,7 @@ class MeasureGrid {
     return MeasureGrid._(
       children: _children,
       beatline: beatline,
-      barlineSettings: _barlineSettings,
+      barlines: barlines,
       timeline: _timeline,
       columns: adjusted,
     );
