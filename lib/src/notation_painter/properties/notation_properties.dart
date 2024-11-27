@@ -1,6 +1,5 @@
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
-import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 
 class NotationProperties extends InheritedWidget {
   final NotationLayoutProperties layout;

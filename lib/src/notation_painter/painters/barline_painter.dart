@@ -13,9 +13,11 @@ class BarlinePainter extends CustomPainter {
       ..color = color
       ..strokeWidth = size.width;
 
-    canvas.drawLine(
-      Offset(size.width / 2, 0),
-      Offset(size.width / 2, size.height),
+    canvas.drawRect(
+      Rect.fromPoints(
+        Offset(0, 0),
+        Offset(size.width, size.height),
+      ),
       linePainter,
     );
   }

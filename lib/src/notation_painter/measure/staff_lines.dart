@@ -91,40 +91,41 @@ class Barline extends StatelessWidget {
         break;
     }
 
-    double bottom;
-    double height;
-    switch (type) {
-      case BarlineExtension.none:
-        height = baseHeight;
-        bottom = baseline;
-        break;
-      case BarlineExtension.both:
-        height = double.maxFinite;
-        bottom = 0;
-        break;
-      case BarlineExtension.top:
-        bottom = baseline;
-        height = double.maxFinite;
-        break;
-      case BarlineExtension.bottom:
-        height = baseline + baseHeight;
-        bottom = 0;
-        break;
-    }
-
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        Positioned(
-          bottom: bottom,
-          left: left,
-          right: right,
-          child: CustomPaint(
-            size: Size(layoutProperties.barlineThickness, height),
-            painter: BarlinePainter(),
+    return LayoutBuilder(builder: (context, constraints) {
+      double bottom;
+      double height;
+      switch (type) {
+        case BarlineExtension.none:
+          height = baseHeight;
+          bottom = baseline;
+          break;
+        case BarlineExtension.both:
+          height = constraints.maxHeight;
+          bottom = 0;
+          break;
+        case BarlineExtension.top:
+          bottom = baseline;
+          height = constraints.maxHeight - baseline;
+          break;
+        case BarlineExtension.bottom:
+          height = baseline + baseHeight;
+          bottom = 0;
+          break;
+      }
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          Positioned(
+            bottom: bottom,
+            left: left,
+            right: right,
+            child: CustomPaint(
+              size: Size(layoutProperties.barlineThickness, height),
+              painter: BarlinePainter(),
+            ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
+    });
   }
 }

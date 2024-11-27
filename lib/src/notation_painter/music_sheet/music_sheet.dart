@@ -152,7 +152,6 @@ class _SheetMeasuresColumn extends StatelessWidget {
             i == columnColumns.length - 1) {
           rightPadding = layoutProperties.staveSpace;
         }
-
         return _MultiPartMeasuresColumn(
           columns: col,
           padding: EdgeInsets.only(left: leftPadding, right: rightPadding),
