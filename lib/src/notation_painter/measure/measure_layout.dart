@@ -7,7 +7,6 @@ import 'package:music_notation/src/notation_painter/debug/beat_mark_painter.dart
 import 'package:music_notation/src/notation_painter/measure/measure_grid.dart';
 import 'package:music_notation/src/notation_painter/measure/staff_lines.dart';
 import 'package:music_notation/src/notation_painter/models/vertical_edge_insets.dart';
-import 'package:music_notation/src/notation_painter/music_sheet/grid.dart';
 import 'package:music_notation/src/notation_painter/notes/beaming.dart';
 
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
@@ -202,12 +201,11 @@ class MeasureLayout extends StatelessWidget {
         children: [
           Padding(
             padding: padding,
-            child: AlignTarget(
-              child: SizedBox.fromSize(
-                size: Size(width, layoutProperties.staveHeight),
-              ),
+            child: SizedBox.fromSize(
+              size: Size(width, layoutProperties.staveHeight),
             ),
           ),
+
           SizedBox(
             width: width,
             height: padding.vertical + layoutProperties.staveHeight,
