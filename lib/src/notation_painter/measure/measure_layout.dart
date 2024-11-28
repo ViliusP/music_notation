@@ -272,7 +272,7 @@ class MeasureLayoutV2 extends StatelessWidget {
     double spacing = 0;
     for (var (i, width) in widths.indexed) {
       if (i == 0) {
-        spacing = 1;
+        spacing = NotationLayoutProperties.baseMeasurePadding;
       }
       spacings.add(spacing);
       spacing += width;

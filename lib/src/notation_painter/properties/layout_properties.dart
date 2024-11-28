@@ -21,6 +21,12 @@ class NotationLayoutProperties {
   /// centre of the notehead.
   static const double baseStandardStemLength = 3.5;
 
+  /// TODO comment
+  static const double baseWidthPerDivision = 1;
+
+  /// TODO comment
+  static const double baseMeasurePadding = 1;
+
   // ----------------------
   // GETTERS
   // ----------------------
