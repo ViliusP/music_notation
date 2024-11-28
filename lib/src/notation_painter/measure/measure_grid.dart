@@ -149,11 +149,16 @@ class MeasureGrid {
 
   SplayTreeMap<ColumnIndex, MeasureGridColumn> get columns => _columns;
 
+  /// Highest element position in whole measure.
   ElementPosition get minPosition => columns.values.last.values.keys.last;
+
+  /// Highest element position in whole measure.
   ElementPosition get maxPosition => columns.values.last.values.keys.first;
 
-  ///
+  /// Reference position for stave bottom.
   ElementPosition get staveBottom => ElementPosition(step: Step.E, octave: 4);
+
+  /// Reference position for stave top.
   ElementPosition get staveTop => ElementPosition(step: Step.F, octave: 5);
 
   const MeasureGrid._({
@@ -179,8 +184,9 @@ class MeasureGrid {
     SplayTreeMap<ColumnIndex, MeasureGridColumn> columns = SplayTreeMap.of({});
     int heightBelowStaff = minHeightBelow;
     int heightAboveStaff = minHeightAbove;
-    int count = 0;
-    for (var entry in timeline.values.entries) {
+
+    int attributes = 0;
+    for (var (i, entry) in timeline.values.entries.indexed) {
       List<TimelineValue> beatCol = entry.value.sorted(
         (a, b) => a.voice.compareTo(b.voice),
       );
@@ -190,7 +196,7 @@ class MeasureGrid {
         heightBelowStave: minHeightBelow,
       );
 
-      for (var (i, value) in beatCol.indexed) {
+      for (var (j, value) in beatCol.indexed) {
         var position = children[value.index].position;
 
         if (value.duration == 0) {
@@ -200,14 +206,14 @@ class MeasureGrid {
           );
           col.set(position, children[value.index]);
 
-          columns[ColumnIndex(count, false)] = col;
-          count++;
+          columns[ColumnIndex(i, attributes)] = col;
+          attributes++;
         } else {
           col.set(position, children[value.index]);
-          if (i == beatCol.length - 1) {
-            columns[ColumnIndex(count, true)] = col;
-            count++;
+          if (j == beatCol.length - 1) {
+            columns[ColumnIndex(i, attributes)] = col;
           }
+          attributes = 0;
         }
 
         var elementHeightBelowStaff = position.distanceFromBottom
@@ -455,22 +461,21 @@ class MeasureGridColumn {
 }
 
 class ColumnIndex implements Comparable<ColumnIndex> {
-  final int value;
-  final bool isRhytmic;
+  final int beat;
+  final int? attributeNumber;
+  bool get isRhytmic => attributeNumber != null;
 
   ColumnIndex(
-    this.value, [
-    this.isRhytmic = true,
-  ]);
+    this.beat, [
+    this.attributeNumber,
+  ]) : assert(attributeNumber == null || attributeNumber > 0);
 
   @override
   int compareTo(ColumnIndex other) {
-    if (value != other.value) {
-      return value.compareTo(other.value); // Compare by value first
+    if (beat != other.beat) {
+      return beat.compareTo(other.beat); // Compare by value first
     }
-    return isRhytmic == other.isRhytmic
-        ? 0
-        : (isRhytmic ? 1 : -1); // `isRhytmic` as secondary comparison
+    return (attributeNumber ?? 0).compareTo(other.attributeNumber ?? 0);
   }
 
   @override
@@ -478,12 +483,12 @@ class ColumnIndex implements Comparable<ColumnIndex> {
       identical(this, other) ||
       other is ColumnIndex &&
           runtimeType == other.runtimeType &&
-          value == other.value &&
+          beat == other.beat &&
           isRhytmic == other.isRhytmic;
 
   @override
-  int get hashCode => Object.hash(value, isRhytmic);
+  int get hashCode => Object.hash(beat, isRhytmic);
 
   @override
-  String toString() => "$value${isRhytmic ? "" : "*"}";
+  String toString() => "$beat${"*" * (attributeNumber ?? 0)}";
 }
