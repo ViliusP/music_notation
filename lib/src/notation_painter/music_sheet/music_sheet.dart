@@ -105,7 +105,7 @@ class MusicSheet extends StatelessWidget {
         runSpacing: 0,
         crossAxisAlignment: WrapCrossAlignment.start,
         textDirection: TextDirection.ltr,
-        verticalDirection: VerticalDirection.up,
+        verticalDirection: VerticalDirection.down,
         clipBehavior: Clip.none,
         children: grid.values
             .map((col) => _SheetMeasuresColumn(
