@@ -37,9 +37,6 @@ class MusicSheetGrid {
   }
 
   List<MeasureGrid> _syncMeasuresWidth(List<MeasureGrid> measures) {
-    if (measures.length == 1) {
-      return [...measures];
-    }
     List<MeasureGrid> synced = [];
     Beatline combined = measures.first.beatline;
     for (var measure in measures.skip(1)) {
@@ -349,7 +346,8 @@ class MeasureGrid {
     bool exists = iterator.moveNext();
 
     for (var beat in beatline.values) {
-      int attributes = (beat?.attributesBefore ?? 0) - attributesBefore;
+      int attributes =
+          (beat?.attributesBefore ?? attributesBefore) - attributesBefore;
       // Iterate through attributes columns
       for (int i = 0; i < attributes; i++) {
         // If attribute exists
@@ -366,7 +364,7 @@ class MeasureGrid {
         index++;
       }
       // Iterates through beat element
-      if (attributes != 0 && exists) {
+      if (attributes == 0) {
         if (exists) {
           adjusted[ColumnIndex(index, true)] = iterator.current.value;
         exists = iterator.moveNext();
@@ -487,5 +485,5 @@ class ColumnIndex implements Comparable<ColumnIndex> {
   int get hashCode => Object.hash(value, isRhytmic);
 
   @override
-  String toString() => "$value${!isRhytmic ? "*" : ""}";
+  String toString() => "$value${isRhytmic ? "" : "*"}";
 }
