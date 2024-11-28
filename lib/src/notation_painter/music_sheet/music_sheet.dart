@@ -135,25 +135,26 @@ class _SheetMeasuresColumn extends StatelessWidget {
       values,
     );
 
+    List<ColumnIndex> indices = values.firstOrNull?.columns.keys.toList() ?? [];
+    double divisions = values.firstOrNull?.beatline.divisions ?? 1;
+
     List<double> widths = [];
-
-    for (var columns in columnColumns) {
+    for (var (i, columns) in columnColumns.indexed) {
       double width = 0;
-
-      for (var cell in columns.expand((i) => i.values.entries)) {
-        if (cell.value != null) {
-          width = max(
-            width,
-            cell.value!.baseSize.width,
-          );
+      // Attribute element width depends on attribute size itself
+      if (!indices[i].isRhytmic) {
+        for (var cell in columns.expand((i) => i.values.entries)) {
+          if (cell.value != null) {
+            width = max(width, cell.value!.baseSize.width);
+          }
         }
+
+        /// Rhytmic element width depends on it's duration
+      } else {
+        width = NotationLayoutProperties.baseWidthPerQuarter / divisions;
       }
-      // Temp fix for spaces between painted stave line
-      width = width.ceilToDouble();
       widths.add(width);
     }
-
-    print(widths);
 
     return Column(
       children: values

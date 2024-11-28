@@ -367,12 +367,12 @@ class MeasureGrid {
       if (attributes == 0) {
         if (exists) {
           adjusted[ColumnIndex(index, true)] = iterator.current.value;
-        exists = iterator.moveNext();
-      } else {
+          exists = iterator.moveNext();
+        } else {
           adjusted[ColumnIndex(index, true)] = MeasureGridColumn.fromHeights(
-          heightAboveStave: heightAboveStave,
-          heightBelowStave: heightBelowStave,
-        );
+            heightAboveStave: heightAboveStave,
+            heightBelowStave: heightBelowStave,
+          );
         }
 
         index++;
