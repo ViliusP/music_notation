@@ -8,6 +8,7 @@ import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_barlines.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_grid.dart';
+import 'package:music_notation/src/notation_painter/measure/measure_layout.dart';
 import 'package:music_notation/src/notation_painter/measure/notation_widgetization.dart';
 import 'package:music_notation/src/notation_painter/measure/staff_lines.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
@@ -128,39 +129,75 @@ class _SheetMeasuresColumn extends StatelessWidget {
       values,
     );
 
-    NotationLayoutProperties layoutProperties =
-        NotationProperties.of(context)?.layout ??
-            NotationLayoutProperties.standard();
+    List<double> widths = [];
 
-    return Row(
-      children: columnColumns.mapIndexed((i, col) {
-        List<BarlineExtension>? startBarlines;
-        List<BarlineExtension>? endBarlines;
+    for (var columns in columnColumns) {
+      double width = 0;
 
-        double leftPadding = 0;
-        double rightPadding = 0;
-
-        if (i == 0) {
-          leftPadding = layoutProperties.staveSpace;
-          startBarlines = values.map((value) => value.barlines.start).toList();
+      for (var cell in columns.expand((i) => i.values.entries)) {
+        if (cell.value != null) {
+          width = max(
+            width,
+            cell.value!.baseSize.width,
+          );
         }
+      }
+      // Temp fix for spaces between painted stave line
+      width = width.ceilToDouble();
+      widths.add(width);
+    }
 
-        if (i == columnColumns.length - 1) {
-          endBarlines = values.map((value) => value.barlines.end).toList();
-        }
-        if (!values.first.columns.keys.elementAt(i).isRhytmic ||
-            i == columnColumns.length - 1) {
-          rightPadding = layoutProperties.staveSpace;
-        }
-        return _MultiPartMeasuresColumn(
-          columns: col,
-          padding: EdgeInsets.only(left: leftPadding, right: rightPadding),
-          startBarlines: startBarlines,
-          endBarlines: endBarlines,
-        );
-      }).toList(),
+    print(widths);
+
+    return Column(
+      children: values
+          .map((value) => MeasureLayoutV2(
+                grid: value,
+                barlineSettings: value.barlines,
+                widths: widths,
+              ))
+          .toList(),
     );
   }
+  // @override
+  // Widget build(BuildContext context) {
+  //   List<List<MeasureGridColumn>> columnColumns = MeasureGrid.toMeasureColumns(
+  //     values,
+  //   );
+
+  //   NotationLayoutProperties layoutProperties =
+  //       NotationProperties.of(context)?.layout ??
+  //           NotationLayoutProperties.standard();
+
+  //   return Row(
+  //     children: columnColumns.mapIndexed((i, col) {
+  //       List<BarlineExtension>? startBarlines;
+  //       List<BarlineExtension>? endBarlines;
+
+  //       double leftPadding = 0;
+  //       double rightPadding = 0;
+
+  //       if (i == 0) {
+  //         leftPadding = layoutProperties.staveSpace;
+  //         startBarlines = values.map((value) => value.barlines.start).toList();
+  //       }
+
+  //       if (i == columnColumns.length - 1) {
+  //         endBarlines = values.map((value) => value.barlines.end).toList();
+  //       }
+  //       if (!values.first.columns.keys.elementAt(i).isRhytmic ||
+  //           i == columnColumns.length - 1) {
+  //         rightPadding = layoutProperties.staveSpace;
+  //       }
+  //       return _MultiPartMeasuresColumn(
+  //         columns: col,
+  //         padding: EdgeInsets.only(left: leftPadding, right: rightPadding),
+  //         startBarlines: startBarlines,
+  //         endBarlines: endBarlines,
+  //       );
+  //     }).toList(),
+  //   );
+  // }
 }
 
 class _MultiPartMeasuresColumn extends StatelessWidget {
@@ -255,12 +292,8 @@ class _MeasureColumn extends StatelessWidget {
               baseline: staveBottom,
               baseHeight: layoutProperties.staveHeight,
             ),
-          Positioned(
+          StaffLines(
             bottom: staveBottom,
-            child: SizedBox(
-              width: double.maxFinite,
-              child: StaffLines(),
-            ),
           ),
           ...column.values.entries
               .where((cell) => cell.value != null)

@@ -2,14 +2,12 @@ import 'package:flutter/rendering.dart';
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 
 class StaffLinesPainter extends CustomPainter {
-  final double height;
   final double spacing;
   final double thickness;
   final int extraStaveLineCount;
   final ExtraStaveLines extraStaveLines;
 
   StaffLinesPainter({
-    required this.height,
     required this.spacing,
     this.extraStaveLineCount = 0,
     required this.thickness,
@@ -23,7 +21,7 @@ class StaffLinesPainter extends CustomPainter {
       ..strokeWidth = thickness;
 
     double bottom = 0;
-    for (; bottom <= height; bottom += spacing) {
+    for (; bottom <= size.height; bottom += spacing) {
       canvas.drawLine(
         Offset(0, bottom),
         Offset(size.width, bottom),

@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:music_notation/src/notation_painter/debug/beat_mark_painter.dart';
+import 'package:music_notation/src/notation_painter/measure/measure_grid.dart';
 import 'package:music_notation/src/notation_painter/measure/staff_lines.dart';
 import 'package:music_notation/src/notation_painter/models/vertical_edge_insets.dart';
 import 'package:music_notation/src/notation_painter/music_sheet/grid.dart';
@@ -204,9 +205,13 @@ class MeasureLayout extends StatelessWidget {
             child: AlignTarget(
               child: SizedBox.fromSize(
                 size: Size(width, layoutProperties.staveHeight),
-                child: StaffLines(),
               ),
             ),
+          ),
+          SizedBox(
+            width: width,
+            height: padding.vertical + layoutProperties.staveHeight,
+            child: StaffLines(bottom: padding.bottom),
           ),
           // SizedBox(
           //   height: 0,
@@ -236,5 +241,162 @@ class MeasureLayout extends StatelessWidget {
         ],
       );
     });
+  }
+}
+
+/// A widget that lays out musical measures with notes, chords, beams, and staff lines.
+class MeasureLayoutV2 extends StatelessWidget {
+  final MeasureGrid grid;
+
+  final MeasureBarlines barlineSettings;
+
+  final List<double> widths;
+
+  const MeasureLayoutV2({
+    super.key,
+    this.barlineSettings = const MeasureBarlines(),
+    required this.grid,
+    required this.widths,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
+    DebugSettings? dSettings = DebugSettings.of(context);
+
+    List<double> spacings = [];
+
+    double spacing = 0;
+    for (var (i, width) in widths.indexed) {
+      if (i == 0) {
+        spacing = 1;
+      }
+      spacings.add(spacing);
+      spacing += width;
+    }
+
+    spacings.add(spacing + 1);
+
+    List<double> scaledSpacings =
+        spacings.map((s) => s * layoutProperties.staveSpace).toList();
+
+    double width = scaledSpacings.last;
+
+    double spacePerPosition = layoutProperties.spacePerPosition;
+    ElementPosition bottomRef = grid.minPosition;
+    ElementPosition topRef = grid.maxPosition;
+    ElementPosition staveBottomRef = grid.staveBottom;
+
+    double staveBottom =
+        (staveBottomRef.distance(bottomRef)) * spacePerPosition;
+
+    List<Widget> beamGroups = [];
+
+    var positionedElements = <Widget>[];
+    for (var (index, child) in grid.children.indexed) {
+      double? topOffset;
+      double? bottomOffset;
+
+      AlignmentPosition alignmentPosition = child.alignmentPosition.scale(
+        layoutProperties.staveSpace,
+      );
+
+      if (alignmentPosition.top != null) {
+        topOffset = alignmentPosition.top!;
+
+        // Calculate the interval from staff top to the child's position.
+        int interval = topRef.numeric;
+        interval -= child.position.numeric;
+        topOffset += interval * spacePerPosition;
+      }
+      if (alignmentPosition.bottom != null) {
+        bottomOffset = alignmentPosition.bottom ?? 0;
+
+        // Calculate the interval from staff bottom to the child's position.
+        int interval = bottomRef.numeric;
+        interval -= child.position.numeric;
+        bottomOffset -= interval * spacePerPosition;
+      }
+
+      positionedElements.add(
+        Positioned(
+          left: scaledSpacings[index],
+          top: topOffset,
+          bottom: bottomOffset,
+          child: child,
+        ),
+      );
+
+      if (dSettings != null) {
+        Rect boxBelow = child.boxBelowStaff(layoutProperties.staveSpace);
+        if (dSettings.paintBBoxBelowStaff && boxBelow.height > 0) {
+          positionedElements.add(
+            Positioned(
+              left: scaledSpacings[index],
+              bottom: staveBottom - boxBelow.height,
+              child: Container(
+                width: boxBelow.width,
+                height: [boxBelow.height, 0].max.toDouble(),
+                color: Color.fromRGBO(255, 10, 100, 0.2),
+              ),
+            ),
+          );
+        }
+
+        Rect boxAbove = child.boxAboveStaff(layoutProperties.staveSpace);
+        if (dSettings.paintBBoxAboveStaff && boxAbove.height > 0) {
+          positionedElements.add(
+            Positioned(
+              left: scaledSpacings[index],
+              bottom: staveBottom + layoutProperties.staveHeight,
+              child: Container(
+                width: boxAbove.width,
+                height: [boxAbove.height, 0].max.toDouble(),
+                color: Color.fromRGBO(3, 154, 255, 0.2),
+              ),
+            ),
+          );
+        }
+      }
+    }
+
+    return SizedBox(
+      height: (topRef.numeric - bottomRef.numeric) * spacePerPosition,
+      width: width,
+      child: Stack(
+        fit: StackFit.loose,
+        children: [
+          StaffLines(
+            bottom: staveBottom,
+          ),
+
+          // SizedBox(
+          //   height: 0,
+          //   width: width,
+          //   child: Barlines(
+          //     startExtension: barlineSettings.startExtension,
+          //     endExtension: barlineSettings.endExtension,
+          //     padding: padding,
+          //   ),
+          // ),
+          // if (dSettings?.beatMarker == true)
+          //   CustomPaint(
+          //     size: Size(
+          //       width,
+          //       layoutProperties.staveHeight,
+          //     ),
+          //     painter: BeatMarkPainter(
+          //       dSettings!.beatMarkerMultiplier,
+          //       measureBeatline,
+          //     ),
+          //   ),
+          ...beamGroups,
+          ...positionedElements,
+        ],
+      ),
+    );
   }
 }

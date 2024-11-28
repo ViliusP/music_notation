@@ -8,8 +8,11 @@ import 'package:music_notation/src/notation_painter/properties/layout_properties
 import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
 
 class StaffLines extends StatelessWidget {
+  final double bottom;
+
   const StaffLines({
     super.key,
+    required this.bottom,
   });
 
   @override
@@ -27,20 +30,21 @@ class StaffLines extends StatelessWidget {
         NotationProperties.of(context)?.layout ??
             NotationLayoutProperties.standard();
 
-    return SizedBox(
-      height: layoutProperties.staveHeight,
-      child: Stack(
-        fit: StackFit.loose,
+    return LayoutBuilder(builder: (context, constraints) {
+      return Stack(
+        fit: StackFit.expand,
         children: [
-          CustomPaint(
-            size: Size.infinite,
-            painter: StaffLinesPainter(
-              extraStaveLineCount: debugSettings?.extraStaveLineCount ?? 0,
-              extraStaveLines:
-                  debugSettings?.extraStaveLines ?? ExtraStaveLines.none,
-              height: layoutProperties.staveHeight,
-              spacing: layoutProperties.staveSpace,
-              thickness: layoutProperties.staveLineThickness,
+          Positioned(
+            bottom: bottom,
+            child: CustomPaint(
+              size: Size(constraints.maxWidth, layoutProperties.staveHeight),
+              painter: StaffLinesPainter(
+                extraStaveLineCount: debugSettings?.extraStaveLineCount ?? 0,
+                extraStaveLines:
+                    debugSettings?.extraStaveLines ?? ExtraStaveLines.none,
+                spacing: layoutProperties.staveSpace,
+                thickness: layoutProperties.staveLineThickness,
+              ),
             ),
           ),
           if ((debugSettings?.verticalStaveLineSpacingMultiplier ?? 0) != 0)
@@ -52,8 +56,8 @@ class StaffLines extends StatelessWidget {
               ),
             ),
         ],
-      ),
-    );
+      );
+    });
   }
 }
 

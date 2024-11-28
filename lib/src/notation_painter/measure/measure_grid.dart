@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
+import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_barlines.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
@@ -40,9 +41,9 @@ class MusicSheetGrid {
       return [...measures];
     }
     List<MeasureGrid> synced = [];
-    Beatline combined = measures.first._beatline;
+    Beatline combined = measures.first.beatline;
     for (var measure in measures.skip(1)) {
-      combined = combined.combine(measure._beatline);
+      combined = combined.combine(measure.beatline);
     }
     for (var measure in measures) {
       var adjusted = measure.adjustByBeatline(combined);
@@ -139,9 +140,9 @@ class MusicSheetGrid {
 /// `-` - represents position.\
 /// `|` - cell vertical and cell's left/right boundary
 class MeasureGrid {
-  final List<MeasureWidget> _children;
+  final List<MeasureWidget> children;
   final MeasureBarlines barlines;
-  final Beatline _beatline;
+  final Beatline beatline;
   final MeasureTimeline _timeline;
   final int minHeightAbove;
   final int minHeightBelow;
@@ -150,18 +151,23 @@ class MeasureGrid {
 
   SplayTreeMap<ColumnIndex, MeasureGridColumn> get columns => _columns;
 
+  ElementPosition get minPosition => columns.values.last.values.keys.last;
+  ElementPosition get maxPosition => columns.values.last.values.keys.first;
+
+  ///
+  ElementPosition get staveBottom => ElementPosition(step: Step.E, octave: 4);
+  ElementPosition get staveTop => ElementPosition(step: Step.F, octave: 5);
+
   const MeasureGrid._({
-    required List<MeasureWidget> children,
-    required Beatline beatline,
+    required this.children,
+    required this.beatline,
     required this.barlines,
     required MeasureTimeline timeline,
     required SplayTreeMap<ColumnIndex, MeasureGridColumn> columns,
     this.minHeightAbove = 0,
     this.minHeightBelow = 0,
-  })  : _beatline = beatline,
-        _timeline = timeline,
-        _columns = columns,
-        _children = children;
+  })  : _timeline = timeline,
+        _columns = columns;
 
   factory MeasureGrid.fromMeasureWidgets({
     required List<MeasureWidget> children,
@@ -320,11 +326,11 @@ class MeasureGrid {
 
   MeasureGrid copyWith() {
     return MeasureGrid._(
-      children: _children,
+      children: children,
       barlines: barlines,
       minHeightAbove: minHeightAbove,
       minHeightBelow: minHeightBelow,
-      beatline: _beatline,
+      beatline: beatline,
       timeline: _timeline,
       columns: _columns,
     );
@@ -373,7 +379,7 @@ class MeasureGrid {
     }
 
     return MeasureGrid._(
-      children: _children,
+      children: children,
       beatline: beatline,
       barlines: barlines,
       timeline: _timeline,
