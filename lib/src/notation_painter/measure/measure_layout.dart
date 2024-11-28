@@ -372,7 +372,20 @@ class MeasureLayoutV2 extends StatelessWidget {
           StaffLines(
             bottom: staveBottom,
           ),
-
+          if (barlineSettings.start != null)
+            Barline(
+              type: barlineSettings.start!,
+              location: BarlineLocation.start,
+              baseline: staveBottom,
+              baseHeight: layoutProperties.staveHeight,
+            ),
+          if (barlineSettings.end != null)
+            Barline(
+              type: barlineSettings.end!,
+              location: BarlineLocation.end,
+              baseline: staveBottom,
+              baseHeight: layoutProperties.staveHeight,
+            ),
           // SizedBox(
           //   height: 0,
           //   width: width,

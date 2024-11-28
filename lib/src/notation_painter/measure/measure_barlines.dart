@@ -1,4 +1,4 @@
-// Enum to specify how the barline should extend when rendering
+/// Enum to specify how the barline should extend when rendering
 enum BarlineExtension {
   none, // No extension: Barline is rendered only on the current staff
   top, // Extend upwards: Connects the barline to the staff above
@@ -15,9 +15,9 @@ enum BarlineLocation {
 // Class to configure barline extensions for rendering start and end barlines in a measure
 class MeasureBarlines {
   // Defines the extension behavior for the start of the barline
-  final BarlineExtension start;
+  final BarlineExtension? start;
   // Defines the extension behavior for the end of the barline
-  final BarlineExtension end;
+  final BarlineExtension? end;
 
   // Constructor with default values set to 'none' for both start and end extensions
   const MeasureBarlines({
@@ -57,6 +57,13 @@ class MeasureBarlines {
     return MeasureBarlines(
       start: startExtension,
       end: endExtension,
+    );
+  }
+
+  MeasureBarlines copyWith({BarlineExtension? start, BarlineExtension? end}) {
+    return MeasureBarlines(
+      start: start ?? this.start,
+      end: end ?? this.end,
     );
   }
 }

@@ -60,6 +60,7 @@ class MusicSheetGrid {
     }
 
     var lastStaffMeasure = _values.last[staff];
+
     int currentHeightAboveStave = lastStaffMeasure.heightAboveStave;
     int currentHeightBelowStave = lastStaffMeasure.heightBelowStave;
 
