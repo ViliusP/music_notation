@@ -349,7 +349,9 @@ class MeasureGrid {
 
     for (var beat in beatline.values) {
       int attributes = (beat?.attributesBefore ?? 0) - attributesBefore;
+      // Iterate through attributes columns
       for (int i = 0; i < attributes; i++) {
+        // If attribute exists
         if (exists && !iterator.current.key.isRhytmic) {
           adjusted[ColumnIndex(index, false)] = iterator.current.value;
           exists = iterator.moveNext();
@@ -362,15 +364,18 @@ class MeasureGrid {
 
         index++;
       }
-      if (attributesBefore == beat?.attributesBefore && exists) {
-        adjusted[ColumnIndex(index, false)] = iterator.current.value;
+      // Iterates through beat element
+      if (attributes != 0 && exists) {
+        if (exists) {
+          adjusted[ColumnIndex(index, true)] = iterator.current.value;
         exists = iterator.moveNext();
-        index++;
       } else {
-        adjusted[ColumnIndex(index, false)] = MeasureGridColumn.fromHeights(
+          adjusted[ColumnIndex(index, true)] = MeasureGridColumn.fromHeights(
           heightAboveStave: heightAboveStave,
           heightBelowStave: heightBelowStave,
         );
+        }
+
         index++;
       }
       if (beat?.attributesBefore != null) {
