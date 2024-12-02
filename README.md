@@ -1,5 +1,7 @@
 # MusicXML Parser and Notation Renderer for Flutter
 
+!!! UNDER CONSTRCTION !!!
+
 This library provides a parser for MusicXML files, and a custom renderer to display the parsed music notation in Flutter apps.
 
 ## Before using
@@ -10,17 +12,21 @@ Before you can use this library, you need to ensure you have the following softw
 
 2. Flutter: Since this library includes a Flutter widget for rendering music notation, you need to have Flutter installed as well. You can download it from [the Flutter website](https://flutter.dev/docs/get-started/install).
 
+### Understanding of Flutter
+
+A basic understanding of how to use Flutter and how to build UIs with Flutter widgets is necessary. If you're new to Flutter, the [Flutter documentation](https://flutter.dev/docs) provides resources to help you get started.
+
 ### Familiarity with MusicXML
 
 This library is designed for parsing and rendering MusicXML files. It assumes that you are familiar with the MusicXML format and how to use it to represent musical scores. If you're not already familiar with MusicXML, you may want to review the [MusicXML documentation](https://www.musicxml.com/for-developers/) before using this library.
 
-### Understanding of Flutter
-
-The renderer included in this library is a Flutter widget. Therefore, a basic understanding of how to use Flutter and how to build UIs with Flutter widgets is necessary. If you're new to Flutter, the [Flutter documentation](https://flutter.dev/docs) provides a wealth of resources to help you get started.
-
 ### SMuFL Standard
 
-Our library uses the SMuFL (Standard Music Font Layout) standard for music symbols in the rendered output. For precise rendering, you should have a SMuFL compliant font installed in your system. A list of such fonts can be found [here](https://www.smufl.org/fonts/).
+Our library uses the SMuFL (Standard Music Font Layout) standard for music symbols in the rendered output. More info and a list of popular fonts can be found [here](https://www.smufl.org/fonts/).
+
+### Music notation rules
+
+This library follows standard music notation practices based on Elaine Gould's book Behind Bars, a widely used guide for music engraving rules.
 
 ### Current status
 
@@ -42,42 +48,26 @@ To install the library, add the following to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  your_musicxml_library: ^0.1.0
+  music_ntation: ^0.0.1
 ```
 
 Then run `flutter pub get`.
 
 ## Usage
 
-First, import the library:
-
 ```dart
-import 'package:your_musicxml_library/your_musicxml_library.dart';
-```
-
-You can then use the MusicXmlParser class to parse MusicXML data:
-
-```dart
-var parser = MusicXmlParser();
-ScorePartwise score = parser.parse(xmlString);
-```
-
-To display the parsed music notation, you can use the MusicNotation widget:
-
-```dart
-MusicNotation(score: score)
+// The API is still under development. Please refer to the `example` folder for usage details.
 ```
 
 ## Future
 
-We understand that everyone believes they are the center of the universe, but let's face it, this package has its limitations. It may not fulfill all your extravagant demands or cater to every whim and fancy. Life is tough, and so is software development.
-
-Here are some features and improvements we are considering (but not guaranteed):
+This library is still evolving and has some limitations. While it may not meet every use case yet, we are actively working on improvements. Here are some features and enhancements we’re considering (though not guaranteed):
 
 - Support for additional XML validation rules and constraints (e.g. 'token' type validation);
 - Enhanced error handling and error reporting;
 - Improved documentation and examples;
 - Simple classes remake with upcoming [extension types](https://github.com/dart-lang/language/issues/2727);
+- Support for more advanced and niche rendering rules.
 
 ## Contributing
 
