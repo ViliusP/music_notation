@@ -16,6 +16,110 @@ import 'package:music_notation/src/notation_painter/properties/notation_properti
 import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 
+class BeamContainer extends StatefulWidget {
+  final Widget child;
+
+  /// [listenables] could be [ScrollController] and alike, in order for
+  /// the arrows to repaint when moving in a scrollable widget.
+  final List<Listenable> listenables;
+
+  const BeamContainer({
+    super.key,
+    required this.child,
+    this.listenables = const [],
+  });
+
+  @override
+  State<BeamContainer> createState() => _BeamContainerState();
+}
+
+class _BeamContainerState extends State<BeamContainer> with ChangeNotifier {
+  final _notes = <String, _BeamNoteElementState>{};
+
+  @override
+  Widget build(BuildContext context) => Stack(
+        children: [
+          widget.child,
+          IgnorePointer(
+            child: CustomPaint(
+              // foregroundPainter: BeamPainter(
+              //   _notes,
+              //   Directionality.of(context),
+              //   [this, ...widget.listenables],
+              // ),
+              child: Container(),
+            ),
+          ),
+        ],
+      );
+
+  void addNote(_BeamNoteElementState note) {
+    _notes[note.widget.id] = note;
+    notifyListeners();
+  }
+
+  void removeNote(_BeamNoteElementState note) {
+    if (_notes[note.widget.id] == note) {
+      _notes.remove(note.widget.id);
+    }
+
+    if (mounted) {
+      notifyListeners();
+    }
+  }
+}
+
+class BeamNoteElement extends StatefulWidget {
+  /// ID for being targeted by other [BeamNoteElement]s
+  final String id;
+
+  /// A ID of [BeamNoteElement] that will be drawn to
+  final String? target;
+
+  /// A [Widget] to be drawn to or from
+  final Widget child;
+
+  const BeamNoteElement({
+    super.key,
+    required this.id,
+    this.target,
+    required this.child,
+  });
+
+  @override
+  State createState() => _BeamNoteElementState();
+}
+
+class _BeamNoteElementState extends State<BeamNoteElement> {
+  _BeamContainerState? _container;
+
+  @override
+  void initState() {
+    super.initState();
+    joinAncestorContainer();
+  }
+
+  @override
+  void didUpdateWidget(BeamNoteElement oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    joinAncestorContainer();
+  }
+
+  void joinAncestorContainer() {
+    _container = context.findAncestorStateOfType<_BeamContainerState>()
+      ?..addNote(this);
+  }
+
+  @override
+  void deactivate() {
+    _container?.removeNote(this);
+    super.deactivate();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
 class BeamGroup extends StatelessWidget {
   final List<RhythmicElement> children;
   final List<double> leftOffsets;
