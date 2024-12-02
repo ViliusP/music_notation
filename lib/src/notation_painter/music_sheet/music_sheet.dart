@@ -143,7 +143,7 @@ class _SheetMeasuresColumn extends StatelessWidget {
       double width = 0;
       // Attribute element width depends on attribute size itself
       if (!indices[i].isRhytmic) {
-        for (var cell in columns.expand((i) => i.values.entries)) {
+        for (var cell in columns.expand((i) => i.cells.entries)) {
           if (cell.value != null) {
             width = max(width, cell.value!.baseSize.width);
           }
@@ -231,7 +231,7 @@ class _MultiPartMeasuresColumn extends StatelessWidget {
             NotationLayoutProperties.standard();
 
     double width = 0;
-    for (var cell in columns.expand((i) => i.values.entries)) {
+    for (var cell in columns.expand((i) => i.cells.entries)) {
       if (cell.value != null) {
         width = max(
           width,
@@ -284,8 +284,8 @@ class _MeasureColumn extends StatelessWidget {
             NotationLayoutProperties.standard();
 
     double spacePerPosition = layoutProperties.spacePerPosition;
-    ElementPosition bottomRef = column.values.keys.last;
-    ElementPosition topRef = column.values.keys.first;
+    ElementPosition bottomRef = column.cells.keys.last;
+    ElementPosition topRef = column.cells.keys.first;
     const staveRef = ElementPosition(step: Step.E, octave: 4);
     double staveBottom = (staveRef.distance(bottomRef)) * spacePerPosition;
 
@@ -305,7 +305,7 @@ class _MeasureColumn extends StatelessWidget {
           StaffLines(
             bottom: staveBottom,
           ),
-          ...column.values.entries
+          ...column.cells.entries
               .where((cell) => cell.value != null)
               .map((cell) {
             var element = cell.value!;

@@ -150,10 +150,10 @@ class MeasureGrid {
   SplayTreeMap<ColumnIndex, MeasureGridColumn> get columns => _columns;
 
   /// Highest element position in whole measure.
-  ElementPosition get minPosition => columns.values.last.values.keys.last;
+  ElementPosition get minPosition => columns.values.last._cells.keys.last;
 
   /// Highest element position in whole measure.
-  ElementPosition get maxPosition => columns.values.last.values.keys.first;
+  ElementPosition get maxPosition => columns.values.last.cells.keys.first;
 
   /// Reference position for stave bottom.
   ElementPosition get staveBottom => ElementPosition(step: Step.E, octave: 4);
@@ -185,7 +185,7 @@ class MeasureGrid {
     int heightBelowStaff = minHeightBelow;
     int heightAboveStaff = minHeightAbove;
 
-    int attributes = 0;
+    int? attributes;
     for (var (i, entry) in timeline.values.entries.indexed) {
       List<TimelineValue> beatCol = entry.value.sorted(
         (a, b) => a.voice.compareTo(b.voice),
@@ -206,14 +206,16 @@ class MeasureGrid {
           );
           col.set(position, children[value.index]);
 
+          attributes ??= 0;
           columns[ColumnIndex(i, attributes)] = col;
           attributes++;
         } else {
+          attributes = null;
+
           col.set(position, children[value.index]);
           if (j == beatCol.length - 1) {
             columns[ColumnIndex(i, attributes)] = col;
           }
-          attributes = 0;
         }
 
         var elementHeightBelowStaff = position.distanceFromBottom
@@ -255,7 +257,7 @@ class MeasureGrid {
   }
 
   int get heightAboveStave {
-    var highestPosition = _columns.values.last._values.keys.firstOrNull;
+    var highestPosition = _columns.values.last._cells.keys.firstOrNull;
     highestPosition ??= ElementPosition.staffTop;
 
     int distance = ElementPosition.staffTop.distance(highestPosition);
@@ -264,7 +266,7 @@ class MeasureGrid {
   }
 
   int get heightBelowStave {
-    var lowestPosition = _columns.values.last._values.keys.lastOrNull;
+    var lowestPosition = _columns.values.last._cells.keys.lastOrNull;
     lowestPosition ??= ElementPosition.staffBottom;
 
     int distance = ElementPosition.staffBottom.distance(lowestPosition);
@@ -286,12 +288,12 @@ class MeasureGrid {
 
   @override
   String toString() {
-    int rows = _columns.entries.elementAtOrNull(0)?.value._values.length ?? 0;
+    int rows = _columns.entries.elementAtOrNull(0)?.value._cells.length ?? 0;
 
     List<List<String>> representationGrid = List.generate(rows, (_) => []);
 
     for (var (i, entry) in _columns.entries.indexed) {
-      for (var (j, colValue) in entry.value._values.entries.indexed) {
+      for (var (j, colValue) in entry.value._cells.entries.indexed) {
         if (i == 0) {
           representationGrid[j].add("${colValue.key.numeric}");
         }
@@ -341,51 +343,18 @@ class MeasureGrid {
   }
 
   MeasureGrid adjustByBeatline(Beatline beatline) {
-    SplayTreeMap<ColumnIndex, MeasureGridColumn> adjusted = SplayTreeMap.from(
-      {},
+    var adjusted = _emptyTreeFromBeatline(
+      beatline: beatline,
+      topHeight: heightAboveStave,
+      bottomHeight: heightBelowStave,
     );
+    double ratio = beatline.divisions / this.beatline.divisions;
 
-    int attributesBefore = 0;
-
-    int index = 0;
-    var iterator = _columns.entries.iterator;
-    bool exists = iterator.moveNext();
-
-    for (var beat in beatline.values) {
-      int attributes =
-          (beat?.attributesBefore ?? attributesBefore) - attributesBefore;
-      // Iterate through attributes columns
-      for (int i = 0; i < attributes; i++) {
-        // If attribute exists
-        if (exists && !iterator.current.key.isRhytmic) {
-          adjusted[ColumnIndex(index, false)] = iterator.current.value;
-          exists = iterator.moveNext();
-        } else {
-          adjusted[ColumnIndex(index, false)] = MeasureGridColumn.fromHeights(
-            heightAboveStave: heightAboveStave,
-            heightBelowStave: heightBelowStave,
-          );
-        }
-
-        index++;
-      }
-      // Iterates through beat element
-      if (attributes == 0) {
-        if (exists) {
-          adjusted[ColumnIndex(index, true)] = iterator.current.value;
-          exists = iterator.moveNext();
-        } else {
-          adjusted[ColumnIndex(index, true)] = MeasureGridColumn.fromHeights(
-            heightAboveStave: heightAboveStave,
-            heightBelowStave: heightBelowStave,
-          );
-        }
-
-        index++;
-      }
-      if (beat?.attributesBefore != null) {
-        attributesBefore = beat!.attributesBefore;
-      }
+    for (var e in _columns.entries) {
+      var index = e.key;
+      var column = e.value;
+      int newIndex = (index.beat * ratio).toInt();
+      adjusted[ColumnIndex(newIndex, index.attributeNumber)] = column;
     }
 
     return MeasureGrid._(
@@ -396,14 +365,48 @@ class MeasureGrid {
       columns: adjusted,
     );
   }
+
+  static SplayTreeMap<ColumnIndex, MeasureGridColumn> _emptyTreeFromBeatline({
+    required Beatline beatline,
+    required int topHeight,
+    required int bottomHeight,
+  }) {
+    SplayTreeMap<ColumnIndex, MeasureGridColumn> tree =
+        SplayTreeMap<ColumnIndex, MeasureGridColumn>.fromIterable({});
+
+    int attributesBefore = 0;
+    for (var (i, beat) in beatline.values.indexed) {
+      int attributes =
+          (beat?.attributesBefore ?? attributesBefore) - attributesBefore;
+      // Iterate through attributes columns
+      for (int j = 0; i < attributes; i++) {
+        // If attribute exists
+        tree[ColumnIndex(i, j + 1)] = MeasureGridColumn.fromHeights(
+          heightAboveStave: topHeight,
+          heightBelowStave: bottomHeight,
+        );
+      }
+      // Iterates through beat element
+      if (attributes == 0) {
+        tree[ColumnIndex(i)] = MeasureGridColumn.fromHeights(
+          heightAboveStave: topHeight,
+          heightBelowStave: bottomHeight,
+        );
+      }
+      if (beat?.attributesBefore != null) {
+        attributesBefore = beat!.attributesBefore;
+      }
+    }
+    return tree;
+  }
 }
 
 class MeasureGridColumn {
-  final SplayTreeMap<ElementPosition, MeasureWidget?> _values;
-  SplayTreeMap<ElementPosition, MeasureWidget?> get values => _values;
+  final SplayTreeMap<ElementPosition, MeasureWidget?> _cells;
+  SplayTreeMap<ElementPosition, MeasureWidget?> get cells => _cells;
 
   MeasureGridColumn()
-      : _values = SplayTreeMap.of({
+      : _cells = SplayTreeMap.of({
           ElementPosition.staffBottom.transpose(0): null,
           ElementPosition.staffBottom.transpose(1): null,
           ElementPosition.staffBottom.transpose(2): null,
@@ -428,8 +431,8 @@ class MeasureGridColumn {
     int start = ElementPosition.staffTop.numeric;
 
     for (int i = start + 1; i < start + height + 1; i++) {
-      if (!_values.containsKey(ElementPosition.fromInt(i))) {
-        _values[ElementPosition.fromInt(i)] = null;
+      if (!_cells.containsKey(ElementPosition.fromInt(i))) {
+        _cells[ElementPosition.fromInt(i)] = null;
       }
     }
   }
@@ -438,21 +441,21 @@ class MeasureGridColumn {
     int start = ElementPosition.staffBottom.numeric;
 
     for (int i = start - height; i < start; i++) {
-      if (!_values.containsKey(ElementPosition.fromInt(i))) {
-        _values[ElementPosition.fromInt(i)] = null;
+      if (!_cells.containsKey(ElementPosition.fromInt(i))) {
+        _cells[ElementPosition.fromInt(i)] = null;
       }
     }
   }
 
   void set(ElementPosition position, MeasureWidget? widget) {
-    _values[position] = widget;
+    _cells[position] = widget;
   }
 
   @override
   String toString() {
     String value = "\n";
 
-    for (var e in _values.entries) {
+    for (var e in _cells.entries) {
       value += "${e.key.numeric} ${e.key.step}${e.key.octave}: ${e.value}";
       value += "\n";
     }
@@ -463,12 +466,12 @@ class MeasureGridColumn {
 class ColumnIndex implements Comparable<ColumnIndex> {
   final int beat;
   final int? attributeNumber;
-  bool get isRhytmic => attributeNumber != null;
+  bool get isRhytmic => attributeNumber == null;
 
   ColumnIndex(
     this.beat, [
     this.attributeNumber,
-  ]) : assert(attributeNumber == null || attributeNumber > 0);
+  ]) : assert(attributeNumber == null || attributeNumber >= 0);
 
   @override
   int compareTo(ColumnIndex other) {
@@ -490,5 +493,5 @@ class ColumnIndex implements Comparable<ColumnIndex> {
   int get hashCode => Object.hash(beat, isRhytmic);
 
   @override
-  String toString() => "$beat${"*" * (attributeNumber ?? 0)}";
+  String toString() => "$beat${"*" * ((attributeNumber ?? 0) + 1)}";
 }

@@ -22,7 +22,7 @@ class NotationLayoutProperties {
   static const double baseStandardStemLength = 3.5;
 
   /// TODO comment
-  static const double baseWidthPerDivision = 1;
+  static const double baseWidthPerQuarter = 24;
 
   /// TODO comment
   static const double baseMeasurePadding = 1;
