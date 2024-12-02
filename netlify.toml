@@ -7,5 +7,5 @@
 
 [build]
 
-command = "flutter build web --release"
+command = "cd example && flutter build web --release"
 publish = "build/web"
