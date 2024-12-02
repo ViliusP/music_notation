@@ -1,6 +1,6 @@
 # MusicXML Parser and Notation Renderer for Flutter
 
-!!! UNDER CONSTRCTION !!!
+!!! UNDER CONSTRUCTION !!!
 
 This library provides a parser for MusicXML files, and a custom renderer to display the parsed music notation in Flutter apps.
 
