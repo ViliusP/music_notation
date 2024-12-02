@@ -77,12 +77,15 @@ To run only the golden tests:
 
 ```sh
 flutter test --tags golden
+```
 
 To run all tests except for the golden tests:
 
 ```sh
 flutter test --exclude-tags golden
 ```
+
+## Future
 
 This library is still evolving and has some limitations. While it may not meet every use case yet, we are actively working on improvements. Here are some features and enhancements we’re considering (though not guaranteed):
 
