@@ -478,7 +478,7 @@ class ColumnIndex implements Comparable<ColumnIndex> {
     if (beat != other.beat) {
       return beat.compareTo(other.beat); // Compare by value first
     }
-    return (attributeNumber ?? 0).compareTo(other.attributeNumber ?? 0);
+    return (other.attributeNumber ?? -1).compareTo(attributeNumber ?? -1);
   }
 
   @override
@@ -487,10 +487,10 @@ class ColumnIndex implements Comparable<ColumnIndex> {
       other is ColumnIndex &&
           runtimeType == other.runtimeType &&
           beat == other.beat &&
-          isRhytmic == other.isRhytmic;
+          attributeNumber == other.attributeNumber;
 
   @override
-  int get hashCode => Object.hash(beat, isRhytmic);
+  int get hashCode => Object.hash(beat, attributeNumber);
 
   @override
   String toString() => "$beat${"*" * ((attributeNumber ?? 0) + 1)}";
