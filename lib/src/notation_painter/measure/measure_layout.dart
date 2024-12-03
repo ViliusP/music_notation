@@ -274,6 +274,9 @@ class MeasureLayoutV2 extends StatelessWidget {
       }
       spacings.add(spacing);
       spacing += width;
+      if (!grid.columns.entries.elementAt(i).key.isRhytmic) {
+        spacing += NotationLayoutProperties.baseMeasurePadding;
+      }
     }
 
     spacings.add(spacing + 1);
