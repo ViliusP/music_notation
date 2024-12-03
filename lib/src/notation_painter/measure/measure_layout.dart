@@ -294,69 +294,73 @@ class MeasureLayoutV2 extends StatelessWidget {
     List<Widget> beamGroups = [];
 
     var positionedElements = <Widget>[];
-    for (var (index, child) in grid.children.indexed) {
-      double? topOffset;
-      double? bottomOffset;
+    for (var (index, entry) in grid.columns.entries.indexed) {
+      for (var cellEntry in entry.value.cells.entries) {
+        var position = cellEntry.key;
+        var cell = cellEntry.value;
+        double? topOffset;
+        double? bottomOffset;
+        if (cell == null) continue;
+        AlignmentPosition alignmentPosition = cell.alignmentPosition.scale(
+          layoutProperties.staveSpace,
+        );
 
-      AlignmentPosition alignmentPosition = child.alignmentPosition.scale(
-        layoutProperties.staveSpace,
-      );
+        if (alignmentPosition.top != null) {
+          topOffset = alignmentPosition.top!;
 
-      if (alignmentPosition.top != null) {
-        topOffset = alignmentPosition.top!;
+          // Calculate the interval from staff top to the child's position.
+          int interval = topRef.numeric;
+          interval -= position.numeric;
+          topOffset += interval * spacePerPosition;
+        }
+        if (alignmentPosition.bottom != null) {
+          bottomOffset = alignmentPosition.bottom ?? 0;
 
-        // Calculate the interval from staff top to the child's position.
-        int interval = topRef.numeric;
-        interval -= child.position.numeric;
-        topOffset += interval * spacePerPosition;
-      }
-      if (alignmentPosition.bottom != null) {
-        bottomOffset = alignmentPosition.bottom ?? 0;
-
-        // Calculate the interval from staff bottom to the child's position.
-        int interval = bottomRef.numeric;
-        interval -= child.position.numeric;
-        bottomOffset -= interval * spacePerPosition;
-      }
-
-      positionedElements.add(
-        Positioned(
-          left: scaledSpacings[index],
-          top: topOffset,
-          bottom: bottomOffset,
-          child: child,
-        ),
-      );
-
-      if (dSettings != null) {
-        Rect boxBelow = child.boxBelowStaff(layoutProperties.staveSpace);
-        if (dSettings.paintBBoxBelowStaff && boxBelow.height > 0) {
-          positionedElements.add(
-            Positioned(
-              left: scaledSpacings[index],
-              bottom: staveBottom - boxBelow.height,
-              child: Container(
-                width: boxBelow.width,
-                height: [boxBelow.height, 0].max.toDouble(),
-                color: Color.fromRGBO(255, 10, 100, 0.2),
-              ),
-            ),
-          );
+          // Calculate the interval from staff bottom to the child's position.
+          int interval = bottomRef.numeric;
+          interval -= position.numeric;
+          bottomOffset -= interval * spacePerPosition;
         }
 
-        Rect boxAbove = child.boxAboveStaff(layoutProperties.staveSpace);
-        if (dSettings.paintBBoxAboveStaff && boxAbove.height > 0) {
-          positionedElements.add(
-            Positioned(
-              left: scaledSpacings[index],
-              bottom: staveBottom + layoutProperties.staveHeight,
-              child: Container(
-                width: boxAbove.width,
-                height: [boxAbove.height, 0].max.toDouble(),
-                color: Color.fromRGBO(3, 154, 255, 0.2),
+        positionedElements.add(
+          Positioned(
+            left: scaledSpacings[index],
+            top: topOffset,
+            bottom: bottomOffset,
+            child: cell,
+          ),
+        );
+
+        if (dSettings != null) {
+          Rect boxBelow = cell.boxBelowStaff(layoutProperties.staveSpace);
+          if (dSettings.paintBBoxBelowStaff && boxBelow.height > 0) {
+            positionedElements.add(
+              Positioned(
+                left: scaledSpacings[index],
+                bottom: staveBottom - boxBelow.height,
+                child: Container(
+                  width: boxBelow.width,
+                  height: [boxBelow.height, 0].max.toDouble(),
+                  color: Color.fromRGBO(255, 10, 100, 0.2),
+                ),
               ),
-            ),
-          );
+            );
+          }
+
+          Rect boxAbove = cell.boxAboveStaff(layoutProperties.staveSpace);
+          if (dSettings.paintBBoxAboveStaff && boxAbove.height > 0) {
+            positionedElements.add(
+              Positioned(
+                left: scaledSpacings[index],
+                bottom: staveBottom + layoutProperties.staveHeight,
+                child: Container(
+                  width: boxAbove.width,
+                  height: [boxAbove.height, 0].max.toDouble(),
+                  color: Color.fromRGBO(3, 154, 255, 0.2),
+                ),
+              ),
+            );
+          }
         }
       }
     }
