@@ -189,12 +189,12 @@ class MeasureTimeline {
       if (valueToAdd.widgetType == CursorElement) {
         cursor = cursor.clamp(0, double.maxFinite).toInt();
       }
-    }
 
-    int toAdd = cursor - values.entries.last.key.index;
-    int from = values.entries.last.key.index + 1;
-    for (int i = from; i < toAdd; i++) {
-      values[TimelinePosition(i, true)] = [];
+      int toAdd = cursor - values.entries.last.key.index - 1;
+      int from = values.entries.last.key.index + 1;
+      for (int i = from; i < toAdd + from; i++) {
+        values[TimelinePosition(i, true)] = [];
+      }
     }
 
     return MeasureTimeline._(

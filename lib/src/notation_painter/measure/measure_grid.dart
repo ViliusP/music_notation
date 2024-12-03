@@ -489,10 +489,11 @@ class ColumnIndex implements Comparable<ColumnIndex> {
 
   @override
   int compareTo(ColumnIndex other) {
-    if (beat != other.beat) {
-      return beat.compareTo(other.beat); // Compare by value first
+    if (beat == other.beat) {
+      return (attributeNumber ?? NumberConstants.maxFiniteInt)
+          .compareTo(other.attributeNumber ?? NumberConstants.maxFiniteInt);
     }
-    return (other.attributeNumber ?? -1).compareTo(attributeNumber ?? -1);
+    return beat.compareTo(other.beat);
   }
 
   @override
