@@ -139,11 +139,8 @@ class MusicNotationCanvas extends StatelessWidget {
       extraStaveLines: ExtraStaveLines.none,
       beatMarkerMultiplier: 1,
       beatMarker: false,
-      child: NotationFont(
-        value: font,
-        child: SyncWidthColumn(
-          builders: parts,
-        ),
+      child: SyncWidthColumn(
+        builders: parts,
       ),
     );
   }
