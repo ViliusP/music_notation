@@ -186,7 +186,8 @@ class MeasureGrid {
     int heightAboveStaff = minHeightAbove;
 
     int? attributes;
-    for (var (i, entry) in timeline.values.entries.indexed) {
+    int i = 0;
+    for (var entry in timeline.values.entries) {
       List<TimelineValue> beatCol = entry.value.sorted(
         (a, b) => a.voice.compareTo(b.voice),
       );
@@ -195,6 +196,10 @@ class MeasureGrid {
         heightAboveStave: minHeightAbove,
         heightBelowStave: minHeightBelow,
       );
+      if (beatCol.isEmpty) {
+        columns[ColumnIndex(i, attributes)] = col;
+        i++;
+      }
 
       for (var (j, value) in beatCol.indexed) {
         var position = children[value.index].position;
@@ -211,10 +216,10 @@ class MeasureGrid {
           attributes++;
         } else {
           attributes = null;
-
           col.set(position, children[value.index]);
           if (j == beatCol.length - 1) {
             columns[ColumnIndex(i, attributes)] = col;
+            i++;
           }
         }
 
@@ -280,6 +285,7 @@ class MeasureGrid {
     final int maxLength = measures
         .map((list) => list.columns.entries.length)
         .reduce((a, b) => a > b ? a : b);
+
     return List.generate(
       maxLength,
       (col) => measures.map((row) => row.columns.values.toList()[col]).toList(),
@@ -343,17 +349,23 @@ class MeasureGrid {
   }
 
   MeasureGrid adjustByBeatline(Beatline beatline) {
+    if (beatline == this.beatline) {
+      return this;
+    }
+
     var adjusted = _emptyTreeFromBeatline(
       beatline: beatline,
       topHeight: heightAboveStave,
       bottomHeight: heightBelowStave,
     );
+
     double ratio = beatline.divisions / this.beatline.divisions;
 
     for (var e in _columns.entries) {
       var index = e.key;
       var column = e.value;
       int newIndex = (index.beat * ratio).toInt();
+
       adjusted[ColumnIndex(newIndex, index.attributeNumber)] = column;
     }
 
@@ -363,6 +375,8 @@ class MeasureGrid {
       barlines: barlines,
       timeline: _timeline,
       columns: adjusted,
+      minHeightAbove: minHeightAbove,
+      minHeightBelow: minHeightBelow,
     );
   }
 
