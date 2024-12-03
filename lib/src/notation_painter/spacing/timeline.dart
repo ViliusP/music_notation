@@ -191,6 +191,12 @@ class MeasureTimeline {
       }
     }
 
+    int toAdd = cursor - values.entries.last.key.index;
+    int from = values.entries.last.key.index + 1;
+    for (int i = from; i < toAdd; i++) {
+      values[TimelinePosition(i, true)] = [];
+    }
+
     return MeasureTimeline._(
       SplayTreeMap.from(values),
       divisions,
@@ -213,19 +219,6 @@ class MeasureTimeline {
 
       for (var k in values.keys) {
         row1 += "${_centerPad(k.toString(), 3)}|";
-      }
-
-      TimelinePosition lastKey = values.keys.last;
-
-      if (lastKey.isRhytmic) {
-        double lastDuration = values[lastKey]!.map((v) => v.duration).max;
-        int toGenerate = lastDuration.toInt() - 1;
-        if (toGenerate < 0) toGenerate = 0;
-
-        for (var i in List.generate((toGenerate), (i) => i + 1)) {
-          int cellNumber = lastKey.index + i;
-          row1 += "${_centerPad((cellNumber).toString(), 3)}|";
-        }
       }
 
       // Create a map with voices as keys and empty strings as values
@@ -276,11 +269,11 @@ class MeasureTimeline {
 
 /// Represents a value within the timeline, associated with a specific time position.
 ///
-/// The [_TimelineValue] class encapsulates information about a musical element's
+/// The [TimelineValue] class encapsulates information about a musical element's
 /// occurrence in the timeline, including its voice, name, index within the measure,
 /// duration, and any additional offset required after the element.
 ///
-/// This class is used internally by the [Timeline] class to organize and retrieve
+/// This class is used internally by the [MeasureTimeline] class to organize and retrieve
 /// musical elements based on their temporal positioning.
 ///
 /// ### Example:

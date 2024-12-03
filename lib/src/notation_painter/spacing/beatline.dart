@@ -90,16 +90,9 @@ class Beatline {
       values.removeAt(0);
     }
 
-    var lastRhytmhic = timeline.values.entries.lastWhere(
-      (e) => e.key.isRhytmic,
-    );
-
-    double lastDuration = lastRhytmhic.value.map((v) => v.duration).max;
-
-    int duration = lastDuration.toInt();
+    int duration = (timeline.values.lastKey()?.index ?? -1) + 1;
     if (duration < 0) duration = 0;
 
-    duration += lastRhytmhic.key.index;
     return Beatline(
       values: values,
       divisions: timeline.divisions,
