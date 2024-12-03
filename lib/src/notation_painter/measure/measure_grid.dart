@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
+import 'package:music_notation/src/notation_painter/cursor_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_barlines.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
@@ -187,6 +188,7 @@ class MeasureGrid {
 
     int? attributes;
     int i = 0;
+
     for (var entry in timeline.values.entries) {
       List<TimelineValue> beatCol = entry.value.sorted(
         (a, b) => a.voice.compareTo(b.voice),
@@ -214,7 +216,7 @@ class MeasureGrid {
           attributes ??= 0;
           columns[ColumnIndex(i, attributes)] = col;
           attributes++;
-        } else {
+        } else if (value.widgetType != CursorElement) {
           attributes = null;
           col.set(position, children[value.index]);
           if (j == beatCol.length - 1) {
