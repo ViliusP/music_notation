@@ -7,23 +7,15 @@ class Beatline {
 
   /// Stores the beat values for each position in the timeline.
   /// Each element represents a beat position and may be `null` to indicate empty or unoccupied slots.
-  final List<BeatlineValue?> values;
-
-  final bool normalized;
+  final List<BeatlineValue> values;
 
   /// Calculates the total duration covered by this timeline, summing all durations of non-null beats.
   final double duration;
-
-  /// Space between two quarter notes measured from their alignment axes.
-  // static const double _spaceBetweenQuarters = 1.5;
-
-  // double get spacePerDivision => _spaceBetweenQuarters / divisions;
 
   const Beatline({
     required this.values,
     required this.divisions,
     required this.duration,
-    this.normalized = false,
   });
 
   /// Creates a [BeatTimeline] from a [Timeline] and filters by a specified voice.
@@ -31,74 +23,56 @@ class Beatline {
   /// Iterates through each value in the [timeline] and includes elements matching the specified [voice].
   /// Adjusts offsets for accurate beat placements.
   factory Beatline.fromTimeline(MeasureTimeline timeline) {
-    Beatline? finalBeatline;
-
-    for (var voice in timeline.uniqueVoices) {
-      if ((int.tryParse(voice) ?? 0) > 0) {
-        Beatline beatTimeline = Beatline._fromVoiceTimeline(
-          timeline: timeline,
-          voice: voice,
-        );
-        finalBeatline ??= beatTimeline;
-        finalBeatline = beatTimeline.combine(finalBeatline);
-      }
-    }
-    return finalBeatline!;
-  }
-
-  /// Creates a [Beatline] from a [MeasureTimeline] and filters by a specified voice.
-  ///
-  /// Iterates through each value in the [timeline] and includes elements matching the specified [voice].
-  /// Adjusts offsets for accurate beat placements.
-  factory Beatline._fromVoiceTimeline({
-    required MeasureTimeline timeline,
-    required String voice,
-  }) {
-    int? parsedVoice = int.tryParse(voice);
     List<BeatlineValue> values = [];
 
     int attributes = 0;
+    int beat = 0;
     for (var entry in timeline.values.entries) {
       List<TimelineValue> beatCol = entry.value.sorted(
         (a, b) => a.voice.compareTo(b.voice),
       );
+      if (entry.value.isEmpty) {
+        values.add(BeatlineValue(
+          beat: beat.toDouble(),
+          attributesBefore: attributes,
+        ));
+        beat++;
+      }
+
       for (TimelineValue value in beatCol) {
-        int? valueVoice = int.tryParse(value.voice);
-        // Skip if the voice does not match and it's not an unassigned voice.
-        if (parsedVoice == null ||
-            parsedVoice < 0 ||
-            (parsedVoice != valueVoice && (valueVoice ?? 0) > 0)) {
-          continue;
-        }
         if (value.duration == 0) {
           attributes++;
         }
+        if (value.widgetType == CursorElement) {
+          continue;
+        }
         if (value.duration != 0) {
           values.add(BeatlineValue(
-            duration: value.duration,
+            beat: beat.toDouble(),
             attributesBefore: attributes,
           ));
+          beat++;
+          break;
         }
       }
     }
 
-    // Remove last if it is backup cursor
-    if (values.last.duration < 0) {
-      values.removeLast();
-    }
-    while (values.first.duration < 0) {
-      values.removeAt(0);
-    }
+    int duration = timeline.values.keys.lastWhere((k) => k.isRhytmic).index;
+    duration++;
 
-    int duration = (timeline.values.lastKey()?.index ?? -1) + 1;
     if (duration < 0) duration = 0;
+
+    print(Beatline(
+      values: values,
+      divisions: timeline.divisions,
+      duration: duration.toDouble(),
+    ));
 
     return Beatline(
       values: values,
       divisions: timeline.divisions,
-      normalized: true,
       duration: duration.toDouble(),
-    ).normalize();
+    );
   }
 
   /// Combines this timeline with another [BeatTimeline] and returns a new timeline with adjusted values.
@@ -112,14 +86,10 @@ class Beatline {
       );
     }
 
-    final List<BeatlineValue?> combined = [];
+    final List<BeatlineValue> combined = [];
 
-    Beatline bl1 = normalize();
-    Beatline bl2 = other.normalize();
-
-    // print("-------------------------");
-    // print("Before: $duration After ${bl1.duration} bl1");
-    // print("Before: ${other.duration} After ${bl2.duration} bl2");
+    Beatline bl1 = this;
+    Beatline bl2 = other;
 
     // Ensure both timelines share the same number of divisions.
     if (bl1.divisions < bl2.divisions) {
@@ -129,53 +99,22 @@ class Beatline {
       bl2 = bl2.changeDivisions(bl1.divisions);
     }
 
-    // print("-----Divisions-------");
-    // print("Before: $divisions After ${bl1.divisions} bl1");
-    // print("Before: ${other.divisions} After ${bl2.divisions} bl2");
-
-    BeatlineValue? lastAdded;
-
     for (int i = 0; i < bl1.values.length; i++) {
-      BeatlineValue? bl1Value = bl1.values.elementAtOrNull(i);
-      BeatlineValue? bl2Value = bl2.values.elementAtOrNull(i);
+      BeatlineValue bl1Value = bl1.values.elementAt(i);
+      BeatlineValue bl2Value = bl2.values.elementAt(i);
 
-      if (bl1Value == null && bl2Value == null) {
-        combined.add(null);
-      }
-      if (bl1Value != null && bl2Value == null) {
-        combined.add(
-          bl1Value.copyWith(
-            attributesBefore:
-                lastAdded?.attributesBefore ?? bl1Value.attributesBefore,
-          ),
-        );
-        lastAdded = combined.last;
-      }
-      if (bl1Value == null && bl2Value != null) {
-        combined.add(
-          bl2Value.copyWith(
-            attributesBefore:
-                lastAdded?.attributesBefore ?? bl2Value.attributesBefore,
-          ),
-        );
-        lastAdded = combined.last;
-      }
-      if (bl1Value != null && bl2Value != null) {
-        combined.add(BeatlineValue(
-          duration: [bl1Value.duration, bl2Value.duration].min,
-          attributesBefore: [
-            bl1Value.attributesBefore,
-            bl2Value.attributesBefore,
-          ].max,
-        ));
-        lastAdded = combined.last;
-      }
+      combined.add(BeatlineValue(
+        beat: i.toDouble(),
+        attributesBefore: [
+          bl1Value.attributesBefore,
+          bl2Value.attributesBefore,
+        ].max,
+      ));
     }
     // print("After everything: ${bl1.duration}");
     return Beatline(
       values: combined,
       divisions: bl1.divisions,
-      normalized: true,
       duration: bl1.duration,
     );
   }
@@ -193,46 +132,23 @@ class Beatline {
     if (value == divisions) return this;
     double ratio = value / divisions;
 
-    final List<BeatlineValue?> modified = List.generate(
-      (duration * ratio).toInt(),
-      (i) => null,
-    );
+    final List<BeatlineValue> modified = [];
+
     int i = 0;
     for (final value in values) {
-      if (value != null) {
-        modified[i] = value.copyWith(
-          duration: value.duration * ratio.toInt(),
-        );
-        i += (value.duration * ratio).toInt();
+      for (int j = 0; j < ratio; j++) {
+        modified.add(BeatlineValue(
+          beat: i.toDouble(),
+          attributesBefore: value.attributesBefore,
+        ));
+        i++;
       }
     }
 
     return Beatline(
       values: modified,
       divisions: value,
-      normalized: true,
       duration: duration * ratio,
-    );
-  }
-
-  /// Normalizes the timeline, ensuring each duration unit has a corresponding position, including `null` slots for rests.
-  Beatline normalize() {
-    final List<BeatlineValue?> normalized = List.generate(
-      duration.toInt(),
-      (_) => null,
-    );
-
-    for (int i = 0; i < normalized.length; i++) {
-      if (values.elementAtOrNull(i) != null) {
-        normalized[i] = values[i];
-      }
-    }
-
-    return Beatline(
-      values: normalized,
-      divisions: divisions,
-      normalized: true,
-      duration: duration,
     );
   }
 
@@ -253,24 +169,17 @@ class Beatline {
       List<List<String>> table = [
         [
           'Beat',
-          '----------------',
-          'Duration',
+          '-----------------',
           'Attributes before',
         ]
       ];
 
-      for (var (i, val) in values.indexed) {
+      for (var val in values) {
         List<String> col = [];
 
-        String duration = val?.duration.toString() ?? " > ";
-        if (val?.duration == 0) {
-          duration = ">F>";
-        }
-
         col.addAll([
-          i.toString(),
+          val?.beat.toString() ?? "-1",
           '----',
-          duration,
           val?.attributesBefore.toString() ?? " > ",
         ]);
         table.add(col.toList());
@@ -305,21 +214,21 @@ class BeatlineValue {
   final int attributesBefore;
 
   // final double width;
-  final double duration;
+  final double beat;
 
   const BeatlineValue({
-    required this.duration,
+    required this.beat,
     required this.attributesBefore,
   });
 
   /// Creates a copy of this BeatTimelineValue with optional new values for
   /// each field.
   BeatlineValue copyWith({
-    double? duration,
+    double? beat,
     int? attributesBefore,
   }) {
     return BeatlineValue(
-      duration: duration ?? this.duration,
+      beat: beat ?? this.beat,
       attributesBefore: attributesBefore ?? this.attributesBefore,
     );
   }
@@ -329,9 +238,9 @@ class BeatlineValue {
       identical(this, other) ||
       other is BeatlineValue &&
           runtimeType == other.runtimeType &&
-          duration == other.duration &&
+          beat == other.beat &&
           attributesBefore == other.attributesBefore;
 
   @override
-  int get hashCode => Object.hash(duration, attributesBefore);
+  int get hashCode => Object.hash(beat, attributesBefore);
 }
