@@ -71,6 +71,15 @@ class TimeSignatureElement extends StatelessWidget implements MeasureWidget {
         break;
       case TimeSymbol.normal:
         for (var signature in timeBeat.timeSignatures) {
+          if (signature.beats.contains("+")) {
+            throw UnimplementedError(
+              "Composite time signatures aren't implemented yet",
+            );
+          }
+          if (grid.isNotEmpty) {
+            grid.add([SmuflGlyph.timeSigPlus]);
+          }
+
           grid.add(
             [numberToGlyph(signature.beats), numberToGlyph(signature.beatType)],
           );
@@ -124,9 +133,9 @@ class TimeSignatureElement extends StatelessWidget implements MeasureWidget {
         NotationProperties.of(context)?.layout ??
             NotationLayoutProperties.standard();
 
-    if (timeBeat.timeSignatures.length > 1) {
+    if (timeBeat.interchangeable != null) {
       throw UnimplementedError(
-        "multiple beat and beat type in one time-beat are not implemented in renderer yet",
+        "interchangeable time beat are not implemented in renderer yet",
       );
     }
 
