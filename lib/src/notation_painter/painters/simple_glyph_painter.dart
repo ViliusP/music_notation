@@ -8,7 +8,7 @@ class SimpleGlyphPainter extends CustomPainter {
   final String smufl;
   final GlyphBBox bBox;
 
-  // Stave space
+  // Most of the times, it is stave space height
   final double height;
 
   SimpleGlyphPainter(this.smufl, this.bBox, this.height);
