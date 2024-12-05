@@ -7,8 +7,10 @@ import 'package:music_notation/src/notation_painter/cursor_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_barlines.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
+import 'package:music_notation/src/notation_painter/notes/rest_element.dart';
 import 'package:music_notation/src/notation_painter/spacing/timeline.dart';
 import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
+import 'package:music_notation/src/notation_painter/utilities/string_extensions.dart';
 
 class MusicSheetGrid {
   /// Outer list represents measure location horizontally (measure number), inner list represents stave position.
@@ -161,6 +163,16 @@ class MeasureGrid {
 
   /// Reference position for stave top.
   ElementPosition get staveTop => ElementPosition(step: Step.F, octave: 5);
+
+  bool get hasMeasureRest {
+    var firstRhytmic = _columns.entries.firstWhereOrNull(
+      (e) => e.key.isRhytmic,
+    );
+    var maybeMeasureRest = firstRhytmic?.value.cells.values.firstWhereOrNull(
+      (v) => v is RestElement && v.isMeasure,
+    );
+    return maybeMeasureRest != null;
+  }
 
   const MeasureGrid._({
     required this.children,
