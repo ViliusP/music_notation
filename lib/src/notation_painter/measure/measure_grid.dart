@@ -188,10 +188,14 @@ class MeasureGrid {
   factory MeasureGrid.fromMeasureWidgets({
     required List<MeasureWidget> children,
     required MeasureBarlines barlineSettings,
+    required double divisions,
     int minHeightAbove = 0,
     int minHeightBelow = 0,
   }) {
-    MeasureTimeline timeline = MeasureTimeline.fromMeasureElements(children);
+    MeasureTimeline timeline = MeasureTimeline.fromMeasureElements(
+      children,
+      divisions,
+    );
     Beatline beatline = Beatline.fromTimeline(timeline);
 
     SplayTreeMap<ColumnIndex, MeasureGridColumn> columns = SplayTreeMap.of({});

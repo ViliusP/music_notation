@@ -243,7 +243,7 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
 
   /// Returns how many keys are canceled.
   int get cancelCount {
-    int? lastFifths = (notationContext.lastKey as TraditionalKey?)?.fifths;
+    int? lastFifths = (notationContext.key as TraditionalKey?)?.fifths;
 
     if (lastFifths == null) return 0;
 
@@ -253,7 +253,7 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
   /// Returns `true` if keys are fully canceled.
   /// Returns `null` if there is no cancel.
   bool? get fullCancel {
-    int? lastFifths = (notationContext.lastKey as TraditionalKey?)?.fifths;
+    int? lastFifths = (notationContext.key as TraditionalKey?)?.fifths;
 
     if (lastFifths == null) return null;
 
@@ -264,7 +264,7 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
     var accidentals = <OctavedKeyAccidental>[];
     int fifths = (musicKey).fifths;
     if (fullCancel == true) {
-      fifths = (notationContext.lastKey as TraditionalKey).fifths;
+      fifths = (notationContext.key as TraditionalKey).fifths;
     }
 
     accidentals = fifths >= 0 ? _sharpSequence : _flatSequence;

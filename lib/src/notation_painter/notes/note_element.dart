@@ -55,6 +55,9 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
   final Note note;
 
   @override
+  final ElementPosition position;
+
+  @override
   final StemDirection? stemDirection;
 
   @override
@@ -67,12 +70,6 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
 
   final bool showLedger;
   final bool showFlag;
-
-  @override
-  final NotationContext notationContext;
-
-  @override
-  ElementPosition get position => determinePosition(note, notationContext.clef);
 
   final bool drawLedgerLines = true;
 
@@ -98,7 +95,6 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     return NoteElement._(
       key: key,
       note: note,
-      notationContext: notationContext,
       font: font,
       baseStemLength: stemLength ?? _calculateStemLength(note, notationContext),
       showLedger: showLedger,
@@ -107,13 +103,14 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       stemDirection: note.stem == null
           ? null
           : StemDirection.fromStemValue(note.stem!.value),
+      position: determinePosition(note, notationContext.clef),
     );
   }
 
   const NoteElement._({
     super.key,
     required this.note,
-    required this.notationContext,
+    required this.position,
     required this.baseStemLength,
     this.showFlag = true,
     this.showLedger = true,
@@ -294,7 +291,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
 
   static Size calculateBaseSize({
     required Note note,
-    required Clef? clef,
+    required ElementPosition position,
     required double stemLength,
     required StemDirection? stemDirection,
     required FontMetadata font,

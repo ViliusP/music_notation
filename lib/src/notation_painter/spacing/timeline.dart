@@ -70,15 +70,8 @@ class MeasureTimeline {
   /// - [children] - A list of [MeasureWidget] instances representing musical elements.
   factory MeasureTimeline.fromMeasureElements(
     List<MeasureWidget> children,
+    double divisions,
   ) {
-    double divisions = 1;
-    for (var child in children.reversed) {
-      if (child is RhythmicElement) {
-        divisions = child.notationContext.divisions!;
-        break;
-      }
-    }
-
     Map<TimelinePosition, List<TimelineValue>> values = {};
     int cursor = 0;
     TimelineValue? valueToAdd;
