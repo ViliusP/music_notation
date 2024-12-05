@@ -6,9 +6,9 @@ import 'package:music_notation/src/notation_painter/notes/beaming.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 
 class BeamPainter extends CustomPainter {
-  final List<NoteBeams> beamsPattern;
+  final List<BeamNoteData> beamsPattern;
 
-  final bool downward;
+  final BeamDirection direction;
   final Color? color;
 
   final double hookLength;
@@ -19,7 +19,7 @@ class BeamPainter extends CustomPainter {
 
   BeamPainter({
     required this.beamsPattern,
-    required this.downward,
+    required this.direction,
     this.color,
     required this.hookLength,
     required this.thickness,
@@ -32,7 +32,7 @@ class BeamPainter extends CustomPainter {
     // Calculate start and end based on the beam direction
     Offset start;
     Offset end;
-    if (!downward) {
+    if (direction == BeamDirection.upward) {
       start = Offset(0, size.height - thickness);
       end = Offset(size.width, 0);
     } else {
@@ -42,20 +42,20 @@ class BeamPainter extends CustomPainter {
     // Calculate beam angle
     double angle = atan2(end.dy - start.dy, end.dx - start.dx);
 
-    for (var (index, noteBeams) in beamsPattern.indexed) {
-      double offsetX = noteBeams.leftOffset;
+    for (var (index, noteBeamData) in beamsPattern.indexed) {
+      double offsetX = noteBeamData.leftOffset;
 
-      for (var beams in noteBeams.values) {
-        double yOffset = spacing * 1.5 * (beams.number - 1);
+      for (var beams in noteBeamData.beams) {
+        double yOffset = (spacing + thickness) * (beams.number - 1);
 
-        if (noteBeams.stemDirection == StemDirection.down) {
+        if (noteBeamData.stemDirection == StemDirection.down) {
           yOffset = yOffset * (-1);
         }
 
         if (beams.value == BeamValue.begin ||
             beams.value == BeamValue.bContinue) {
           double beamLength = beamsPattern[index + 1].leftOffset;
-          beamLength -= noteBeams.leftOffset;
+          beamLength -= noteBeamData.leftOffset;
 
           drawAngledBeam(
             angle: angle,

@@ -133,13 +133,13 @@ class BeamGroup extends StatelessWidget {
   });
 
   factory BeamGroup.fromBeaming(
-    BeamGrouping beaming,
+    BeamGroupV2 beaming,
     VerticalEdgeInsets padding,
   ) {
     return BeamGroup(
-      leftOffsets: beaming._leftOffsets,
+      leftOffsets: beaming._positions.map((p) => p.left).toList(),
       padding: padding,
-      children: beaming._group,
+      children: beaming._elements,
     );
   }
 
@@ -170,24 +170,27 @@ class BeamGroup extends StatelessWidget {
     return Size(canvasWidth, canvasHeight);
   }
 
-  bool _isBeamDownward() {
-    return children.first.position > children.last.position;
+  BeamDirection get _isBeamDownward {
+    if (children.first.position > children.last.position) {
+      return BeamDirection.downward;
+    }
+    return BeamDirection.upward;
   }
 
-  List<NoteBeams> beamsPattern(BuildContext context) {
-    List<NoteBeams> pattern = [];
+  List<BeamNoteData> beamsPattern(BuildContext context) {
+    List<BeamNoteData> pattern = [];
     for (var (i, child) in children.indexed) {
       if (child is NoteElement) {
-        pattern.add(NoteBeams(
-          values: child.note.beams,
+        pattern.add(BeamNoteData(
+          beams: child.note.beams,
           leftOffset:
               (leftOffsets[i] - leftOffsets[0]).scaledByContext(context),
           stemDirection: child.stemDirection!,
         ));
       }
       if (child is Chord) {
-        pattern.add(NoteBeams(
-          values: child.notes.firstWhere((x) => x.beams.isNotEmpty).beams,
+        pattern.add(BeamNoteData(
+          beams: child.notes.firstWhere((x) => x.beams.isNotEmpty).beams,
           leftOffset:
               (leftOffsets[i] - leftOffsets[0]).scaledByContext(context),
           stemDirection: child.stemDirection!,
@@ -315,7 +318,7 @@ class BeamGroup extends StatelessWidget {
             painter: BeamPainter(
               beamsPattern: beamsPattern(context),
               // color: color,
-              downward: _isBeamDownward(),
+              direction: _isBeamDownward,
               hookLength: layoutProperties.staveSpace,
               thickness: beamThickness,
               spacing: layoutProperties.beamSpacing,
@@ -327,35 +330,68 @@ class BeamGroup extends StatelessWidget {
   }
 }
 
-class NoteBeams {
-  final List<Beam> values;
+class BeamNoteData {
+  final List<Beam> beams;
   final StemDirection stemDirection;
   final double leftOffset;
 
-  NoteBeams({
-    required this.values,
+  BeamNoteData({
+    required this.beams,
     required this.leftOffset,
     required this.stemDirection,
   });
 }
 
-class BeamGrouping {
-  final List<RhythmicElement> _group = [];
-  final List<double> _leftOffsets = [];
+enum BeamDirection { downward, upward }
 
-  // final bool _strictAddition = true;
+class BeamCanvas extends StatelessWidget {
+  final List<BeamData> beams;
+
+  const BeamCanvas({super.key, required this.beams});
+
+  @override
+  Widget build(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
+    double beamThickness = layoutProperties.beamThickness;
+
+    return Stack(
+      children: beams
+          .map(
+            (b) => AlignmentPositioned(
+              position: b.startPosition.scale(layoutProperties.staveSpace),
+              child: CustomPaint(
+                size: b.size.scale(layoutProperties.staveSpace),
+                painter: BeamPainter(
+                  beamsPattern: b.scaledPattern(layoutProperties.staveSpace),
+                  // color: color,
+                  hookLength: layoutProperties.staveSpace,
+                  thickness: beamThickness,
+                  spacing: layoutProperties.beamSpacing,
+                  direction: b.direction,
+                ),
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+}
+
+class BeamGroupV2 {
+  final List<RhythmicElement> _elements = [];
+  final List<AlignmentPosition> _positions = [];
 
   bool _isFinalized = false;
 
-  BeamGrouping();
-
   bool get isFinalized => _isFinalized;
 
-  /// Maybe it is already finally evaluated group or not, depends on implementer. Check [add] function and [isFinalized].
-  List<MeasureWidget> get tentativeGroup => _group;
+  BeamGroupV2();
 
   /// Returns [BeamingResult] after addition of provided [element].
-  BeamingResult add(RhythmicElement element, double leftOffset) {
+  BeamingResult add(RhythmicElement element, AlignmentPosition position) {
     BeamValue? beamValue;
 
     if (isFinalized) {
@@ -374,12 +410,12 @@ class BeamGrouping {
       return BeamingResult.skipped;
     }
 
-    if (_group.isNotEmpty && beamValue == BeamValue.begin) {
+    if (_elements.isNotEmpty && beamValue == BeamValue.begin) {
       return BeamingResult.skipped;
     }
 
-    _group.add(element);
-    _leftOffsets.add(leftOffset);
+    _elements.add(element);
+    _positions.add(position);
 
     if (!isFinalized && beamValue == BeamValue.end) {
       _isFinalized = true;
@@ -387,6 +423,148 @@ class BeamGrouping {
     }
 
     return BeamingResult.added;
+  }
+
+  List<BeamNoteData> get _beamPattern {
+    List<BeamNoteData> pattern = [];
+    for (var (i, child) in _elements.indexed) {
+      if (child is NoteElement) {
+        pattern.add(BeamNoteData(
+          beams: child.note.beams,
+          leftOffset: _positions[i].left - _positions[0].left,
+          stemDirection: child.stemDirection!,
+        ));
+      }
+      if (child is Chord) {
+        pattern.add(BeamNoteData(
+          beams: child.notes.firstWhere((x) => x.beams.isNotEmpty).beams,
+          leftOffset: _positions[i].left - _positions[0].left,
+          stemDirection: child.stemDirection!,
+        ));
+      }
+    }
+    return pattern;
+  }
+
+  BeamDirection get _beamDirection {
+    if (_elements.first.position > _elements.last.position) {
+      return BeamDirection.downward;
+    }
+    return BeamDirection.upward;
+  }
+
+  Size get _beamSize {
+    const spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
+
+    ElementPosition? firstPosition;
+    ElementPosition? lastPosition;
+
+    double firstStemLength = 0;
+    double lastStemLength = 0;
+
+    firstPosition = _elements.first.position;
+    firstStemLength = _elements.first.baseStemLength;
+
+    lastPosition = _elements.last.position;
+    lastStemLength = _elements.last.baseStemLength;
+
+    double canvasHeight =
+        spacePerPosition * firstPosition.distance(lastPosition);
+
+    canvasHeight += NotationLayoutProperties.baseBeamThickness;
+    canvasHeight -= (lastStemLength - firstStemLength);
+
+    double canvasWidth = _positions.last.left - _positions.first.left;
+    canvasWidth -= (NotationLayoutProperties.baseStemStrokeWidth / 2);
+
+    return Size(canvasWidth, canvasHeight);
+  }
+
+  /// Provide notes relative position in canvas.
+  AlignmentPosition _beamStartPosition() {
+    RhythmicElement first = _elements.first;
+    RhythmicElement last = _elements.last;
+
+    StemDirection? firstNoteStemValue;
+
+    Offset firstNoteBeamOffset = first.offsetForBeam;
+    Offset lastNoteBeamOffset = last.offsetForBeam;
+
+    firstNoteStemValue = first.stemDirection;
+
+    double? beamTopOffset;
+    if (_positions.first.top != null) {
+      beamTopOffset = 0;
+      // TODO: fix second check
+      if (first.position < last.position && _positions.last.top != null) {
+        beamTopOffset += _positions.last.top!;
+        beamTopOffset += lastNoteBeamOffset.dy;
+      }
+      if (first.position >= last.position) {
+        beamTopOffset += _positions.first.top!;
+        beamTopOffset += firstNoteBeamOffset.dy;
+      }
+      if (firstNoteStemValue == StemDirection.down) {
+        beamTopOffset -= NotationLayoutProperties.baseBeamThickness;
+      }
+    }
+
+    double? beamBottomOffset;
+    if (_positions.first.bottom != null) {
+      beamBottomOffset = 0;
+      if (first.position < last.position) {
+        beamBottomOffset += _positions.first.bottom!;
+        beamBottomOffset += firstNoteBeamOffset.dy;
+      }
+      if (first.position >= last.position) {
+        beamBottomOffset += lastNoteBeamOffset.dy;
+        beamBottomOffset += _positions.last.bottom!;
+      }
+      beamBottomOffset -= NotationLayoutProperties.baseBeamThickness;
+    }
+    return AlignmentPosition(
+      left: _positions.first.left + _elements[0].offsetForBeam.dx,
+      top: beamTopOffset,
+      bottom: beamBottomOffset,
+    );
+  }
+}
+
+class BeamData {
+  final List<BeamNoteData> pattern;
+
+  List<BeamNoteData> scaledPattern(double scale) {
+    return pattern
+        .map((data) => BeamNoteData(
+              beams: data.beams,
+              leftOffset: data.leftOffset * scale,
+              stemDirection: data.stemDirection,
+            ))
+        .toList();
+  }
+
+  final Size size;
+
+  final BeamDirection direction;
+
+  final AlignmentPosition startPosition;
+
+  BeamData._({
+    required this.pattern,
+    required this.size,
+    required this.direction,
+    required this.startPosition,
+  });
+
+  factory BeamData.fromBeamGroup({
+    required BeamGroupV2 group,
+  }) {
+    return BeamData._(
+      pattern: group._beamPattern,
+      size: group._beamSize,
+      direction: group._beamDirection,
+      startPosition: group._beamStartPosition(),
+    );
   }
 }
 
@@ -396,6 +574,10 @@ enum BeamingResult {
   finished,
   skippedAndFinished;
 }
+
+/// ------------------------------------------------------------
+/// UNUSED
+/// ------------------------------------------------------------
 
 /// Different beat strengths typically used in music notation.
 enum BeatStrength {

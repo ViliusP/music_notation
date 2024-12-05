@@ -109,21 +109,11 @@ class MeasureLayout extends StatelessWidget {
     return LayoutBuilder(builder: (context, constraints) {
       List<Widget> beamGroups = [];
 
-      BeamGrouping beaming = BeamGrouping();
+      BeamGroupV2 beaming = BeamGroupV2();
 
       var positionedElements = <Widget>[];
       for (var (index, child) in children.indexed) {
         BeamingResult? beamingResult;
-        if (child is RhythmicElement) {
-          beamingResult = beaming.add(child, spacings[index]);
-        }
-
-        if (beaming.isFinalized) {
-          beamGroups.add(
-            Positioned.fill(child: BeamGroup.fromBeaming(beaming, padding)),
-          );
-          beaming = BeamGrouping();
-        }
 
         double? topOffset;
         double? bottomOffset;
@@ -152,6 +142,23 @@ class MeasureLayout extends StatelessWidget {
           bottomOffset -= intervalFromTheE4 * spacePerPosition;
 
           bottomOffset += padding.bottom;
+        }
+        if (child is RhythmicElement) {
+          beamingResult = beaming.add(
+            child,
+            AlignmentPosition(
+              left: spacings[index],
+              top: topOffset,
+              bottom: bottomOffset,
+            ),
+          );
+        }
+
+        if (beaming.isFinalized) {
+          beamGroups.add(
+            Positioned.fill(child: BeamGroup.fromBeaming(beaming, padding)),
+          );
+          beaming = BeamGroupV2();
         }
 
         if (beamingResult == null || beamingResult == BeamingResult.skipped) {
@@ -283,32 +290,32 @@ class MeasureLayoutV2 extends StatelessWidget {
 
     spacings.add(spacing + 1);
 
-    List<double> scaledSpacings =
-        spacings.map((s) => s * layoutProperties.staveSpace).toList();
+    double measureWidth = spacings.last;
 
-    double width = scaledSpacings.last;
-
-    double spacePerPosition = layoutProperties.spacePerPosition;
+    double spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
     ElementPosition bottomRef = grid.minPosition;
     ElementPosition topRef = grid.maxPosition;
     ElementPosition staveBottomRef = grid.staveBottom;
 
     double staveBottom =
         (staveBottomRef.distance(bottomRef)) * spacePerPosition;
+    staveBottom = staveBottom.scaledByContext(context);
 
-    List<Widget> beamGroups = [];
+    List<BeamData> beams = [];
 
     var positionedElements = <Widget>[];
+
+    BeamGroupV2 beaming = BeamGroupV2();
+
     for (var (index, entry) in grid.columns.entries.indexed) {
       for (var cellEntry in entry.value.cells.entries) {
         var position = cellEntry.key;
         var cell = cellEntry.value;
+        if (cell == null) continue;
+
         double? topOffset;
         double? bottomOffset;
-        if (cell == null) continue;
-        AlignmentPosition alignmentPosition = cell.alignmentPosition.scale(
-          layoutProperties.staveSpace,
-        );
+        AlignmentPosition alignmentPosition = cell.alignmentPosition;
 
         if (alignmentPosition.top != null) {
           topOffset = alignmentPosition.top!;
@@ -327,23 +334,42 @@ class MeasureLayoutV2 extends StatelessWidget {
           bottomOffset -= interval * spacePerPosition;
         }
 
-        double left = scaledSpacings[index];
+        if (cell is RhythmicElement) {
+          beaming.add(
+            cell,
+            AlignmentPosition(
+              left: spacings[index],
+              top: topOffset,
+              bottom: bottomOffset,
+            ),
+          );
+        }
+
+        if (beaming.isFinalized) {
+          beams.add(BeamData.fromBeamGroup(group: beaming));
+          beaming = BeamGroupV2();
+        }
+
+        double left = spacings[index];
 
         if (cell is RestElement && cell.isMeasure) {
           // Positions the rest element at the left side of the last measure attribute.
-          left = scaledSpacings[index];
+          left = spacings[index];
 
           // Applies standard padding to shift the rest further left after the attributes.
-          left -= NotationLayoutProperties.baseMeasurePadding.scaledByContext(
-            context,
-          );
+          left -= NotationLayoutProperties.baseMeasurePadding;
 
           // Adjusts position to the right by half the distance between the last attribute and the measure's end.
-          left += (scaledSpacings.last - left) / 2;
+          left += (measureWidth - left) / 2;
 
           // Centers the rest element by accounting for half its width.
-          left -= cell.baseSize.width.scaledByContext(context) / 2;
+          left -= cell.baseSize.width / 2;
         }
+
+        left = left.scaledByContext(context);
+        topOffset = topOffset?.scaledByContext(context);
+        bottomOffset = bottomOffset?.scaledByContext(context);
+
         positionedElements.add(
           Positioned(
             left: left,
@@ -387,12 +413,16 @@ class MeasureLayoutV2 extends StatelessWidget {
       }
     }
 
+    double measureHeight =
+        (topRef.numeric - bottomRef.numeric) * spacePerPosition;
+
     return SizedBox(
-      height: (topRef.numeric - bottomRef.numeric) * spacePerPosition,
-      width: width,
+      height: measureHeight.scaledByContext(context),
+      width: measureWidth.scaledByContext(context),
       child: Stack(
         fit: StackFit.loose,
         children: [
+          if (beams.isNotEmpty) BeamCanvas(beams: beams),
           StaffLines(
             bottom: staveBottom,
           ),
@@ -410,27 +440,6 @@ class MeasureLayoutV2 extends StatelessWidget {
               baseline: staveBottom,
               baseHeight: layoutProperties.staveHeight,
             ),
-          // SizedBox(
-          //   height: 0,
-          //   width: width,
-          //   child: Barlines(
-          //     startExtension: barlineSettings.startExtension,
-          //     endExtension: barlineSettings.endExtension,
-          //     padding: padding,
-          //   ),
-          // ),
-          // if (dSettings?.beatMarker == true)
-          //   CustomPaint(
-          //     size: Size(
-          //       width,
-          //       layoutProperties.staveHeight,
-          //     ),
-          //     painter: BeatMarkPainter(
-          //       dSettings!.beatMarkerMultiplier,
-          //       measureBeatline,
-          //     ),
-          //   ),
-          ...beamGroups,
           ...positionedElements,
         ],
       ),
