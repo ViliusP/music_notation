@@ -141,7 +141,7 @@ class _SheetMeasuresColumn extends StatelessWidget {
         NotationLayoutProperties.baseWidthPerQuarter / divisions;
     List<double> widths = [];
     for (var (i, columns) in columnColumns.indexed) {
-      double width = defaultWidth;
+      double width = 0;
       // Attribute element width depends on attribute size itself
       if (!indices[i].isRhytmic) {
         for (var cell in columns.expand((i) => i.cells.entries)) {
@@ -149,6 +149,9 @@ class _SheetMeasuresColumn extends StatelessWidget {
             width = max(width, cell.value!.baseSize.width);
           }
         }
+      }
+      if (width == 0) {
+        width = defaultWidth;
       }
       widths.add(width);
     }
