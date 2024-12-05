@@ -2,11 +2,12 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
+import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
-import 'package:music_notation/src/notation_painter/notes/augmentation_dot.dart';
+import 'package:music_notation/src/notation_painter/notes/augmentation_dots.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/adjacency.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
@@ -25,7 +26,6 @@ class Chord extends StatelessWidget implements RhythmicElement {
         (note) => NoteElement.determinePosition(note, null),
       );
 
-  @override
   final NotationContext notationContext;
   final FontMetadata font;
 
@@ -135,7 +135,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
 
     if (maxDotsNote.dots.isNotEmpty) {
       offsetX = baseSize.width;
-      offsetX -= AugmentationDot.defaultBaseOffset;
+      offsetX -= AugmentationDots.defaultBaseOffset;
       offsetX -= NoteElement.baseDotsSize(font).width;
     }
 
@@ -201,12 +201,23 @@ class Chord extends StatelessWidget implements RhythmicElement {
         ref = sortedNotes.last;
       }
       height = NoteElement.calculateBaseSize(
-        note: ref,
-        stemLength: _calculateStemLength(notes),
-        clef: notationContext.clef,
-        stemDirection: stemDirection,
+        note: SimpleNoteElement(
+          head: NoteheadElement(
+            type: ref.type?.value ?? NoteTypeValue.quarter,
+            font: font,
+          ),
+          stem: StemElement(
+            type: ref.type?.value ?? NoteTypeValue.quarter,
+            font: font,
+            direction: stemDirection,
+            length: _calculateStemLength(notes),
+            showFlag: !beamed,
+          ),
+        ),
+        position: NoteElement.determinePosition(ref, notationContext.clef),
         font: font,
-        showFlag: !beamed,
+        dots: null,
+        accidental: null,
       ).height;
     }
 

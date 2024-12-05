@@ -79,7 +79,7 @@ class MeasureTimeline {
     for (final (index, child) in children.indexed) {
       switch (child) {
         case NoteElement note:
-          String voice = child.note.editorialVoice.voice ?? "1";
+          String voice = note.voice ?? "1";
           valueToAdd = TimelineValue(
             index,
             child.duration,
