@@ -2,10 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
-import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
-import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart';
 
@@ -94,11 +92,13 @@ class AugmentationDot extends StatelessWidget {
 
     return SizedBox.fromSize(
       size: baseSize.scaledByContext(context),
-      child: Stack(
+      child: Row(
         children: [
           for (int i = 0; i < count; i++)
-            Positioned(
-              left: (singleDotSize.width * i) + (spacing * i),
+            Padding(
+              padding: EdgeInsets.only(
+                left: (singleDotSize.width * i) + (spacing * i),
+              ),
               child: CustomPaint(
                 size: singleDotSize,
                 painter: SimpleGlyphPainter(
