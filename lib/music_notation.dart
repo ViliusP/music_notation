@@ -1,11 +1,12 @@
 library;
 
-export 'src/notation_painter/music_notation_canvas.dart'
-    show MusicNotationCanvas;
+export 'src/notation_painter/properties/layout_properties.dart'
+    show NotationLayoutProperties;
 
-export 'src/notation_painter/sync_width_column.dart' show SyncWidthColumn;
+export 'src/notation_painter/properties/notation_properties.dart'
+    show NotationProperties;
 
-export 'src/notation_painter/music_grid.dart' show NotationGrid;
+export 'src/notation_painter/music_sheet/music_sheet.dart';
 
 export 'src/models/elements/score/score.dart' show ScorePartwise, ScoreHeader;
 

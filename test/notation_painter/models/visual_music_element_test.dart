@@ -2,7 +2,7 @@ import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:test/test.dart';
 
-// void main() {
+void main() {
 //   group('Distance from the middle (B4)', () {
 //     var inputsOutputs = [
 //       (
@@ -76,4 +76,4 @@ import 'package:test/test.dart';
 //       });
 //     }
 //   });
-// }
+}

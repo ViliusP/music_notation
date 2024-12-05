@@ -1,42 +1,22 @@
 import 'package:flutter/rendering.dart';
-import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
-import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 
 class StemPainter extends CustomPainter {
-  /// Smufl symbol for flag.
-  final String? flagSmufl;
-
+  final double thickness;
   final StemDirection direction;
 
-  static const strokeWidth = NotationLayoutProperties.stemStrokeWidth;
-
-  final Paint _paint = Paint()
-    ..color = const Color.fromRGBO(0, 0, 0, 1.0)
-    ..strokeWidth = strokeWidth;
-
   StemPainter({
-    required this.flagSmufl,
     this.direction = StemDirection.up,
+    required this.thickness,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawLine(Offset.zero, Offset(0, size.height), _paint);
+    final Paint paint = Paint()
+      ..color = const Color.fromRGBO(0, 0, 0, 1.0)
+      ..strokeWidth = thickness;
 
-    Offset paintingOffset = Offset(0, -NotationLayoutProperties.staveSpace * 2);
-
-    if (direction == StemDirection.down) {
-      paintingOffset = const Offset(0, 0);
-    }
-
-    if (flagSmufl != null) {
-      PainterUtilities.drawSmuflSymbol(
-        canvas,
-        flagSmufl!,
-        offset: paintingOffset,
-      );
-    }
+    canvas.drawLine(Offset.zero, Offset(0, size.height), paint);
   }
 
   @override

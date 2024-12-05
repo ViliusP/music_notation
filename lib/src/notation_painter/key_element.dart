@@ -12,9 +12,10 @@ import 'package:music_notation/src/notation_painter/measure/measure_element.dart
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/models/octaved_key_accidental.dart';
-import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
+import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
+import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart';
 
 const Map<AccidentalValue, SmuflGlyph> _accidentalSmuflMapping = {
@@ -161,33 +162,35 @@ final _flatSequence = [
 ];
 
 class AccidentalElement extends StatelessWidget {
-  final PitchedKeyAccidental accidental;
+  final AccidentalValue accidental;
   final FontMetadata font;
 
-  AlignmentPosition get alignmentPosition {
-    AccidentalValue accidentalValue =
-        accidental.accidental?.value ?? AccidentalValue.other;
+  AlignmentPosition get alignmentPosition => calculateAlignmentPosition(
+        accidental,
+        font,
+      );
 
-    SmuflGlyph glyph = _accidentalSmuflMapping[accidentalValue]!;
+  static AlignmentPosition calculateAlignmentPosition(
+    AccidentalValue accidental,
+    FontMetadata font,
+  ) {
+    SmuflGlyph glyph = _accidentalSmuflMapping[accidental]!;
 
     return AlignmentPosition(
-      top: -NotationLayoutProperties.staveSpace *
-          font.glyphBBoxes[glyph]!.bBoxNE.y,
+      top: -font.glyphBBoxes[glyph]!.bBoxNE.y,
       left: 0,
     );
   }
 
-  Size get size => calculateSize(accidental, font);
+  Size get baseSize => calculateSize(accidental, font);
 
   static Size calculateSize(
-    PitchedKeyAccidental accidental,
+    AccidentalValue accidental,
     FontMetadata font,
   ) {
-    SmuflGlyph glyph = _accidentalSmuflMapping[
-        accidental.accidental?.value ?? AccidentalValue.other]!;
+    SmuflGlyph glyph = _accidentalSmuflMapping[accidental]!;
 
-    Rect headRect = font.glyphBBoxes[glyph]!.toRect();
-    return Size(headRect.width, headRect.height);
+    return font.glyphBBoxes[glyph]!.toSize(1);
   }
 
   const AccidentalElement({
@@ -203,12 +206,16 @@ class AccidentalElement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
     return CustomPaint(
-      size: size,
+      size: baseSize.scaledByContext(context),
       painter: SimpleGlyphPainter(
-        accidental.accidental?.smufl ?? smufl(accidental.accidental?.value),
-        font.glyphBBoxes[
-            _accidentalSmuflMapping[accidental.accidental?.value]]!,
+        smufl(accidental),
+        font.glyphBBoxes[_accidentalSmuflMapping[accidental]]!,
+        layoutProperties.staveSpace,
       ),
     );
   }
@@ -219,16 +226,14 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
   final TraditionalKey musicKey;
   final NotationContext notationContext;
 
-  static const _spaceBetweenAccidentals = 6.0;
-  static const _offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
+  static const _baseSpaceBetweenAccidentals = 0.25;
 
   @override
   AlignmentPosition get alignmentPosition {
     SmuflGlyph glyph = _accidentalSmuflMapping[
         accidentals.first.accidental?.value ?? AccidentalValue.other]!;
 
-    double top = -NotationLayoutProperties.staveSpace *
-        font.glyphBBoxes[glyph]!.bBoxNE.y;
+    double top = -font.glyphBBoxes[glyph]!.bBoxNE.y;
 
     return AlignmentPosition(
       top: top,
@@ -282,12 +287,12 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
     var offsets = <double>[];
     for (var accidental in accidentals) {
       Size accidentalSize = AccidentalElement(
-        accidental: accidental,
+        accidental: accidental.accidental?.value ?? AccidentalValue.other,
         font: font,
-      ).size;
+      ).baseSize;
 
       offsets.add(leftOffset);
-      leftOffset += accidentalSize.width + _spaceBetweenAccidentals;
+      leftOffset += accidentalSize.width + _baseSpaceBetweenAccidentals;
     }
     return offsets;
   }
@@ -312,7 +317,7 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
   }
 
   @override
-  Size get size {
+  Size get baseSize {
     if (accidentals.isEmpty) {
       return const Size(0, 0);
     }
@@ -320,22 +325,22 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
     var width = 0.0;
 
     int range = _range.highest.numeric - _range.lowest.numeric;
-    double height = range * _offsetPerPosition;
+    double height = range * .5;
     for (var (i, accidental) in accidentals.indexed) {
       Size accidentalSize = AccidentalElement(
-        accidental: accidental,
+        accidental: accidental.accidental?.value ?? AccidentalValue.other,
         font: font,
-      ).size;
+      ).baseSize;
 
       if (i == 0) {
         height += accidentalSize.height;
       }
 
-      width += accidentalSize.width + _spaceBetweenAccidentals;
+      width += accidentalSize.width + _baseSpaceBetweenAccidentals;
     }
 
     // Remove last width
-    width = width - _spaceBetweenAccidentals;
+    width = width - _baseSpaceBetweenAccidentals;
 
     return Size(width, height);
   }
@@ -383,13 +388,17 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
 
   @override
   Widget build(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
     var children = <Widget>[];
 
     int highestAccidentalPosition = _range.highest.numeric;
 
     for (var (index, accidental) in accidentals.indexed) {
       var accidentalWidget = AccidentalElement(
-        accidental: accidental,
+        accidental: accidental.accidental?.value ?? AccidentalValue.other,
         font: font,
       );
 
@@ -398,10 +407,10 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
 
       children.add(
         Positioned(
-          top: distanceFromHighest * _offsetPerPosition,
+          top: distanceFromHighest * layoutProperties.spacePerPosition,
           child: Padding(
             padding: EdgeInsets.only(
-              left: _leftOffsets[index],
+              left: _leftOffsets[index].scaledByContext(context),
             ),
             child: accidentalWidget,
           ),
@@ -410,7 +419,7 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
     }
 
     return SizedBox.fromSize(
-      size: size,
+      size: baseSize.scaledByContext(context),
       child: Stack(
         alignment: Alignment.centerLeft,
         children: children,

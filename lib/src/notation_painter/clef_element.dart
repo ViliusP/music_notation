@@ -3,9 +3,11 @@ import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
-import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
+import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
+import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
+import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart';
 import 'package:music_notation/src/smufl/smufl_glyph.dart';
@@ -55,7 +57,7 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
   }
 
   double get _verticalAlignmentAxisOffset {
-    return NotationLayoutProperties.staveSpace * _bBox.bBoxNE.y;
+    return _bBox.bBoxNE.y;
   }
 
   @override
@@ -81,15 +83,21 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
   }
 
   @override
-  Size get size {
-    return _bBox.toRect().size;
-  }
+  Size get baseSize => _bBox.toRect(1).size;
 
   @override
   Widget build(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
     return CustomPaint(
-      size: size,
-      painter: SimpleGlyphPainter(_glyph.codepoint, _bBox),
+      size: baseSize.scaledByContext(context),
+      painter: SimpleGlyphPainter(
+        _glyph.codepoint,
+        _bBox,
+        layoutProperties.staveSpace,
+      ),
     );
   }
 }

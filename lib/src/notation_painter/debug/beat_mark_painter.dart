@@ -1,6 +1,5 @@
 import 'package:flutter/rendering.dart';
 import 'package:music_notation/src/notation_painter/spacing/timeline.dart';
-import 'package:music_notation/src/notation_painter/utilities/list_extensions.dart';
 import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 
 /// A custom painter that draws guiding lines within a box, based on provided guides.
@@ -11,11 +10,11 @@ class BeatMarkPainter extends CustomPainter {
   /// A list of guides that define which lines to draw within the box.
   final double multiplier;
 
-  final BeatTimeline beatTimeline;
+  final Beatline beatline;
 
   const BeatMarkPainter(
     this.multiplier,
-    this.beatTimeline,
+    this.beatline,
   );
 
   @override
@@ -23,12 +22,13 @@ class BeatMarkPainter extends CustomPainter {
     Canvas canvas,
     Size size,
   ) {
-    int every = beatTimeline.divisions.toInt();
+    int every = beatline.divisions.toInt();
     every = (every / multiplier).floor();
     every = every.clamp(1, NumberConstants.maxFiniteInt);
 
-    every = every.nearestMultiple(of: beatTimeline.divisions.toInt());
-    List<double> spacings = beatTimeline.toDivisionsSpacing().everyNth(every);
+    every = every.nearestMultiple(of: beatline.divisions.toInt());
+    // TODO: Fix
+    List<double> spacings = [];
     for (var leftOffset in spacings) {
       canvas.drawLine(
         Offset(leftOffset, 0),
@@ -56,7 +56,7 @@ class BeatMarkPainter extends CustomPainter {
   @override
   bool shouldRepaint(BeatMarkPainter oldDelegate) {
     return oldDelegate.multiplier != multiplier ||
-        oldDelegate.beatTimeline != beatTimeline;
+        oldDelegate.beatline != beatline;
   }
 
   @override

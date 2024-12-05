@@ -6,13 +6,16 @@ import 'package:music_notation/src/models/elements/music_data/note/note_type.dar
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
-import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/augmentation_dot.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
+import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
+import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
+import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 
 class RestElement extends StatelessWidget implements RhythmicElement {
   final Note note;
@@ -32,20 +35,20 @@ class RestElement extends StatelessWidget implements RhythmicElement {
   }
 
   double get _verticalAlignmentAxisOffset {
-    double initial = NotationLayoutProperties.staveSpace * _bBox.bBoxNE.y;
+    double alignment = _bBox.bBoxNE.y;
     if (_dots > 0) {
-      double maybeDotOffset = initial;
+      double maybeDotOffset = alignment;
       maybeDotOffset -= AugmentationDot(
             count: 1,
             font: font,
           ).alignmentPosition.top ??
           0;
-      maybeDotOffset -= NotationLayoutProperties.staveSpace / 2;
+      maybeDotOffset -= 1 / 2;
       if (maybeDotOffset < 0) {
-        initial -= maybeDotOffset;
+        alignment -= maybeDotOffset;
       }
     }
-    return initial;
+    return alignment;
   }
 
   @override
@@ -58,20 +61,19 @@ class RestElement extends StatelessWidget implements RhythmicElement {
   StemDirection? get stemDirection => null;
 
   @override
-  double get stemLength => 0;
+  double get baseStemLength => 0;
 
   @override
   ElementPosition get position => _determinePosition();
-
   @override
-  Size get size {
-    Size restSymbolSize = _bBox.toRect().size;
+  Size get baseSize {
+    Size restSymbolSize = _bBox.toRect(1).size;
     double width = restSymbolSize.width;
     double height = restSymbolSize.height;
     if (_dots > 0) {
-      width += AugmentationDot.defaultOffset;
+      width += AugmentationDot.defaultBaseOffset;
       var dots = AugmentationDot(count: _dots, font: font);
-      width += dots.size.width;
+      width += dots.baseSize.width;
 
       if (_dotsVerticalOffset < 0) {
         height += _dotsVerticalOffset.abs();
@@ -86,14 +88,14 @@ class RestElement extends StatelessWidget implements RhythmicElement {
 
   double get _dotsVerticalOffset {
     // Alignment line of rest.
-    double top = NotationLayoutProperties.staveSpace * _bBox.bBoxNE.y;
+    double top = _bBox.bBoxNE.y;
 
     top -= AugmentationDot(
           count: 1,
           font: font,
         ).alignmentPosition.top ??
         0;
-    top -= NotationLayoutProperties.staveSpace / 2;
+    top -= .5;
     return top;
   }
 
@@ -211,13 +213,19 @@ class RestElement extends StatelessWidget implements RhythmicElement {
 
   @override
   Widget build(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
     return SizedBox.fromSize(
-      size: size,
+      size: baseSize.scaledByContext(context),
       child: Stack(
         children: [
           if (_dots > 0)
             Positioned(
-              top: _dotsVerticalOffset.clamp(0, double.maxFinite),
+              top: _dotsVerticalOffset
+                  .scaledByContext(context)
+                  .clamp(0, double.maxFinite),
               right: 0,
               child: AugmentationDot(count: _dots, font: font),
             ),
@@ -225,8 +233,12 @@ class RestElement extends StatelessWidget implements RhythmicElement {
             left: 0,
             bottom: 0,
             child: CustomPaint(
-              size: _bBox.toRect().size,
-              painter: SimpleGlyphPainter(_glyph.codepoint, _bBox),
+              size: _bBox.toRect(layoutProperties.staveSpace).size,
+              painter: SimpleGlyphPainter(
+                _glyph.codepoint,
+                _bBox,
+                layoutProperties.staveSpace,
+              ),
             ),
           ),
         ],

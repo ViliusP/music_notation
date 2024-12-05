@@ -1,4 +1,4 @@
-// Enum to specify how the barline should extend when rendering
+/// Enum to specify how the barline should extend when rendering
 enum BarlineExtension {
   none, // No extension: Barline is rendered only on the current staff
   top, // Extend upwards: Connects the barline to the staff above
@@ -6,20 +6,26 @@ enum BarlineExtension {
   both // Extend both upwards and downwards to connect with other staves
 }
 
+// Enum to specify where barlines is located in measure.
+enum BarlineLocation {
+  start,
+  end;
+}
+
 // Class to configure barline extensions for rendering start and end barlines in a measure
-class BarlineSettings {
+class MeasureBarlines {
   // Defines the extension behavior for the start of the barline
-  final BarlineExtension startExtension;
+  final BarlineExtension? start;
   // Defines the extension behavior for the end of the barline
-  final BarlineExtension endExtension;
+  final BarlineExtension? end;
 
   // Constructor with default values set to 'none' for both start and end extensions
-  const BarlineSettings({
-    this.startExtension = BarlineExtension.none,
-    this.endExtension = BarlineExtension.none,
+  const MeasureBarlines({
+    this.start = BarlineExtension.none,
+    this.end = BarlineExtension.none,
   });
 
-  factory BarlineSettings.fromGridData({
+  factory MeasureBarlines.fromGridData({
     required int gridX,
     required int gridY,
     required int maxX,
@@ -48,9 +54,16 @@ class BarlineSettings {
       if (staff == staffCount) endExtension = BarlineExtension.top;
     }
 
-    return BarlineSettings(
-      startExtension: startExtension,
-      endExtension: endExtension,
+    return MeasureBarlines(
+      start: startExtension,
+      end: endExtension,
+    );
+  }
+
+  MeasureBarlines copyWith({BarlineExtension? start, BarlineExtension? end}) {
+    return MeasureBarlines(
+      start: start ?? this.start,
+      end: end ?? this.end,
     );
   }
 }

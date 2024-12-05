@@ -3,56 +3,59 @@ import 'dart:math';
 import 'package:flutter/rendering.dart';
 import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/notation_painter/notes/beaming.dart';
-import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 
 class BeamPainter extends CustomPainter {
-  final List<NoteBeams> beamsPattern;
+  final List<BeamNoteData> beamsPattern;
 
-  final bool downward;
+  final BeamDirection direction;
   final Color? color;
+
+  final double hookLength;
+  final double thickness;
+  final double spacing;
 
   final bool debug;
 
   BeamPainter({
     required this.beamsPattern,
-    required this.downward,
+    required this.direction,
     this.color,
+    required this.hookLength,
+    required this.thickness,
     this.debug = false,
+    required this.spacing,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    double beamThickness = NotationLayoutProperties.beamThickness;
-
     // Calculate start and end based on the beam direction
     Offset start;
     Offset end;
-    if (!downward) {
-      start = Offset(0, size.height - beamThickness);
+    if (direction == BeamDirection.upward) {
+      start = Offset(0, size.height - thickness);
       end = Offset(size.width, 0);
     } else {
       start = Offset(0, 0);
-      end = Offset(size.width, size.height - beamThickness);
+      end = Offset(size.width, size.height - thickness);
     }
     // Calculate beam angle
     double angle = atan2(end.dy - start.dy, end.dx - start.dx);
 
-    for (var (index, noteBeams) in beamsPattern.indexed) {
-      double offsetX = noteBeams.leftOffset;
+    for (var (index, noteBeamData) in beamsPattern.indexed) {
+      double offsetX = noteBeamData.leftOffset;
 
-      for (var beams in noteBeams.values) {
-        double yOffset =
-            NotationLayoutProperties.beamSpacing * 1.5 * (beams.number - 1);
+      for (var beams in noteBeamData.beams) {
+        double yOffset = (spacing + thickness) * (beams.number - 1);
 
-        if (noteBeams.stemDirection == StemDirection.down) {
+        if (noteBeamData.stemDirection == StemDirection.down) {
           yOffset = yOffset * (-1);
         }
 
         if (beams.value == BeamValue.begin ||
             beams.value == BeamValue.bContinue) {
           double beamLength = beamsPattern[index + 1].leftOffset;
-          beamLength -= noteBeams.leftOffset;
+          beamLength -= noteBeamData.leftOffset;
 
           drawAngledBeam(
             angle: angle,
@@ -64,7 +67,7 @@ class BeamPainter extends CustomPainter {
             alignment: Alignment.start,
             alignmentLineByHorizontalSpan: true,
             beamByHorizontalSpan: true,
-            beamThickness: NotationLayoutProperties.beamThickness,
+            beamThickness: thickness,
             color: color ?? const Color.fromRGBO(0, 0, 0, 1),
             debug: debug,
           );
@@ -75,12 +78,12 @@ class BeamPainter extends CustomPainter {
             angle: angle,
             canvas: canvas,
             start: Offset(start.dx, start.dy + yOffset),
-            beamLength: NotationLayoutProperties.defaultNoteheadHeight,
+            beamLength: hookLength,
             alignmentLineLength: offsetX - beamsPattern[index - 1].leftOffset,
             alignment: Alignment.end,
             alignmentLineByHorizontalSpan: true,
             beamByHorizontalSpan: false,
-            beamThickness: NotationLayoutProperties.beamThickness,
+            beamThickness: thickness,
             color: color ?? const Color.fromRGBO(0, 0, 0, 1),
             debug: debug,
           );

@@ -25,25 +25,30 @@ class _HomepageState extends State<Homepage> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(64.0),
-      child: Stack(
-        fit: StackFit.loose,
+      child: Column(
         children: [
-          CustomPaint(
-            size: Size(1400, 80),
-            painter: StaffPainter(),
-          ),
-          ...glyphs.mapIndexed(
-            (i, g) => Positioned(
-              left: (i * 200) + 50,
-              top: 40 - (bBoxes.elementAt(i)!.bBoxNE.y * 20).floorToDouble(),
-              child: SizedBox.fromSize(
-                size: size(bBoxes.elementAt(i)),
-                child: CustomPaint(
-                  painter: SmuflPainter(g, bBoxes.elementAt(i)!),
-                ),
+          Stack(
+            fit: StackFit.loose,
+            children: [
+              CustomPaint(
+                size: Size(1400, 80),
+                painter: StaffPainter(),
               ),
-            ),
-          )
+              ...glyphs.mapIndexed(
+                (i, g) => Positioned(
+                  left: (i * 200) + 50,
+                  top:
+                      40 - (bBoxes.elementAt(i)!.bBoxNE.y * 20).floorToDouble(),
+                  child: SizedBox.fromSize(
+                    size: size(bBoxes.elementAt(i)),
+                    child: CustomPaint(
+                      painter: SmuflPainter(g, bBoxes.elementAt(i)!),
+                    ),
+                  ),
+                ),
+              )
+            ],
+          ),
         ],
       ),
     );

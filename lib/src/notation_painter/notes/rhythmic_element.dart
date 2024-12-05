@@ -1,12 +1,11 @@
 import 'package:flutter/rendering.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
-import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 
 ///
 abstract class RhythmicElement extends MeasureWidget {
-  final double stemLength;
+  final double baseStemLength;
 
   final double duration;
 
@@ -18,7 +17,7 @@ abstract class RhythmicElement extends MeasureWidget {
 
   const RhythmicElement({
     super.key,
-    this.stemLength = NotationLayoutProperties.standardStemLength,
+    required this.baseStemLength,
     required this.duration,
     required this.offsetForBeam,
     required this.notationContext,

@@ -17,16 +17,15 @@ class CursorElement extends StatelessWidget implements MeasureWidget {
   @override
   AlignmentPosition get alignmentPosition => AlignmentPosition(
         left: 0,
-        top: -size.height / 2,
+        top: 0,
       );
 
   /// Generic position as `<forward>` does not correspond to a specific musical position.
   @override
   ElementPosition get position => ElementPosition.staffMiddle;
 
-  /// `<forward>` does not occupy any visual space.
   @override
-  Size get size => const Size(10, 10);
+  Size get baseSize => const Size(0.25, 0.25);
 
   /// Creates a [CursorElement] with the given [duration] data.
   const CursorElement({

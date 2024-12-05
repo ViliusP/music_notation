@@ -1,11 +1,10 @@
 import 'package:flutter/rendering.dart';
 import 'package:music_notation/music_notation.dart';
-import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
-import 'package:music_notation/src/notation_painter/notes/note_element.dart';
-
-import 'package:music_notation/src/notation_painter/painters/utilities.dart';
+import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
+import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 
 class NotePainter extends CustomPainter {
+  // TODO: change
   static const double _lengthOutside = 3;
 
   final String smufl;
@@ -14,47 +13,57 @@ class NotePainter extends CustomPainter {
 
   final LedgerLines? ledgerLines;
 
+  final double ledgerLinesThickness;
+
   final Color color;
+
+  final double staveSpace;
 
   NotePainter({
     required this.smufl,
     required this.bBox,
     this.ledgerLines,
+    required this.ledgerLinesThickness,
+    required this.staveSpace,
     this.color = const Color.fromRGBO(0, 0, 0, 1),
   });
 
-  final Paint _ledgerLinePaint = Paint()
-    ..color = const Color.fromRGBO(0, 0, 0, 1)
-    ..strokeWidth = NotationLayoutProperties.staffLineStrokeWidth;
-
   @override
   void paint(Canvas canvas, Size size) {
-    PainterUtilities.drawSmuflSymbolV2(
+    SimpleGlyphPainter.drawSmuflSymbol(
       canvas,
       smufl,
       bBox,
+      staveSpace,
       color: color,
     );
     if (ledgerLines == null || ledgerLines?.count == 0) return;
 
-    double level = 0;
-    if (ledgerLines!.placement == LedgerPlacement.above) level = size.height;
-    if (ledgerLines!.extendsThroughNote) {
-      level = size.height / 2;
+    Paint ledgerLinePaint = Paint()
+      ..color = const Color.fromRGBO(0, 0, 0, 1)
+      ..strokeWidth = ledgerLinesThickness;
+
+    double level = size.height / 2;
+    if (ledgerLines?.start != LedgerPlacement.center) {
+      double shift = staveSpace / 2;
+      if (ledgerLines?.start == LedgerPlacement.above) {
+        shift = -shift;
+      }
+      level += shift;
     }
 
     for (int i = 0; i < ledgerLines!.count; i++) {
       canvas.drawLine(
         Offset(-_lengthOutside, level),
         Offset(_lengthOutside + size.width, level),
-        _ledgerLinePaint,
+        ledgerLinePaint,
       );
 
-      if (ledgerLines!.placement == LedgerPlacement.below) {
-        level -= NotationLayoutProperties.staveSpace;
+      if (ledgerLines!.direction == LedgerDrawingDirection.up) {
+        level -= staveSpace;
       }
-      if (ledgerLines!.placement == LedgerPlacement.above) {
-        level += NotationLayoutProperties.staveSpace;
+      if (ledgerLines!.direction == LedgerDrawingDirection.down) {
+        level += staveSpace;
       }
     }
   }

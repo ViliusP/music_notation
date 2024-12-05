@@ -1,85 +1,20 @@
 import 'package:flutter/rendering.dart';
 
-import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
 class PainterUtilities {
   static void drawSmuflSymbol(
     Canvas canvas,
-    String symbol, {
-    Offset offset = const Offset(
-      0,
-      (-NotationLayoutProperties.staveSpace * 1.5),
-    ),
-    Color color = const Color.fromRGBO(0, 0, 0, 1.0),
-  }) {
-    TextStyle textStyle = TextStyle(
-      fontFamily: 'Leland',
-      fontSize: NotationLayoutProperties.staveHeight,
-      color: color,
-      // backgroundColor: Color.fromRGBO(124, 100, 0, 0.2),
-      height: 1,
-    );
-    final textPainter = TextPainter(
-      text: TextSpan(text: symbol, style: textStyle),
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout();
-    textPainter.paint(
-      canvas,
-      offset,
-    );
-  }
-
-  static void drawSmuflSymbolV2(
-    Canvas canvas,
     String symbol,
-    GlyphBBox bBox, {
+    double size, {
+    Offset? offset,
     Color color = const Color.fromRGBO(0, 0, 0, 1.0),
-    bool drawBBox = false,
   }) {
-    // -------------------------
-    // BBox painting
-    // --------------------------
-    final paint = Paint()
-      ..color = Color.fromRGBO(0, 0, 0, 0.5)
-      ..strokeWidth = 1.0
-      ..style = PaintingStyle.stroke;
+    var defaultOffset = Offset(0, (-size * 1.5));
 
-    var (o1, o2) = bBox.toOffsets();
-
-    o1 = o1
-        .scale(
-          NotationLayoutProperties.staveSpace,
-          NotationLayoutProperties.staveSpace,
-        )
-        .translate(0, NotationLayoutProperties.staveHeight / 2);
-
-    o2 = o2
-        .scale(
-          NotationLayoutProperties.staveSpace,
-          NotationLayoutProperties.staveSpace,
-        )
-        .translate(0, NotationLayoutProperties.staveHeight / 2);
-
-    double verticalOffset = -o1.dy;
-    double horizontalOffset = -o1.dx;
-
-    if (drawBBox) {
-      canvas.drawRect(
-        Rect.fromPoints(
-          o1.translate(horizontalOffset, verticalOffset),
-          o2.translate(horizontalOffset, verticalOffset),
-        ),
-        paint,
-      );
-    }
-    // -------------------------
-    // Glyph painting
-    // --------------------------
     TextStyle textStyle = TextStyle(
       fontFamily: 'Leland',
-      fontSize: NotationLayoutProperties.staveHeight,
+      fontSize: size * 4,
       color: color,
       // backgroundColor: Color.fromRGBO(124, 100, 0, 0.2),
       height: 1,
@@ -91,21 +26,21 @@ class PainterUtilities {
     textPainter.layout();
     textPainter.paint(
       canvas,
-      Offset(horizontalOffset, verticalOffset),
+      offset ?? defaultOffset,
     );
   }
 }
 
 extension FontPainting on GlyphBBox {
-  Rect toRect([double staveSpace = NotationLayoutProperties.staveSpace]) {
-    return Rect.fromPoints(
-      Offset(
-        topRight.x * staveSpace,
-        NotationLayoutProperties.staveHeight -
-            staveSpace * (topRight.y - bottomLeft.y),
-      ),
-      Offset(bottomLeft.x * staveSpace, NotationLayoutProperties.staveHeight),
-    );
+  Rect toRect([double scale = 1]) {
+    var (o1, o2) = toOffsets();
+    o1 = o1.scale(scale, scale);
+    o2 = o2.scale(scale, scale);
+    return Rect.fromPoints(o1, o2);
+  }
+
+  Size toSize([double scale = 1]) {
+    return toRect(scale).size;
   }
 
   /// This function takes a `GlyphBBox` object and converts its bounding box coordinates

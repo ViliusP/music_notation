@@ -235,9 +235,16 @@ class ElementPosition implements Comparable<ElementPosition> {
   }
 
   /// Calculates numerical difference from middle (F4). If distance is positive,
-  /// note is positioned above staff middle. If it is negative, it is positioned
-  /// below middle of staff.
+  /// note is positioned above staff bottom line. If it is negative, it is positioned
+  /// below staff bottom line.
   int get distanceFromBottom {
-    return ElementPosition.staffBottom.numeric - numeric;
+    return numeric - ElementPosition.staffBottom.numeric;
+  }
+
+  /// Calculates numerical difference from middle (F5). If distance is positive,
+  /// note is positioned above staff top line. If it is negative, it is positioned
+  /// below staff top line.
+  int get distanceFromTop {
+    return numeric - ElementPosition.staffTop.numeric;
   }
 }

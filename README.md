@@ -61,6 +61,30 @@ Then run `flutter pub get`.
 // The API is still under development. Please refer to the `example` folder for usage details.
 ```
 
+## Testing
+
+### Golden Tests
+
+This project uses golden tests with the [Alchemist](https://pub.dev/packages/alchemist) package to ensure that components are rendered correctly.
+
+To generate or update the golden files:
+
+```sh
+flutter test --update-goldens --tags golden
+```
+
+To run only the golden tests:
+
+```sh
+flutter test --tags golden
+```
+
+To run all tests except for the golden tests:
+
+```sh
+flutter test --exclude-tags golden
+```
+
 ## Future
 
 This library is still evolving and has some limitations. While it may not meet every use case yet, we are actively working on improvements. Here are some features and enhancements we’re considering (though not guaranteed):

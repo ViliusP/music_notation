@@ -1,157 +1,157 @@
-import 'dart:math';
-
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 
-import 'package:music_notation/src/notation_painter/debug/beat_mark_painter.dart';
+import 'package:music_notation/src/notation_painter/measure/measure_grid.dart';
 import 'package:music_notation/src/notation_painter/measure/staff_lines.dart';
 import 'package:music_notation/src/notation_painter/notes/beaming.dart';
 
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
-import 'package:music_notation/src/notation_painter/measure/barline_painting.dart';
-import 'package:music_notation/src/notation_painter/measure/inherited_padding.dart';
+import 'package:music_notation/src/notation_painter/measure/measure_barlines.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
-import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/notes/rest_element.dart';
+import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
-import 'package:music_notation/src/notation_painter/spacing/timeline.dart';
+import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
+import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 
 /// A widget that lays out musical measures with notes, chords, beams, and staff lines.
 class MeasureLayout extends StatelessWidget {
-  /// Determines if the music notation renderer should use specified beaming
-  /// directly from the musicXML file.
-  ///
-  /// By default, the renderer will rely on the beaming data as it is
-  /// directly provided in the musicXML file, without making any changes or
-  /// assumptions.
-  ///
-  /// Set this property to `false` if the score contains raw or incomplete
-  /// musicXML data, allowing the renderer to determine beaming based on its
-  /// internal logic or algorithms.
-  final bool useExplicitBeaming;
+  final MeasureGrid grid;
 
-  final List<MeasureWidget> children;
+  final MeasureBarlines barlineSettings;
 
-  final BeatTimeline? beatTimeline;
-
-  EdgeInsets get verticalPadding => calculateVerticalPadding(children);
-
-  final BarlineSettings barlineSettings;
+  final List<double> widths;
 
   const MeasureLayout({
     super.key,
-    this.useExplicitBeaming = false,
-    this.barlineSettings = const BarlineSettings(),
-    this.beatTimeline,
-    required this.children,
+    this.barlineSettings = const MeasureBarlines(),
+    required this.grid,
+    required this.widths,
   });
-
-  /// Calculates the vertical padding needed based on the largest bounding box
-  /// extensions above and below the staff across all child elements.
-  ///
-  /// This method iterates through each child widget and finds the maximum height
-  /// required for padding above and below the staff, ensuring adequate space for
-  /// elements that extend beyond the staff lines.
-  ///
-  /// Parameters:
-  /// - [children] - A list of [MeasureWidget] elements to evaluate.
-  ///
-  /// Returns:
-  /// An [EdgeInsets] object with calculated top and bottom padding.
-  static EdgeInsets calculateVerticalPadding(List<MeasureWidget> children) {
-    double topPadding = 0;
-    double bottomPadding = 0;
-
-    for (var child in children) {
-      topPadding = max(topPadding, child.boxAboveStaff().height);
-      bottomPadding = max(bottomPadding, child.boxBelowStaff().height);
-    }
-
-    return EdgeInsets.only(
-      bottom: bottomPadding,
-      top: topPadding,
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
-    final BeatTimeline measureBeatline = beatTimeline ??
-        BeatTimeline.fromTimeline(Timeline.fromMeasureElements(children));
-
-    List<double> spacings = measureBeatline.toSpacings(children);
-
-    double width = spacings.last;
-
-    const offsetPerPosition = NotationLayoutProperties.staveSpace / 2;
-
-    final padding = InheritedPadding.of(context)?.padding;
-    if (padding == null) return SizedBox.shrink();
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
 
     DebugSettings? dSettings = DebugSettings.of(context);
 
-    return LayoutBuilder(builder: (context, constraints) {
-      List<Widget> beamGroups = [];
+    // Spacing
+    List<double> spacings = [];
+    double spacing = 0;
+    for (var (i, width) in widths.indexed) {
+      if (i == 0) {
+        spacing = NotationLayoutProperties.baseMeasurePadding;
+      }
+      spacings.add(spacing);
+      spacing += width;
+      if (!grid.columns.entries.elementAt(i).key.isRhytmic) {
+        spacing += NotationLayoutProperties.baseMeasurePadding;
+      }
+    }
+    spacings.add(spacing + 1);
 
-      BeamGrouping beaming = BeamGrouping();
+    double spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
+    ElementPosition bottomRef = grid.minPosition;
+    ElementPosition topRef = grid.maxPosition;
 
-      var positionedElements = <Widget>[];
-      for (var (index, child) in children.indexed) {
-        BeamingResult? beamingResult;
-        if (child is RhythmicElement) {
-          beamingResult = beaming.add(child, spacings[index]);
-        }
+    // Stave bottom values
+    ElementPosition staveBottomRef = grid.staveBottom;
+    double staveBottom =
+        (staveBottomRef.distance(bottomRef)) * spacePerPosition;
+    staveBottom = staveBottom.scaledByContext(context);
 
-        if (beaming.isFinalized) {
-          beamGroups.add(
-            Positioned.fill(child: BeamGroup.fromBeaming(beaming)),
-          );
-          beaming = BeamGrouping();
-        }
+    double measureWidth = spacings.last;
+    double measureHeight =
+        (topRef.numeric - bottomRef.numeric) * spacePerPosition;
+
+    List<BeamData> beams = [];
+    BeamGroupV2 beaming = BeamGroupV2();
+
+    var positionedElements = <Widget>[];
+
+    for (var (index, entry) in grid.columns.entries.indexed) {
+      for (var cellEntry in entry.value.cells.entries) {
+        var position = cellEntry.key;
+        var cell = cellEntry.value;
+        if (cell == null) continue;
 
         double? topOffset;
         double? bottomOffset;
+        AlignmentPosition alignmentPosition = cell.alignmentPosition;
 
-        if (child.alignmentPosition.top != null) {
-          topOffset = child.alignmentPosition.top!;
+        if (alignmentPosition.top != null) {
+          topOffset = alignmentPosition.top!;
 
           // Calculate the interval from staff top to the child's position.
-          int intervalFromTheF5 = ElementPosition.staffTop.numeric;
-          intervalFromTheF5 -= child.position.numeric;
-          topOffset += intervalFromTheF5 * offsetPerPosition;
-
-          topOffset += padding.top;
+          int interval = topRef.numeric;
+          interval -= position.numeric;
+          topOffset += interval * spacePerPosition;
         }
-        if (child.alignmentPosition.bottom != null) {
-          bottomOffset = 0;
-          bottomOffset = child.alignmentPosition.bottom ?? 0;
+        if (alignmentPosition.bottom != null) {
+          bottomOffset = alignmentPosition.bottom ?? 0;
 
           // Calculate the interval from staff bottom to the child's position.
-          int intervalFromTheE4 = ElementPosition.staffBottom.numeric;
-          intervalFromTheE4 -= child.position.numeric;
-          bottomOffset -= intervalFromTheE4 * offsetPerPosition;
-
-          bottomOffset += padding.bottom;
+          int interval = bottomRef.numeric;
+          interval -= position.numeric;
+          bottomOffset -= interval * spacePerPosition;
         }
 
-        if (beamingResult == null || beamingResult == BeamingResult.skipped) {
-          positionedElements.add(
-            Positioned(
+        if (cell is RhythmicElement) {
+          beaming.add(
+            cell,
+            AlignmentPosition(
               left: spacings[index],
               top: topOffset,
               bottom: bottomOffset,
-              child: child,
             ),
           );
         }
 
+        if (beaming.isFinalized) {
+          beams.add(BeamData.fromBeamGroup(group: beaming));
+          beaming = BeamGroupV2();
+        }
+
+        double left = spacings[index];
+
+        if (cell is RestElement && cell.isMeasure) {
+          // Positions the rest element at the left side of the last measure attribute.
+          left = spacings[index];
+
+          // Applies standard padding to shift the rest further left after the attributes.
+          left -= NotationLayoutProperties.baseMeasurePadding;
+
+          // Adjusts position to the right by half the distance between the last attribute and the measure's end.
+          left += (measureWidth - left) / 2;
+
+          // Centers the rest element by accounting for half its width.
+          left -= cell.baseSize.width / 2;
+        }
+
+        left = left.scaledByContext(context);
+        topOffset = topOffset?.scaledByContext(context);
+        bottomOffset = bottomOffset?.scaledByContext(context);
+
+        positionedElements.add(
+          Positioned(
+            left: left,
+            top: topOffset,
+            bottom: bottomOffset,
+            child: cell,
+          ),
+        );
+
         if (dSettings != null) {
-          Rect boxBelow = child.boxBelowStaff();
+          Rect boxBelow = cell.boxBelowStaff(layoutProperties.staveSpace);
           if (dSettings.paintBBoxBelowStaff && boxBelow.height > 0) {
             positionedElements.add(
               Positioned(
-                left: spacings[index],
-                top: padding.top + NotationLayoutProperties.staveHeight,
+                left: left,
+                bottom: staveBottom - boxBelow.height,
                 child: Container(
                   width: boxBelow.width,
                   height: [boxBelow.height, 0].max.toDouble(),
@@ -161,12 +161,12 @@ class MeasureLayout extends StatelessWidget {
             );
           }
 
-          Rect boxAbove = child.boxAboveStaff();
+          Rect boxAbove = cell.boxAboveStaff(layoutProperties.staveSpace);
           if (dSettings.paintBBoxAboveStaff && boxAbove.height > 0) {
             positionedElements.add(
               Positioned(
-                left: spacings[index],
-                bottom: padding.bottom + NotationLayoutProperties.staveHeight,
+                left: left,
+                bottom: staveBottom + layoutProperties.staveHeight,
                 child: Container(
                   width: boxAbove.width,
                   height: [boxAbove.height, 0].max.toDouble(),
@@ -177,42 +177,35 @@ class MeasureLayout extends StatelessWidget {
           }
         }
       }
+    }
 
-      return Stack(
+    return SizedBox(
+      height: measureHeight.scaledByContext(context),
+      width: measureWidth.scaledByContext(context),
+      child: Stack(
         fit: StackFit.loose,
         children: [
-          Padding(
-            padding: padding,
-            child: SizedBox.fromSize(
-              size: Size(
-                constraints.maxWidth.isFinite ? constraints.maxWidth : width,
-                NotationLayoutProperties.staveHeight,
-              ),
-              child: StaffLines(
-                startExtension: barlineSettings.startExtension,
-                endExtension: barlineSettings.endExtension,
-                measurePadding: padding,
-              ),
-            ),
+          if (beams.isNotEmpty) BeamCanvas(beams: beams),
+          StaffLines(
+            bottom: staveBottom,
           ),
-          if (dSettings?.beatMarker != false)
-            Padding(
-              padding: padding,
-              child: CustomPaint(
-                size: Size(
-                  constraints.maxWidth.isFinite ? constraints.maxWidth : width,
-                  NotationLayoutProperties.staveHeight,
-                ),
-                painter: BeatMarkPainter(
-                  dSettings!.beatMarkerMultiplier,
-                  measureBeatline,
-                ),
-              ),
+          if (barlineSettings.start != null)
+            Barline(
+              type: barlineSettings.start!,
+              location: BarlineLocation.start,
+              baseline: staveBottom,
+              baseHeight: layoutProperties.staveHeight,
             ),
-          ...beamGroups,
+          if (barlineSettings.end != null)
+            Barline(
+              type: barlineSettings.end!,
+              location: BarlineLocation.end,
+              baseline: staveBottom,
+              baseHeight: layoutProperties.staveHeight,
+            ),
           ...positionedElements,
         ],
-      );
-    });
+      ),
+    );
   }
 }

@@ -6,11 +6,15 @@ import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
-import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
+import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/adjacency.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
+import 'package:music_notation/src/notation_painter/notes/simple_note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
+import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
+import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
+import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
 class Chord extends StatelessWidget implements RhythmicElement {
@@ -28,9 +32,9 @@ class Chord extends StatelessWidget implements RhythmicElement {
   final double duration;
 
   @override
-  final double stemLength;
+  final double baseStemLength;
 
-  bool get _stemmed => stemLength != 0;
+  bool get _stemmed => baseStemLength != 0;
 
   @override
   final StemDirection? stemDirection;
@@ -51,11 +55,10 @@ class Chord extends StatelessWidget implements RhythmicElement {
     if (stemDirection == StemDirection.down &&
         position.numeric % 2 == 0 &&
         maxDotsNote.dots.isNotEmpty) {
-      top = NotationLayoutProperties.staveSpace / 2 +
-          NoteElement.dotsSize(font).height / 2;
+      top = .5 + NoteElement.baseDotsSize(font).height / 2;
     }
     if (top == 0) {
-      top = NotationLayoutProperties.staveSpace / 2;
+      top = .5;
     }
 
     return AlignmentPosition(
@@ -77,7 +80,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
     required this.notes,
     required this.notationContext,
     required this.font,
-    required this.stemLength,
+    required this.baseStemLength,
     required this.duration,
     this.stemDirection,
   });
@@ -110,7 +113,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
       notes: notes,
       notationContext: notationContext,
       font: font,
-      stemLength: _calculateStemLength(notes),
+      baseStemLength: _calculateStemLength(notes),
       duration: notes.first.determineDuration(),
       stemDirection: stemDirection,
     );
@@ -124,15 +127,15 @@ class Chord extends StatelessWidget implements RhythmicElement {
   @override
   Offset get offsetForBeam {
     double? offsetX;
-    double? offsetY = size.height;
+    double? offsetY = baseSize.height;
     Note maxDotsNote = notes.reduce(
       (a, b) => a.dots.length > b.dots.length ? a : b,
     );
 
     if (maxDotsNote.dots.isNotEmpty) {
-      offsetX = size.width;
-      offsetX -= NoteElement.dotsOffset();
-      offsetX -= NoteElement.dotsSize(font).width;
+      offsetX = baseSize.width;
+      offsetX -= NoteElement.baseDotsOffset;
+      offsetX -= NoteElement.baseDotsSize(font).width;
     }
 
     var (leftWidth, rightWidth) = _noteheadSizesBySide(
@@ -146,7 +149,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
     }
 
     if (stemDirection == StemDirection.down) {
-      offsetX = NotationLayoutProperties.stemStrokeWidth / 2 + leftWidth;
+      offsetX = (NotationLayoutProperties.baseStemStrokeWidth) / 2 + leftWidth;
     }
 
     if (alignmentPosition.top != null && stemDirection != StemDirection.down) {
@@ -154,7 +157,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
     }
 
     return Offset(
-      offsetX ?? size.width,
+      offsetX ?? baseSize.width,
       offsetY,
     );
   }
@@ -173,7 +176,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
   }
 
   /// Calculates chord widget size from provided [notes].
-  static Size _calculateSize({
+  static Size _calculateBaseSize({
     required List<Note> notes,
     required double stemLength,
     required NotationContext notationContext,
@@ -191,21 +194,16 @@ class Chord extends StatelessWidget implements RhythmicElement {
     double height = 0;
     bool beamed = isBeamed(notes);
 
-    if (stemDirection == StemDirection.up) {
-      height = NoteElement.calculateSize(
-        note: sortedNotes.first,
+    if (stemDirection != null) {
+      Note ref = sortedNotes.first;
+      if (stemDirection == StemDirection.down) {
+        ref = sortedNotes.last;
+      }
+      height = NoteElement.calculateBaseSize(
+        note: ref,
         stemLength: _calculateStemLength(notes),
         clef: notationContext.clef,
-        font: font,
-        showFlag: !beamed,
-      ).height;
-    }
-
-    if (stemDirection == StemDirection.down) {
-      height = NoteElement.calculateSize(
-        note: sortedNotes.last,
-        clef: notationContext.clef,
-        stemLength: _calculateStemLength(notes),
+        stemDirection: stemDirection,
         font: font,
         showFlag: !beamed,
       ).height;
@@ -220,7 +218,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
     double width = leftWidth + rightWidth;
 
     if (leftWidth != 0 && rightWidth != 0) {
-      width -= NotationLayoutProperties.stemStrokeWidth / 2;
+      width -= NotationLayoutProperties.baseStemStrokeWidth / 2;
     }
 
     return Size(width, height);
@@ -244,12 +242,11 @@ class Chord extends StatelessWidget implements RhythmicElement {
     double widthToLeft = 0;
     double widthToRight = 0;
     for (var (i, pos) in noteheadPositions.indexed) {
-      double width = NoteElement.calculateSize(
-        note: notes[i],
-        clef: null,
-        stemLength: 0,
+      if (notes[i].type?.value == null) continue;
+      double width = NoteheadElement(
+        type: notes[i].type!.value,
         font: font,
-      ).width;
+      ).baseSize.width;
       if (pos == NoteheadPosition.left) {
         widthToLeft = [width, widthToLeft].max;
       }
@@ -278,19 +275,19 @@ class Chord extends StatelessWidget implements RhythmicElement {
     ).numeric;
 
     int positionDifference = highestPosition - lowestPosition;
-    const heightPerPosition = NotationLayoutProperties.staveSpace / 2;
+    const heightPerPosition = .5;
 
     double stemLength = positionDifference.abs() * heightPerPosition;
-    stemLength += NotationLayoutProperties.standardStemLength;
+    stemLength += NotationLayoutProperties.baseStandardStemLength;
 
     return stemLength;
   }
 
   @override
-  Size get size => _calculateSize(
+  Size get baseSize => _calculateBaseSize(
         notes: notes,
         notationContext: notationContext,
-        stemLength: stemLength,
+        stemLength: baseStemLength,
         font: font,
       );
 
@@ -323,6 +320,10 @@ class Chord extends StatelessWidget implements RhythmicElement {
 
   @override
   Widget build(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
     var children = <Widget>[];
 
     double calculatedStemLength = _calculateStemLength(notes);
@@ -332,7 +333,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
       font: font,
       notationContext: notationContext,
       showLedger: false,
-      stemLength: stemLength,
+      stemLength: baseStemLength,
     );
 
     int leftHighest = _noteheadsPositions.lastIndexWhere(
@@ -374,8 +375,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
       double interval =
           ((element.position.numeric - position.numeric)).toDouble();
 
-      double distanceFromRef =
-          interval * NotationLayoutProperties.staveSpace / 2;
+      double distanceFromRef = interval * layoutProperties.staveSpace / 2;
 
       // When note is on drawn the line and it's stem is drawn down,
       // the dots size must be taken in the account.
@@ -384,8 +384,10 @@ class Chord extends StatelessWidget implements RhythmicElement {
           refnote.position.numeric % 2 != 0 &&
           note.dots.isNotEmpty &&
           index != referenceNoteIndex) {
-        distanceFromRef += element.verticalAlignmentAxisOffset;
-        distanceFromRef -= NotationLayoutProperties.staveSpace / 2;
+        distanceFromRef += element.verticalAlignmentAxisOffset.scaledByContext(
+          context,
+        );
+        distanceFromRef -= layoutProperties.staveSpace / 2;
       }
 
       final NoteheadPosition noteheadPos = _noteheadsPositions[index];
@@ -407,7 +409,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
     }
 
     return SizedBox.fromSize(
-      size: size,
+      size: baseSize.scaledByContext(context),
       child: Stack(
         children: children,
       ),

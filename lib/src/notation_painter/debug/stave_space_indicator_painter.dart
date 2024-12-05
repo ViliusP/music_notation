@@ -1,12 +1,15 @@
 import 'package:flutter/rendering.dart';
-import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 
 /// Paints [count] duration dots as SMUFL symbol.
 /// A duration dot that is larger than a staccato dot — often twice the size.
 class StaveSpaceIndicatorPainter extends CustomPainter {
-  final int verticalStaveLineSpacingMultiplier;
+  final int multiplier;
+  final double spacing;
 
-  StaveSpaceIndicatorPainter(this.verticalStaveLineSpacingMultiplier);
+  StaveSpaceIndicatorPainter({
+    required this.multiplier,
+    required this.spacing,
+  });
 
   final Paint _paint = Paint()
     ..color = const Color.fromRGBO(0, 0, 0, 0.25)
@@ -14,28 +17,28 @@ class StaveSpaceIndicatorPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (verticalStaveLineSpacingMultiplier == 0) return;
+    if (multiplier == 0) return;
 
     int i = 0;
-    double lineHeight = NotationLayoutProperties.staveSpace;
-    while (i * NotationLayoutProperties.staveSpace < size.width) {
+    double lineHeight = spacing;
+    while (i * spacing < size.width) {
       canvas.drawLine(
-        Offset(i * NotationLayoutProperties.staveSpace, -lineHeight),
-        Offset(i * NotationLayoutProperties.staveSpace, lineHeight / 2),
+        Offset(i * spacing, -lineHeight),
+        Offset(i * spacing, lineHeight / 2),
         _paint,
       );
       canvas.drawLine(
         Offset(
-          i * NotationLayoutProperties.staveSpace,
+          i * spacing,
           size.height - lineHeight / 2,
         ),
         Offset(
-          i * NotationLayoutProperties.staveSpace,
+          i * spacing,
           size.height + lineHeight,
         ),
         _paint,
       );
-      i += verticalStaveLineSpacingMultiplier;
+      i += multiplier;
     }
   }
 

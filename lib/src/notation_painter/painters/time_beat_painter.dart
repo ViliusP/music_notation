@@ -1,18 +1,19 @@
 import 'package:flutter/rendering.dart';
-import 'package:music_notation/src/notation_painter/notation_layout_properties.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 
 class TimeBeatPainter extends CustomPainter {
   final String smufl;
+  final double symbolSize;
 
-  TimeBeatPainter(this.smufl);
+  TimeBeatPainter(this.smufl, this.symbolSize);
 
   @override
   void paint(Canvas canvas, Size size) {
     PainterUtilities.drawSmuflSymbol(
       canvas,
       smufl,
-      offset: const Offset(0, -NotationLayoutProperties.staveSpace),
+      symbolSize,
+      offset: Offset(0, -symbolSize),
     );
   }
 

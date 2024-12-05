@@ -113,8 +113,8 @@ void main() {
 
       final bbox = GlyphBBox.fromJson(json);
 
-      expect(bbox.bBoxNE, [1.0, 1.5]);
-      expect(bbox.bBoxSW, [0.0, -1.0]);
+      expect(bbox.bBoxNE, Coordinates.fromList([1.0, 1.5]));
+      expect(bbox.bBoxSW, Coordinates.fromList([0.0, -1.0]));
     });
   });
 
@@ -128,7 +128,7 @@ void main() {
       final anchor = GlyphAnchor.fromJson(json);
 
       expect(anchor.name, 'top');
-      expect(anchor.coordinates, [0.0, 1.0]);
+      expect(anchor.coordinates, Coordinates.fromList([0.0, 1.0]));
     });
   });
 
