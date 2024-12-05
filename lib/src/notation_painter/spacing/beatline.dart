@@ -149,7 +149,7 @@ class Beatline {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is BeatTimeline &&
+      other is Beatline &&
           runtimeType == other.runtimeType &&
           divisions == other.divisions &&
           listEquals(values, other.values);

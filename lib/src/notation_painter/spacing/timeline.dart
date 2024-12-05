@@ -12,9 +12,7 @@ import 'package:music_notation/src/notation_painter/notes/rest_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/notation_painter/time_beat_element.dart';
 import 'package:music_notation/src/notation_painter/utilities/string_extensions.dart';
-import 'package:music_notation/src/notation_painter/utilities/type_extensions.dart';
 
-part "beat_timeline.dart";
 part "beatline.dart";
 
 /// Represents a timeline for musical elements within a score.
