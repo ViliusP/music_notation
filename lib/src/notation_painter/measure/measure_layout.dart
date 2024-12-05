@@ -17,14 +17,14 @@ import 'package:music_notation/src/notation_painter/properties/notation_properti
 import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 
 /// A widget that lays out musical measures with notes, chords, beams, and staff lines.
-class MeasureLayoutV2 extends StatelessWidget {
+class MeasureLayout extends StatelessWidget {
   final MeasureGrid grid;
 
   final MeasureBarlines barlineSettings;
 
   final List<double> widths;
 
-  const MeasureLayoutV2({
+  const MeasureLayout({
     super.key,
     this.barlineSettings = const MeasureBarlines(),
     required this.grid,

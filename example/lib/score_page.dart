@@ -42,7 +42,6 @@ class _ScorePageState extends State<ScorePage> {
   @override
   Widget build(BuildContext context) {
     final ScrollController scorePageScrollController = ScrollController();
-    final ScrollController scorePageScrollController2 = ScrollController();
 
     // ScoreHeader scoreHeader = widget.scorePartwise.scoreHeader;
     // String? movementTitle = scoreHeader.movementTitle;
@@ -66,10 +65,10 @@ class _ScorePageState extends State<ScorePage> {
               ),
             ),
           Scrollbar(
-              controller: scorePageScrollController2,
+              controller: scorePageScrollController,
               thumbVisibility: true,
               child: SingleChildScrollView(
-                controller: scorePageScrollController2,
+                controller: scorePageScrollController,
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(
                   vertical: 8,
