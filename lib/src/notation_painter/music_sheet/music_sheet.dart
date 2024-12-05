@@ -137,10 +137,11 @@ class _SheetMeasuresColumn extends StatelessWidget {
 
     List<ColumnIndex> indices = values.firstOrNull?.columns.keys.toList() ?? [];
     double divisions = values.firstOrNull?.beatline.divisions ?? 1;
-
+    double defaultWidth =
+        NotationLayoutProperties.baseWidthPerQuarter / divisions;
     List<double> widths = [];
     for (var (i, columns) in columnColumns.indexed) {
-      double width = 0;
+      double width = defaultWidth;
       // Attribute element width depends on attribute size itself
       if (!indices[i].isRhytmic) {
         for (var cell in columns.expand((i) => i.cells.entries)) {
@@ -148,10 +149,6 @@ class _SheetMeasuresColumn extends StatelessWidget {
             width = max(width, cell.value!.baseSize.width);
           }
         }
-
-        /// Rhytmic element width depends on it's duration
-      } else {
-        width = NotationLayoutProperties.baseWidthPerQuarter / divisions;
       }
       widths.add(width);
     }
