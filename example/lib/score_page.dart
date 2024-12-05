@@ -72,7 +72,7 @@ class _ScorePageState extends State<ScorePage> {
                 controller: scorePageScrollController2,
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(
-                  vertical: 4,
+                  vertical: 8,
                   horizontal: 16,
                 ),
                 child: fontToUse == null
@@ -86,29 +86,6 @@ class _ScorePageState extends State<ScorePage> {
                         ),
                       ),
               )),
-          Padding(padding: EdgeInsets.symmetric(vertical: 24)),
-          Scrollbar(
-            controller: scorePageScrollController,
-            thumbVisibility: true,
-            child: SingleChildScrollView(
-              controller: scorePageScrollController,
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(
-                vertical: 4,
-                horizontal: 16,
-              ),
-              child: fontToUse == null
-                  ? SizedBox.shrink()
-                  : NotationProperties(
-                      layout: NotationLayoutProperties(staveHeight: 48),
-                      font: fontToUse,
-                      child: MusicNotationCanvas(
-                        scorePartwise: widget.scorePartwise,
-                        font: fontToUse,
-                      ),
-                    ),
-            ),
-          ),
         ],
       ),
     );

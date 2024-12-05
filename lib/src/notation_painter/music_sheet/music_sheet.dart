@@ -96,8 +96,13 @@ class MusicSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DebugSettings(
+      paintBBoxAboveStaff: false,
+      paintBBoxBelowStaff: false,
       extraStaveLineCount: 0,
+      verticalStaveLineSpacingMultiplier: 0,
       extraStaveLines: ExtraStaveLines.none,
+      beatMarkerMultiplier: 1,
+      beatMarker: false,
       child: Wrap(
         direction: Axis.horizontal,
         alignment: WrapAlignment.start,

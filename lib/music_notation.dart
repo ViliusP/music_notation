@@ -1,8 +1,5 @@
 library;
 
-export 'src/notation_painter/music_notation_canvas.dart'
-    show MusicNotationCanvas;
-
 export 'src/notation_painter/properties/layout_properties.dart'
     show NotationLayoutProperties;
 
