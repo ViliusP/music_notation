@@ -39,7 +39,7 @@ class SimpleNoteElement extends StatelessWidget {
         width += stem._baseFlagSize.width;
       }
       width += _stemHorizontalOffset;
-      width = width = [stem._baseFlagSize.width, width].max;
+      width = [stem._baseFlagSize.width, width].max;
     }
 
     return Size(width, height);

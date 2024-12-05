@@ -32,7 +32,7 @@ class AugmentationDot extends StatelessWidget {
   /// *Value taken from [_defaultSize].
   static const double defaultSpacing = 48 / 50 * 4.95 / 2;
 
-  /// Calculates the total [size] of the augmentation dots.
+  /// Calculates the total size of the augmentation dots.
   ///
   /// This method determines the combined width of all dots, factoring in
   /// spacing between them, and returns the required [Size] object.
@@ -69,7 +69,7 @@ class AugmentationDot extends StatelessWidget {
   /// a default size scaled to the current stave height is calculated and returned.
   static Size _baseDotSize(FontMetadata font) {
     Size? glyphSize = font.glyphBBoxes[CombiningStaffPositions.augmentationDot]
-        ?.toRect(1)
+        ?.toRect()
         .size;
 
     if (glyphSize != null) return glyphSize;

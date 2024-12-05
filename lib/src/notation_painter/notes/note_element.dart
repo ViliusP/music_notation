@@ -378,13 +378,6 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     return note.dots.length;
   }
 
-  /// Calculates the offset for [_dots] based on the right side of the note.
-  /// This offset is typically half of the stave space and is added to the note size.
-  ///
-  /// Distance from note to dot is conventionally half the stave space.
-
-  static double get baseDotsOffset => 1 / 2;
-
   static Size baseDotsSize(FontMetadata font) {
     return AugmentationDot(count: 1, font: font).baseSize;
   }
