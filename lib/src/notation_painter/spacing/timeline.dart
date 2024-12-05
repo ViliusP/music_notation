@@ -93,7 +93,7 @@ class MeasureTimeline {
             leftOffset: note.alignmentPosition.left,
           );
         case RestElement rest:
-          String voice = rest.note.editorialVoice.voice ?? "1";
+          String voice = rest.voice ?? "1";
           valueToAdd = TimelineValue(
             index,
             child.duration,
