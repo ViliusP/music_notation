@@ -298,27 +298,47 @@ class MeasureGrid {
   String toString() {
     int rows = _columns.entries.elementAtOrNull(0)?.value._cells.length ?? 0;
 
-    List<List<String>> representationGrid = List.generate(rows, (_) => []);
+    List<List<String>> representationGrid = List.generate(rows + 1, (_) => []);
 
+    // Add header
+    representationGrid[0].add("p");
+    for (var key in _columns.keys) {
+      representationGrid[0].add(key.toString());
+    }
+
+    /// Add values to grid
     for (var (i, entry) in _columns.entries.indexed) {
       for (var (j, colValue) in entry.value._cells.entries.indexed) {
         if (i == 0) {
-          representationGrid[j].add("${colValue.key.numeric}");
+          representationGrid[j + 1].add("${colValue.key.numeric}");
         }
         if (colValue.value != null) {
-          representationGrid[j].add(
+          representationGrid[j + 1].add(
             "${colValue.key.step}${colValue.key.octave}",
           );
         }
         if (colValue.value == null) {
-          representationGrid[j].add("  ");
+          representationGrid[j + 1].add("");
         }
       }
     }
+
+    // Calculates column widths
+    List<int> widths = [];
+    for (var row in representationGrid) {
+      for (var (i, cell) in row.indexed) {
+        if (widths.elementAtOrNull(i) == null) {
+          widths.add(cell.length);
+        }
+        widths[i] = max(widths[i], cell.length);
+      }
+    }
+
+    // Convert grid to string representation
     String repr = "\n";
-    for (var col in representationGrid) {
-      for (var row in col) {
-        repr += "| $row ";
+    for (var row in representationGrid) {
+      for (var (i, cell) in row.indexed) {
+        repr += "|${cell.padCenter(widths[i] + 2)}";
       }
       repr += "|\n";
     }
@@ -510,5 +530,5 @@ class ColumnIndex implements Comparable<ColumnIndex> {
   int get hashCode => Object.hash(beat, attributeNumber);
 
   @override
-  String toString() => "$beat${"*" * ((attributeNumber ?? 0) + 1)}";
+  String toString() => "$beat${"*" * ((attributeNumber ?? -1) + 1)}";
 }
