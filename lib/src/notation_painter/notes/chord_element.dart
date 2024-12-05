@@ -56,7 +56,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
     if (stemDirection == StemDirection.down &&
         position.numeric % 2 == 0 &&
         maxDotsNote.dots.isNotEmpty) {
-      top = .5 + NoteElement.baseDotsSize(font).height / 2;
+      top = .5 + baseDotsSize(font).height / 2;
     }
     if (top == 0) {
       top = .5;
@@ -120,6 +120,10 @@ class Chord extends StatelessWidget implements RhythmicElement {
     );
   }
 
+  static Size baseDotsSize(FontMetadata font) {
+    return AugmentationDots(count: 1, font: font).baseSize;
+  }
+
   /// Relative offset from bounding box bottom left if [AlignmentPosition.top] is defined.
   /// Relative offset from bounding box top left if [AlignmentPosition.bottom] is defined.
   ///
@@ -136,7 +140,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
     if (maxDotsNote.dots.isNotEmpty) {
       offsetX = baseSize.width;
       offsetX -= AugmentationDots.defaultBaseOffset;
-      offsetX -= NoteElement.baseDotsSize(font).width;
+      offsetX -= baseDotsSize(font).width;
     }
 
     var (leftWidth, rightWidth) = _noteheadSizesBySide(
@@ -343,7 +347,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
     NoteElement refnote = NoteElement.fromNote(
       note: notes[referenceNoteIndex],
       font: font,
-      notationContext: notationContext,
+      clef: notationContext.clef,
       showLedger: false,
       stemLength: baseStemLength,
     );
@@ -377,7 +381,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
       NoteElement element = NoteElement.fromNote(
         note: note,
         font: font,
-        notationContext: notationContext,
+        clef: notationContext.clef,
         showLedger: showLedger,
         stemLength: stemLength,
         showFlag: !_beamed,

@@ -68,7 +68,7 @@ class NotationWidgetization {
     }
     return NoteElement.fromNote(
       note: note,
-      notationContext: context,
+      clef: context.clef,
       font: font,
     );
   }

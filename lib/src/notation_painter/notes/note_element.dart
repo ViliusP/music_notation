@@ -10,14 +10,12 @@ import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
-import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/models/vertical_edge_insets.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/augmentation_dots.dart';
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/notation_painter/notes/simple_note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
-import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
 import 'package:music_notation/src/notation_painter/utilities/padding_extensions.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
@@ -63,20 +61,15 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
   final ElementPosition position;
 
   @override
-  final StemDirection? stemDirection;
-
-  @override
-  final double baseStemLength;
-
-  @override
   final double duration;
 
-  bool get _stemmed => baseStemLength != 0;
+  bool get _stemmed => (note.stem?.length ?? 0) > 0;
 
-  final bool showLedger;
-  final bool showFlag;
+  @override
+  double get baseStemLength => note.stem?.length ?? 0;
 
-  final bool drawLedgerLines = true;
+  @override
+  StemDirection? get stemDirection => note.stem?.direction;
 
   final FontMetadata font;
 
@@ -84,23 +77,16 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
 
   final List<Beam> beams;
 
-  /// Create [NoteElement] from musicXML [note]. Throws exception if divisions of
-  /// [notationContext] is null.
+  /// Create [NoteElement] from musicXML [note].
   factory NoteElement.fromNote({
     Key? key,
     required Note note,
     required FontMetadata font,
-    required NotationContext notationContext,
+    Clef? clef,
     double? stemLength,
     bool showFlag = true,
     bool showLedger = true,
   }) {
-    if (notationContext.divisions == null) {
-      throw ArgumentError(
-        "Divisions in notationContext cannot be null on note's initialization",
-      );
-    }
-
     AccidentalElement? accidental;
     if (note.accidental != null) {
       accidental = AccidentalElement(
@@ -109,15 +95,11 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       );
     }
 
-    ElementPosition position = determinePosition(note, notationContext.clef);
+    ElementPosition position = determinePosition(note, clef);
 
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
 
-    double baseStemLength = stemLength ??
-        _calculateStemLength(
-          note,
-          notationContext,
-        );
+    double baseStemLength = stemLength ?? _calculateStemLength(note, position);
     StemElement? stem;
     StemDirection? stemDirection = note.stem == null
         ? null
@@ -151,11 +133,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       font: font,
       accidental: accidental,
       position: position,
-      baseStemLength: baseStemLength,
-      showLedger: showLedger,
-      showFlag: showFlag,
       duration: note.determineDuration(),
-      stemDirection: stemDirection,
       voice: note.editorialVoice.voice,
       beams: note.beams,
       dots: dots,
@@ -168,11 +146,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     required this.accidental,
     this.dots,
     required this.position,
-    required this.baseStemLength,
-    this.showFlag = true,
-    this.showLedger = true,
     required this.duration,
-    this.stemDirection,
     required this.font,
     this.voice,
     this.beams = const [],
@@ -190,7 +164,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     if (_stemmed && stemDirection == StemDirection.down) {
       top = -1 / 2;
       if (position.numeric % 2 == 0 && dots != null) {
-        top -= baseDotsSize(font).height / 2;
+        top -= dots!.baseSize.height / 2;
       }
     }
 
@@ -255,14 +229,12 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
   /// Default stem length: `3.5*stave_space`.
   ///
   /// Stems for notes on more than one ledger line extend to the middle stave-line
-  static double _calculateStemLength(Note note, NotationContext context) {
+  static double _calculateStemLength(Note note, ElementPosition position) {
     if (note.type?.value.stemmed != true) {
       return 0.0;
     }
 
     double stemLength = NotationLayoutProperties.baseStandardStemLength;
-
-    var position = determinePosition(note, context.clef);
 
     int distance = 0;
 
@@ -371,7 +343,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
 
       width += accidentalSize.width;
       // Space between notehead and accidental.
-      width += 1 / 4;
+      width += 1 / 4; // ???????????????????????
 
       AlignmentPosition accidentalPosition = accidental.alignmentPosition;
 
@@ -391,13 +363,9 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     if (stemDirection == StemDirection.down &&
         position.numeric % 2 == 0 &&
         dots != null) {
-      return 1 / 2 + baseDotsSize(font).height / 2;
+      return 1 / 2 + dots!.baseSize.height / 2;
     }
     return 1 / 2;
-  }
-
-  static Size baseDotsSize(FontMetadata font) {
-    return AugmentationDots(count: 1, font: font).baseSize;
   }
 
   Alignment get _dotsAlignment {
@@ -446,9 +414,9 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
 
   @override
   Widget build(BuildContext context) {
-    NotationLayoutProperties layoutProperties =
-        NotationProperties.of(context)?.layout ??
-            NotationLayoutProperties.standard();
+    // NotationLayoutProperties layoutProperties =
+    //     NotationProperties.of(context)?.layout ??
+    //         NotationLayoutProperties.standard();
 
     return SizedBox.fromSize(
       size: baseSize.scaledByContext(context),
