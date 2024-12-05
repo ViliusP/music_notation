@@ -11,6 +11,7 @@ import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rest_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/notation_painter/time_beat_element.dart';
+import 'package:music_notation/src/notation_painter/utilities/string_extensions.dart';
 import 'package:music_notation/src/notation_painter/utilities/type_extensions.dart';
 
 part "beat_timeline.dart";
@@ -218,7 +219,7 @@ class MeasureTimeline {
       String row1 = "| ${'Time'.padRight(labelPad)} ||";
 
       for (var k in values.keys) {
-        row1 += "${_centerPad(k.toString(), 3)}|";
+        row1 += "${k.toString().padCenter(3)}|";
       }
 
       // Create a map with voices as keys and empty strings as values
@@ -235,7 +236,7 @@ class MeasureTimeline {
           elementCount += voiceElements.length;
           String cell = voiceElements.firstOrNull?.name ?? "";
           if (voiceElements.length > 1) cell = "MP${voiceElements.length}";
-          voiceOutput += "${_centerPad((cell).toString(), 3)}|";
+          voiceOutput += "${(cell).toString().padCenter(3)}|";
           voicesOutputRow[voice] = voiceOutput;
         }
       });
@@ -254,16 +255,6 @@ class MeasureTimeline {
       return output;
     }
     return super.toString();
-  }
-
-  String _centerPad(String input, int width) {
-    int totalPadding = width - input.length;
-
-    // Calculate left and right padding
-    int leftPadding = totalPadding ~/ 2;
-
-    // Pad the string
-    return input.padLeft(input.length + leftPadding).padRight(width);
   }
 }
 
