@@ -17,7 +17,7 @@ import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rest_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
-import 'package:music_notation/src/notation_painter/time_beat_element.dart';
+import 'package:music_notation/src/notation_painter/time_signature_element.dart';
 
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/key.dart'
@@ -41,7 +41,7 @@ class NotationWidgetization {
             divisions: measureElement.notationContext.divisions,
           );
           break;
-        case TimeBeatElement _:
+        case TimeSignatureElement _:
           contextAfter = contextAfter.copyWith(
             time: measureElement.timeBeat,
           );
@@ -169,7 +169,10 @@ class NotationWidgetization {
     for (var times in element.times) {
       switch (times) {
         case TimeBeat _:
-          var timeBeatWidget = TimeBeatElement(timeBeat: times);
+          var timeBeatWidget = TimeSignatureElement(
+            timeBeat: times,
+            font: font,
+          );
           attributes.add(timeBeatWidget);
           break;
         case SenzaMisura _:

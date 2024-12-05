@@ -10,7 +10,7 @@ import 'package:music_notation/src/notation_painter/measure/measure_element.dart
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rest_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
-import 'package:music_notation/src/notation_painter/time_beat_element.dart';
+import 'package:music_notation/src/notation_painter/time_signature_element.dart';
 import 'package:music_notation/src/notation_painter/utilities/string_extensions.dart';
 
 part "beatline.dart";
@@ -134,14 +134,14 @@ class MeasureTimeline {
             leftOffset: cursorElement.alignmentPosition.left,
           );
 
-        case TimeBeatElement timeBeatElement:
+        case TimeSignatureElement timeBeatElement:
           valueToAdd = TimelineValue(
             index,
             0,
             width: timeBeatElement.baseSize.width,
             voice: "-1", // The "-1" indicates attributes sector
-            name: "TB",
-            widgetType: TimeBeatElement,
+            name: "TS",
+            widgetType: TimeSignatureElement,
             leftOffset: timeBeatElement.alignmentPosition.left,
           );
         case ClefElement clefElement:
