@@ -105,7 +105,7 @@ class Beatline {
         ].max,
       ));
     }
-    // print("After everything: ${bl1.duration}");
+
     return Beatline(
       values: combined,
       divisions: bl1.divisions,
