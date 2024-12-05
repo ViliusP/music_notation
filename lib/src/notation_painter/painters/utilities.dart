@@ -2,35 +2,6 @@ import 'package:flutter/rendering.dart';
 
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
-class PainterUtilities {
-  static void drawSmuflSymbol(
-    Canvas canvas,
-    String symbol,
-    double size, {
-    Offset? offset,
-    Color color = const Color.fromRGBO(0, 0, 0, 1.0),
-  }) {
-    var defaultOffset = Offset(0, (-size * 1.5));
-
-    TextStyle textStyle = TextStyle(
-      fontFamily: 'Leland',
-      fontSize: size * 4,
-      color: color,
-      // backgroundColor: Color.fromRGBO(124, 100, 0, 0.2),
-      height: 1,
-    );
-    final textPainter = TextPainter(
-      text: TextSpan(text: symbol, style: textStyle),
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout();
-    textPainter.paint(
-      canvas,
-      offset ?? defaultOffset,
-    );
-  }
-}
-
 extension FontPainting on GlyphBBox {
   Rect toRect([double scale = 1]) {
     var (o1, o2) = toOffsets();
