@@ -14,11 +14,13 @@ import 'package:music_notation/src/notation_painter/measure/measure_barlines.dar
 import 'package:music_notation/src/notation_painter/measure/inherited_padding.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
+import 'package:music_notation/src/notation_painter/notes/rest_element.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
 import 'package:music_notation/src/notation_painter/spacing/timeline.dart';
+import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 
 /// A widget that lays out musical measures with notes, chords, beams, and staff lines.
 class MeasureLayout extends StatelessWidget {
@@ -325,9 +327,26 @@ class MeasureLayoutV2 extends StatelessWidget {
           bottomOffset -= interval * spacePerPosition;
         }
 
+        double left = scaledSpacings[index];
+
+        if (cell is RestElement && cell.isMeasure) {
+          // Positions the rest element at the left side of the last measure attribute.
+          left = scaledSpacings[index];
+
+          // Applies standard padding to shift the rest further left after the attributes.
+          left -= NotationLayoutProperties.baseMeasurePadding.scaledByContext(
+            context,
+          );
+
+          // Adjusts position to the right by half the distance between the last attribute and the measure's end.
+          left += (scaledSpacings.last - left) / 2;
+
+          // Centers the rest element by accounting for half its width.
+          left -= cell.baseSize.width.scaledByContext(context) / 2;
+        }
         positionedElements.add(
           Positioned(
-            left: scaledSpacings[index],
+            left: left,
             top: topOffset,
             bottom: bottomOffset,
             child: cell,
@@ -339,7 +358,7 @@ class MeasureLayoutV2 extends StatelessWidget {
           if (dSettings.paintBBoxBelowStaff && boxBelow.height > 0) {
             positionedElements.add(
               Positioned(
-                left: scaledSpacings[index],
+                left: left,
                 bottom: staveBottom - boxBelow.height,
                 child: Container(
                   width: boxBelow.width,
@@ -354,7 +373,7 @@ class MeasureLayoutV2 extends StatelessWidget {
           if (dSettings.paintBBoxAboveStaff && boxAbove.height > 0) {
             positionedElements.add(
               Positioned(
-                left: scaledSpacings[index],
+                left: left,
                 bottom: staveBottom + layoutProperties.staveHeight,
                 child: Container(
                   width: boxAbove.width,
