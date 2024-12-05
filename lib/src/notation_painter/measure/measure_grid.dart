@@ -269,8 +269,8 @@ class MeasureGrid {
       timeline: timeline,
       beatline: beatline,
       children: children,
-      minHeightAbove: minHeightBelow,
-      minHeightBelow: minHeightBelow,
+      minHeightAbove: heightAboveStaff,
+      minHeightBelow: heightBelowStaff,
       columns: columns,
     );
   }
@@ -386,21 +386,26 @@ class MeasureGrid {
     if (beatline == this.beatline) {
       return this;
     }
-
-    var adjusted = _emptyTreeFromBeatline(
-      beatline: beatline,
-      topHeight: heightAboveStave,
-      bottomHeight: heightBelowStave,
+    var adjusted = SplayTreeMap<ColumnIndex, MeasureGridColumn>.of({});
+    var emptyCol = MeasureGridColumn.fromHeights(
+      heightAboveStave: heightAboveStave,
+      heightBelowStave: heightBelowStave,
     );
-
     double ratio = beatline.divisions / this.beatline.divisions;
-
+    int beat = 0;
     for (var e in _columns.entries) {
       var index = e.key;
       var column = e.value;
-      int newIndex = (index.beat * ratio).toInt();
-
-      adjusted[ColumnIndex(newIndex, index.attributeNumber)] = column;
+      if (index.isRhytmic) {
+        adjusted[ColumnIndex(beat, null)] = column;
+        beat++;
+        for (int i = 1; i < ratio; i++) {
+          adjusted[ColumnIndex(beat, null)] = emptyCol;
+          beat++;
+        }
+      } else {
+        adjusted[ColumnIndex(beat, index.attributeNumber)] = column;
+      }
     }
 
     return MeasureGrid._(
@@ -412,40 +417,6 @@ class MeasureGrid {
       minHeightAbove: minHeightAbove,
       minHeightBelow: minHeightBelow,
     );
-  }
-
-  static SplayTreeMap<ColumnIndex, MeasureGridColumn> _emptyTreeFromBeatline({
-    required Beatline beatline,
-    required int topHeight,
-    required int bottomHeight,
-  }) {
-    SplayTreeMap<ColumnIndex, MeasureGridColumn> tree =
-        SplayTreeMap<ColumnIndex, MeasureGridColumn>.fromIterable({});
-
-    int attributesBefore = 0;
-    for (var (i, beat) in beatline.values.indexed) {
-      int attributes =
-          (beat?.attributesBefore ?? attributesBefore) - attributesBefore;
-      // Iterate through attributes columns
-      for (int j = 0; i < attributes; i++) {
-        // If attribute exists
-        tree[ColumnIndex(i, j + 1)] = MeasureGridColumn.fromHeights(
-          heightAboveStave: topHeight,
-          heightBelowStave: bottomHeight,
-        );
-      }
-      // Iterates through beat element
-      if (attributes == 0) {
-        tree[ColumnIndex(i)] = MeasureGridColumn.fromHeights(
-          heightAboveStave: topHeight,
-          heightBelowStave: bottomHeight,
-        );
-      }
-      if (beat?.attributesBefore != null) {
-        attributesBefore = beat!.attributesBefore;
-      }
-    }
-    return tree;
   }
 }
 

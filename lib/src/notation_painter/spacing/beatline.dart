@@ -62,12 +62,6 @@ class Beatline {
 
     if (duration < 0) duration = 0;
 
-    print(Beatline(
-      values: values,
-      divisions: timeline.divisions,
-      duration: duration.toDouble(),
-    ));
-
     return Beatline(
       values: values,
       divisions: timeline.divisions,
@@ -178,9 +172,9 @@ class Beatline {
         List<String> col = [];
 
         col.addAll([
-          val?.beat.toString() ?? "-1",
+          val.beat.toString(),
           '----',
-          val?.attributesBefore.toString() ?? " > ",
+          val.attributesBefore.toString(),
         ]);
         table.add(col.toList());
       }
