@@ -12,7 +12,7 @@ import 'package:music_notation/src/smufl/glyph_class.dart';
 /// Augmentation dots indicate rhythmic extensions to a note's duration.
 /// This widget calculates the required size based on the number of dots,
 /// spacing, and font metadata for rendering the dots accurately.
-class AugmentationDot extends StatelessWidget {
+class AugmentationDots extends StatelessWidget {
   /// The number of augmentation dots to display.
   final int count;
 
@@ -22,7 +22,7 @@ class AugmentationDot extends StatelessWidget {
   /// Font metadata used for glyph dimensions and layout information.
   final FontMetadata font;
 
-  /// The default offset for positioning [AugmentationDot] on the right side of the note.
+  /// The default offset for positioning [AugmentationDots] on the right side of the note.
   /// This offset is typically half of the stave space and is added to the note size,
   /// so the dot aligns correctly in musical notation.
   static const double defaultBaseOffset = 1 / 2;
@@ -55,7 +55,7 @@ class AugmentationDot extends StatelessWidget {
   /// - [count] - The number of augmentation dots to display. Must be greater than 0.
   /// - [font] - Font metadata for dot dimensions and alignment.
   /// - [spacing] - Optional, specifies the distance between dots. Defaults to [defaultSpacing].
-  const AugmentationDot({
+  const AugmentationDots({
     super.key,
     required this.count,
     required this.font,
