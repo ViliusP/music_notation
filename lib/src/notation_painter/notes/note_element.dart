@@ -400,60 +400,8 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     return spacePerPosition;
   }
 
-  // EdgeInsets get _dotsPadding {
-  //   if (dots == null) {
-  //     return VerticalEdgeInsets(top: 0, bottom: 0);
-  //   }
-  //   var spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
-
-  //   double dotsTopPosition = _notePadding.top;
-  //   double dotsBottomPosition = _notePadding.bottom;
-
-  //   var augmentationDotHeight = dots!.baseSize.height;
-
-  //   // Vertically moves dot to middle of notehead.
-  //   if (stemDirection == StemDirection.down) {
-  //     dotsTopPosition += note.head.baseSize.height / 2;
-  //     dotsTopPosition -= augmentationDotHeight / 1.8;
-  //     // dotsTopPosition += 0.1;
-  //     if (position.numeric % 2 == 0) {
-  //       dotsTopPosition -= 1 / 4;
-  //     }
-  //   }
-  //   // double dotsOffsetFromNotehead = position.numeric % 2 != 0
-  //   //     ? note.head.baseSize.height / 2 // Between lines
-  //   //     : 1; // On the line
-
-  //   // if (stemDirection == StemDirection.down) {
-
-  //   // dotsTopPosition -= (augmentationDotHeight / 2);
-  //   // dotsTopPosition = dotsOffsetFromNotehead;
-  //   // }
-  //   // // When note is on drawn the line and it's stem is drawn down,
-  //   // // it's dot needs to be positioned above note.
-  //   // if (stemDirection == StemDirection.down && position.numeric % 2 == 0) {
-  //   //   dotsOffsetFromNotehead = 0;
-  //   //   dotsTopPosition = dotsOffsetFromNotehead;
-  //   // }
-
-  //   // if (stemDirection == StemDirection.up) {
-  //   //   dotsOffsetFromNotehead -= (augmentationDotHeight / 2);
-  //   //   dotsBottomPosition = dotsOffsetFromNotehead;
-  //   // }
-
-  //   return EdgeInsets.only(
-  //     left: AugmentationDots.defaultBaseOffset,
-  //     top: dotsTopPosition,
-  //     bottom: dotsBottomPosition,
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
-    // NotationLayoutProperties layoutProperties =
-    //     NotationProperties.of(context)?.layout ??
-    //         NotationLayoutProperties.standard();
-
     return SizedBox.fromSize(
       size: baseSize.scaledByContext(context),
       child: AlignedRow(
