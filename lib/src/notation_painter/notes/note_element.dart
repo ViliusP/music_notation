@@ -144,7 +144,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
   const NoteElement._({
     super.key,
     required this.note,
-    required this.accidental,
+    this.accidental,
     this.dots,
     required this.position,
     required this.duration,
