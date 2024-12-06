@@ -20,7 +20,9 @@ class SimpleGlyphPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(SimpleGlyphPainter oldDelegate) {
-    return oldDelegate.bBox != bBox || oldDelegate.smufl != smufl;
+    return oldDelegate.bBox != bBox ||
+        oldDelegate.smufl != smufl ||
+        oldDelegate.height != height;
   }
 
   @override
