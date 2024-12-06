@@ -72,7 +72,7 @@ class BeamElement extends StatelessWidget {
       beamOffset: child.offsetForBeam,
       position: child.position,
       stemLength: child.stemLength,
-      stemDirection: child.stemDirection!,
+      stemDirection: child.stemDirection,
       child: child,
     );
   }
