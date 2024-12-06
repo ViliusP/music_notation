@@ -16,7 +16,6 @@ import 'package:music_notation/src/notation_painter/models/notation_context.dart
 import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rest_element.dart';
-import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/notation_painter/time_signature_element.dart';
 
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
@@ -24,37 +23,6 @@ import 'package:music_notation/src/models/elements/music_data/attributes/key.dar
     as musicxml show Key;
 
 class NotationWidgetization {
-  static NotationContext contextFromWidgets(
-    List<MeasureWidget> children,
-    NotationContext currentContext,
-  ) {
-    NotationContext contextAfter = currentContext.copyWith();
-    for (var measureElement in children) {
-      switch (measureElement) {
-        case ClefElement clefElement:
-          contextAfter = contextAfter.copyWith(
-            clef: clefElement.clef,
-          );
-          break;
-        case RhythmicElement _:
-          contextAfter = contextAfter.copyWith(
-            divisions: measureElement.notationContext.divisions,
-          );
-          break;
-        case TimeSignatureElement _:
-          contextAfter = contextAfter.copyWith(
-            time: measureElement.timeBeat,
-          );
-        case KeySignatureElement _:
-          contextAfter = contextAfter.copyWith(
-            lastKey: measureElement.musicKey,
-          );
-          break;
-      }
-    }
-    return contextAfter;
-  }
-
   /// Processes a note and determines if it should be rendered as a single note or part of a chord.
   static MeasureWidget? _processNote(
     Note note,
@@ -100,7 +68,7 @@ class NotationWidgetization {
     }
     return NoteElement.fromNote(
       note: note,
-      notationContext: context,
+      clef: context.clef,
       font: font,
     );
   }
@@ -195,7 +163,6 @@ class NotationWidgetization {
 
     return notationContext.copyWith(
       clef: clef,
-      time: element.times.firstOrNull,
       divisions: element.divisions,
     );
   }
@@ -208,12 +175,12 @@ class NotationWidgetization {
   ///
   /// Returns a list of [MeasureWidget]s representing the musical elements within the measure.
   static List<MeasureWidget> widgetsFromMeasure({
-    required NotationContext context,
+    required NotationContext contextBefore,
     required int? staff,
     required Measure measure,
     required FontMetadata font,
   }) {
-    NotationContext contextAfter = context.copyWith();
+    NotationContext context = contextBefore.copyWith();
 
     final children = <MeasureWidget>[];
     for (int i = 0; i < measure.data.length; i++) {
@@ -222,7 +189,7 @@ class NotationWidgetization {
         case Note note:
           var noteWidget = _processNote(
             note,
-            contextAfter,
+            context,
             measure.data.sublist(i + 1),
             font,
             staff,
@@ -247,16 +214,19 @@ class NotationWidgetization {
           break;
         case Direction _:
           break;
-        case Attributes _:
-          // TODO: test attributes parsing and context change.
-          // For example, time beat mid score change should be seen in new context.
+        case Attributes attributes:
           var attributesWidgets = _processAttributes(
             element,
             staff,
-            contextAfter,
+            context,
             font,
           );
-          contextAfter = _contextAfterAttributes(element, staff, contextAfter);
+          context = _contextAfterAttributes(
+            attributes,
+            staff,
+            context,
+          );
+          context = context.copyWith(divisions: attributes.divisions);
           children.addAll(attributesWidgets);
           break;
         // case Harmony _:

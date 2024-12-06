@@ -15,16 +15,16 @@ import 'package:music_notation/src/smufl/glyph_class.dart';
 
 // Note without accidentals, dots. Just notehead, stem and flag (if needed).
 class SimpleNoteElement extends StatelessWidget {
-  final NoteheadElement notehead;
+  final NoteheadElement head;
   final StemElement? stem;
 
   const SimpleNoteElement({
     super.key,
-    required this.notehead,
+    required this.head,
     this.stem,
   });
 
-  Size get baseSize => _calculateBaseSize(notehead: notehead, stem: stem);
+  Size get baseSize => _calculateBaseSize(notehead: head, stem: stem);
 
   static Size _calculateBaseSize({
     required NoteheadElement notehead,
@@ -39,19 +39,19 @@ class SimpleNoteElement extends StatelessWidget {
         width += stem._baseFlagSize.width;
       }
       width += _stemHorizontalOffset;
-      width = width = [stem._baseFlagSize.width, width].max;
+      width = [stem._baseFlagSize.width, width].max;
     }
 
     return Size(width, height);
   }
 
-  static final double _stemHorizontalOffset =
+  static const double _stemHorizontalOffset =
       NotationLayoutProperties.baseStemStrokeWidth / 2;
 
-  AlignmentPosition _stemPosition() {
+  AlignmentPosition get _stemPosition {
     if (stem?.direction == StemDirection.up) {
       return AlignmentPosition(
-        left: notehead.baseSize.width - _stemHorizontalOffset,
+        left: head.baseSize.width - _stemHorizontalOffset,
         top: 0,
       );
     }
@@ -82,11 +82,11 @@ class SimpleNoteElement extends StatelessWidget {
         children: [
           AlignmentPositioned(
             position: _noteheadPosition(),
-            child: notehead,
+            child: head,
           ),
           if (stem != null)
             AlignmentPositioned(
-              position: _stemPosition().scale(layoutProperties.staveSpace),
+              position: _stemPosition.scale(layoutProperties.staveSpace),
               child: stem!,
             ),
         ],
@@ -173,7 +173,7 @@ class StemElement extends StatelessWidget {
   Size get _baseFlagSize {
     if (!showFlag) return Size(0, 0);
     if (_glyph == null) return Size(0, 0);
-    return _bBox(font).toSize(1);
+    return _bBox(font).toSize();
   }
 
   SmuflGlyph? get _downwardFlag {

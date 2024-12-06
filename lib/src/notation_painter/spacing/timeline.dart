@@ -70,15 +70,8 @@ class MeasureTimeline {
   /// - [children] - A list of [MeasureWidget] instances representing musical elements.
   factory MeasureTimeline.fromMeasureElements(
     List<MeasureWidget> children,
+    double divisions,
   ) {
-    double divisions = 1;
-    for (var child in children.reversed) {
-      if (child is RhythmicElement) {
-        divisions = child.notationContext.divisions!;
-        break;
-      }
-    }
-
     Map<TimelinePosition, List<TimelineValue>> values = {};
     int cursor = 0;
     TimelineValue? valueToAdd;
@@ -86,7 +79,7 @@ class MeasureTimeline {
     for (final (index, child) in children.indexed) {
       switch (child) {
         case NoteElement note:
-          String voice = child.note.editorialVoice.voice ?? "1";
+          String voice = note.voice ?? "1";
           valueToAdd = TimelineValue(
             index,
             child.duration,
@@ -100,7 +93,7 @@ class MeasureTimeline {
             leftOffset: note.alignmentPosition.left,
           );
         case RestElement rest:
-          String voice = rest.note.editorialVoice.voice ?? "1";
+          String voice = rest.voice ?? "1";
           valueToAdd = TimelineValue(
             index,
             child.duration,

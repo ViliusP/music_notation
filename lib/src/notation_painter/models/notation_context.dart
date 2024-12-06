@@ -1,39 +1,69 @@
+import 'package:collection/collection.dart';
+import 'package:music_notation/src/models/elements/music_data/attributes/attributes.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/key.dart';
-import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
+import 'package:music_notation/src/models/elements/score/part.dart';
 
 class NotationContext {
   final Clef? clef;
-  final Key? lastKey;
+  final Key? key;
   final double? divisions;
-  final Time? time;
 
   const NotationContext({
     required this.divisions,
     required this.clef,
-    required this.time,
-    required this.lastKey,
+    required this.key,
   });
 
   const NotationContext.empty()
       : this(
           divisions: null,
           clef: null,
-          time: null,
-          lastKey: null,
+          key: null,
         );
 
   NotationContext copyWith({
     Clef? clef,
     double? divisions,
-    Time? time,
-    Key? lastKey,
+    Key? key,
   }) {
     return NotationContext(
       clef: clef ?? this.clef,
       divisions: divisions ?? this.divisions,
-      time: time ?? this.time,
-      lastKey: lastKey ?? this.lastKey,
+      key: key ?? this.key,
     );
+  }
+
+  NotationContext afterMeasure({
+    required int? staff,
+    required Measure measure,
+  }) {
+    NotationContext context = copyWith();
+
+    for (int i = 0; i < measure.data.length; i++) {
+      var element = measure.data[i];
+      switch (element) {
+        case Attributes attributes:
+          var keys = element.keys;
+          Key? musicKey;
+          if (keys.length == 1 && keys.first.number == null) {
+            musicKey = keys.first;
+          }
+          if (staff != null && keys.length > 1) {
+            musicKey = keys.firstWhereOrNull(
+              (element) => element.number == staff,
+            );
+          }
+
+          context = context.copyWith(
+              divisions: attributes.divisions,
+              key: musicKey,
+              clef: element.clefs.firstWhereOrNull(
+                (element) => staff != null ? element.number == staff : true,
+              ));
+          break;
+      }
+    }
+    return context;
   }
 }

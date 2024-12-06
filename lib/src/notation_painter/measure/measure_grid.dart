@@ -54,7 +54,7 @@ class MusicSheetGrid {
   }
 
   MeasureGrid _syncMeasureHeight(MeasureGrid measure, int staff) {
-    var modifiedMeasure = measure.copyWith();
+    var modifiedMeasure = measure.clone();
     if (_values.isEmpty) {
       return modifiedMeasure;
     }
@@ -188,10 +188,14 @@ class MeasureGrid {
   factory MeasureGrid.fromMeasureWidgets({
     required List<MeasureWidget> children,
     required MeasureBarlines barlineSettings,
+    required double divisions,
     int minHeightAbove = 0,
     int minHeightBelow = 0,
   }) {
-    MeasureTimeline timeline = MeasureTimeline.fromMeasureElements(children);
+    MeasureTimeline timeline = MeasureTimeline.fromMeasureElements(
+      children,
+      divisions,
+    );
     Beatline beatline = Beatline.fromTimeline(timeline);
 
     SplayTreeMap<ColumnIndex, MeasureGridColumn> columns = SplayTreeMap.of({});
@@ -370,7 +374,7 @@ class MeasureGrid {
     }
   }
 
-  MeasureGrid copyWith() {
+  MeasureGrid clone() {
     return MeasureGrid._(
       children: children,
       barlines: barlines,
@@ -393,18 +397,36 @@ class MeasureGrid {
     );
     double ratio = beatline.divisions / this.beatline.divisions;
     int beat = 0;
+    int attributes = 0;
+    int lastAttribute = 0;
+
     for (var e in _columns.entries) {
       var index = e.key;
       var column = e.value;
       if (index.isRhytmic) {
+        // If other beatlines has additional attributes, it should be added before beat note.
+        int attributesToAdd =
+            beatline.values[beat].attributesBefore - attributes;
+        for (int i = 0; i < attributesToAdd; i++) {
+          attributes++;
+          adjusted[ColumnIndex(beat, lastAttribute + i)] = emptyCol;
+        }
+        lastAttribute = 0;
+
+        // Add existing beat column (column with notes)
         adjusted[ColumnIndex(beat, null)] = column;
         beat++;
+
+        // Add empty columns to increase division
         for (int i = 1; i < ratio; i++) {
           adjusted[ColumnIndex(beat, null)] = emptyCol;
           beat++;
         }
       } else {
+        // Add attributes, it has no duration, so no additional columns are added
         adjusted[ColumnIndex(beat, index.attributeNumber)] = column;
+        lastAttribute = index.attributeNumber!;
+        attributes++;
       }
     }
 

@@ -3,12 +3,18 @@ import 'package:music_notation/src/notation_painter/properties/layout_properties
 import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
 
 extension SizeExtensions on Size {
-  Size round() {
-    return Size(width.roundToDouble(), height.roundToDouble());
+  Size round({bool ignoreWidth = false, bool ignoreHeight = false}) {
+    return Size(
+      ignoreWidth ? width : width.roundToDouble(),
+      ignoreHeight ? height : height.roundToDouble(),
+    );
   }
 
-  Size ceil() {
-    return Size(width.ceilToDouble(), height.ceilToDouble());
+  Size ceil({bool ignoreWidth = false, bool ignoreHeight = false}) {
+    return Size(
+      ignoreWidth ? width : width.ceilToDouble(),
+      ignoreHeight ? height : height.ceilToDouble(),
+    );
   }
 
   Size scale(double scale) {

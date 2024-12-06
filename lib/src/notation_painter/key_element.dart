@@ -162,11 +162,11 @@ final _flatSequence = [
 ];
 
 class AccidentalElement extends StatelessWidget {
-  final AccidentalValue accidental;
+  final AccidentalValue type;
   final FontMetadata font;
 
   AlignmentPosition get alignmentPosition => calculateAlignmentPosition(
-        accidental,
+        type,
         font,
       );
 
@@ -182,7 +182,7 @@ class AccidentalElement extends StatelessWidget {
     );
   }
 
-  Size get baseSize => calculateSize(accidental, font);
+  Size get baseSize => calculateSize(type, font);
 
   static Size calculateSize(
     AccidentalValue accidental,
@@ -195,7 +195,7 @@ class AccidentalElement extends StatelessWidget {
 
   const AccidentalElement({
     super.key,
-    required this.accidental,
+    required this.type,
     required this.font,
   });
 
@@ -213,8 +213,8 @@ class AccidentalElement extends StatelessWidget {
     return CustomPaint(
       size: baseSize.scaledByContext(context),
       painter: SimpleGlyphPainter(
-        smufl(accidental),
-        font.glyphBBoxes[_accidentalSmuflMapping[accidental]]!,
+        smufl(type),
+        font.glyphBBoxes[_accidentalSmuflMapping[type]]!,
         layoutProperties.staveSpace,
       ),
     );
@@ -243,7 +243,7 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
 
   /// Returns how many keys are canceled.
   int get cancelCount {
-    int? lastFifths = (notationContext.lastKey as TraditionalKey?)?.fifths;
+    int? lastFifths = (notationContext.key as TraditionalKey?)?.fifths;
 
     if (lastFifths == null) return 0;
 
@@ -253,7 +253,7 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
   /// Returns `true` if keys are fully canceled.
   /// Returns `null` if there is no cancel.
   bool? get fullCancel {
-    int? lastFifths = (notationContext.lastKey as TraditionalKey?)?.fifths;
+    int? lastFifths = (notationContext.key as TraditionalKey?)?.fifths;
 
     if (lastFifths == null) return null;
 
@@ -264,7 +264,7 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
     var accidentals = <OctavedKeyAccidental>[];
     int fifths = (musicKey).fifths;
     if (fullCancel == true) {
-      fifths = (notationContext.lastKey as TraditionalKey).fifths;
+      fifths = (notationContext.key as TraditionalKey).fifths;
     }
 
     accidentals = fifths >= 0 ? _sharpSequence : _flatSequence;
@@ -287,7 +287,7 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
     var offsets = <double>[];
     for (var accidental in accidentals) {
       Size accidentalSize = AccidentalElement(
-        accidental: accidental.accidental?.value ?? AccidentalValue.other,
+        type: accidental.accidental?.value ?? AccidentalValue.other,
         font: font,
       ).baseSize;
 
@@ -328,7 +328,7 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
     double height = range * .5;
     for (var (i, accidental) in accidentals.indexed) {
       Size accidentalSize = AccidentalElement(
-        accidental: accidental.accidental?.value ?? AccidentalValue.other,
+        type: accidental.accidental?.value ?? AccidentalValue.other,
         font: font,
       ).baseSize;
 
@@ -398,7 +398,7 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
 
     for (var (index, accidental) in accidentals.indexed) {
       var accidentalWidget = AccidentalElement(
-        accidental: accidental.accidental?.value ?? AccidentalValue.other,
+        type: accidental.accidental?.value ?? AccidentalValue.other,
         font: font,
       );
 

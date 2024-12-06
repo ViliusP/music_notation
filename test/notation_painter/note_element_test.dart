@@ -145,12 +145,7 @@ void main() {
         (WidgetTester tester) async {
           Widget widget = NoteElement.fromNote(
             note: note,
-            notationContext: NotationContext(
-              divisions: 1,
-              clef: clef,
-              time: null,
-              lastKey: null,
-            ),
+            clef: clef,
             font: fontMetadata,
           );
 
@@ -180,12 +175,7 @@ void main() {
         (WidgetTester tester) async {
           Widget widget = NoteElement.fromNote(
             note: note,
-            notationContext: NotationContext(
-              divisions: 1,
-              clef: clef,
-              time: null,
-              lastKey: null,
-            ),
+            clef: clef,
             font: fontMetadata,
           );
 

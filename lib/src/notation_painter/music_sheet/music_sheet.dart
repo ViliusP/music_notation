@@ -16,7 +16,8 @@ import 'package:music_notation/src/smufl/font_metadata.dart';
 
 typedef _MeasureData = ({
   List<MeasureWidget> children,
-  MeasureBarlines barlineSettings
+  MeasureBarlines barlineSettings,
+  double divisions,
 });
 
 class MusicSheet extends StatelessWidget {
@@ -56,18 +57,22 @@ class MusicSheet extends StatelessWidget {
         );
 
         var children = NotationWidgetization.widgetsFromMeasure(
-          context: contexts[i],
+          contextBefore: contexts[i],
           staff: staff,
           measure: grid.data.getValue(i, j),
           font: font,
         );
 
-        col.add((children: children, barlineSettings: barlineSettings));
-
-        contexts[i] = NotationWidgetization.contextFromWidgets(
-          children,
-          contexts[i],
+        contexts[i] = contexts[i].afterMeasure(
+          staff: staff,
+          measure: grid.data.getValue(i, j),
         );
+
+        col.add((
+          children: children,
+          barlineSettings: barlineSettings,
+          divisions: contexts[i].divisions!,
+        ));
       }
       var colMeasures = <MeasureGrid>[];
 
@@ -75,6 +80,7 @@ class MusicSheet extends StatelessWidget {
         var measure = MeasureGrid.fromMeasureWidgets(
           barlineSettings: data.barlineSettings,
           children: data.children,
+          divisions: data.divisions,
         );
         colMeasures.add(measure);
       }

@@ -153,10 +153,10 @@ class BeamGroup extends StatelessWidget {
     double lastStemLength = 0;
 
     firstPosition = children.first.position;
-    firstStemLength = children.first.baseStemLength;
+    firstStemLength = children.first.stemLength;
 
     lastPosition = children.last.position;
-    lastStemLength = children.last.baseStemLength;
+    lastStemLength = children.last.stemLength;
 
     double canvasHeight =
         spacePerPosition * firstPosition.distance(lastPosition);
@@ -182,7 +182,7 @@ class BeamGroup extends StatelessWidget {
     for (var (i, child) in children.indexed) {
       if (child is NoteElement) {
         pattern.add(BeamNoteData(
-          beams: child.note.beams,
+          beams: child.beams,
           leftOffset:
               (leftOffsets[i] - leftOffsets[0]).scaledByContext(context),
           stemDirection: child.stemDirection!,
@@ -399,7 +399,7 @@ class BeamGroupV2 {
     }
 
     if (element is NoteElement) {
-      beamValue = element.note.beams.firstOrNull?.value;
+      beamValue = element.beams.firstOrNull?.value;
     }
     if (element is Chord) {
       var beamsList = element.notes.expand((note) => note.beams);
@@ -430,7 +430,7 @@ class BeamGroupV2 {
     for (var (i, child) in _elements.indexed) {
       if (child is NoteElement) {
         pattern.add(BeamNoteData(
-          beams: child.note.beams,
+          beams: child.beams,
           leftOffset: _positions[i].left - _positions[0].left,
           stemDirection: child.stemDirection!,
         ));
@@ -463,10 +463,10 @@ class BeamGroupV2 {
     double lastStemLength = 0;
 
     firstPosition = _elements.first.position;
-    firstStemLength = _elements.first.baseStemLength;
+    firstStemLength = _elements.first.stemLength;
 
     lastPosition = _elements.last.position;
-    lastStemLength = _elements.last.baseStemLength;
+    lastStemLength = _elements.last.stemLength;
 
     double canvasHeight =
         spacePerPosition * firstPosition.distance(lastPosition);

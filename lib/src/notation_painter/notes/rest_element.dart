@@ -1,29 +1,32 @@
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
+import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
-import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
-import 'package:music_notation/src/notation_painter/notes/augmentation_dot.dart';
+import 'package:music_notation/src/notation_painter/notes/augmentation_dots.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
-import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
 import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 
 class RestElement extends StatelessWidget implements RhythmicElement {
-  final Note note;
+  final NoteTypeValue type;
+
+  final AugmentationDots? dots;
 
   @override
-  final NotationContext notationContext;
+  final ElementPosition position;
 
   final FontMetadata font;
+
+  final String? voice;
 
   @override
   AlignmentPosition get alignmentPosition {
@@ -36,13 +39,9 @@ class RestElement extends StatelessWidget implements RhythmicElement {
 
   double get _verticalAlignmentAxisOffset {
     double alignment = _bBox.bBoxNE.y;
-    if (_dots > 0) {
+    if (dots != null) {
       double maybeDotOffset = alignment;
-      maybeDotOffset -= AugmentationDot(
-            count: 1,
-            font: font,
-          ).alignmentPosition.top ??
-          0;
+      maybeDotOffset -= dots?.alignmentPosition.top ?? 0;
       maybeDotOffset -= 1 / 2;
       if (maybeDotOffset < 0) {
         alignment -= maybeDotOffset;
@@ -52,7 +51,7 @@ class RestElement extends StatelessWidget implements RhythmicElement {
   }
 
   @override
-  double get duration => note.determineDuration();
+  final double duration;
 
   @override
   Offset get offsetForBeam => Offset.zero;
@@ -61,19 +60,18 @@ class RestElement extends StatelessWidget implements RhythmicElement {
   StemDirection? get stemDirection => null;
 
   @override
-  double get baseStemLength => 0;
+  double get stemLength => 0;
 
-  @override
-  ElementPosition get position => _determinePosition();
+  final bool isMeasure;
+
   @override
   Size get baseSize {
     Size restSymbolSize = _bBox.toRect(1).size;
     double width = restSymbolSize.width;
     double height = restSymbolSize.height;
-    if (_dots > 0) {
-      width += AugmentationDot.defaultBaseOffset;
-      var dots = AugmentationDot(count: _dots, font: font);
-      width += dots.baseSize.width;
+    if (dots != null) {
+      width += AugmentationDots.defaultBaseOffset;
+      width += dots!.baseSize.width;
 
       if (_dotsVerticalOffset < 0) {
         height += _dotsVerticalOffset.abs();
@@ -82,24 +80,17 @@ class RestElement extends StatelessWidget implements RhythmicElement {
     return Size(width, height);
   }
 
-  int get _dots {
-    return note.dots.length;
-  }
-
   double get _dotsVerticalOffset {
+    if (dots == null) return 0;
     // Alignment line of rest.
     double top = _bBox.bBoxNE.y;
 
-    top -= AugmentationDot(
-          count: 1,
-          font: font,
-        ).alignmentPosition.top ??
-        0;
+    top -= dots!.alignmentPosition.top ?? 0;
     top -= .5;
     return top;
   }
 
-  NoteTypeValue get _type {
+  static NoteTypeValue _determineType(Note note) {
     NoteTypeValue? type = note.type?.value;
 
     NoteForm noteForm = note.form;
@@ -109,27 +100,38 @@ class RestElement extends StatelessWidget implements RhythmicElement {
     return type ?? NoteTypeValue.quarter;
   }
 
-  SmuflGlyph get _glyph => _determineGlyph(_type, position);
+  SmuflGlyph get _glyph => _determineGlyph(type, position);
 
   factory RestElement.fromNote({
     required Note note,
     required NotationContext context,
     required FontMetadata font,
   }) {
+    AugmentationDots? dots;
+    if (note.dots.isNotEmpty) {
+      dots = AugmentationDots(count: note.dots.length, font: font);
+    }
+
     return RestElement._(
-      note: note,
-      notationContext: context,
+      type: _determineType(note),
       font: font,
+      dots: dots,
+      position: _determinePosition(note, context.clef),
+      duration: note.determineDuration(),
+      voice: note.editorialVoice.voice,
+      isMeasure: (note.form as Rest).measure == true,
     );
   }
 
   const RestElement._({
-    required this.note,
-    required this.notationContext,
+    required this.type,
+    required this.position,
     required this.font,
+    required this.duration,
+    this.dots,
+    this.voice,
+    this.isMeasure = false,
   });
-
-  bool get isMeasure => (note.form as Rest).measure == true;
 
   static SmuflGlyph _determineGlyph(NoteTypeValue type, ElementPosition pos) {
     switch (type) {
@@ -176,21 +178,19 @@ class RestElement extends StatelessWidget implements RhythmicElement {
     }
   }
 
-  ElementPosition _determinePosition() {
+  static ElementPosition _determinePosition(Note note, Clef? clef) {
     Step? step = (note.form as Rest).displayStep;
     int? octave = (note.form as Rest).displayOctave;
 
     if (step != null && octave != null) {
       ElementPosition pos = ElementPosition(step: step, octave: octave);
-      if (notationContext.clef != null) {
-        pos = pos.transpose(ElementPosition.transposeIntervalByClef(
-          notationContext.clef!,
-        ));
+      if (clef != null) {
+        pos = pos.transpose(ElementPosition.transposeIntervalByClef(clef));
       }
       return pos;
     }
 
-    switch (_type) {
+    switch (_determineType(note)) {
       case NoteTypeValue.n1024th:
       case NoteTypeValue.n512th:
       case NoteTypeValue.n256th:
@@ -221,13 +221,13 @@ class RestElement extends StatelessWidget implements RhythmicElement {
       size: baseSize.scaledByContext(context),
       child: Stack(
         children: [
-          if (_dots > 0)
+          if (dots != null)
             Positioned(
               top: _dotsVerticalOffset
                   .scaledByContext(context)
                   .clamp(0, double.maxFinite),
               right: 0,
-              child: AugmentationDot(count: _dots, font: font),
+              child: dots!,
             ),
           Positioned(
             left: 0,
