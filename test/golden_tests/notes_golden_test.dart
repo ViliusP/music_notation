@@ -215,7 +215,7 @@ void main() {
           );
 
           SimpleNoteElement note = SimpleNoteElement(
-            notehead: notehead,
+            head: notehead,
             stem: stem,
           );
 
