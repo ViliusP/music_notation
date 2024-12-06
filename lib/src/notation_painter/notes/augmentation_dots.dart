@@ -30,7 +30,7 @@ class AugmentationDots extends StatelessWidget {
   /// The default spacing between two augmentation dots.
   ///
   /// *Value taken from [_defaultSize].
-  static const double defaultSpacing = 48 / 50 * 4.95 / 2;
+  static const double defaultSpacing = 2.376;
 
   /// Calculates the total size of the augmentation dots.
   ///
@@ -50,7 +50,7 @@ class AugmentationDots extends StatelessWidget {
 
   ElementPosition get position => ElementPosition.staffMiddle;
 
-  /// Constructor for [AugmentationDot].
+  /// Constructor for [AugmentationDots].
   ///
   /// - [count] - The number of augmentation dots to display. Must be greater than 0.
   /// - [font] - Font metadata for dot dimensions and alignment.
@@ -68,19 +68,10 @@ class AugmentationDots extends StatelessWidget {
   /// If the font provides specific glyph dimensions, those are used. Otherwise,
   /// a default size scaled to the current stave height is calculated and returned.
   static Size _baseDotSize(FontMetadata font) {
-    Size? glyphSize = font.glyphBBoxes[CombiningStaffPositions.augmentationDot]
-        ?.toRect()
+    return font.glyphBBoxes[CombiningStaffPositions.augmentationDot]!
+        .toRect()
         .size;
-
-    if (glyphSize != null) return glyphSize;
-
-    return _defaultBaseSize;
   }
-
-  static const Size _defaultBaseSize = Size(
-    0.4,
-    0.396,
-  );
 
   @override
   Widget build(BuildContext context) {

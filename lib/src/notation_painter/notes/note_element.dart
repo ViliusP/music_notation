@@ -160,23 +160,27 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
 
     var spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
 
-    if (_stemmed && stemDirection == StemDirection.up) {
+    if (_alignedBy == VerticalAlignment.bottom) {
       bottom = -spacePerPosition;
+    } else {
+      top = -spacePerPosition;
     }
 
-    if (_stemmed && stemDirection == StemDirection.down) {
-      top = -spacePerPosition;
-      if (position.numeric % 2 == 0 && dots != null) {
-        top -= dots!.baseSize.height / 2;
+    if (position.numeric % 2 == 0 &&
+        dots != null &&
+        _alignedBy == VerticalAlignment.top) {
+      top ??= 0;
+      top -= dots!.baseSize.height / 2;
+      top += _dotOffsetAdjustment;
+    }
+
+    if (accidental != null) {
+      if (stemDirection == StemDirection.down) {
+        top = _accidentalOffset;
       }
-    }
-
-    if (accidental != null && stemDirection == StemDirection.down) {
-      top = (accidental!.alignmentPosition.top ?? 0);
-    }
-
-    if (top == null && bottom == null) {
-      top = -spacePerPosition;
+      if (stemDirection == StemDirection.up) {
+        bottom = _accidentalOffset;
+      }
     }
 
     return AlignmentPosition(
@@ -186,17 +190,36 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     );
   }
 
+  VerticalAlignment get _alignedBy {
+    if (stemDirection == StemDirection.up) {
+      return VerticalAlignment.bottom;
+    }
+    return VerticalAlignment.top;
+  }
+
   double get _noteOffset => -NotationLayoutProperties.baseSpacePerPosition;
   double get _accidentalOffset {
-    if (alignmentPosition.bottom != null) {
+    if (_alignedBy == VerticalAlignment.bottom) {
       return -(accidental!.baseSize.height -
           accidental!.alignmentPosition.top!.abs());
     }
     return accidental!.alignmentPosition.top!;
   }
 
+  // Temporary value for fixing dot positioning because of pixel snapping.
+  static const double _dotOffsetAdjustment = 0.05;
   double get _dotVerticalOffset {
-    return -(dots?.alignmentPosition.top ?? 0);
+    double offest = -(dots?.alignmentPosition.top ?? 0);
+    if (position.numeric % 2 == 0) {
+      if (_alignedBy == VerticalAlignment.top) {
+        offest -= dots!.baseSize.height;
+      }
+      if (_alignedBy == VerticalAlignment.bottom) {
+        offest += dots!.baseSize.height;
+        offest += _dotOffsetAdjustment;
+      }
+    }
+    return offest;
   }
 
   double get _calculateLeftOffset {
@@ -433,15 +456,10 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     //     NotationProperties.of(context)?.layout ??
     //         NotationLayoutProperties.standard();
 
-    VerticalAlignment alignment = VerticalAlignment.top;
-    if (alignmentPosition.bottom != null) {
-      alignment = VerticalAlignment.bottom;
-    }
-
     return SizedBox.fromSize(
       size: baseSize.scaledByContext(context),
       child: AlignedRow(
-        alignment: alignment,
+        alignment: _alignedBy,
         children: [
           if (accidental != null)
             Offsetted(
