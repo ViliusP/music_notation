@@ -8,14 +8,17 @@ class NotationLayoutProperties {
 
   static const int staveLines = 5;
 
-  static const double baseBeamThickness = .5;
+  static const double baseBeamThickness = 1 / 2;
+
+  /// The distance between accidental's left side and note's right side.
+  static const double noteAccidentalDistance = 1 / 4;
 
   /// Stems should be thinner than the stave-line, but not so thin as to
   /// reproduce too faintly.
   static const double baseStemStrokeWidth = 0.125;
 
   /// The distance between elements when positional difference is 1.
-  static const double baseSpacePerPosition = .5;
+  static const double baseSpacePerPosition = 1 / 2;
 
   /// The standard length of a stem is one octave (3.5 stave-spaces) from the
   /// centre of the notehead.

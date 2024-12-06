@@ -219,7 +219,6 @@ class Chord extends StatelessWidget implements RhythmicElement {
           ),
         ),
         position: NoteElement.determinePosition(ref, notationContext.clef),
-        font: font,
         dots: null,
         accidental: null,
       ).height;
