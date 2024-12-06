@@ -90,8 +90,7 @@ class _CustomAlignedRowDelegate extends MultiChildLayoutDelegate {
         maxNegativeOffset = min(offset, maxNegativeOffset);
       } else if (alignment == VerticalAlignment.bottom) {
         // Calculate how much the child would overflow below the parent's bottom.
-        final overflow = offset + childSize.height - size.height;
-        maxPositiveOverflow = max(overflow, maxPositiveOverflow);
+        maxPositiveOverflow = max(offset, maxPositiveOverflow);
       }
     }
 
@@ -109,13 +108,18 @@ class _CustomAlignedRowDelegate extends MultiChildLayoutDelegate {
         }
       }
 
-      double top = offset;
+      double top = 0;
 
       if (alignment == VerticalAlignment.top) {
+        top = offset;
         // Shift all children down by the largest negative offset (make top non-negative).
         top += -maxNegativeOffset;
       } else if (alignment == VerticalAlignment.bottom) {
-        top -= maxPositiveOverflow + sizes[i].height - size.height;
+        // Shift down child so it's bottom aligns with parent's bottom
+        top += size.height - sizes[i].height;
+        // Shift up child by overflow.
+        top -= maxPositiveOverflow;
+        top += offset;
       }
 
       positionChild(i, Offset(left, top));
