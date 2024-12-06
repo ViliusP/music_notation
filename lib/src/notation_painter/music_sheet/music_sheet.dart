@@ -57,7 +57,7 @@ class MusicSheet extends StatelessWidget {
         );
 
         var children = NotationWidgetization.widgetsFromMeasure(
-          contextBefore: contexts[i],
+          context: contexts[i],
           staff: staff,
           measure: grid.data.getValue(i, j),
           font: font,

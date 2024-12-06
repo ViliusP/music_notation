@@ -164,20 +164,20 @@ class NotationWidgetization {
     );
   }
 
-  /// Builds a list of [MeasureElement]s based on the provided measure data and notation context.
+  /// Builds a list of [MeasureElement]s based on the provided [measure] data and notation [context].
   ///
-  /// - [context]: The current notation context.
-  /// - [staff]: The staff number to filter elements (optional).
-  /// - [measure]: The measure data containing musical elements.
+  /// - [context] - The notation context before [measure] start.
+  /// - [staff] - The staff number to filter elements (optional).
+  /// - [measure] - The measure data containing musical elements.
   ///
   /// Returns a list of [MeasureElement]s representing the musical elements within the measure.
   static List<MeasureElement> widgetsFromMeasure({
-    required NotationContext contextBefore,
+    required NotationContext context,
     required int? staff,
     required Measure measure,
     required FontMetadata font,
   }) {
-    NotationContext context = contextBefore.copyWith();
+    NotationContext newContext = context.copyWith();
 
     final children = <MeasureElement>[];
     for (int i = 0; i < measure.data.length; i++) {
@@ -186,7 +186,7 @@ class NotationWidgetization {
         case Note note:
           var noteWidget = _processNote(
             note,
-            context,
+            newContext,
             measure.data.sublist(i + 1),
             font,
             staff,
@@ -233,15 +233,15 @@ class NotationWidgetization {
           var attributesWidgets = _processAttributes(
             element,
             staff,
-            context,
+            newContext,
             font,
           );
-          context = _contextAfterAttributes(
+          newContext = _contextAfterAttributes(
             attributes,
             staff,
-            context,
+            newContext,
           );
-          context = context.copyWith(divisions: attributes.divisions);
+          newContext = newContext.copyWith(divisions: attributes.divisions);
           children.addAll(attributesWidgets);
           break;
         // case Harmony _:
