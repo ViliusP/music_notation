@@ -33,9 +33,9 @@ class Chord extends StatelessWidget implements RhythmicElement {
   final double duration;
 
   @override
-  final double baseStemLength;
+  final double stemLength;
 
-  bool get _stemmed => baseStemLength != 0;
+  bool get _stemmed => stemLength != 0;
 
   @override
   final StemDirection? stemDirection;
@@ -81,7 +81,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
     required this.notes,
     required this.notationContext,
     required this.font,
-    required this.baseStemLength,
+    required this.stemLength,
     required this.duration,
     this.stemDirection,
   });
@@ -114,7 +114,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
       notes: notes,
       notationContext: notationContext,
       font: font,
-      baseStemLength: _calculateStemLength(notes),
+      stemLength: _calculateStemLength(notes),
       duration: notes.first.determineDuration(),
       stemDirection: stemDirection,
     );
@@ -302,7 +302,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
   Size get baseSize => _calculateBaseSize(
         notes: notes,
         notationContext: notationContext,
-        stemLength: baseStemLength,
+        stemLength: stemLength,
         font: font,
       );
 
@@ -348,7 +348,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
       font: font,
       clef: notationContext.clef,
       showLedger: false,
-      stemLength: baseStemLength,
+      stemLength: stemLength,
     );
 
     int leftHighest = _noteheadsPositions.lastIndexWhere(

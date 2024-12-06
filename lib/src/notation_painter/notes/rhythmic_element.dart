@@ -4,7 +4,7 @@ import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 
 ///
 abstract class RhythmicElement extends MeasureWidget {
-  final double baseStemLength;
+  final double stemLength;
 
   final double duration;
 
@@ -14,7 +14,7 @@ abstract class RhythmicElement extends MeasureWidget {
 
   const RhythmicElement({
     super.key,
-    required this.baseStemLength,
+    required this.stemLength,
     required this.duration,
     required this.offsetForBeam,
     this.stemDirection,

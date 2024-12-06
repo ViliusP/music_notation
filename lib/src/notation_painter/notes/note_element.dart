@@ -64,10 +64,8 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
   @override
   final double duration;
 
-  bool get _stemmed => (note.stem?.length ?? 0) > 0;
-
   @override
-  double get baseStemLength => note.stem?.length ?? 0;
+  double get stemLength => note.stem?.length ?? 0;
 
   @override
   StemDirection? get stemDirection => note.stem?.direction;
@@ -386,8 +384,8 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
   }
 
   double get verticalAlignmentAxisOffset {
-    if (_stemmed && stemDirection == StemDirection.up) {
-      return baseStemLength;
+    if (stemLength > 0) {
+      return stemLength;
     }
 
     var spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
