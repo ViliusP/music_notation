@@ -5,12 +5,9 @@ import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/key.dart'
     hide Key;
-import 'package:music_notation/src/models/elements/music_data/attributes/key.dart'
-    as musicxml show Key;
 
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
-import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/models/octaved_key_accidental.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
@@ -221,15 +218,16 @@ class AccidentalElement extends StatelessWidget {
   }
 }
 
-class KeySignatureElement extends StatelessWidget implements MeasureWidget {
+class KeySignatureElement extends StatelessWidget {
+  final int fifths;
+  final int? fifthsBefore;
   final FontMetadata font;
-  final TraditionalKey musicKey;
-  final NotationContext notationContext;
+  final Clef? clef;
 
   static const _baseSpaceBetweenAccidentals = 0.25;
 
-  @override
   AlignmentPosition get alignmentPosition {
+    if (accidentals.isEmpty) return AlignmentPosition(left: 0, top: 0);
     SmuflGlyph glyph = _accidentalSmuflMapping[
         accidentals.first.accidental?.value ?? AccidentalValue.other]!;
 
@@ -243,40 +241,40 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
 
   /// Returns how many keys are canceled.
   int get cancelCount {
-    int? lastFifths = (notationContext.key as TraditionalKey?)?.fifths;
+    int? lastFifths = fifthsBefore;
 
     if (lastFifths == null) return 0;
 
-    return lastFifths.abs() - musicKey.fifths.abs();
+    return lastFifths.abs() - fifths.abs();
   }
 
   /// Returns `true` if keys are fully canceled.
   /// Returns `null` if there is no cancel.
   bool? get fullCancel {
-    int? lastFifths = (notationContext.key as TraditionalKey?)?.fifths;
+    int? lastFifths = fifthsBefore;
 
     if (lastFifths == null) return null;
 
-    return lastFifths != 0 && musicKey.fifths == 0;
+    return lastFifths != 0 && fifths == 0;
   }
 
   List<OctavedKeyAccidental> get accidentals {
     var accidentals = <OctavedKeyAccidental>[];
-    int fifths = (musicKey).fifths;
+    int fifthsA = fifths;
     if (fullCancel == true) {
-      fifths = (notationContext.key as TraditionalKey).fifths;
+      fifthsA = fifthsBefore!;
     }
 
-    accidentals = fifths >= 0 ? _sharpSequence : _flatSequence;
+    accidentals = fifthsA >= 0 ? _sharpSequence : _flatSequence;
 
     if (fullCancel == true) {
       return accidentals
           .map((x) => x.toNatural())
           .toList()
-          .sublist(0, fifths.abs());
+          .sublist(0, fifthsA.abs());
     }
 
-    return accidentals.sublist(0, fifths.abs());
+    return accidentals.sublist(0, fifthsA.abs());
   }
 
   List<double> get _leftOffsets {
@@ -313,10 +311,12 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
       }
     }
 
-    return (lowest: lowestAccidental!, highest: highestAccidental!);
+    return (
+      lowest: lowestAccidental ?? ElementPosition.staffMiddle,
+      highest: highestAccidental ?? ElementPosition.staffMiddle,
+    );
   }
 
-  @override
   Size get baseSize {
     if (accidentals.isEmpty) {
       return const Size(0, 0);
@@ -346,7 +346,7 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
   }
 
   int get _transposeInterval {
-    switch (notationContext.clef?.sign) {
+    switch (clef?.sign) {
       case ClefSign.F:
         return -2;
       default:
@@ -357,33 +357,28 @@ class KeySignatureElement extends StatelessWidget implements MeasureWidget {
   ElementPosition get _position => _range.highest;
 
   // TODO: fix
-  @override
   ElementPosition get position => _position.transpose(_transposeInterval);
 
   const KeySignatureElement({
-    required this.notationContext,
     required this.font,
-    required this.musicKey,
+    required this.fifths,
+    required this.fifthsBefore,
+    this.clef,
     super.key,
   });
 
-  factory KeySignatureElement.fromKeyData({
-    required musicxml.Key keyData,
-    required NotationContext notationContext,
+  factory KeySignatureElement.traditional({
+    required TraditionalKey key,
+    required TraditionalKey? keyBefore,
+    required Clef? clef,
     required FontMetadata font,
   }) {
-    switch (keyData) {
-      case TraditionalKey _:
-        return KeySignatureElement(
-          notationContext: notationContext,
-          font: font,
-          musicKey: keyData,
-        );
-      case NonTraditionalKey _:
-        throw UnimplementedError(
-          "Non traditional key is not implemented in renderer yet",
-        );
-    }
+    return KeySignatureElement(
+      fifths: key.fifths,
+      fifthsBefore: keyBefore?.fifths,
+      clef: clef,
+      font: font,
+    );
   }
 
   @override

@@ -6,29 +6,23 @@ import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
-import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notes/augmentation_dots.dart';
-import 'package:music_notation/src/notation_painter/notes/note_element.dart';
-import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
-import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 
-class RestElement extends StatelessWidget implements RhythmicElement {
+class RestElement extends StatelessWidget {
   final NoteTypeValue type;
 
   final AugmentationDots? dots;
 
-  @override
   final ElementPosition position;
 
   final FontMetadata font;
 
   final String? voice;
 
-  @override
   AlignmentPosition get alignmentPosition {
     return AlignmentPosition(left: 0, top: -_verticalAlignmentAxisOffset);
   }
@@ -50,21 +44,8 @@ class RestElement extends StatelessWidget implements RhythmicElement {
     return alignment;
   }
 
-  @override
-  final double duration;
-
-  @override
-  Offset get offsetForBeam => Offset.zero;
-
-  @override
-  StemDirection? get stemDirection => null;
-
-  @override
-  double get stemLength => 0;
-
   final bool isMeasure;
 
-  @override
   Size get baseSize {
     Size restSymbolSize = _bBox.toRect(1).size;
     double width = restSymbolSize.width;
@@ -104,7 +85,7 @@ class RestElement extends StatelessWidget implements RhythmicElement {
 
   factory RestElement.fromNote({
     required Note note,
-    required NotationContext context,
+    required Clef? clef,
     required FontMetadata font,
   }) {
     AugmentationDots? dots;
@@ -116,8 +97,7 @@ class RestElement extends StatelessWidget implements RhythmicElement {
       type: _determineType(note),
       font: font,
       dots: dots,
-      position: _determinePosition(note, context.clef),
-      duration: note.determineDuration(),
+      position: _determinePosition(note, clef),
       voice: note.editorialVoice.voice,
       isMeasure: (note.form as Rest).measure == true,
     );
@@ -127,7 +107,6 @@ class RestElement extends StatelessWidget implements RhythmicElement {
     required this.type,
     required this.position,
     required this.font,
-    required this.duration,
     this.dots,
     this.voice,
     this.isMeasure = false,

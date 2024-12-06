@@ -141,7 +141,7 @@ class MusicSheetGrid {
 /// `-` - represents position.\
 /// `|` - cell vertical and cell's left/right boundary
 class MeasureGrid {
-  final List<MeasureWidget> children;
+  final List<MeasureElement> children;
   final MeasureBarlines barlines;
   final Beatline beatline;
   final MeasureTimeline _timeline;
@@ -169,7 +169,7 @@ class MeasureGrid {
       (e) => e.key.isRhytmic,
     );
     var maybeMeasureRest = firstRhytmic?.value.cells.values.firstWhereOrNull(
-      (v) => v is RestElement && v.isMeasure,
+      (v) => v?.child is RestElement && (v?.child as RestElement).isMeasure,
     );
     return maybeMeasureRest != null;
   }
@@ -186,7 +186,7 @@ class MeasureGrid {
         _columns = columns;
 
   factory MeasureGrid.fromMeasureWidgets({
-    required List<MeasureWidget> children,
+    required List<MeasureElement> children,
     required MeasureBarlines barlineSettings,
     required double divisions,
     int minHeightAbove = 0,
@@ -443,8 +443,8 @@ class MeasureGrid {
 }
 
 class MeasureGridColumn {
-  final SplayTreeMap<ElementPosition, MeasureWidget?> _cells;
-  SplayTreeMap<ElementPosition, MeasureWidget?> get cells => _cells;
+  final SplayTreeMap<ElementPosition, MeasureElement?> _cells;
+  SplayTreeMap<ElementPosition, MeasureElement?> get cells => _cells;
 
   MeasureGridColumn()
       : _cells = SplayTreeMap.of({
@@ -488,7 +488,7 @@ class MeasureGridColumn {
     }
   }
 
-  void set(ElementPosition position, MeasureWidget? widget) {
+  void set(ElementPosition position, MeasureElement? widget) {
     _cells[position] = widget;
   }
 

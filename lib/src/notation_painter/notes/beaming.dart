@@ -3,332 +3,15 @@ import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
 import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
-import 'package:music_notation/src/notation_painter/models/vertical_edge_insets.dart';
-import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
-import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
+import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
-import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
+import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/painters/beam_painter.dart';
 import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
-import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
-
-class BeamContainer extends StatefulWidget {
-  final Widget child;
-
-  /// [listenables] could be [ScrollController] and alike, in order for
-  /// the arrows to repaint when moving in a scrollable widget.
-  final List<Listenable> listenables;
-
-  const BeamContainer({
-    super.key,
-    required this.child,
-    this.listenables = const [],
-  });
-
-  @override
-  State<BeamContainer> createState() => _BeamContainerState();
-}
-
-class _BeamContainerState extends State<BeamContainer> with ChangeNotifier {
-  final _notes = <String, _BeamNoteElementState>{};
-
-  @override
-  Widget build(BuildContext context) => Stack(
-        children: [
-          widget.child,
-          IgnorePointer(
-            child: CustomPaint(
-              // foregroundPainter: BeamPainter(
-              //   _notes,
-              //   Directionality.of(context),
-              //   [this, ...widget.listenables],
-              // ),
-              child: Container(),
-            ),
-          ),
-        ],
-      );
-
-  void addNote(_BeamNoteElementState note) {
-    _notes[note.widget.id] = note;
-    notifyListeners();
-  }
-
-  void removeNote(_BeamNoteElementState note) {
-    if (_notes[note.widget.id] == note) {
-      _notes.remove(note.widget.id);
-    }
-
-    if (mounted) {
-      notifyListeners();
-    }
-  }
-}
-
-class BeamNoteElement extends StatefulWidget {
-  /// ID for being targeted by other [BeamNoteElement]s
-  final String id;
-
-  /// A ID of [BeamNoteElement] that will be drawn to
-  final String? target;
-
-  /// A [Widget] to be drawn to or from
-  final Widget child;
-
-  const BeamNoteElement({
-    super.key,
-    required this.id,
-    this.target,
-    required this.child,
-  });
-
-  @override
-  State createState() => _BeamNoteElementState();
-}
-
-class _BeamNoteElementState extends State<BeamNoteElement> {
-  _BeamContainerState? _container;
-
-  @override
-  void initState() {
-    super.initState();
-    joinAncestorContainer();
-  }
-
-  @override
-  void didUpdateWidget(BeamNoteElement oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    joinAncestorContainer();
-  }
-
-  void joinAncestorContainer() {
-    _container = context.findAncestorStateOfType<_BeamContainerState>()
-      ?..addNote(this);
-  }
-
-  @override
-  void deactivate() {
-    _container?.removeNote(this);
-    super.deactivate();
-  }
-
-  @override
-  Widget build(BuildContext context) => widget.child;
-}
-
-class BeamGroup extends StatelessWidget {
-  final List<RhythmicElement> children;
-  final List<double> leftOffsets;
-  final VerticalEdgeInsets padding;
-
-  const BeamGroup({
-    super.key,
-    required this.children,
-    required this.leftOffsets,
-    required this.padding,
-  });
-
-  factory BeamGroup.fromBeaming(
-    BeamGroupV2 beaming,
-    VerticalEdgeInsets padding,
-  ) {
-    return BeamGroup(
-      leftOffsets: beaming._positions.map((p) => p.left).toList(),
-      padding: padding,
-      children: beaming._elements,
-    );
-  }
-
-  Size get _baseBeamSize {
-    const spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
-
-    ElementPosition? firstPosition;
-    ElementPosition? lastPosition;
-
-    double firstStemLength = 0;
-    double lastStemLength = 0;
-
-    firstPosition = children.first.position;
-    firstStemLength = children.first.stemLength;
-
-    lastPosition = children.last.position;
-    lastStemLength = children.last.stemLength;
-
-    double canvasHeight =
-        spacePerPosition * firstPosition.distance(lastPosition);
-
-    canvasHeight += NotationLayoutProperties.baseBeamThickness;
-    canvasHeight -= (lastStemLength - firstStemLength);
-
-    double canvasWidth = leftOffsets.last - leftOffsets.first;
-    canvasWidth -= (NotationLayoutProperties.baseStemStrokeWidth / 2);
-
-    return Size(canvasWidth, canvasHeight);
-  }
-
-  BeamDirection get _isBeamDownward {
-    if (children.first.position > children.last.position) {
-      return BeamDirection.downward;
-    }
-    return BeamDirection.upward;
-  }
-
-  List<BeamNoteData> beamsPattern(BuildContext context) {
-    List<BeamNoteData> pattern = [];
-    for (var (i, child) in children.indexed) {
-      if (child is NoteElement) {
-        pattern.add(BeamNoteData(
-          beams: child.beams,
-          leftOffset:
-              (leftOffsets[i] - leftOffsets[0]).scaledByContext(context),
-          stemDirection: child.stemDirection!,
-        ));
-      }
-      if (child is Chord) {
-        pattern.add(BeamNoteData(
-          beams: child.notes.firstWhere((x) => x.beams.isNotEmpty).beams,
-          leftOffset:
-              (leftOffsets[i] - leftOffsets[0]).scaledByContext(context),
-          stemDirection: child.stemDirection!,
-        ));
-      }
-    }
-    return pattern;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    NotationLayoutProperties layoutProperties =
-        NotationProperties.of(context)?.layout ??
-            NotationLayoutProperties.standard();
-
-    double beamThickness = layoutProperties.beamThickness;
-
-    List<({double? bottom, double? top})> verticalOffsets = [];
-
-    double spacePerPosition = layoutProperties.spacePerPosition;
-
-    for (var child in children) {
-      double? topOffset;
-      double? bottomOffset;
-
-      var alignmentPosition = child.alignmentPosition.scale(
-        layoutProperties.staveSpace,
-      );
-
-      if (alignmentPosition.top != null) {
-        topOffset = 0;
-        topOffset = alignmentPosition.top!;
-
-        // Calculate the interval from staff top to the child's position.
-        int intervalFromTheF5 = ElementPosition.staffTop.numeric;
-        intervalFromTheF5 -= child.position.numeric;
-        topOffset += intervalFromTheF5 * spacePerPosition;
-
-        topOffset += padding.top;
-      }
-      if (alignmentPosition.bottom != null) {
-        bottomOffset = 0;
-        bottomOffset = alignmentPosition.bottom!;
-
-        // Calculate the interval from staff bottom to the child's position.
-        int intervalFromTheE4 = ElementPosition.staffBottom.numeric;
-        intervalFromTheE4 -= child.position.numeric;
-        bottomOffset -= intervalFromTheE4 * spacePerPosition;
-
-        bottomOffset += padding.bottom;
-      }
-
-      verticalOffsets.add((bottom: bottomOffset, top: topOffset));
-    }
-
-    Offset? firstNoteBeamOffset = Offset(0, 0);
-    Offset? lastNoteBeamOffset = Offset(0, 0);
-
-    RhythmicElement first = children.first;
-    RhythmicElement last = children.last;
-
-    StemDirection? firstNoteStemValue;
-    // StemValue? lastNoteStemValue;
-
-    firstNoteBeamOffset = first.offsetForBeam.scale(
-      layoutProperties.staveSpace,
-      layoutProperties.staveSpace,
-    );
-    firstNoteStemValue = first.stemDirection;
-
-    lastNoteBeamOffset = last.offsetForBeam.scale(
-      layoutProperties.staveSpace,
-      layoutProperties.staveSpace,
-    );
-
-    double? beamTopOffset;
-    if (verticalOffsets[0].top != null) {
-      beamTopOffset = 0;
-      // TODO: fix second check
-      if (first.position < last.position && verticalOffsets.last.top != null) {
-        beamTopOffset += verticalOffsets.last.top!;
-        beamTopOffset += lastNoteBeamOffset.dy;
-      }
-      if (first.position >= last.position) {
-        beamTopOffset += verticalOffsets.first.top!;
-        beamTopOffset += firstNoteBeamOffset.dy;
-      }
-      if (firstNoteStemValue == StemDirection.down) {
-        beamTopOffset -= beamThickness;
-      }
-    }
-
-    double? beamBottomOffset;
-    if (verticalOffsets[0].bottom != null) {
-      beamBottomOffset = 0;
-      if (first.position < last.position) {
-        beamBottomOffset += verticalOffsets.first.bottom!;
-        beamBottomOffset += firstNoteBeamOffset.dy;
-      }
-      if (first.position >= last.position) {
-        beamBottomOffset += lastNoteBeamOffset.dy;
-        beamBottomOffset += verticalOffsets.last.bottom!;
-      }
-      beamBottomOffset -= beamThickness;
-    }
-
-    return Stack(
-      fit: StackFit.loose,
-      children: [
-        ...children.mapIndexed(
-          (i, x) => Positioned(
-            left: leftOffsets[i].scaledByContext(context),
-            bottom: verticalOffsets[i].bottom,
-            top: verticalOffsets[i].top,
-            child: x,
-          ),
-        ),
-        Positioned(
-          left:
-              leftOffsets[0].scaledByContext(context) + firstNoteBeamOffset.dx,
-          top: beamTopOffset,
-          bottom: beamBottomOffset,
-          child: CustomPaint(
-            size: _baseBeamSize.scale(layoutProperties.staveSpace),
-            painter: BeamPainter(
-              beamsPattern: beamsPattern(context),
-              // color: color,
-              direction: _isBeamDownward,
-              hookLength: layoutProperties.staveSpace,
-              thickness: beamThickness,
-              spacing: layoutProperties.beamSpacing,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
 
 class BeamNoteData {
   final List<Beam> beams;
@@ -343,6 +26,62 @@ class BeamNoteData {
 }
 
 enum BeamDirection { downward, upward }
+
+class BeamElement extends StatelessWidget {
+  final List<Beam> beams;
+
+  final Offset beamOffset;
+  final ElementPosition position;
+  final double stemLength;
+  final StemDirection? stemDirection;
+  final Widget child;
+
+  const BeamElement({
+    super.key,
+    required this.beams,
+    required this.beamOffset,
+    required this.position,
+    required this.stemLength,
+    required this.stemDirection,
+    required this.child,
+  });
+
+  factory BeamElement.fromNote({
+    required NoteElement child,
+  }) {
+    return BeamElement(
+      beams: child.beams,
+      beamOffset: child.offsetForBeam,
+      position: child.position,
+      stemLength: child.note.stem?.length ?? 0,
+      stemDirection: child.note.stem?.direction,
+      child: child,
+    );
+  }
+
+  factory BeamElement.fromChord({
+    required Chord child,
+  }) {
+    return BeamElement(
+      beams: child.notes
+              .firstWhereOrNull(
+                (x) => x.beams.isNotEmpty,
+              )
+              ?.beams ??
+          [],
+      beamOffset: child.offsetForBeam,
+      position: child.position,
+      stemLength: child.stemLength,
+      stemDirection: child.stemDirection!,
+      child: child,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return child;
+  }
+}
 
 class BeamCanvas extends StatelessWidget {
   final List<BeamData> beams;
@@ -380,31 +119,23 @@ class BeamCanvas extends StatelessWidget {
   }
 }
 
-class BeamGroupV2 {
-  final List<RhythmicElement> _elements = [];
+class BeamGrouper {
+  final List<BeamElement> _elements = [];
   final List<AlignmentPosition> _positions = [];
 
   bool _isFinalized = false;
 
   bool get isFinalized => _isFinalized;
 
-  BeamGroupV2();
+  BeamGrouper();
 
   /// Returns [BeamingResult] after addition of provided [element].
-  BeamingResult add(RhythmicElement element, AlignmentPosition position) {
-    BeamValue? beamValue;
-
+  BeamingResult add(BeamElement element, AlignmentPosition position) {
     if (isFinalized) {
       return BeamingResult.skippedAndFinished;
     }
 
-    if (element is NoteElement) {
-      beamValue = element.beams.firstOrNull?.value;
-    }
-    if (element is Chord) {
-      var beamsList = element.notes.expand((note) => note.beams);
-      beamValue = beamsList.firstOrNull?.value;
-    }
+    BeamValue? beamValue = element.beams.firstOrNull?.value;
 
     if (beamValue == null) {
       return BeamingResult.skipped;
@@ -428,20 +159,11 @@ class BeamGroupV2 {
   List<BeamNoteData> get _beamPattern {
     List<BeamNoteData> pattern = [];
     for (var (i, child) in _elements.indexed) {
-      if (child is NoteElement) {
-        pattern.add(BeamNoteData(
-          beams: child.beams,
-          leftOffset: _positions[i].left - _positions[0].left,
-          stemDirection: child.stemDirection!,
-        ));
-      }
-      if (child is Chord) {
-        pattern.add(BeamNoteData(
-          beams: child.notes.firstWhere((x) => x.beams.isNotEmpty).beams,
-          leftOffset: _positions[i].left - _positions[0].left,
-          stemDirection: child.stemDirection!,
-        ));
-      }
+      pattern.add(BeamNoteData(
+        beams: child.beams,
+        leftOffset: _positions[i].left - _positions[0].left,
+        stemDirection: child.stemDirection!,
+      ));
     }
     return pattern;
   }
@@ -482,13 +204,13 @@ class BeamGroupV2 {
 
   /// Provide notes relative position in canvas.
   AlignmentPosition _beamStartPosition() {
-    RhythmicElement first = _elements.first;
-    RhythmicElement last = _elements.last;
+    BeamElement first = _elements.first;
+    BeamElement last = _elements.last;
 
     StemDirection? firstNoteStemValue;
 
-    Offset firstNoteBeamOffset = first.offsetForBeam;
-    Offset lastNoteBeamOffset = last.offsetForBeam;
+    Offset firstNoteBeamOffset = first.beamOffset;
+    Offset lastNoteBeamOffset = last.beamOffset;
 
     firstNoteStemValue = first.stemDirection;
 
@@ -523,7 +245,7 @@ class BeamGroupV2 {
       beamBottomOffset -= NotationLayoutProperties.baseBeamThickness;
     }
     return AlignmentPosition(
-      left: _positions.first.left + _elements[0].offsetForBeam.dx,
+      left: _positions.first.left + _elements[0].beamOffset.dx,
       top: beamTopOffset,
       bottom: beamBottomOffset,
     );
@@ -556,14 +278,14 @@ class BeamData {
     required this.startPosition,
   });
 
-  factory BeamData.fromBeamGroup({
-    required BeamGroupV2 group,
+  factory BeamData.fromGrouper({
+    required BeamGrouper grouper,
   }) {
     return BeamData._(
-      pattern: group._beamPattern,
-      size: group._beamSize,
-      direction: group._beamDirection,
-      startPosition: group._beamStartPosition(),
+      pattern: grouper._beamPattern,
+      size: grouper._beamSize,
+      direction: grouper._beamDirection,
+      startPosition: grouper._beamStartPosition(),
     );
   }
 }

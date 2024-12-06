@@ -15,7 +15,7 @@ import 'package:music_notation/src/notation_painter/properties/layout_properties
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
 typedef _MeasureData = ({
-  List<MeasureWidget> children,
+  List<MeasureElement> children,
   MeasureBarlines barlineSettings,
   double divisions,
 });
@@ -152,7 +152,7 @@ class _SheetMeasuresColumn extends StatelessWidget {
       if (!indices[i].isRhytmic) {
         for (var cell in columns.expand((i) => i.cells.entries)) {
           if (cell.value != null) {
-            width = max(width, cell.value!.baseSize.width);
+            width = max(width, cell.value!.size.width);
           }
         }
       }

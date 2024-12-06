@@ -1,17 +1,16 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
-import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notes/augmentation_dots.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/adjacency.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
-import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/notation_painter/notes/simple_note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
@@ -19,28 +18,22 @@ import 'package:music_notation/src/notation_painter/utilities/number_extensions.
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
-class Chord extends StatelessWidget implements RhythmicElement {
+class Chord extends StatelessWidget {
   final List<Note> notes;
 
   List<Note> get sortedNotes => notes.sortedBy(
         (note) => NoteElement.determinePosition(note, null),
       );
 
-  final NotationContext notationContext;
+  final Clef? clef;
   final FontMetadata font;
 
-  @override
-  final double duration;
-
-  @override
   final double stemLength;
 
   bool get _stemmed => stemLength != 0;
 
-  @override
   final StemDirection? stemDirection;
 
-  @override
   AlignmentPosition get alignmentPosition {
     double top = 0;
     if (stemDirection == StemDirection.up) {
@@ -68,21 +61,16 @@ class Chord extends StatelessWidget implements RhythmicElement {
     );
   }
 
-  @override
   ElementPosition get position {
-    return NoteElement.determinePosition(
-      notes[referenceNoteIndex],
-      notationContext.clef,
-    );
+    return NoteElement.determinePosition(notes[referenceNoteIndex], clef);
   }
 
   const Chord._({
     super.key,
     required this.notes,
-    required this.notationContext,
+    required this.clef,
     required this.font,
     required this.stemLength,
-    required this.duration,
     this.stemDirection,
   });
 
@@ -90,17 +78,11 @@ class Chord extends StatelessWidget implements RhythmicElement {
   factory Chord.fromNotes({
     Key? key,
     required List<Note> notes,
-    required NotationContext notationContext,
+    required Clef? clef,
     required FontMetadata font,
   }) {
     if (notes.isEmpty) {
       throw ArgumentError('notes list is empty');
-    }
-
-    if (notationContext.divisions == null) {
-      throw ArgumentError(
-        "Divisions in notationContext cannot be null on note's initialization",
-      );
     }
 
     StemValue? stemValue = notes.first.stem?.value;
@@ -112,10 +94,9 @@ class Chord extends StatelessWidget implements RhythmicElement {
     return Chord._(
       key: key,
       notes: notes,
-      notationContext: notationContext,
+      clef: clef,
       font: font,
       stemLength: _calculateStemLength(notes),
-      duration: notes.first.determineDuration(),
       stemDirection: stemDirection,
     );
   }
@@ -129,7 +110,6 @@ class Chord extends StatelessWidget implements RhythmicElement {
   ///
   /// X - the middle of stem.
   /// Y - the tip of stem.
-  @override
   Offset get offsetForBeam {
     double? offsetX;
     double? offsetY = baseSize.height;
@@ -184,7 +164,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
   static Size _calculateBaseSize({
     required List<Note> notes,
     required double stemLength,
-    required NotationContext notationContext,
+    required Clef? clef,
     required FontMetadata font,
   }) {
     // Sorts from lowest to highest note. First being lowest.
@@ -218,7 +198,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
             showFlag: !beamed,
           ),
         ),
-        position: NoteElement.determinePosition(ref, notationContext.clef),
+        position: NoteElement.determinePosition(ref, clef),
         dots: null,
         accidental: null,
       ).height;
@@ -298,10 +278,9 @@ class Chord extends StatelessWidget implements RhythmicElement {
     return stemLength;
   }
 
-  @override
   Size get baseSize => _calculateBaseSize(
         notes: notes,
-        notationContext: notationContext,
+        clef: clef,
         stemLength: stemLength,
         font: font,
       );
@@ -324,11 +303,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
   List<NoteheadPosition> get _noteheadsPositions =>
       Adjacency.determineNoteheadPositions(
         sortedNotes,
-        stemDirection ??
-            Stemming.determineChordStem(
-              notes,
-              notationContext.clef,
-            ),
+        stemDirection ?? Stemming.determineChordStem(notes, clef),
       );
 
   bool get _hasAdjacentNotes => Adjacency.containsAdjacentNotes(sortedNotes);
@@ -346,7 +321,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
     NoteElement refnote = NoteElement.fromNote(
       note: notes[referenceNoteIndex],
       font: font,
-      clef: notationContext.clef,
+      clef: clef,
       showLedger: false,
       stemLength: stemLength,
     );
@@ -380,7 +355,7 @@ class Chord extends StatelessWidget implements RhythmicElement {
       NoteElement element = NoteElement.fromNote(
         note: note,
         font: font,
-        clef: notationContext.clef,
+        clef: clef,
         showLedger: showLedger,
         stemLength: stemLength,
         showFlag: !_beamed,

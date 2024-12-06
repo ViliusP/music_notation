@@ -9,12 +9,14 @@ import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_barlines.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
+import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
+import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rest_element.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 
-import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
 import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
+import 'package:music_notation/src/notation_painter/utilities/type_extensions.dart';
 
 /// A widget that lays out musical measures with notes, chords, beams, and staff lines.
 class MeasureLayout extends StatelessWidget {
@@ -69,7 +71,7 @@ class MeasureLayout extends StatelessWidget {
         (topRef.numeric - bottomRef.numeric) * spacePerPosition;
 
     List<BeamData> beams = [];
-    BeamGroupV2 beaming = BeamGroupV2();
+    BeamGrouper grouper = BeamGrouper();
 
     var positionedElements = <Widget>[];
 
@@ -81,7 +83,7 @@ class MeasureLayout extends StatelessWidget {
 
         double? topOffset;
         double? bottomOffset;
-        AlignmentPosition alignmentPosition = cell.alignmentPosition;
+        AlignmentPosition alignmentPosition = cell.alignmentOffset;
 
         if (alignmentPosition.top != null) {
           topOffset = alignmentPosition.top!;
@@ -100,25 +102,38 @@ class MeasureLayout extends StatelessWidget {
           bottomOffset -= interval * spacePerPosition;
         }
 
-        if (cell is RhythmicElement) {
-          beaming.add(
-            cell,
-            AlignmentPosition(
-              left: spacings[index],
-              top: topOffset,
-              bottom: bottomOffset,
-            ),
-          );
+        switch (cell.child) {
+          case NoteElement note:
+            grouper.add(
+              BeamElement.fromNote(child: note),
+              AlignmentPosition(
+                left: spacings[index],
+                top: topOffset,
+                bottom: bottomOffset,
+              ),
+            );
+            break;
+          case Chord chord:
+            grouper.add(
+              BeamElement.fromChord(child: chord),
+              AlignmentPosition(
+                left: spacings[index],
+                top: topOffset,
+                bottom: bottomOffset,
+              ),
+            );
+            break;
         }
 
-        if (beaming.isFinalized) {
-          beams.add(BeamData.fromBeamGroup(group: beaming));
-          beaming = BeamGroupV2();
+        if (grouper.isFinalized) {
+          beams.add(BeamData.fromGrouper(grouper: grouper));
+          grouper = BeamGrouper();
         }
 
         double left = spacings[index];
 
-        if (cell is RestElement && cell.isMeasure) {
+        var maybeRest = cell.child.tryAs<RestElement>();
+        if (maybeRest is RestElement && maybeRest.isMeasure) {
           // Positions the rest element at the left side of the last measure attribute.
           left = spacings[index];
 
@@ -129,7 +144,7 @@ class MeasureLayout extends StatelessWidget {
           left += (measureWidth - left) / 2;
 
           // Centers the rest element by accounting for half its width.
-          left -= cell.baseSize.width / 2;
+          left -= cell.size.width / 2;
         }
 
         left = left.scaledByContext(context);
