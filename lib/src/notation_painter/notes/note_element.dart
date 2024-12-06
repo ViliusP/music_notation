@@ -187,7 +187,13 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
   }
 
   double get _noteOffset => -NotationLayoutProperties.baseSpacePerPosition;
-  double get _accidentalOffset => accidental!.alignmentPosition.top!;
+  double get _accidentalOffset {
+    if (alignmentPosition.bottom != null) {
+      return -(accidental!.baseSize.height -
+          accidental!.alignmentPosition.top!.abs());
+    }
+    return accidental!.alignmentPosition.top!;
+  }
 
   double get _dotVerticalOffset {
     return -(dots?.alignmentPosition.top ?? 0);
