@@ -272,21 +272,23 @@ class KeySignatureElement extends StatelessWidget {
 
   List<OctavedKeyAccidental> get accidentals {
     var accidentals = <OctavedKeyAccidental>[];
-    int fifthsA = fifths;
+    int fifthsToShow = fifths; // ???
     if (fullCancel == true) {
-      fifthsA = fifthsBefore!;
+      fifthsToShow = fifthsBefore!;
     }
 
-    accidentals = fifthsA >= 0 ? _sharpSequence : _flatSequence;
+    accidentals = fifthsToShow >= 0 ? _sharpSequence : _flatSequence;
+
+    fifthsToShow = fifthsToShow.abs();
 
     if (fullCancel == true) {
       return accidentals
           .map((x) => x.toNatural())
           .toList()
-          .sublist(0, fifthsA.abs());
+          .sublist(0, fifthsToShow);
     }
 
-    return accidentals.sublist(0, fifthsA.abs());
+    return accidentals.sublist(0, fifthsToShow);
   }
 
   List<double> get _leftOffsets {
