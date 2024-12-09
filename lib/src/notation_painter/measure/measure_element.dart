@@ -91,7 +91,7 @@ class MeasureElement extends StatelessWidget {
     );
     return MeasureElement(
       position: chord.position,
-      size: chord.baseSize,
+      size: chord.size,
       alignmentOffset: chord.alignmentPosition,
       duration: notes.first.determineDuration(),
       child: chord,

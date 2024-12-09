@@ -36,7 +36,7 @@ class AugmentationDots extends StatelessWidget {
   ///
   /// This method determines the combined width of all dots, factoring in
   /// spacing between them, and returns the required [Size] object.
-  Size get baseSize {
+  Size get size {
     Size singleDotSize = _baseDotSize(font);
     double width = count * singleDotSize.width + (spacing * (count - 1));
 
@@ -45,7 +45,7 @@ class AugmentationDots extends StatelessWidget {
 
   AlignmentPosition get alignmentPosition => AlignmentPosition(
         left: 0,
-        top: baseSize.height / 2,
+        top: size.height / 2,
       );
 
   ElementPosition get position => ElementPosition.staffMiddle;
@@ -82,7 +82,7 @@ class AugmentationDots extends StatelessWidget {
     Size singleDotSize = _baseDotSize(font).scaledByContext(context);
 
     return SizedBox.fromSize(
-      size: baseSize.scaledByContext(context),
+      size: size.scaledByContext(context),
       child: Row(
         children: [
           for (int i = 0; i < count; i++)

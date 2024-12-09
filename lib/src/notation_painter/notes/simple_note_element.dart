@@ -39,7 +39,7 @@ class StemlessNoteElement extends StatelessWidget {
     double width = head.size.width;
 
     if (dots != null) {
-      Size dotsSize = dots!.baseSize;
+      Size dotsSize = dots!.size;
 
       width += dotsSize.width;
       width += AugmentationDots.defaultBaseOffset;
@@ -73,7 +73,7 @@ class StemlessNoteElement extends StatelessWidget {
   double get _dotVerticalOffset {
     double offest = -(dots?.alignmentPosition.top ?? 0);
     if (position.numeric % 2 == 0) {
-      offest -= dots!.baseSize.height;
+      offest -= dots!.size.height;
       offest -= _dotOffsetAdjustment;
     }
     return offest;

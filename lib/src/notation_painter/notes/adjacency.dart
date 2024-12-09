@@ -1,7 +1,6 @@
 import 'package:collection/collection.dart';
-import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
-import 'package:music_notation/src/notation_painter/notes/note_element.dart';
+import 'package:music_notation/src/notation_painter/notes/simple_note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 
 /// A set of static methods to determine notehead positions in chords based on adjacency and stem direction.
@@ -14,7 +13,7 @@ class Adjacency {
   /// Returns:
   /// A list of [NoteheadPosition] values (left or right) corresponding to the noteheads' positions.
   static List<NoteheadPosition> determineNoteheadPositions(
-    List<Note> notes,
+    List<StemlessNoteElement> notes,
     StemDirection stemDirection,
   ) {
     // Default position is set based on the stem direction.
@@ -23,9 +22,7 @@ class Adjacency {
       defaultPosition = NoteheadPosition.right;
     }
 
-    final sortedNotes = notes.sortedBy(
-      (note) => NoteElement.determinePosition(note, null),
-    );
+    final sortedNotes = notes.sortedBy((note) => note.position);
 
     // Initialize positions with the default position
     List<NoteheadPosition> positions = List.filled(
@@ -44,12 +41,11 @@ class Adjacency {
     Set<int> group = {};
     for (var (i, note) in sortedNotes.indexed) {
       if (noteBeforePosition == null) {
-        noteBeforePosition = NoteElement.determinePosition(note, null);
+        noteBeforePosition = note.position;
         group.add(i);
         continue;
       }
-      ElementPosition position = NoteElement.determinePosition(note, null);
-      if (position.distance(noteBeforePosition) == 1) {
+      if (note.position.distance(noteBeforePosition) == 1) {
         group.add(i);
       } else {
         if (group.length > 1) {
@@ -57,7 +53,7 @@ class Adjacency {
         }
         group = {i};
       }
-      noteBeforePosition = position;
+      noteBeforePosition = note.position;
     }
     if (group.length > 1) {
       groups.add(group);
@@ -88,15 +84,15 @@ class Adjacency {
   /// Returns:
   /// `true` if any two notes in the list have a positional difference of 1 (i.e., an interval of a second).
   /// Otherwise, returns `false`.
-  static bool containsAdjacentNotes(List<Note> notes) {
+  static bool containsAdjacentNotes(List<StemlessNoteElement> notes) {
     ElementPosition? noteBeforePosition;
 
     for (var note in notes) {
       if (noteBeforePosition == null) {
-        noteBeforePosition = NoteElement.determinePosition(note, null);
+        noteBeforePosition = note.position;
         continue;
       }
-      ElementPosition position = NoteElement.determinePosition(note, null);
+      ElementPosition position = note.position;
       if (position.distance(noteBeforePosition) == 1) {
         return true;
       }

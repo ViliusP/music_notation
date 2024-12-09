@@ -49,16 +49,11 @@ class BeamElement extends StatelessWidget {
     required Chord child,
   }) {
     return BeamElement(
-      beams: child.notes
-              .firstWhereOrNull(
-                (x) => x.beams.isNotEmpty,
-              )
-              ?.beams ??
-          [],
+      beams: child.beams,
       beamOffset: child.offsetForBeam,
       position: child.position,
-      stemLength: child.stemLength,
-      stemDirection: child.stemDirection,
+      stemLength: child.stem!.length,
+      stemDirection: child.stem!.direction,
       child: child,
     );
   }

@@ -103,13 +103,13 @@ class MeasureTimeline {
             leftOffset: rest.alignmentPosition.left,
           );
         case Chord chord:
-          String voice = chord.notes.firstOrNull?.editorialVoice.voice ?? "1";
+          String voice = chord.voice ?? "1";
           valueToAdd = TimelineValue(
             index,
             child.duration,
             voice: voice,
             widgetType: NoteElement,
-            width: chord.baseSize.width,
+            width: chord.size.width,
             name:
                 "C${child.position.toString().replaceFirst("ElementPosition  ", "")}",
             leftOffset: chord.alignmentPosition.left,
