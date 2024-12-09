@@ -184,24 +184,24 @@ class Chord extends StatelessWidget {
       if (stemDirection == StemDirection.down) {
         ref = sortedNotes.last;
       }
-      height = NoteElement.calculateBaseSize(
-        note: SimpleNoteElement(
+      height = NoteElement(
+        base: StemlessNoteElement(
           head: NoteheadElement(
             type: ref.type?.value ?? NoteTypeValue.quarter,
             font: font,
           ),
-          stem: StemElement(
-            type: ref.type?.value ?? NoteTypeValue.quarter,
-            font: font,
-            direction: stemDirection,
-            length: _calculateStemLength(notes),
-            showFlag: !beamed,
-          ),
+          position: NoteElement.determinePosition(ref, clef),
+          dots: null,
+          accidental: null,
         ),
-        position: NoteElement.determinePosition(ref, clef),
-        dots: null,
-        accidental: null,
-      ).height;
+        stem: StemElement(
+          type: ref.type?.value ?? NoteTypeValue.quarter,
+          font: font,
+          direction: stemDirection,
+          length: _calculateStemLength(notes),
+          showFlag: !beamed,
+        ),
+      ).size.height;
     }
 
     var (leftWidth, rightWidth) = _noteheadSizesBySide(
@@ -241,7 +241,7 @@ class Chord extends StatelessWidget {
       double width = NoteheadElement(
         type: notes[i].type!.value,
         font: font,
-      ).baseSize.width;
+      ).size.width;
       if (pos == NoteheadPosition.left) {
         widthToLeft = [width, widthToLeft].max;
       }

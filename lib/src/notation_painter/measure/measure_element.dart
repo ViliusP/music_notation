@@ -53,7 +53,7 @@ class MeasureElement extends StatelessWidget {
     );
     return MeasureElement(
       position: noteElement.position,
-      size: noteElement.baseSize,
+      size: noteElement.size,
       alignmentOffset: noteElement.alignmentPosition,
       duration: note.determineDuration(),
       child: noteElement,
@@ -226,15 +226,6 @@ class MeasureElement extends StatelessWidget {
   }
 }
 
-class MyWidget extends StatelessWidget {
-  const MyWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Placeholder();
-  }
-}
-
 /// Defines specific alignment offsets for musical elements, used for vertical and
 /// horizontal positioning within their container.
 class AlignmentPosition {
@@ -265,6 +256,14 @@ class AlignmentPosition {
       top: top != null ? top! * scale : null,
       bottom: bottom != null ? bottom! * scale : null,
     );
+  }
+
+  AlignmentPosition scaledByContext(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
+    return scale(layoutProperties.staveSpace);
   }
 }
 

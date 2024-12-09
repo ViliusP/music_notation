@@ -104,14 +104,23 @@ class MeasureLayout extends StatelessWidget {
 
         switch (cell.child) {
           case NoteElement note:
-            grouper.add(
-              BeamElement.fromNote(child: note),
-              AlignmentPosition(
-                left: spacings[index],
-                top: topOffset,
-                bottom: bottomOffset,
-              ),
-            );
+            if (note.offsetForBeam != null) {
+              grouper.add(
+                BeamElement(
+                  beams: note.beams,
+                  beamOffset: note.offsetForBeam!,
+                  position: note.position,
+                  stemLength: note.stem!.length,
+                  stemDirection: note.stem!.direction,
+                  child: note,
+                ),
+                AlignmentPosition(
+                  left: spacings[index],
+                  top: topOffset,
+                  bottom: bottomOffset,
+                ),
+              );
+            }
             break;
           case Chord chord:
             grouper.add(

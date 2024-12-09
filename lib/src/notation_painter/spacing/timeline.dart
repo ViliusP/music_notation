@@ -84,7 +84,7 @@ class MeasureTimeline {
             child.duration,
             voice: voice,
             widgetType: NoteElement,
-            width: note.baseSize.width,
+            width: note.size.width,
             name: child.position.toString().replaceFirst(
                   "ElementPosition  ",
                   "",
