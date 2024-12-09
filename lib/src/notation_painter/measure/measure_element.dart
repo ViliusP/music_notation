@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
@@ -223,6 +224,21 @@ class MeasureElement extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return child;
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    DiagnosticLevel level = DiagnosticLevel.info;
+
+    properties.add(
+      StringProperty(
+        'position',
+        position.toString(),
+        level: level,
+        showName: true,
+      ),
+    );
   }
 }
 
