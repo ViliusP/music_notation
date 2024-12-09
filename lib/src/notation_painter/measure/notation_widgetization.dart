@@ -2,21 +2,17 @@ import 'package:collection/collection.dart';
 import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/attributes.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
+import 'package:music_notation/src/models/elements/music_data/attributes/key.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
 import 'package:music_notation/src/models/elements/music_data/backup.dart';
 import 'package:music_notation/src/models/elements/music_data/direction/direction.dart';
 import 'package:music_notation/src/models/elements/music_data/forward.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
-import 'package:music_notation/src/notation_painter/clef_element.dart';
 import 'package:music_notation/src/notation_painter/cursor_element.dart';
-import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
-import 'package:music_notation/src/notation_painter/notes/note_element.dart';
-import 'package:music_notation/src/notation_painter/notes/rest_element.dart';
-import 'package:music_notation/src/notation_painter/time_signature_element.dart';
 
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/key.dart'
@@ -24,18 +20,13 @@ import 'package:music_notation/src/models/elements/music_data/attributes/key.dar
 
 class NotationWidgetization {
   /// Processes a note and determines if it should be rendered as a single note or part of a chord.
-  static MeasureWidget? _processNote(
+  static MeasureElement? _processNote(
     Note note,
     NotationContext context,
     List<MusicDataElement> measureData,
     FontMetadata font,
     int? staff,
   ) {
-    if (context.divisions == null) {
-      throw ArgumentError(
-        "Context or measure must have divisions in attributes element",
-      );
-    }
     if (staff != null && staff != note.staff) return null;
 
     List<Note> notes = [note];
@@ -52,34 +43,26 @@ class NotationWidgetization {
       }
     }
     if (notes.length > 1) {
-      return Chord.fromNotes(
+      return MeasureElement.chord(
         notes: notes,
-        notationContext: context,
         font: font,
+        clef: context.clef,
       );
     }
 
     if (note.form is Rest) {
-      return RestElement.fromNote(
-        note: note,
-        context: context,
-        font: font,
-      );
+      return MeasureElement.rest(rest: note, clef: context.clef, font: font);
     }
-    return NoteElement.fromNote(
-      note: note,
-      clef: context.clef,
-      font: font,
-    );
+    return MeasureElement.note(note: note, clef: context.clef, font: font);
   }
 
-  static List<MeasureWidget> _processAttributes(
+  static List<MeasureElement> _processAttributes(
     Attributes element,
     int? staff,
     NotationContext notationContext,
     FontMetadata font,
   ) {
-    List<MeasureWidget> attributes = [];
+    List<MeasureElement> attributes = [];
     // -----------------------------
     // Clef
     // -----------------------------
@@ -100,7 +83,7 @@ class NotationWidgetization {
           clef: clef,
           divisions: element.divisions,
         );
-        attributes.add(ClefElement(clef: clef, font: font));
+        attributes.add(MeasureElement.clef(clef: clef, font: font));
       }
     }
     // -----------------------------
@@ -122,13 +105,29 @@ class NotationWidgetization {
         "There are multiple keys elements in attributes, therefore correct staff must be provided",
       );
     }
-    var keySignature = KeySignatureElement.fromKeyData(
-      keyData: musicKey,
-      notationContext: notationContext,
-      font: font,
-    );
-    if (keySignature.accidentals.isNotEmpty) {
-      attributes.add(keySignature);
+
+    if (musicKey is TraditionalKey) {
+      var keySignature = MeasureElement.keySignature(
+        key: musicKey,
+        font: font,
+        keyBefore: notationContext.key,
+        clef: notationContext.clef,
+      );
+      if (!keySignature.size.isEmpty) {
+        attributes.add(
+          MeasureElement.keySignature(
+            key: musicKey,
+            font: font,
+            keyBefore: notationContext.key,
+            clef: notationContext.clef,
+          ),
+        );
+      }
+    }
+    if (musicKey is NonTraditionalKey) {
+      throw UnimplementedError(
+        "Non traditional key is not implemented in renderer yet",
+      );
     }
     // -----------------------------
     // Time
@@ -136,12 +135,10 @@ class NotationWidgetization {
 
     for (var times in element.times) {
       switch (times) {
-        case TimeBeat _:
-          var timeBeatWidget = TimeSignatureElement(
-            timeBeat: times,
-            font: font,
+        case TimeBeat timeBeat:
+          attributes.add(
+            MeasureElement.timeSignature(timeBeat: timeBeat, font: font),
           );
-          attributes.add(timeBeatWidget);
           break;
         case SenzaMisura _:
           throw UnimplementedError(
@@ -167,29 +164,29 @@ class NotationWidgetization {
     );
   }
 
-  /// Builds a list of [MeasureWidget]s based on the provided measure data and notation context.
+  /// Builds a list of [MeasureElement]s based on the provided [measure] data and notation [context].
   ///
-  /// - [context]: The current notation context.
-  /// - [staff]: The staff number to filter elements (optional).
-  /// - [measure]: The measure data containing musical elements.
+  /// - [context] - The notation context before [measure] start.
+  /// - [staff] - The staff number to filter elements (optional).
+  /// - [measure] - The measure data containing musical elements.
   ///
-  /// Returns a list of [MeasureWidget]s representing the musical elements within the measure.
-  static List<MeasureWidget> widgetsFromMeasure({
-    required NotationContext contextBefore,
+  /// Returns a list of [MeasureElement]s representing the musical elements within the measure.
+  static List<MeasureElement> widgetsFromMeasure({
+    required NotationContext context,
     required int? staff,
     required Measure measure,
     required FontMetadata font,
   }) {
-    NotationContext context = contextBefore.copyWith();
+    NotationContext newContext = context.copyWith();
 
-    final children = <MeasureWidget>[];
+    final children = <MeasureElement>[];
     for (int i = 0; i < measure.data.length; i++) {
       var element = measure.data[i];
       switch (element) {
         case Note note:
           var noteWidget = _processNote(
             note,
-            context,
+            newContext,
             measure.data.sublist(i + 1),
             font,
             staff,
@@ -197,20 +194,38 @@ class NotationWidgetization {
           if (noteWidget != null) {
             children.add(noteWidget);
           }
-          if (noteWidget is Chord) {
-            i += noteWidget.notes.length - 1;
+          if (noteWidget != null && noteWidget.child is Chord) {
+            i += (noteWidget.child as Chord).notes.length - 1;
           }
           break;
         case Backup backup:
-          children.add(CursorElement(duration: -backup.duration));
+          var cursor = CursorElement(duration: -backup.duration);
+          children.add(
+            MeasureElement(
+              position: cursor.position,
+              size: cursor.baseSize,
+              alignmentOffset: cursor.alignmentPosition,
+              duration: cursor.duration,
+              child: cursor,
+            ),
+          );
           break;
         case Forward forward:
           if (staff != forward.staff) break;
-          children.add(CursorElement(
+          var cursor = CursorElement(
             duration: forward.duration,
             voice: forward.editorialVoice.voice,
             staff: forward.staff,
-          ));
+          );
+          children.add(
+            MeasureElement(
+              position: cursor.position,
+              size: cursor.baseSize,
+              alignmentOffset: cursor.alignmentPosition,
+              duration: cursor.duration,
+              child: cursor,
+            ),
+          );
           break;
         case Direction _:
           break;
@@ -218,15 +233,15 @@ class NotationWidgetization {
           var attributesWidgets = _processAttributes(
             element,
             staff,
-            context,
+            newContext,
             font,
           );
-          context = _contextAfterAttributes(
+          newContext = _contextAfterAttributes(
             attributes,
             staff,
-            context,
+            newContext,
           );
-          context = context.copyWith(divisions: attributes.divisions);
+          newContext = newContext.copyWith(divisions: attributes.divisions);
           children.addAll(attributesWidgets);
           break;
         // case Harmony _:

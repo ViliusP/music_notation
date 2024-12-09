@@ -3,10 +3,11 @@ import 'package:music_notation/src/models/elements/music_data/attributes/attribu
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/key.dart';
 import 'package:music_notation/src/models/elements/score/part.dart';
+import 'package:music_notation/src/notation_painter/utilities/type_extensions.dart';
 
 class NotationContext {
   final Clef? clef;
-  final Key? key;
+  final TraditionalKey? key;
   final double? divisions;
 
   const NotationContext({
@@ -25,7 +26,7 @@ class NotationContext {
   NotationContext copyWith({
     Clef? clef,
     double? divisions,
-    Key? key,
+    TraditionalKey? key,
   }) {
     return NotationContext(
       clef: clef ?? this.clef,
@@ -57,7 +58,7 @@ class NotationContext {
 
           context = context.copyWith(
               divisions: attributes.divisions,
-              key: musicKey,
+              key: musicKey.tryAs<TraditionalKey>(),
               clef: element.clefs.firstWhereOrNull(
                 (element) => staff != null ? element.number == staff : true,
               ));

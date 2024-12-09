@@ -12,11 +12,10 @@ import 'package:music_notation/src/smufl/font_metadata.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart';
 import 'package:music_notation/src/smufl/smufl_glyph.dart';
 
-class ClefElement extends StatelessWidget implements MeasureWidget {
+class ClefElement extends StatelessWidget {
   final Clef clef;
   final FontMetadata font;
 
-  @override
   AlignmentPosition get alignmentPosition {
     return AlignmentPosition(left: 0, top: -_verticalAlignmentAxisOffset);
   }
@@ -60,7 +59,6 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
     return _bBox.bBoxNE.y;
   }
 
-  @override
   ElementPosition get position {
     switch (clef.sign) {
       case ClefSign.G:
@@ -82,7 +80,6 @@ class ClefElement extends StatelessWidget implements MeasureWidget {
     }
   }
 
-  @override
   Size get baseSize => _bBox.toRect(1).size;
 
   @override

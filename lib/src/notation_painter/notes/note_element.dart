@@ -13,7 +13,6 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/augmentation_dots.dart';
-import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/notation_painter/notes/simple_note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
@@ -51,24 +50,14 @@ const Map<String, Color> _voiceColors = {
 ///
 /// If you are writing two voices on the same staff, the stems for the upper
 /// voice will go up, and the stems for the lower voice will go down.
-class NoteElement extends StatelessWidget implements RhythmicElement {
+class NoteElement extends StatelessWidget {
   final SimpleNoteElement note;
 
   final AccidentalElement? accidental;
 
   final AugmentationDots? dots;
 
-  @override
   final ElementPosition position;
-
-  @override
-  final double duration;
-
-  @override
-  double get stemLength => note.stem?.length ?? 0;
-
-  @override
-  StemDirection? get stemDirection => note.stem?.direction;
 
   final FontMetadata font;
 
@@ -132,7 +121,6 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
       font: font,
       accidental: accidental,
       position: position,
-      duration: note.determineDuration(),
       voice: note.editorialVoice.voice,
       beams: note.beams,
       dots: dots,
@@ -145,13 +133,11 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     this.accidental,
     this.dots,
     required this.position,
-    required this.duration,
     required this.font,
     this.voice,
     this.beams = const [],
   });
 
-  @override
   AlignmentPosition get alignmentPosition {
     double? bottom;
     double? top;
@@ -173,10 +159,10 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     }
 
     if (accidental != null) {
-      if (stemDirection == StemDirection.down) {
+      if (note.stem?.direction == StemDirection.down) {
         top = _accidentalOffset;
       }
-      if (stemDirection == StemDirection.up) {
+      if (note.stem?.direction == StemDirection.up) {
         bottom = _accidentalOffset;
       }
     }
@@ -189,7 +175,7 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
   }
 
   VerticalAlignment get _alignedBy {
-    if (stemDirection == StemDirection.up) {
+    if (note.stem?.direction == StemDirection.up) {
       return VerticalAlignment.bottom;
     }
     return VerticalAlignment.top;
@@ -238,12 +224,11 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
   ///
   /// X - the middle of stem.
   /// Y - the tip of stem.
-  @override
   Offset get offsetForBeam {
     double? offsetX;
     double offsetY = baseSize.height;
 
-    if (stemDirection == StemDirection.down) {
+    if (note.stem?.direction == StemDirection.down) {
       offsetX = NotationLayoutProperties.baseStemStrokeWidth / 2;
     }
 
@@ -338,7 +323,6 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
     }
   }
 
-  @override
   Size get baseSize => calculateBaseSize(
         note: note,
         position: position,
@@ -384,15 +368,15 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
   }
 
   double get verticalAlignmentAxisOffset {
-    if (stemLength > 0) {
-      return stemLength;
+    if ((note.stem?.length ?? 0) > 0) {
+      return note.stem!.length;
     }
 
     var spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
 
     // When note is on drawn the line and it's stem is drawn down,
     // the dots size must be taken in the account.
-    if (stemDirection == StemDirection.down &&
+    if (note.stem?.direction == StemDirection.down &&
         position.numeric % 2 == 0 &&
         dots != null) {
       return spacePerPosition + dots!.baseSize.height / 2;
@@ -450,30 +434,6 @@ class NoteElement extends StatelessWidget implements RhythmicElement {
         showName: true,
       ),
     );
-  }
-}
-
-extension NoteWidgetization on Note {
-  double determineDuration() {
-    switch (this) {
-      case GraceTieNote _:
-        throw UnimplementedError(
-          "Grace tie note is not implemented yet in renderer",
-        );
-      case GraceCueNote _:
-        throw UnimplementedError(
-          "Grace cue note is not implemented yet in renderer",
-        );
-      case CueNote cueNote:
-        return cueNote.duration;
-      case RegularNote regularNote:
-        return regularNote.duration;
-
-      default:
-        throw UnimplementedError(
-          "This error shouldn't occur, TODO: make switch exhaustively matched",
-        );
-    }
   }
 }
 

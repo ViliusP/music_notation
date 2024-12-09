@@ -13,12 +13,11 @@ import 'package:music_notation/src/notation_painter/utilities/size_extensions.da
 import 'package:music_notation/src/smufl/font_metadata.dart';
 import 'package:music_notation/src/smufl/smufl_glyph.dart';
 
-class TimeSignatureElement extends StatelessWidget implements MeasureWidget {
+class TimeSignatureElement extends StatelessWidget {
   final TimeBeat timeBeat;
 
   final FontMetadata font;
 
-  @override
   AlignmentPosition get alignmentPosition {
     return AlignmentPosition(
       top: -baseSize.height / 2,
@@ -26,7 +25,6 @@ class TimeSignatureElement extends StatelessWidget implements MeasureWidget {
     );
   }
 
-  @override
   Size get baseSize {
     double height = 0;
     double width = 0;
@@ -51,7 +49,6 @@ class TimeSignatureElement extends StatelessWidget implements MeasureWidget {
     );
   }
 
-  @override
   ElementPosition get position => const ElementPosition(
         step: Step.B,
         octave: 4,

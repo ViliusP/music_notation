@@ -9,7 +9,6 @@ import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rest_element.dart';
-import 'package:music_notation/src/notation_painter/notes/rhythmic_element.dart';
 import 'package:music_notation/src/notation_painter/time_signature_element.dart';
 import 'package:music_notation/src/notation_painter/utilities/string_extensions.dart';
 
@@ -59,9 +58,9 @@ class MeasureTimeline {
   /// - [divisions]: The number of divisions per measure, typically based on the time signature.
   MeasureTimeline._(this.values, this.divisions);
 
-  /// Processes a list of [MeasureWidget] instances to populate the timeline.
+  /// Processes a list of [MeasureElement] instances to populate the timeline.
   ///
-  /// This method iterates through each [MeasureWidget], categorizing them based
+  /// This method iterates through each [MeasureElement], categorizing them based
   /// on their type (e.g., [NoteElement], [Chord], [CursorElement]) and associating
   /// them with the appropriate time positions and voices. It updates the internal
   /// [_values] map and tracks the maximum cursor position.
@@ -69,7 +68,7 @@ class MeasureTimeline {
   /// ### Parameters:
   /// - [children] - A list of [MeasureWidget] instances representing musical elements.
   factory MeasureTimeline.fromMeasureElements(
-    List<MeasureWidget> children,
+    List<MeasureElement> children,
     double divisions,
   ) {
     Map<TimelinePosition, List<TimelineValue>> values = {};
@@ -77,14 +76,14 @@ class MeasureTimeline {
     TimelineValue? valueToAdd;
 
     for (final (index, child) in children.indexed) {
-      switch (child) {
+      switch (child.child) {
         case NoteElement note:
           String voice = note.voice ?? "1";
           valueToAdd = TimelineValue(
             index,
             child.duration,
             voice: voice,
-            widgetType: RhythmicElement,
+            widgetType: NoteElement,
             width: note.baseSize.width,
             name: child.position.toString().replaceFirst(
                   "ElementPosition  ",
@@ -99,17 +98,17 @@ class MeasureTimeline {
             child.duration,
             voice: voice,
             width: rest.baseSize.width,
-            widgetType: RhythmicElement,
+            widgetType: NoteElement,
             name: "R",
             leftOffset: rest.alignmentPosition.left,
           );
         case Chord chord:
-          String voice = child.notes.firstOrNull?.editorialVoice.voice ?? "1";
+          String voice = chord.notes.firstOrNull?.editorialVoice.voice ?? "1";
           valueToAdd = TimelineValue(
             index,
             child.duration,
             voice: voice,
-            widgetType: RhythmicElement,
+            widgetType: NoteElement,
             width: chord.baseSize.width,
             name:
                 "C${child.position.toString().replaceFirst("ElementPosition  ", "")}",
@@ -163,13 +162,13 @@ class MeasureTimeline {
             0,
             voice: "-1", // The "-1" indicates attributes sector
             name: child.runtimeType.toString().substring(0, 2),
-            width: child.baseSize.width,
-            leftOffset: child.alignmentPosition.left,
+            width: child.size.width,
+            leftOffset: child.alignmentOffset.left,
           );
       }
       TimelinePosition pos;
 
-      if (valueToAdd.widgetType == RhythmicElement) {
+      if (valueToAdd.widgetType == NoteElement) {
         pos = TimelinePosition(cursor);
       } else {
         pos = TimelinePosition(cursor, false);

@@ -5,7 +5,7 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 /// Represents the `<forward>` and `<backup>` element in MusicXML, which moves the cursor
 /// backward or forward in time by a specified duration without rendering any visual element.
 /// This helps in managing the timing for subsequent elements, especially in multiple voices.
-class CursorElement extends StatelessWidget implements MeasureWidget {
+class CursorElement extends StatelessWidget {
   /// Duration to move foward or backup. The negative values represents `<backup>`
   /// duration and the positives represents `<forward>` duration.
   final double duration;
@@ -14,17 +14,14 @@ class CursorElement extends StatelessWidget implements MeasureWidget {
 
   final int? staff;
 
-  @override
   AlignmentPosition get alignmentPosition => AlignmentPosition(
         left: 0,
         top: 0,
       );
 
   /// Generic position as `<forward>` does not correspond to a specific musical position.
-  @override
   ElementPosition get position => ElementPosition.staffMiddle;
 
-  @override
   Size get baseSize => const Size(0.25, 0.25);
 
   /// Creates a [CursorElement] with the given [duration] data.
