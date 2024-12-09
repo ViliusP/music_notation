@@ -1,6 +1,7 @@
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
+import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/notation_painter/aligned_row.dart';
@@ -9,6 +10,7 @@ import 'package:music_notation/src/notation_painter/measure/measure_element.dart
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
 import 'package:music_notation/src/notation_painter/notes/augmentation_dots.dart';
+import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/painters/note_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
@@ -33,6 +35,41 @@ class StemlessNoteElement extends StatelessWidget {
     this.accidental,
     this.dots,
   });
+
+  factory StemlessNoteElement.fromNote({
+    Key? key,
+    required Note note,
+    required Clef? clef,
+    required FontMetadata font,
+  }) {
+    AccidentalElement? accidental;
+    if (note.accidental != null) {
+      accidental = AccidentalElement(
+        type: note.accidental!.value,
+        font: font,
+      );
+    }
+
+    ElementPosition position = NoteElement.determinePosition(note, clef);
+
+    NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
+
+    AugmentationDots? dots;
+    if (note.dots.isNotEmpty) {
+      dots = AugmentationDots(count: note.dots.length, font: font);
+    }
+
+    return StemlessNoteElement(
+      dots: dots,
+      accidental: accidental,
+      head: NoteheadElement(
+        type: type,
+        font: font,
+        ledgerLines: LedgerLines.fromElementPosition(position),
+      ),
+      position: position,
+    );
+  }
 
   Size get size {
     double height = head.size.height;

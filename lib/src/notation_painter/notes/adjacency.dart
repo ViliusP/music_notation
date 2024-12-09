@@ -1,19 +1,18 @@
 import 'package:collection/collection.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
-import 'package:music_notation/src/notation_painter/notes/simple_note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 
 /// A set of static methods to determine notehead positions in chords based on adjacency and stem direction.
 class Adjacency {
   /// Determines the relative positions of noteheads within a chord based on stem direction and adjacency.
   ///
-  /// [notes] - List of notes to determine relative notehead positions.
+  /// [positions] - List of positions to determine relative notehead positions.
   /// [stemDirection] - Direction of the chord's stem, affecting notehead placement.
   ///
   /// Returns:
   /// A list of [NoteheadSide] values (left or right) corresponding to the noteheads' positions.
-  static List<NoteheadSide> determineNoteheadPositions(
-    List<StemlessNoteElement> notes,
+  static List<NoteheadSide> determineNoteSides(
+    List<ElementPosition> positions,
     StemDirection stemDirection,
   ) {
     // Default position is set based on the stem direction.
@@ -22,30 +21,30 @@ class Adjacency {
       defaultPosition = NoteheadSide.right;
     }
 
-    final sortedNotes = notes.sortedBy((note) => note.position);
+    final sortedPositions = positions.sortedBy((position) => position);
 
     // Initialize positions with the default position
-    List<NoteheadSide> positions = List.filled(
-      notes.length,
+    List<NoteheadSide> sides = List.filled(
+      positions.length,
       defaultPosition,
     );
 
     // Return immediately if there are no adjacent notes.
-    if (!containsAdjacentNotes(sortedNotes)) {
-      return positions;
+    if (!containsAdjacentNotes(sortedPositions)) {
+      return sides;
     }
 
     // Group adjacent notes by their position on the staff
-    ElementPosition? noteBeforePosition;
+    ElementPosition? positionBefore;
     List<Set<int>> groups = [];
     Set<int> group = {};
-    for (var (i, note) in sortedNotes.indexed) {
-      if (noteBeforePosition == null) {
-        noteBeforePosition = note.position;
+    for (var (i, position) in positions.indexed) {
+      if (positionBefore == null) {
+        positionBefore = position;
         group.add(i);
         continue;
       }
-      if (note.position.distance(noteBeforePosition) == 1) {
+      if (position.distance(positionBefore) == 1) {
         group.add(i);
       } else {
         if (group.length > 1) {
@@ -53,7 +52,7 @@ class Adjacency {
         }
         group = {i};
       }
-      noteBeforePosition = note.position;
+      positionBefore = position;
     }
     if (group.length > 1) {
       groups.add(group);
@@ -61,42 +60,38 @@ class Adjacency {
 
     // Determine notehead positions for each group based on adjacency and stem direction
     for (var group in groups) {
-      NoteheadSide pos = NoteheadSide.left; // Starting position
+      NoteheadSide side = NoteheadSide.left; // Starting position
       if (stemDirection == StemDirection.down && group.length % 2 != 0) {
-        pos = NoteheadSide.right;
+        side = NoteheadSide.right;
       }
       for (var index in group) {
-        positions[index] = pos;
+        sides[index] = side;
         // Alternate positions to create the zigzag pattern for adjacent notes
-        pos = (pos == NoteheadSide.right)
+        side = (side == NoteheadSide.right)
             ? NoteheadSide.left
             : NoteheadSide.right;
       }
     }
 
-    return positions;
+    return sides;
   }
 
   /// Determines if the given list of notes contains adjacent notes.
   ///
-  /// [notes] - List of notes to check for adjacency.
+  /// [positions] - List of positions to check for adjacency.
   ///
   /// Returns:
   /// `true` if any two notes in the list have a positional difference of 1 (i.e., an interval of a second).
   /// Otherwise, returns `false`.
-  static bool containsAdjacentNotes(List<StemlessNoteElement> notes) {
-    ElementPosition? noteBeforePosition;
+  static bool containsAdjacentNotes(List<ElementPosition> positions) {
+    if (positions.length < 2) return false;
+    ElementPosition lastPosition = positions.first;
 
-    for (var note in notes) {
-      if (noteBeforePosition == null) {
-        noteBeforePosition = note.position;
-        continue;
-      }
-      ElementPosition position = note.position;
-      if (position.distance(noteBeforePosition) == 1) {
+    for (var position in positions.skip(1)) {
+      if (position.distance(lastPosition) == 1) {
         return true;
       }
-      noteBeforePosition = position;
+      lastPosition = position;
     }
 
     return false;

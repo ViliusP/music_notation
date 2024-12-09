@@ -2,7 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
-import 'package:music_notation/src/notation_painter/notes/simple_note_element.dart';
+import 'package:music_notation/src/notation_painter/models/element_position.dart';
 
 /// Provides static methods for determining the stem direction of notes and chords.
 class Stemming {
@@ -19,17 +19,17 @@ class Stemming {
   /// This method does not currently account for surrounding notes (contextual stemming).
   ///
   /// Parameters:
-  /// - [notes] - A list of notes within the chord to evaluate.
+  /// - [positions] - A list of positions of notes within the chord to evaluate.
   ///
   /// Returns:
   /// - [StemDirection.up] or [StemDirection.down] based on the furthest note position.
   static StemDirection determineChordStemDirection(
-      List<StemlessNoteElement> notes) {
-    final sortedNotes = notes.sortedBy((note) => note.position);
+      List<ElementPosition> positions) {
+    final sortedPositions = positions.sortedBy((pos) => pos);
 
-    int distanceFromMiddleFirst = sortedNotes.first.position.distanceFromMiddle;
+    int distanceFromMiddleFirst = sortedPositions.first.distanceFromMiddle;
 
-    int distanceFromMiddleLast = sortedNotes.last.position.distanceFromMiddle;
+    int distanceFromMiddleLast = sortedPositions.last.distanceFromMiddle;
 
     // When the outer notes are both above or both below the middle line,
     // the stem direction is down if the notes are above, and up if the notes are below.
@@ -52,8 +52,8 @@ class Stemming {
     // When the outer notes are equidistant from the middle line, the stem direction
     // is determined by the majority of notes above or below the middle line.
     if (distanceFromMiddleFirst.abs() == distanceFromMiddleLast.abs() &&
-        notes.length > 2) {
-      var (below, above) = _countByMiddle(notes);
+        sortedPositions.length > 2) {
+      var (below, above) = _countByMiddle(sortedPositions);
 
       /// Stem direction is up if the majority of notes are below the middle line.
       if (below > above) {
@@ -79,11 +79,11 @@ class Stemming {
   /// Returns:
   /// - A tuple containing the counts of notes below and above the middle line.
   static (int below, int above) _countByMiddle(
-      List<StemlessNoteElement> notes) {
+      List<ElementPosition> positions) {
     int below = 0;
     int above = 0;
-    for (var note in notes) {
-      int distanceFromMiddle = note.position.distanceFromMiddle;
+    for (var position in positions) {
+      int distanceFromMiddle = position.distanceFromMiddle;
       if (distanceFromMiddle.sign == -1) {
         below += 1;
       }

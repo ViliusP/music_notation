@@ -2,21 +2,17 @@ import 'dart:collection';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
-import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
-import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
+import 'package:music_notation/src/notation_painter/notes/adjacency.dart';
 import 'package:music_notation/src/notation_painter/notes/augmentation_dots.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
-import 'package:music_notation/src/notation_painter/notes/adjacency.dart';
-import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/simple_note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
@@ -24,69 +20,28 @@ import 'package:music_notation/src/notation_painter/utilities/size_extensions.da
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
 class Chord extends StatelessWidget {
-  final List<StemlessNoteElement> _notes;
+  final ChordColumn? noteheadsLeft;
+  final ChordColumn? noteheadsRight;
+  final ChordColumn? augmentationDots;
+  final ChordColumn? accidentals;
+
+  final int length;
 
   final StemElement? stem;
   final List<Beam> beams;
   final String? voice;
 
-  SplayTreeSet<StemlessNoteElement> get notes =>
-      SplayTreeSet<StemlessNoteElement>.from(_notes, comparator);
-
-  StemlessNoteElement get _referenceNote => notes.first;
-
-  int Function(StemlessNoteElement, StemlessNoteElement)? get comparator {
-    if (stem != null && stem?.direction == StemDirection.up) {
-      return (a, b) {
-        if (a.position != b.position) {
-          return a.position.compareTo(b.position);
-        }
-        int aAccidentalType = a.accidental?.type.index ?? 0;
-        int bAccidentalType = b.accidental?.type.index ?? 0;
-
-        return aAccidentalType.compareTo(bAccidentalType);
-      };
-    }
-
-    return (a, b) {
-      if (a.position != b.position) {
-        return b.position.compareTo(a.position);
-      }
-      int aAccidentalType = a.accidental?.type.index ?? 0;
-      int bAccidentalType = b.accidental?.type.index ?? 0;
-
-      return aAccidentalType.compareTo(bAccidentalType);
-    };
-  }
-
-  ElementPosition get position => notes.first.position;
-
-  AlignmentPosition get alignmentPosition {
-    double? top;
-    double? bottom;
-    if (stem?.direction == StemDirection.up) {
-      bottom = _referenceNote.alignmentPosition.bottom!;
-    }
-
-    if (stem?.direction == StemDirection.down) {
-      top = _referenceNote.alignmentPosition.bottom!.abs() -
-          _referenceNote.size.height;
-    }
-
-    return AlignmentPosition(
-      left: 0,
-      top: top,
-      bottom: bottom,
-    );
-  }
-
   const Chord({
     super.key,
-    required List<StemlessNoteElement> notes,
+    this.noteheadsLeft,
+    this.noteheadsRight,
+    this.augmentationDots,
+    this.accidentals,
     this.stem,
     this.beams = const [],
     this.voice,
-  }) : _notes = notes;
+    required this.length,
+  });
 
   /// **IMPORTANT**: [notes] cannot be empty.
   factory Chord.fromNotes({
@@ -99,45 +54,61 @@ class Chord extends StatelessWidget {
       throw ArgumentError('notes list is empty');
     }
 
-    List<StemlessNoteElement> notesElements = [];
-
-    for (var note in notes) {
-      AccidentalElement? accidental;
-      if (note.accidental != null) {
-        accidental = AccidentalElement(
-          type: note.accidental!.value,
-          font: font,
-        );
-      }
-
-      ElementPosition position = NoteElement.determinePosition(note, clef);
-
-      NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
-
-      AugmentationDots? dots;
-      if (note.dots.isNotEmpty) {
-        dots = AugmentationDots(count: note.dots.length, font: font);
-      }
-
-      notesElements.add(StemlessNoteElement(
-        dots: dots,
-        accidental: accidental,
-        head: NoteheadElement(
-          type: type,
-          font: font,
-          ledgerLines: LedgerLines.fromElementPosition(position),
-        ),
-        position: position,
-      ));
-    }
-
-    // ----------- STEM ---------------------
+    // ----------- STEM DIRECTION ---------------------
     StemElement? stem;
     StemValue? stemValue = notes.first.stem?.value;
     StemDirection? stemDirection;
     if (stemValue != null) {
       stemDirection = StemDirection.fromStemValue(stemValue);
     }
+
+    // ----------- NOTEHEAD COLUMNS ---------------------
+
+    List<StemlessNoteElement> notesElements = [];
+    List<ElementPosition> positions = [];
+
+    for (var note in notes) {
+      notesElements.add(StemlessNoteElement.fromNote(
+        note: note,
+        clef: clef,
+        font: font,
+      ));
+      positions.add(notesElements.last.position);
+    }
+
+    // Direction of real or imaginary (if stem isn't needed) stem.
+    StemDirection direction =
+        stemDirection ?? Stemming.determineChordStemDirection(positions);
+
+    var sides = Adjacency.determineNoteSides(positions, direction);
+
+    ChordColumn leftNoteheads = ChordColumn(
+      children: notesElements
+          .whereIndexed((i, _) => sides[i] == NoteheadSide.left)
+          .map((note) => MeasureElement(
+                position: note.position,
+                size: note.size,
+                alignmentOffset: note.alignmentPosition,
+                duration: 0,
+                child: note.head,
+              ))
+          .toList(),
+    );
+
+    ChordColumn rightNoteheads = ChordColumn(
+      children: notesElements
+          .whereIndexed((i, _) => sides[i] == NoteheadSide.right)
+          .map((note) => MeasureElement(
+                position: note.position,
+                size: note.size,
+                alignmentOffset: note.alignmentPosition,
+                duration: 0,
+                child: note.head,
+              ))
+          .toList(),
+    );
+
+    // -------------------- STEM ----------------------
     NoteTypeValue type = notes.first.type?.value ?? NoteTypeValue.quarter;
 
     List<Beam> beams =
@@ -156,77 +127,42 @@ class Chord extends StatelessWidget {
 
     return Chord(
       key: key,
-      notes: notesElements,
+      noteheadsLeft: leftNoteheads,
+      noteheadsRight: rightNoteheads,
       beams: beams,
       stem: stem,
       voice: notes.firstOrNull?.editorialVoice.voice,
+      length: notes.length,
     );
   }
 
-  /// Relative offset from bounding box bottom left if [AlignmentPosition.top] is defined.
-  /// Relative offset from bounding box top left if [AlignmentPosition.bottom] is defined.
-  ///
-  /// X - the middle of stem.
-  /// Y - the tip of stem.
-  Offset? get offsetForBeam {
-    if (stem == null) {
-      return null;
+  List<ChordColumn> get _columns {
+    List<ChordColumn> columns = [];
+    if (accidentals != null) {
+      columns.add(accidentals!);
+    }
+    if (noteheadsLeft != null) {
+      columns.add(noteheadsLeft!);
+    }
+    if (noteheadsRight != null) {
+      columns.add(noteheadsRight!);
     }
 
-    double? offsetX;
-    double? offsetY = size.height;
-    StemlessNoteElement maxDotsNote = notes.reduce(
-      (a, b) => (a.dots?.count ?? 0) > (b.dots?.count ?? 0) ? a : b,
-    );
-
-    if (maxDotsNote.dots != null) {
-      offsetX = size.width;
-      offsetX -= AugmentationDots.defaultBaseOffset;
-      offsetX -= maxDotsNote.dots!.size.width;
+    if (augmentationDots != null) {
+      columns.add(augmentationDots!);
     }
 
-    var (leftWidth, rightWidth) = _noteheadSizesBySide;
-
-    if (stem?.direction == StemDirection.up && rightWidth != 0) {
-      offsetX = rightWidth;
-    }
-
-    if (stem?.direction == StemDirection.down) {
-      offsetX = (NotationLayoutProperties.baseStemStrokeWidth) / 2 + leftWidth;
-    }
-
-    if (alignmentPosition.top != null &&
-        stem?.direction != StemDirection.down) {
-      offsetY = 0;
-    }
-
-    return Offset(
-      offsetX ?? size.width,
-      offsetY,
-    );
+    return columns;
   }
 
-  /// Difference between lowest and highest notes' positions;
-  int get _range => _referenceNote.position.distance(notes.last.position);
-
-  (double left, double right) get _noteheadSizesBySide {
-    var noteheadPositions = Adjacency.determineNoteheadPositions(
-      notes.toList(),
-      stem?.direction ?? StemDirection.up,
-    );
-
-    double widthToLeft = 0;
-    double widthToRight = 0;
-    for (var (i, pos) in noteheadPositions.indexed) {
-      double width = notes.elementAt(i).size.width;
-      if (pos == NoteheadSide.left) {
-        widthToLeft = [width, widthToLeft].max;
-      }
-      if (pos == NoteheadSide.right) {
-        widthToRight = [width, widthToRight].max;
+  MeasureElement? get _referenceElement {
+    MeasureElement? ref;
+    for (var column in _columns) {
+      if (ref == null || ref.position < column.position) {
+        ref = column._children.firstOrNull;
       }
     }
-    return (widthToLeft, widthToRight);
+    return ref;
   }
 
   static double _stemStartLength(
@@ -243,74 +179,219 @@ class Chord extends StatelessWidget {
     return range * NotationLayoutProperties.baseSpacePerPosition;
   }
 
-  Size get size {
-    double lowestY = 0;
-    double highestY = 0;
-    for (var note in notes) {
-      double y = 0;
-      double noteTop = 0;
-      int interval = note.position.distance(_referenceNote.position);
-      y = interval * NotationLayoutProperties.baseSpacePerPosition;
+  ElementPosition get position =>
+      _referenceElement?.position ?? ElementPosition.staffMiddle;
 
-      double noteBottom = y + note.alignmentPosition.bottom!;
-      lowestY = min(lowestY, noteBottom);
-
-      noteTop = note.size.height + note.alignmentPosition.bottom!;
-      noteTop += y;
-      highestY = max(highestY, noteTop);
-    }
-
-    double noteheadsHeight = lowestY.abs() + highestY.abs();
-    double heightWithStem = lowestY.abs() + (stem?.length ?? 0);
-    double height = max(heightWithStem, noteheadsHeight);
-
-    var (leftWidth, rightWidth) = _noteheadSizesBySide;
-
-    double width = leftWidth + rightWidth;
-
-    if (leftWidth != 0 && rightWidth != 0) {
-      width -= NotationLayoutProperties.baseStemStrokeWidth / 2;
-    }
-
-    return Size(width, height);
+  AlignmentPosition get alignmentPosition {
+    return AlignmentPosition(left: 0, top: 0);
   }
 
-  List<NoteheadSide> get _noteheadSides => Adjacency.determineNoteheadPositions(
-        notes.toList(),
-        stem?.direction ?? Stemming.determineChordStemDirection(_notes),
-      );
-
-  bool get _hasAdjacentNotes => Adjacency.containsAdjacentNotes(notes.toList());
-
-  /// Calculates position for stem - relative position by
-  /// component's left, bottom/top bounding box sides that is determined by [size].
-  AlignmentPosition? get _stemAlignment {
+  /// Relative offset from bounding box bottom left if [AlignmentPosition.top] is defined.
+  /// Relative offset from bounding box top left if [AlignmentPosition.bottom] is defined.
+  ///
+  /// X - the middle of stem.
+  /// Y - the tip of stem.
+  Offset? get offsetForBeam {
     if (stem == null) {
       return null;
     }
+    return Offset(
+      _stemPosition.left,
+      0,
+    );
+  }
 
-    double left = 0;
-    double? top;
-    double? bottom;
-    if (_referenceNote.accidental != null) {
-      // left += base.accidental!.size.width;
-      // left += NotationLayoutProperties.noteAccidentalDistance;
+  Size get size {
+    return Size(
+      _width,
+      noteheadsLeft?.size.height ?? 0,
+    );
+  }
+
+  double get _width {
+    double currentWidth = 0;
+    double nextElementPosition = 0;
+    if (accidentals != null) {
+      currentWidth += accidentals!.size.width;
+      nextElementPosition = NotationLayoutProperties.noteAccidentalDistance;
     }
-    if (stem?.direction == StemDirection.down) {
-      // left += StemElement.defaultHorizontalOffset;
-      bottom = 0;
+    if (noteheadsLeft != null) {
+      currentWidth += nextElementPosition;
+      currentWidth += noteheadsLeft!.size.width;
+      nextElementPosition = 0;
     }
-    if (stem?.direction == StemDirection.up) {
-      // left += base.head.size.width;
-      // left -= StemElement.defaultHorizontalOffset;
-      top = 0;
+    if (stem != null) {
+      currentWidth += nextElementPosition;
+      currentWidth += (NotationLayoutProperties.baseStemStrokeWidth) / 2;
+      nextElementPosition = -(NotationLayoutProperties.baseStemStrokeWidth) / 2;
+    }
+    if (noteheadsRight != null) {
+      currentWidth += nextElementPosition;
+      currentWidth += noteheadsRight!.size.width;
+      nextElementPosition = AugmentationDots.defaultBaseOffset;
+    }
+    if (augmentationDots != null) {
+      currentWidth += nextElementPosition;
+      currentWidth += augmentationDots!.size.width;
+    }
+    return currentWidth;
+  }
+
+  AlignmentPosition get _accidentalsPosition {
+    int interval = position.distance(accidentals?.position ?? position);
+
+    return AlignmentPosition(
+      left: 0,
+      bottom: interval * NotationLayoutProperties.baseSpacePerPosition,
+    );
+  }
+
+  AlignmentPosition get _leftColumnPosition {
+    int interval = position.distance(noteheadsLeft?.position ?? position);
+
+    double afterAccidentals = 0;
+    if (accidentals != null) {
+      afterAccidentals = NotationLayoutProperties.noteAccidentalDistance;
     }
 
     return AlignmentPosition(
-      left: left,
-      top: top,
+      left: _accidentalsPosition.left +
+          (accidentals?.size.width ?? 0) +
+          afterAccidentals,
+      bottom: interval * NotationLayoutProperties.baseSpacePerPosition,
+    );
+  }
+
+  /// Calculates position for stem - relative position by
+  /// component's left, bottom/top bounding box sides that is determined by [size].
+  AlignmentPosition get _stemPosition {
+    return AlignmentPosition(
+      left: _leftColumnPosition.left +
+          (noteheadsLeft?.size.width ?? 0) -
+          (NotationLayoutProperties.baseStemStrokeWidth) / 2,
+      top: 0,
+    );
+  }
+
+  AlignmentPosition get _rightColumnPosition {
+    int interval = position.distance(noteheadsRight?.position ?? position);
+
+    return AlignmentPosition(
+      left: _stemPosition.left,
+      bottom: interval * NotationLayoutProperties.baseSpacePerPosition,
+    );
+  }
+
+  AlignmentPosition get _dotsPosition {
+    int interval = position.distance(augmentationDots?.position ?? position);
+
+    return AlignmentPosition(
+      left: _rightColumnPosition.left +
+          (noteheadsRight?.size.width ?? 0) +
+          AugmentationDots.defaultBaseOffset,
+      bottom: interval * NotationLayoutProperties.baseSpacePerPosition,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox.fromSize(
+      size: size.scaledByContext(context),
+      child: Stack(
+        children: [
+          if (accidentals != null)
+            AlignmentPositioned(
+              position: _accidentalsPosition.scaledByContext(context),
+              child: accidentals!,
+            ),
+          if (noteheadsLeft != null)
+            AlignmentPositioned(
+              position: _leftColumnPosition.scaledByContext(context),
+              child: noteheadsLeft!,
+            ),
+          if (stem != null)
+            AlignmentPositioned(
+              position: _stemPosition.scaledByContext(context),
+              child: stem!,
+            ),
+          if (noteheadsRight != null)
+            AlignmentPositioned(
+              position: _rightColumnPosition.scaledByContext(context),
+              child: noteheadsRight!,
+            ),
+          if (augmentationDots != null)
+            AlignmentPositioned(
+              position: _dotsPosition.scaledByContext(context),
+              child: augmentationDots!,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class ChordColumn extends StatelessWidget {
+  final List<MeasureElement> children;
+
+  const ChordColumn({
+    super.key,
+    required this.children,
+  });
+
+  SplayTreeSet<MeasureElement> get _children =>
+      SplayTreeSet<MeasureElement>.from(children, _comparator);
+
+  int Function(MeasureElement, MeasureElement)? get _comparator {
+    return (a, b) {
+      return a.position.compareTo(b.position);
+    };
+  }
+
+  ElementPosition get position => _children.first.position;
+
+  AlignmentPosition get alignmentPosition {
+    // double? top;
+    double? bottom;
+
+    MeasureElement reference = _children.first;
+
+    // if (stem?.direction == StemDirection.up) {
+    bottom = reference.alignmentOffset.bottom!;
+    // }
+
+    // top = reference.alignmentOffset.bottom!.abs() - reference.size.height;
+
+    return AlignmentPosition(
+      left: 0,
+      // top: top,
       bottom: bottom,
     );
+  }
+
+  Size get size {
+    double lowestY = 0;
+    double highestY = 0;
+
+    double width = 0;
+    for (var child in _children) {
+      double y = 0;
+      double childTop = 0;
+      int interval = child.position.distance(position);
+      y = interval * NotationLayoutProperties.baseSpacePerPosition;
+
+      double childBottom = y + child.alignmentOffset.bottom!;
+      lowestY = min(lowestY, childBottom);
+
+      childTop = child.size.height + child.alignmentOffset.bottom!;
+      childTop += y;
+      highestY = max(highestY, childTop);
+
+      width = max(width, child.size.width);
+    }
+
+    double height = lowestY.abs() + highestY.abs();
+
+    return Size(width, height);
   }
 
   @override
@@ -319,28 +400,17 @@ class Chord extends StatelessWidget {
         NotationProperties.of(context)?.layout ??
             NotationLayoutProperties.standard();
 
-    var children = <Widget>[];
+    List<Widget> positioned = [];
 
-    for (var (index, note) in notes.indexed) {
-      // Interval between reference note and current iteration note.
-      double interval = ((note.position.numeric - position.numeric)).toDouble();
+    for (var child in _children) {
+      double interval =
+          ((child.position.numeric - position.numeric)).toDouble();
       double distanceFromRef = interval * layoutProperties.spacePerPosition;
 
-      double? left;
-      final NoteheadSide side = _noteheadSides[index];
-
-      if (side == NoteheadSide.left && _hasAdjacentNotes) {
-        left = 0;
-      }
-
-      bool alignByBottom = stem?.direction == StemDirection.up;
-
-      children.add(
+      positioned.add(
         Positioned(
-          bottom: alignByBottom ? distanceFromRef : null,
-          top: !alignByBottom ? distanceFromRef.abs() : null,
-          left: left,
-          child: note,
+          bottom: distanceFromRef,
+          child: child,
         ),
       );
     }
@@ -348,42 +418,8 @@ class Chord extends StatelessWidget {
     return SizedBox.fromSize(
       size: size.scaledByContext(context),
       child: Stack(
-        children: [
-          ...children,
-          if (stem != null)
-            AlignmentPositioned(
-              position: _stemAlignment!.scaledByContext(context),
-              child: stem!,
-            ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    DiagnosticLevel level = DiagnosticLevel.info;
-
-    properties.add(
-      FlagProperty(
-        '_hasAdjecentNotes',
-        value: _hasAdjacentNotes,
-        ifTrue: _hasAdjacentNotes.toString(),
-        ifFalse: _hasAdjacentNotes.toString(),
-        defaultValue: null,
-        level: level,
-        showName: true,
-      ),
-    );
-
-    properties.add(
-      IterableProperty(
-        '_noteheadsPositions',
-        _noteheadSides,
-        defaultValue: [],
-        level: level,
-        showName: true,
+        alignment: Alignment.bottomCenter,
+        children: positioned,
       ),
     );
   }
