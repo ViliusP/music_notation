@@ -5,7 +5,9 @@ import 'package:alchemist/alchemist.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
+import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
+import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/simple_note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
@@ -214,8 +216,11 @@ void main() {
             direction: stemDirection,
           );
 
-          SimpleNoteElement note = SimpleNoteElement(
-            head: notehead,
+          NoteElement note = NoteElement(
+            base: StemlessNoteElement(
+              head: notehead,
+              position: ElementPosition.staffMiddle,
+            ),
             stem: stem,
           );
 

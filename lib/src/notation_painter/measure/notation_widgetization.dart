@@ -17,6 +17,7 @@ import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
 import 'package:music_notation/src/models/elements/music_data/music_data.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/key.dart'
     as musicxml show Key;
+import 'package:music_notation/src/notation_painter/utilities/type_extensions.dart';
 
 class NotationWidgetization {
   /// Processes a note and determines if it should be rendered as a single note or part of a chord.
@@ -194,8 +195,9 @@ class NotationWidgetization {
           if (noteWidget != null) {
             children.add(noteWidget);
           }
-          if (noteWidget != null && noteWidget.child is Chord) {
-            i += (noteWidget.child as Chord).notes.length - 1;
+          var maybeChord = noteWidget?.child.tryAs<Chord>();
+          if (maybeChord != null) {
+            i += maybeChord.length - 1;
           }
           break;
         case Backup backup:
