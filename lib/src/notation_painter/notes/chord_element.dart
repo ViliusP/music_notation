@@ -308,6 +308,23 @@ class Chord extends StatelessWidget {
 
   bool get _hasAdjacentNotes => Adjacency.containsAdjacentNotes(sortedNotes);
 
+  static double _verticalAlignmentAxisOffset(NoteElement note) {
+    if ((note.stem?.length ?? 0) > 0) {
+      return note.stem!.length;
+    }
+
+    var spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
+
+    // When note is on drawn the line and it's stem is drawn down,
+    // the dots size must be taken in the account.
+    if (note.stem?.direction == StemDirection.down &&
+        note.position.numeric % 2 == 0 &&
+        note.base.dots != null) {
+      return spacePerPosition + note.base.dots!.baseSize.height / 2;
+    }
+    return spacePerPosition;
+  }
+
   @override
   Widget build(BuildContext context) {
     NotationLayoutProperties layoutProperties =
@@ -374,7 +391,8 @@ class Chord extends StatelessWidget {
           refnote.position.numeric % 2 != 0 &&
           note.dots.isNotEmpty &&
           index != referenceNoteIndex) {
-        distanceFromRef += element.verticalAlignmentAxisOffset.scaledByContext(
+        distanceFromRef +=
+            _verticalAlignmentAxisOffset(element).scaledByContext(
           context,
         );
         distanceFromRef -= layoutProperties.staveSpace / 2;

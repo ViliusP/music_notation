@@ -140,71 +140,6 @@ class StemlessNoteElement extends StatelessWidget {
   }
 }
 
-// Note without accidentals, dots. Just notehead, stem and flag (if needed).
-// class SimpleNoteElement extends StatelessWidget {
-//   final NoteheadElement head;
-//   final StemElement? stem;
-
-//   const SimpleNoteElement({
-//     super.key,
-//     required this.head,
-//     this.stem,
-//   });
-
-//   Size get baseSize => _calculateBaseSize(notehead: head, stem: stem);
-
-//   static Size _calculateBaseSize({
-//     required NoteheadElement notehead,
-//     StemElement? stem,
-//   }) {
-//     double width = notehead.baseSize.width;
-//     double height = notehead.baseSize.height;
-
-//     if (stem != null && stem.length > 0) {
-//       height += stem.length - height / 2;
-//       if (stem.direction == StemDirection.up) {
-//         width += stem._baseFlagSize.width;
-//       }
-//       width += _stemHorizontalOffset;
-//       width = [stem._baseFlagSize.width, width].max;
-//     }
-
-//     return Size(width, height);
-//   }
-
-//   AlignmentPosition _noteheadPosition() {
-//     if (stem?.direction == StemDirection.up) {
-//       return AlignmentPosition(bottom: 0, left: 0);
-//     }
-//     // If stem direction is null or down
-//     return AlignmentPosition(top: 0, left: 0);
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     NotationLayoutProperties layoutProperties =
-//         NotationProperties.of(context)?.layout ??
-//             NotationLayoutProperties.standard();
-
-//     return SizedBox.fromSize(
-//       size: baseSize.scale(layoutProperties.staveSpace),
-//       child: Stack(
-//         children: [
-//           AlignmentPositioned(
-//             position: _noteheadPosition(),
-//             child: head,
-//           ),
-//           if (stem != null)
-//             AlignmentPositioned(
-//               position: _stemPosition.scale(layoutProperties.staveSpace),
-//               child: stem!,
-//             ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
 class StemElement extends StatelessWidget {
   const StemElement({
     super.key,
@@ -227,7 +162,7 @@ class StemElement extends StatelessWidget {
   /// Determines if flag should be shown with stem. By default it is true;
   final bool showFlag;
 
-  Size get baseSize {
+  Size get size {
     double width = NotationLayoutProperties.baseStemStrokeWidth;
     if (showFlag && length > 0) {
       width = width / 2 + _baseFlagSize.width;
@@ -356,27 +291,30 @@ class StemElement extends StatelessWidget {
 
     SmuflGlyph? flagGlyph = _glyph;
 
-    return Stack(children: [
-      CustomPaint(
-        size: baseSize.scaledByContext(context),
-        painter: StemPainter(
-          direction: direction,
-          thickness: layoutProperties.stemStrokeWidth,
-        ),
-      ),
-      if (flagGlyph != null && length > 0)
-        AlignmentPositioned(
-          position: _flagPosition(direction),
-          child: CustomPaint(
-            size: _baseFlagSize.scaledByContext(context),
-            painter: SimpleGlyphPainter(
-              flagGlyph.codepoint,
-              _bBox(font),
-              layoutProperties.staveSpace,
-            ),
+    return SizedBox.fromSize(
+      size: size.scaledByContext(context),
+      child: Stack(children: [
+        CustomPaint(
+          size: size.scaledByContext(context),
+          painter: StemPainter(
+            direction: direction,
+            thickness: layoutProperties.stemStrokeWidth,
           ),
         ),
-    ]);
+        if (flagGlyph != null && length > 0)
+          AlignmentPositioned(
+            position: _flagPosition(direction),
+            child: CustomPaint(
+              size: _baseFlagSize.scaledByContext(context),
+              painter: SimpleGlyphPainter(
+                flagGlyph.codepoint,
+                _bBox(font),
+                layoutProperties.staveSpace,
+              ),
+            ),
+          ),
+      ]),
+    );
   }
 
   @override
