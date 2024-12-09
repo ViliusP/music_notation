@@ -37,10 +37,26 @@ class Chord extends StatelessWidget {
 
   int Function(StemlessNoteElement, StemlessNoteElement)? get comparator {
     if (stem != null && stem?.direction == StemDirection.up) {
-      return (a, b) => a.position.compareTo(b.position);
+      return (a, b) {
+        if (a.position != b.position) {
+          return a.position.compareTo(b.position);
+        }
+        int aAccidentalType = a.accidental?.type.index ?? 0;
+        int bAccidentalType = b.accidental?.type.index ?? 0;
+
+        return aAccidentalType.compareTo(bAccidentalType);
+      };
     }
 
-    return (a, b) => b.position.compareTo(a.position);
+    return (a, b) {
+      if (a.position != b.position) {
+        return b.position.compareTo(a.position);
+      }
+      int aAccidentalType = a.accidental?.type.index ?? 0;
+      int bAccidentalType = b.accidental?.type.index ?? 0;
+
+      return aAccidentalType.compareTo(bAccidentalType);
+    };
   }
 
   ElementPosition get position => notes.first.position;
