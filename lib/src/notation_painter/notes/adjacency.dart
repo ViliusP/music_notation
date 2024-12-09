@@ -11,21 +11,21 @@ class Adjacency {
   /// [stemDirection] - Direction of the chord's stem, affecting notehead placement.
   ///
   /// Returns:
-  /// A list of [NoteheadPosition] values (left or right) corresponding to the noteheads' positions.
-  static List<NoteheadPosition> determineNoteheadPositions(
+  /// A list of [NoteheadSide] values (left or right) corresponding to the noteheads' positions.
+  static List<NoteheadSide> determineNoteheadPositions(
     List<StemlessNoteElement> notes,
     StemDirection stemDirection,
   ) {
     // Default position is set based on the stem direction.
-    NoteheadPosition defaultPosition = NoteheadPosition.left;
+    NoteheadSide defaultPosition = NoteheadSide.left;
     if (stemDirection == StemDirection.down) {
-      defaultPosition = NoteheadPosition.right;
+      defaultPosition = NoteheadSide.right;
     }
 
     final sortedNotes = notes.sortedBy((note) => note.position);
 
     // Initialize positions with the default position
-    List<NoteheadPosition> positions = List.filled(
+    List<NoteheadSide> positions = List.filled(
       notes.length,
       defaultPosition,
     );
@@ -61,16 +61,16 @@ class Adjacency {
 
     // Determine notehead positions for each group based on adjacency and stem direction
     for (var group in groups) {
-      NoteheadPosition pos = NoteheadPosition.left; // Starting position
+      NoteheadSide pos = NoteheadSide.left; // Starting position
       if (stemDirection == StemDirection.down && group.length % 2 != 0) {
-        pos = NoteheadPosition.right;
+        pos = NoteheadSide.right;
       }
       for (var index in group) {
         positions[index] = pos;
         // Alternate positions to create the zigzag pattern for adjacent notes
-        pos = (pos == NoteheadPosition.right)
-            ? NoteheadPosition.left
-            : NoteheadPosition.right;
+        pos = (pos == NoteheadSide.right)
+            ? NoteheadSide.left
+            : NoteheadSide.right;
       }
     }
 
@@ -104,7 +104,7 @@ class Adjacency {
 }
 
 /// Represents the relative position of a notehead in relation to the stem within a chord.
-enum NoteheadPosition {
+enum NoteheadSide {
   left,
   right;
 }

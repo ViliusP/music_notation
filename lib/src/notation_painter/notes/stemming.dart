@@ -20,11 +20,11 @@ class Stemming {
   ///
   /// Parameters:
   /// - [notes] - A list of notes within the chord to evaluate.
-  /// - [clef] - An optional clef reference to help interpret the note positions on the staff.
   ///
   /// Returns:
   /// - [StemDirection.up] or [StemDirection.down] based on the furthest note position.
-  static StemDirection determineChordStem(List<StemlessNoteElement> notes) {
+  static StemDirection determineChordStemDirection(
+      List<StemlessNoteElement> notes) {
     final sortedNotes = notes.sortedBy((note) => note.position);
 
     int distanceFromMiddleFirst = sortedNotes.first.position.distanceFromMiddle;
