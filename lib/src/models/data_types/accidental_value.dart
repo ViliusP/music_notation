@@ -33,7 +33,6 @@ enum AccidentalValue {
   naturalSharp,
   naturalFlat,
   quarterFlat,
-  quarterFharp,
   threeQuartersFlat,
   threeQuartersSharp,
   sharpDown,

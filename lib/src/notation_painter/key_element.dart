@@ -25,7 +25,6 @@ const Map<AccidentalValue, SmuflGlyph> _accidentalSmuflMapping = {
   AccidentalValue.naturalSharp: AccidentalsStandard.accidentalNaturalSharp,
   AccidentalValue.naturalFlat: AccidentalsStandard.accidentalNaturalSharp,
   AccidentalValue.quarterFlat: SmuflGlyph.accidentalQuarterToneFlatStein,
-  AccidentalValue.quarterFharp: SmuflGlyph.noteheadXBlack,
   AccidentalValue.threeQuartersFlat: SmuflGlyph.noteheadXBlack,
   AccidentalValue.threeQuartersSharp: SmuflGlyph.noteheadXBlack,
   AccidentalValue.sharpDown: SmuflGlyph.noteheadXBlack,
