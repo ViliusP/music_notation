@@ -25,36 +25,49 @@ const Map<AccidentalValue, SmuflGlyph> _accidentalSmuflMapping = {
   AccidentalValue.naturalSharp: AccidentalsStandard.accidentalNaturalSharp,
   AccidentalValue.naturalFlat: AccidentalsStandard.accidentalNaturalSharp,
   AccidentalValue.quarterFlat: SmuflGlyph.accidentalQuarterToneFlatStein,
-  AccidentalValue.threeQuartersFlat: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.threeQuartersSharp: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.sharpDown: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.sharpUp: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.naturalDown: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.naturalUp: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.flatDown: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.flatUp: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.doubleSharpDown: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.doubleSharpUp: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.flatFlatDown: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.flatFlatUp: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.arrowDown: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.arrowUp: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.tripleSharp: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.tripleFlat: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.slashQuarterSharp: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.slashSharp: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.slashFlat: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.doubleSlashFlat: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.sharp1: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.sharp2: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.sharp3: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.sharp5: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.flat1: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.flat2: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.flat3: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.flat4: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.sori: SmuflGlyph.noteheadXBlack,
-  AccidentalValue.koron: SmuflGlyph.noteheadXBlack,
+  AccidentalValue.threeQuartersFlat:
+      AccidentalsSteinZimmermann.accidentalNarrowReversedFlatAndFlat,
+  AccidentalValue.threeQuartersSharp:
+      AccidentalsSteinZimmermann.accidentalThreeQuarterTonesSharpStein,
+  AccidentalValue.sharpDown:
+      Accidentals24EDOArrows.accidentalQuarterToneSharpArrowDown,
+  AccidentalValue.sharpUp:
+      Accidentals24EDOArrows.accidentalThreeQuarterTonesSharpArrowUp,
+  AccidentalValue.naturalDown:
+      Accidentals24EDOArrows.accidentalQuarterToneFlatNaturalArrowDown,
+  AccidentalValue.naturalUp:
+      Accidentals24EDOArrows.accidentalQuarterToneSharpNaturalArrowUp,
+  AccidentalValue.flatDown:
+      Accidentals24EDOArrows.accidentalThreeQuarterTonesFlatArrowDown,
+  AccidentalValue.flatUp:
+      Accidentals24EDOArrows.accidentalQuarterToneFlatArrowUp,
+  AccidentalValue.doubleSharpDown:
+      Accidentals24EDOArrows.accidentalThreeQuarterTonesSharpArrowDown,
+  AccidentalValue.doubleSharpUp:
+      Accidentals24EDOArrows.accidentalFiveQuarterTonesSharpArrowUp,
+  AccidentalValue.flatFlatDown:
+      Accidentals24EDOArrows.accidentalFiveQuarterTonesFlatArrowDown,
+  AccidentalValue.flatFlatUp:
+      Accidentals24EDOArrows.accidentalThreeQuarterTonesFlatArrowUp,
+  AccidentalValue.arrowDown: Accidentals24EDOArrows.accidentalArrowDown,
+  AccidentalValue.arrowUp: Accidentals24EDOArrows.accidentalArrowUp,
+  AccidentalValue.tripleSharp: AccidentalsStandard.accidentalTripleSharp,
+  AccidentalValue.tripleFlat: AccidentalsStandard.accidentalTripleFlat,
+  AccidentalValue.slashQuarterSharp:
+      AccidentalsAEU.accidentalKucukMucennebSharp,
+  AccidentalValue.slashSharp: AccidentalsAEU.accidentalBuyukMucennebSharp,
+  AccidentalValue.slashFlat: AccidentalsAEU.accidentalBakiyeFlat,
+  AccidentalValue.doubleSlashFlat: AccidentalsAEU.accidentalBuyukMucennebFlat,
+  AccidentalValue.sharp1: Accidentals53EDOTurkish.accidental1CommaSharp,
+  AccidentalValue.sharp2: Accidentals53EDOTurkish.accidental2CommaSharp,
+  AccidentalValue.sharp3: Accidentals53EDOTurkish.accidental3CommaSharp,
+  AccidentalValue.sharp5: Accidentals53EDOTurkish.accidental5CommaSharp,
+  AccidentalValue.flat1: Accidentals53EDOTurkish.accidental1CommaFlat,
+  AccidentalValue.flat2: Accidentals53EDOTurkish.accidental2CommaFlat,
+  AccidentalValue.flat3: Accidentals53EDOTurkish.accidental3CommaFlat,
+  AccidentalValue.flat4: Accidentals53EDOTurkish.accidental4CommaFlat,
+  AccidentalValue.sori: AccidentalsPersian.accidentalSori,
+  AccidentalValue.koron: AccidentalsPersian.accidentalKoron,
   AccidentalValue.other: SmuflGlyph.noteheadXBlack,
 };
 
