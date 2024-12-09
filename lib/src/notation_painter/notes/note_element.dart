@@ -6,7 +6,6 @@ import 'package:music_notation/src/models/elements/music_data/attributes/clef.da
 import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
-import 'package:music_notation/src/notation_painter/aligned_row.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
@@ -211,12 +210,18 @@ class NoteElement extends StatelessWidget {
 
   Size get size {
     double height = base.size.height;
-    double width = base.size.width;
 
     if (stem != null) {
       height = stem!.length;
-      height += base.head.size.height / 2;
+      if (stem!.direction == StemDirection.up) {
+        height += base.alignmentPosition.bottom!.abs();
+      }
+      if (stem!.direction == StemDirection.down) {
+        height += base.size.height - base.alignmentPosition.bottom!.abs();
+      }
     }
+
+    double width = base.size.width;
 
     return Size(width, height);
   }
@@ -250,23 +255,6 @@ class NoteElement extends StatelessWidget {
       top: top,
       bottom: bottom,
     );
-  }
-
-  double get verticalAlignmentAxisOffset {
-    if ((stem?.length ?? 0) > 0) {
-      return stem!.length;
-    }
-
-    var spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
-
-    // When note is on drawn the line and it's stem is drawn down,
-    // the dots size must be taken in the account.
-    if (stem?.direction == StemDirection.down &&
-        position.numeric % 2 == 0 &&
-        base.dots != null) {
-      return spacePerPosition + base.dots!.baseSize.height / 2;
-    }
-    return spacePerPosition;
   }
 
   @override

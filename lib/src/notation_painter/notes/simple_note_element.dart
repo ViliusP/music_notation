@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
@@ -51,16 +49,14 @@ class StemlessNoteElement extends StatelessWidget {
       //   height += dotsSize.height / 2;
       // }
     }
-
     if (accidental != null) {
       Size accidentalSize = accidental!.size;
-      AlignmentPosition accidentalPosition = accidental!.alignmentPosition;
 
       width += accidentalSize.width;
       // Space between notehead and accidental.
       width += NotationLayoutProperties.noteAccidentalDistance;
 
-      height += (accidentalPosition.top?.abs() ?? 0) / 2;
+      height = accidentalSize.height;
     }
 
     return Size(width, height);
@@ -72,10 +68,13 @@ class StemlessNoteElement extends StatelessWidget {
   /// Vertical offset for accidental
   double get _accidentalOffset => accidental!.alignmentPosition.top!;
 
+  static const double _dotOffsetAdjustment = 0.1;
+
   double get _dotVerticalOffset {
     double offest = -(dots?.alignmentPosition.top ?? 0);
     if (position.numeric % 2 == 0) {
       offest -= dots!.baseSize.height;
+      offest -= _dotOffsetAdjustment;
     }
     return offest;
   }
@@ -87,8 +86,12 @@ class StemlessNoteElement extends StatelessWidget {
       double bottom = -spacePerPosition;
       double left = 0;
 
+      if (dots != null && position.numeric % 2 == 0) {
+        bottom += _dotOffsetAdjustment;
+      }
+
       if (accidental != null) {
-        bottom = _accidentalOffset;
+        bottom = _accidentalOffset.abs() - size.height;
         left = accidental!.size.width;
         left += NotationLayoutProperties.noteAccidentalDistance;
       }
@@ -475,7 +478,7 @@ class NoteheadElement extends StatelessWidget {
   ///
   /// The height of all notehead types is same and equal to the sum of the staff
   /// line stroke width and stave space.
-  Size get size => _bBox(font).toSize(1);
+  Size get size => _bBox(font).toSize();
 
   const NoteheadElement({
     super.key,
