@@ -123,14 +123,24 @@ class MeasureLayout extends StatelessWidget {
             }
             break;
           case Chord chord:
-            grouper.add(
-              BeamElement.fromChord(child: chord),
-              AlignmentPosition(
-                left: spacings[index],
-                top: topOffset,
-                bottom: bottomOffset,
-              ),
-            );
+            if (chord.offsetForBeam != null) {
+              grouper.add(
+                BeamElement(
+                  beams: chord.beams,
+                  beamOffset: chord.offsetForBeam!,
+                  position: chord.position,
+                  stemLength: chord.stem!.length,
+                  stemDirection: chord.stem!.direction,
+                  child: chord,
+                ),
+                AlignmentPosition(
+                  left: spacings[index],
+                  top: topOffset,
+                  bottom: bottomOffset,
+                ),
+              );
+            }
+
             break;
         }
 
