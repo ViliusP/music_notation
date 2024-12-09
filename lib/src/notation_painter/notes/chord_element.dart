@@ -69,8 +69,8 @@ class Chord extends StatelessWidget {
     }
 
     if (stem?.direction == StemDirection.down) {
-      top =
-          _referenceNote.size.height - _referenceNote.alignmentPosition.bottom!;
+      top = _referenceNote.alignmentPosition.bottom!.abs() -
+          _referenceNote.size.height;
     }
 
     return AlignmentPosition(
@@ -244,28 +244,25 @@ class Chord extends StatelessWidget {
   }
 
   Size get size {
-    double height = 0;
-    if (alignmentPosition.bottom != null) {
-      double lowestY = 0;
-      double highestY = 0;
-      for (var note in notes) {
-        double y = 0;
-        double noteTop = 0;
-        int interval = note.position.distance(_referenceNote.position);
-        y = interval * NotationLayoutProperties.baseSpacePerPosition;
+    double lowestY = 0;
+    double highestY = 0;
+    for (var note in notes) {
+      double y = 0;
+      double noteTop = 0;
+      int interval = note.position.distance(_referenceNote.position);
+      y = interval * NotationLayoutProperties.baseSpacePerPosition;
 
-        double noteBottom = y + note.alignmentPosition.bottom!;
-        lowestY = min(lowestY, noteBottom);
+      double noteBottom = y + note.alignmentPosition.bottom!;
+      lowestY = min(lowestY, noteBottom);
 
-        noteTop = note.size.height + note.alignmentPosition.bottom!;
-        noteTop += y;
-        highestY = max(highestY, noteTop);
-      }
-
-      height = lowestY.abs() + highestY.abs();
-      double heigthWithStem = lowestY.abs() + (stem?.length ?? 0);
-      height = max(heigthWithStem, height);
+      noteTop = note.size.height + note.alignmentPosition.bottom!;
+      noteTop += y;
+      highestY = max(highestY, noteTop);
     }
+
+    double noteheadsHeight = lowestY.abs() + highestY.abs();
+    double heightWithStem = lowestY.abs() + (stem?.length ?? 0);
+    double height = max(heightWithStem, noteheadsHeight);
 
     var (leftWidth, rightWidth) = _noteheadSizesBySide;
 
