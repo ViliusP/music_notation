@@ -4,12 +4,31 @@ import 'package:flutter/material.dart';
 
 class Offsetted extends StatelessWidget {
   final Widget child;
-  final double offset;
+
+  /// Values of [offset] for [AlignedRow] alignment axis.
+  final Offset offset;
 
   const Offsetted({
     super.key,
     required this.child,
-    this.offset = 0.0,
+    this.offset = const Offset(0, 0),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return child;
+  }
+}
+
+class Aligned extends StatelessWidget {
+  final Widget child;
+
+  final VerticalAlignment? alignment;
+
+  const Aligned({
+    super.key,
+    required this.child,
+    this.alignment,
   });
 
   @override
@@ -68,14 +87,16 @@ class _CustomAlignedRowDelegate extends MultiChildLayoutDelegate {
     // Tracks the largest overflow for bottom alignment.
     double maxPositiveOverflow = 0;
 
+    // -----------
     // First pass: Measure all children and determine the necessary adjustments.
+    // -----------
     List<Size> sizes = [];
     for (int i = 0; i < children.length; i++) {
       final child = children[i];
       double offset = 0;
 
       if (child is Offsetted) {
-        offset = child.offset;
+        offset = child.offset.dy;
 
         // Handle negative offset logic for bottom alignment.
         if (alignment == VerticalAlignment.bottom) {
@@ -93,14 +114,16 @@ class _CustomAlignedRowDelegate extends MultiChildLayoutDelegate {
         maxPositiveOverflow = max(offset, maxPositiveOverflow);
       }
     }
-
+    // ------------
     // Second pass: Position children with calculated adjustments.
+    // ------------
     for (int i = 0; i < children.length; i++) {
       final child = children[i];
       double offset = 0;
 
       if (child is Offsetted) {
-        offset = child.offset;
+        offset = child.offset.dy;
+        left += child.offset.dx;
 
         // Handle negative offset logic for bottom alignment.
         if (alignment == VerticalAlignment.bottom) {
@@ -110,18 +133,35 @@ class _CustomAlignedRowDelegate extends MultiChildLayoutDelegate {
 
       double top = 0;
 
-      if (alignment == VerticalAlignment.top) {
-        top = offset;
-        // Shift all children down by the largest negative offset (make top non-negative).
-        top += -maxNegativeOffset;
-      } else if (alignment == VerticalAlignment.bottom) {
-        // Shift down child so it's bottom aligns with parent's bottom
-        top += size.height - sizes[i].height;
-        // Shift up child by overflow.
-        top -= maxPositiveOverflow;
-        top += offset;
+      if (child is! Aligned) {
+        switch (alignment) {
+          case VerticalAlignment.top:
+            top = offset;
+            // Shift all children down by the largest negative offset (make top non-negative).
+            top += -maxNegativeOffset;
+            break;
+          case VerticalAlignment.bottom:
+            // Shift down child so it's bottom aligns with parent's bottom
+            top += size.height - sizes[i].height;
+            // Shift up child by overflow.
+            top -= maxPositiveOverflow;
+            top += offset;
+            break;
+        }
       }
 
+      if (child is Aligned) {
+        switch (child.alignment) {
+          case VerticalAlignment.top:
+            top = 0;
+            break;
+          case VerticalAlignment.bottom:
+            top = size.height - sizes[i].height;
+            break;
+          case null:
+            break;
+        }
+      }
       positionChild(i, Offset(left, top));
       left += sizes[i].width;
     }

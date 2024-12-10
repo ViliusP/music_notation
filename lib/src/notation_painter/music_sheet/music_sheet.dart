@@ -104,6 +104,12 @@ class MusicSheet extends StatelessWidget {
       extraStaveLines: ExtraStaveLines.none,
       beatMarkerMultiplier: 1,
       beatMarker: false,
+      alignmentDebugOptions: {
+        // AlignmentDebugOption.bottom,
+        // AlignmentDebugOption.bottomEffective,
+        // AlignmentDebugOption.top,
+        // AlignmentDebugOption.topEffective,
+      },
       child: Wrap(
         direction: Axis.horizontal,
         alignment: WrapAlignment.start,

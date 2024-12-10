@@ -52,7 +52,7 @@ class RestElement extends StatelessWidget {
     double height = restSymbolSize.height;
     if (dots != null) {
       width += AugmentationDots.defaultBaseOffset;
-      width += dots!.baseSize.width;
+      width += dots!.size.width;
 
       if (_dotsVerticalOffset < 0) {
         height += _dotsVerticalOffset.abs();

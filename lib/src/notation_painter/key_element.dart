@@ -191,7 +191,7 @@ class AccidentalElement extends StatelessWidget {
     );
   }
 
-  Size get baseSize => calculateSize(type, font);
+  Size get size => calculateSize(type, font);
 
   static Size calculateSize(
     AccidentalValue accidental,
@@ -220,7 +220,7 @@ class AccidentalElement extends StatelessWidget {
             NotationLayoutProperties.standard();
 
     return CustomPaint(
-      size: baseSize.scaledByContext(context),
+      size: size.scaledByContext(context),
       painter: SimpleGlyphPainter(
         smufl(type),
         font.glyphBBoxes[_accidentalSmuflMapping[type]]!,
@@ -301,7 +301,7 @@ class KeySignatureElement extends StatelessWidget {
       Size accidentalSize = AccidentalElement(
         type: accidental.accidental?.value ?? AccidentalValue.other,
         font: font,
-      ).baseSize;
+      ).size;
 
       offsets.add(leftOffset);
       leftOffset += accidentalSize.width + _baseSpaceBetweenAccidentals;
@@ -344,7 +344,7 @@ class KeySignatureElement extends StatelessWidget {
       Size accidentalSize = AccidentalElement(
         type: accidental.accidental?.value ?? AccidentalValue.other,
         font: font,
-      ).baseSize;
+      ).size;
 
       if (i == 0) {
         height += accidentalSize.height;

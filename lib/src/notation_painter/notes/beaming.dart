@@ -5,8 +5,6 @@ import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
-import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
-import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/painters/beam_painter.dart';
@@ -45,37 +43,6 @@ class BeamElement extends StatelessWidget {
     required this.stemDirection,
     required this.child,
   });
-
-  factory BeamElement.fromNote({
-    required NoteElement child,
-  }) {
-    return BeamElement(
-      beams: child.beams,
-      beamOffset: child.offsetForBeam,
-      position: child.position,
-      stemLength: child.note.stem?.length ?? 0,
-      stemDirection: child.note.stem?.direction,
-      child: child,
-    );
-  }
-
-  factory BeamElement.fromChord({
-    required Chord child,
-  }) {
-    return BeamElement(
-      beams: child.notes
-              .firstWhereOrNull(
-                (x) => x.beams.isNotEmpty,
-              )
-              ?.beams ??
-          [],
-      beamOffset: child.offsetForBeam,
-      position: child.position,
-      stemLength: child.stemLength,
-      stemDirection: child.stemDirection,
-      child: child,
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
