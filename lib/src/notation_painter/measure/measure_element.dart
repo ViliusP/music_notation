@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -355,12 +357,16 @@ class AlignmentPosition {
     return scale(layoutProperties.staveSpace);
   }
 
+  /// Returns [bottom] if it is not null,
+  /// otherwise, returns calculated top from [size] and [top].
   double effectiveBottom(Size size) {
     if (bottom != null) return bottom!;
     double sign = top!.sign;
     return (top! + size.height) * sign;
   }
 
+  /// Returns [top] if it is not null,
+  /// otherwise, returns calculated top from [size] and [bottom].
   double effectiveTop(Size size) {
     if (top != null) return top!;
     double sign = bottom!.sign;
