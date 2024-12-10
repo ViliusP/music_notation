@@ -349,11 +349,13 @@ class Chord extends StatelessWidget {
               offset: _columnOffset(noteheadsLeft).scaledByContext(context),
               child: noteheadsLeft!,
             ),
-          // if (stem != null)
-          //   Offsetted(
-          //     offset: _stemPosition.scaledByContext(context).bottom!,
-          //     child: stem!,
-          //   ),
+          if (stem != null)
+            Aligned(
+              alignment: _alignByTop
+                  ? VerticalAlignment.bottom
+                  : VerticalAlignment.top,
+              child: stem!,
+            ),
           if (noteheadsRight != null)
             Offsetted(
               offset: _columnOffset(noteheadsRight).scaledByContext(context),

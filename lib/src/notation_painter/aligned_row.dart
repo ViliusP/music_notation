@@ -4,12 +4,31 @@ import 'package:flutter/material.dart';
 
 class Offsetted extends StatelessWidget {
   final Widget child;
+
+  /// Vertical [offset] by [AlignedRow] alignment axis.
   final double offset;
 
   const Offsetted({
     super.key,
     required this.child,
     this.offset = 0.0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return child;
+  }
+}
+
+class Aligned extends StatelessWidget {
+  final Widget child;
+
+  final VerticalAlignment? alignment;
+
+  const Aligned({
+    super.key,
+    required this.child,
+    this.alignment,
   });
 
   @override
@@ -110,16 +129,34 @@ class _CustomAlignedRowDelegate extends MultiChildLayoutDelegate {
 
       double top = 0;
 
-      if (alignment == VerticalAlignment.top) {
-        top = offset;
-        // Shift all children down by the largest negative offset (make top non-negative).
-        top += -maxNegativeOffset;
-      } else if (alignment == VerticalAlignment.bottom) {
-        // Shift down child so it's bottom aligns with parent's bottom
-        top += size.height - sizes[i].height;
-        // Shift up child by overflow.
-        top -= maxPositiveOverflow;
-        top += offset;
+      if (child is! Aligned) {
+        switch (alignment) {
+          case VerticalAlignment.top:
+            top = offset;
+            // Shift all children down by the largest negative offset (make top non-negative).
+            top += -maxNegativeOffset;
+            break;
+          case VerticalAlignment.bottom:
+            // Shift down child so it's bottom aligns with parent's bottom
+            top += size.height - sizes[i].height;
+            // Shift up child by overflow.
+            top -= maxPositiveOverflow;
+            top += offset;
+            break;
+        }
+      }
+
+      if (child is Aligned) {
+        switch (child.alignment) {
+          case VerticalAlignment.top:
+            top = 0;
+            break;
+          case VerticalAlignment.bottom:
+            top = size.height - sizes[i].height;
+            break;
+          case null:
+            break;
+        }
       }
 
       positionChild(i, Offset(left, top));
