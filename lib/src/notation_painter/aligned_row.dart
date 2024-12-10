@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 class Offsetted extends StatelessWidget {
   final Widget child;
 
-  /// Vertical [offset] by [AlignedRow] alignment axis.
-  final double offset;
+  /// Values of [offset] for [AlignedRow] alignment axis.
+  final Offset offset;
 
   const Offsetted({
     super.key,
     required this.child,
-    this.offset = 0.0,
+    this.offset = const Offset(0, 0),
   });
 
   @override
@@ -87,14 +87,16 @@ class _CustomAlignedRowDelegate extends MultiChildLayoutDelegate {
     // Tracks the largest overflow for bottom alignment.
     double maxPositiveOverflow = 0;
 
+    // -----------
     // First pass: Measure all children and determine the necessary adjustments.
+    // -----------
     List<Size> sizes = [];
     for (int i = 0; i < children.length; i++) {
       final child = children[i];
       double offset = 0;
 
       if (child is Offsetted) {
-        offset = child.offset;
+        offset = child.offset.dy;
 
         // Handle negative offset logic for bottom alignment.
         if (alignment == VerticalAlignment.bottom) {
@@ -112,14 +114,16 @@ class _CustomAlignedRowDelegate extends MultiChildLayoutDelegate {
         maxPositiveOverflow = max(offset, maxPositiveOverflow);
       }
     }
-
+    // ------------
     // Second pass: Position children with calculated adjustments.
+    // ------------
     for (int i = 0; i < children.length; i++) {
       final child = children[i];
       double offset = 0;
 
       if (child is Offsetted) {
-        offset = child.offset;
+        offset = child.offset.dy;
+        left += child.offset.dx;
 
         // Handle negative offset logic for bottom alignment.
         if (alignment == VerticalAlignment.bottom) {
@@ -158,7 +162,6 @@ class _CustomAlignedRowDelegate extends MultiChildLayoutDelegate {
             break;
         }
       }
-
       positionChild(i, Offset(left, top));
       left += sizes[i].width;
     }

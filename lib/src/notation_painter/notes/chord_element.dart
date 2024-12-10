@@ -320,7 +320,11 @@ class Chord extends StatelessWidget {
     double? top;
     double? bottom;
 
-    bottom = 0;
+    if (_alignByTop) {
+      bottom = 0;
+    } else {
+      top = 0;
+    }
 
     return AlignmentPosition(
       left: _leftColumnOffset +
@@ -333,39 +337,56 @@ class Chord extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double rightColumnOffset = NotationLayoutProperties.baseStemStrokeWidth;
+    rightColumnOffset = -rightColumnOffset.scaledByContext(context) / 2;
+
     return SizedBox.fromSize(
       size: size.scaledByContext(context),
-      child: AlignedRow(
-        alignment:
-            _alignByTop ? VerticalAlignment.top : VerticalAlignment.bottom,
+      child: Stack(
         children: [
-          if (accidentals != null)
-            Offsetted(
-              offset: _columnOffset(accidentals).scaledByContext(context),
-              child: accidentals!,
-            ),
-          if (noteheadsLeft != null)
-            Offsetted(
-              offset: _columnOffset(noteheadsLeft).scaledByContext(context),
-              child: noteheadsLeft!,
-            ),
           if (stem != null)
-            Aligned(
-              alignment: _alignByTop
-                  ? VerticalAlignment.bottom
-                  : VerticalAlignment.top,
+            AlignmentPositioned(
+              position: _stemPosition.scaledByContext(context),
               child: stem!,
             ),
-          if (noteheadsRight != null)
-            Offsetted(
-              offset: _columnOffset(noteheadsRight).scaledByContext(context),
-              child: noteheadsRight!,
-            ),
-          if (augmentationDots != null)
-            Offsetted(
-              offset: _columnOffset(augmentationDots).scaledByContext(context),
-              child: augmentationDots!,
-            ),
+          AlignedRow(
+            alignment:
+                _alignByTop ? VerticalAlignment.top : VerticalAlignment.bottom,
+            children: [
+              if (accidentals != null)
+                Offsetted(
+                  offset: Offset(
+                    0,
+                    _columnOffset(accidentals).scaledByContext(context),
+                  ),
+                  child: accidentals!,
+                ),
+              if (noteheadsLeft != null)
+                Offsetted(
+                  offset: Offset(
+                    0,
+                    _columnOffset(noteheadsLeft).scaledByContext(context),
+                  ),
+                  child: noteheadsLeft!,
+                ),
+              if (noteheadsRight != null)
+                Offsetted(
+                  offset: Offset(
+                    rightColumnOffset,
+                    _columnOffset(noteheadsRight).scaledByContext(context),
+                  ),
+                  child: noteheadsRight!,
+                ),
+              if (augmentationDots != null)
+                Offsetted(
+                  offset: Offset(
+                    0,
+                    _columnOffset(augmentationDots).scaledByContext(context),
+                  ),
+                  child: augmentationDots!,
+                ),
+            ],
+          ),
         ],
       ),
     );

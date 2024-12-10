@@ -149,7 +149,7 @@ class StemlessNoteElement extends StatelessWidget {
         children: [
           if (accidental != null)
             Offsetted(
-              offset: _accidentalOffset.scaledByContext(context),
+              offset: Offset(0, _accidentalOffset.scaledByContext(context)),
               child: Padding(
                 padding: EdgeInsets.only(
                   right: NotationLayoutProperties.noteAccidentalDistance,
@@ -158,12 +158,12 @@ class StemlessNoteElement extends StatelessWidget {
               ),
             ),
           Offsetted(
-            offset: _headOffset.scaledByContext(context),
+            offset: Offset(0, _headOffset.scaledByContext(context)),
             child: head,
           ),
           if (dots != null)
             Offsetted(
-              offset: _dotVerticalOffset.scaledByContext(context),
+              offset: Offset(0, _dotVerticalOffset.scaledByContext(context)),
               child: Padding(
                 padding: EdgeInsets.only(
                   left: AugmentationDots.defaultBaseOffset,
