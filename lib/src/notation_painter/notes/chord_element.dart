@@ -442,48 +442,25 @@ class ChordColumn extends StatelessWidget {
   ElementPosition get position => _children.first.position;
 
   AlignmentPosition get alignmentPosition {
-    // double? top;
     double? bottom;
 
     MeasureElement reference = _children.first;
 
-    // if (stem?.direction == StemDirection.up) {
     bottom = reference.alignmentOffset.bottom!;
-    // }
-
-    // top = reference.alignmentOffset.bottom!.abs() - reference.size.height;
 
     return AlignmentPosition(
       left: 0,
-      // top: top,
       bottom: bottom,
     );
   }
 
   Size get size {
-    double lowestY = 0;
-    double highestY = 0;
+    double height = MeasureElement.calculateColumnHeight(children, position);
 
     double width = 0;
     for (var child in _children) {
-      double y = 0;
-      double childTop = 0;
-      int interval = child.position.distance(position);
-      y = interval * NotationLayoutProperties.baseSpacePerPosition;
-
-      double bottom = child.alignmentOffset.effectiveBottom(child.size);
-
-      bottom = y + bottom;
-      lowestY = min(lowestY, bottom);
-
-      childTop = child.size.height + bottom;
-      childTop += y;
-      highestY = max(highestY, childTop);
-
       width = max(width, child.size.width);
     }
-
-    double height = lowestY.abs() + highestY.abs();
 
     return Size(width, height);
   }

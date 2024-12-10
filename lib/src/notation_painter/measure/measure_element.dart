@@ -223,6 +223,42 @@ class MeasureElement extends StatelessWidget {
     return Rect.fromPoints(Offset(0, 0), Offset(size.width, aboveStaffLength));
   }
 
+  static double calculateColumnHeight(
+    List<MeasureElement> elements,
+    ElementPosition reference,
+  ) {
+    if (elements.isEmpty) {
+      return 0;
+    }
+
+    if (elements.length == 1) {
+      return elements.first.size.height;
+    }
+
+    double minY = 0;
+    double maxY = 0;
+
+    for (var element in elements) {
+      double y = 0;
+      double top = 0;
+      int interval = element.position.distance(reference);
+      y = interval * NotationLayoutProperties.baseSpacePerPosition;
+
+      double bottom = element.alignmentOffset.effectiveBottom(element.size);
+
+      bottom = y + bottom;
+      minY = min(minY, bottom);
+
+      top = -element.alignmentOffset.effectiveTop(element.size);
+      top += y;
+      maxY = max(maxY, top);
+    }
+
+    double height = minY.abs() + maxY.abs();
+
+    return height;
+  }
+
   @override
   Widget build(BuildContext context) {
     DebugSettings? debugSettings = DebugSettings.of(context);
