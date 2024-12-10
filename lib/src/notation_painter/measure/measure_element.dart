@@ -281,6 +281,16 @@ class AlignmentPosition {
 
     return scale(layoutProperties.staveSpace);
   }
+
+  double effectiveBottom(Size size) {
+    if (bottom != null) return bottom!;
+    return top!.abs() - size.height;
+  }
+
+  double effectiveTop(Size size) {
+    if (top != null) return top!;
+    return bottom!.abs() - size.height;
+  }
 }
 
 class AlignmentPositioned extends Positioned {
