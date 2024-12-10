@@ -225,16 +225,12 @@ class MeasureElement extends StatelessWidget {
     return Rect.fromPoints(Offset(0, 0), Offset(size.width, aboveStaffLength));
   }
 
-  static double calculateColumnHeight(
+  static ({double min, double max}) columnVerticalRange(
     List<MeasureElement> elements,
     ElementPosition reference,
   ) {
     if (elements.isEmpty) {
-      return 0;
-    }
-
-    if (elements.length == 1) {
-      return elements.first.size.height;
+      return (min: 0, max: 0);
     }
 
     double minY = 0;
@@ -256,9 +252,7 @@ class MeasureElement extends StatelessWidget {
       maxY = max(maxY, top);
     }
 
-    double height = minY.abs() + maxY.abs();
-
-    return height;
+    return (min: minY, max: maxY);
   }
 
   @override

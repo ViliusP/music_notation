@@ -8,6 +8,7 @@ import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
+import 'package:music_notation/src/notation_painter/aligned_row.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/notes/adjacency.dart';
@@ -16,6 +17,7 @@ import 'package:music_notation/src/notation_painter/properties/layout_properties
 import 'package:music_notation/src/notation_painter/notes/simple_note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
+import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
@@ -163,19 +165,20 @@ class Chord extends StatelessWidget {
     return columns;
   }
 
-  MeasureElement? get _referenceElement {
-    MeasureElement? ref = _columns.firstOrNull?._children.firstOrNull;
+  ///
+  ChordColumn? get _referenceColumn {
+    ChordColumn? ref = _columns.firstOrNull;
     if (ref == null) return null;
     for (var column in _columns) {
-      if (column.position < ref!.position && !_alignByTop) {
-        ref = column._children.firstOrNull;
-      } else if (column.position > ref.position && _alignByTop) {
-        ref = column._children.firstOrNull;
+      if (column._children.isEmpty) continue;
+      if (column.position < ref!.position) {
+        ref = column;
       }
     }
     return ref;
   }
 
+  /// Calculates stem lenght
   static double _stemStartLength(
     List<StemlessNoteElement> notes,
   ) {
@@ -190,30 +193,26 @@ class Chord extends StatelessWidget {
     return range * NotationLayoutProperties.baseSpacePerPosition;
   }
 
+  /// Position of chord element
   ElementPosition get position =>
-      _referenceElement?.position ?? ElementPosition.staffMiddle;
+      _referenceColumn?.position ?? ElementPosition.staffMiddle;
 
+  /// Alignment offset for correctly placing on measure
   AlignmentPosition get alignmentPosition {
-    if (_referenceElement == null) {
+    if (_referenceColumn == null) {
       return AlignmentPosition(left: 0, bottom: 0);
     }
 
-    double? top;
-    double? bottom;
+    double bottom;
     if (_alignByTop) {
-      top = _referenceElement?.alignmentOffset.effectiveTop(
-        _referenceElement!.size,
-      );
+      bottom = _verticalRange.max - _height;
     } else {
-      bottom = _referenceElement?.alignmentOffset.effectiveBottom(
-        _referenceElement!.size,
-      );
+      bottom = _verticalRange.min;
     }
 
     return AlignmentPosition(
-      left: _leftColumnPosition.left,
+      left: _leftColumnOffset,
       bottom: bottom,
-      top: top,
     );
   }
 
@@ -239,29 +238,16 @@ class Chord extends StatelessWidget {
     );
   }
 
+  /// Lowest y of every chord elements
+  ({double min, double max}) get _verticalRange {
+    var children = _columns.expand((column) => column._children).toList();
+    return MeasureElement.columnVerticalRange(children, position);
+  }
+
   double get _height {
-    double lowestY = 0;
-    double highestY = 0;
-    for (var element in _columns.expand((column) => column._children)) {
-      double y = 0;
-      double noteTop = 0;
-      int interval = element.position.distance(position);
-      y = interval * NotationLayoutProperties.baseSpacePerPosition;
-
-      double bottom = element.alignmentOffset.effectiveBottom(element.size);
-
-      bottom = y + bottom;
-      lowestY = min(lowestY, bottom);
-
-      noteTop = element.size.height + bottom;
-      noteTop += y;
-      highestY = max(highestY, noteTop);
-    }
-
-    double noteheadsHeight = lowestY.abs() + highestY.abs();
-    double heightWithStem = lowestY.abs() + (stem?.length ?? 0);
-    double height = max(heightWithStem, noteheadsHeight);
-    return height;
+    double elementsHeight = _verticalRange.min.abs() + _verticalRange.max.abs();
+    double heightWithStem = _verticalRange.min.abs() + (stem?.length ?? 0);
+    return max(heightWithStem, elementsHeight);
   }
 
   double get _width {
@@ -301,38 +287,31 @@ class Chord extends StatelessWidget {
 
   bool get _alignByTop => stem?.direction == StemDirection.down;
 
-  AlignmentPosition get _accidentalsPosition {
-    int interval = position.distance(accidentals?.position ?? position);
+  double _columnOffset(ChordColumn? column) {
+    double offset = 0;
+    if (column == null) return offset;
 
-    return AlignmentPosition(
-      left: 0,
-      bottom: interval * NotationLayoutProperties.baseSpacePerPosition,
-    );
-  }
-
-  AlignmentPosition get _leftColumnPosition {
-    double? top;
-    double? bottom;
-    int interval = position.distance(noteheadsLeft?.position ?? position);
+    int columnPosition = column.position.numeric;
+    int interval = columnPosition - position.numeric;
 
     if (_alignByTop) {
-      top = interval * NotationLayoutProperties.baseSpacePerPosition;
+      offset = -interval * NotationLayoutProperties.baseSpacePerPosition;
+      offset += column.alignmentPosition.effectiveTop(column.size);
     } else {
-      bottom = interval * NotationLayoutProperties.baseSpacePerPosition;
+      offset = interval * NotationLayoutProperties.baseSpacePerPosition;
+      offset += column.alignmentPosition.effectiveBottom(column.size);
     }
 
+    return offset;
+  }
+
+  double get _leftColumnOffset {
     double afterAccidentals = 0;
     if (accidentals != null) {
       afterAccidentals = NotationLayoutProperties.noteAccidentalDistance;
     }
 
-    return AlignmentPosition(
-      left: _accidentalsPosition.left +
-          (accidentals?.size.width ?? 0) +
-          afterAccidentals,
-      bottom: bottom,
-      top: top,
-    );
+    return (accidentals?.size.width ?? 0) + afterAccidentals;
   }
 
   /// Calculates position for stem - relative position by
@@ -341,14 +320,10 @@ class Chord extends StatelessWidget {
     double? top;
     double? bottom;
 
-    if (_alignByTop) {
-      bottom = 0;
-    } else {
-      top = 0;
-    }
+    bottom = 0;
 
     return AlignmentPosition(
-      left: _leftColumnPosition.left +
+      left: _leftColumnOffset +
           (noteheadsLeft?.size.width ?? 0) -
           (NotationLayoutProperties.baseStemStrokeWidth) / 2,
       top: top,
@@ -356,64 +331,37 @@ class Chord extends StatelessWidget {
     );
   }
 
-  AlignmentPosition get _rightColumnPosition {
-    double? top;
-    double? bottom;
-    int interval = position.distance(noteheadsRight?.position ?? position);
-
-    if (_alignByTop) {
-      top = interval * NotationLayoutProperties.baseSpacePerPosition;
-    } else {
-      bottom = interval * NotationLayoutProperties.baseSpacePerPosition;
-    }
-
-    return AlignmentPosition(
-      left: _stemPosition.left,
-      bottom: bottom,
-      top: top,
-    );
-  }
-
-  AlignmentPosition get _dotsPosition {
-    int interval = position.distance(augmentationDots?.position ?? position);
-
-    return AlignmentPosition(
-      left: _rightColumnPosition.left +
-          (noteheadsRight?.size.width ?? 0) +
-          AugmentationDots.defaultBaseOffset,
-      bottom: interval * NotationLayoutProperties.baseSpacePerPosition,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return SizedBox.fromSize(
       size: size.scaledByContext(context),
-      child: Stack(
+      child: AlignedRow(
+        alignment:
+            _alignByTop ? VerticalAlignment.top : VerticalAlignment.bottom,
         children: [
           if (accidentals != null)
-            AlignmentPositioned(
-              position: _accidentalsPosition.scaledByContext(context),
+            Offsetted(
+              offset: _columnOffset(accidentals).scaledByContext(context),
               child: accidentals!,
             ),
           if (noteheadsLeft != null)
-            AlignmentPositioned(
-              position: _leftColumnPosition.scaledByContext(context),
+            Offsetted(
+              offset: _columnOffset(noteheadsLeft).scaledByContext(context),
               child: noteheadsLeft!,
             ),
-          if (stem != null)
-            AlignmentPositioned(
-              position: _stemPosition.scaledByContext(context),
-              child: stem!,
-            ),
+          // if (stem != null)
+          //   Offsetted(
+          //     offset: _stemPosition.scaledByContext(context).bottom!,
+          //     child: stem!,
+          //   ),
           if (noteheadsRight != null)
-            AlignmentPositioned(
-              position: _rightColumnPosition.scaledByContext(context),
+            Offsetted(
+              offset: _columnOffset(noteheadsRight).scaledByContext(context),
               child: noteheadsRight!,
             ),
           if (augmentationDots != null)
-            AlignmentPositioned(
-              position: _dotsPosition.scaledByContext(context),
+            Offsetted(
+              offset: _columnOffset(augmentationDots).scaledByContext(context),
               child: augmentationDots!,
             ),
         ],
@@ -442,20 +390,17 @@ class ChordColumn extends StatelessWidget {
   ElementPosition get position => _children.first.position;
 
   AlignmentPosition get alignmentPosition {
-    double? bottom;
-
     MeasureElement reference = _children.first;
-
-    bottom = reference.alignmentOffset.bottom!;
 
     return AlignmentPosition(
       left: 0,
-      bottom: bottom,
+      bottom: reference.alignmentOffset.effectiveBottom(reference.size),
     );
   }
 
   Size get size {
-    double height = MeasureElement.calculateColumnHeight(children, position);
+    var range = MeasureElement.columnVerticalRange(children, position);
+    double height = range.max.abs() + range.min.abs();
 
     double width = 0;
     for (var child in _children) {
