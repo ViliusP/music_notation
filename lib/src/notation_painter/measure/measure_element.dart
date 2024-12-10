@@ -7,6 +7,8 @@ import 'package:music_notation/src/models/elements/music_data/attributes/key.dar
 import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/notation_painter/clef_element.dart';
+import 'package:music_notation/src/notation_painter/debug/alignment_debug_painter.dart';
+import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
@@ -223,7 +225,15 @@ class MeasureElement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return child;
+    DebugSettings? debugSettings = DebugSettings.of(context);
+
+    return CustomPaint(
+      foregroundPainter: AlignmentDebugPainter(
+        offset: alignmentOffset.scaledByContext(context),
+        lines: debugSettings?.alignmentDebugOptions ?? {},
+      ),
+      child: child,
+    );
   }
 
   @override
@@ -235,6 +245,33 @@ class MeasureElement extends StatelessWidget {
       StringProperty(
         'position',
         position.toString(),
+        level: level,
+        showName: true,
+      ),
+    );
+
+    properties.add(
+      StringProperty(
+        'alignment',
+        "left: ${alignmentOffset.left}, top: ${alignmentOffset.top}, bottom: ${alignmentOffset.bottom}",
+        level: level,
+        showName: true,
+      ),
+    );
+
+    properties.add(
+      StringProperty(
+        'effective alignment',
+        "bottom: ${alignmentOffset.effectiveBottom(size)}, top: ${alignmentOffset.effectiveTop(size)}",
+        level: level,
+        showName: true,
+      ),
+    );
+
+    properties.add(
+      StringProperty(
+        'size',
+        "width: ${size.width}, height: ${size.height}",
         level: level,
         showName: true,
       ),
@@ -284,12 +321,14 @@ class AlignmentPosition {
 
   double effectiveBottom(Size size) {
     if (bottom != null) return bottom!;
-    return top!.abs() - size.height;
+    double sign = top!.sign;
+    return (top! + size.height) * sign;
   }
 
   double effectiveTop(Size size) {
     if (top != null) return top!;
-    return bottom!.abs() - size.height;
+    double sign = bottom!.sign;
+    return (bottom! + size.height) * sign;
   }
 }
 
