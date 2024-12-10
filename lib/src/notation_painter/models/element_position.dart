@@ -14,6 +14,12 @@ import 'package:music_notation/src/models/elements/music_data/attributes/clef.da
 /// This class is used in the context of generating and manipulating musical
 /// scores and representations, enabling operations that require knowledge of
 /// the position of notes or other musical elements.
+///
+/// By default, a visually lower element position (e.g., C4) is considered less
+/// than a visually higher element position (e.g., B5). This means that when
+/// instances of [ElementPosition] are used in iterables or sorted collections,
+/// lower notes will appear earlier in the order, consistent with their position
+/// on a musical staff.
 class ElementPosition implements Comparable<ElementPosition> {
   final Step step;
   final int octave;
