@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -55,46 +57,46 @@ class BeamGroupData {
   /// A map where the key is the beam level, and the value is a list of [BeamData].
   final Map<int, List<BeamData>> map;
 
-  /// Constructor to initialize BeamGroupData.
+  /// Constructor to initialize [BeamGroupData].
   BeamGroupData({required this.map});
 
-  /// Factory method to generate BeamGroupData from a list of NoteBeamData.
+  /// Factory method to generate [BeamGroupData] from a list of NoteBeamData.
   factory BeamGroupData.fromNotesBeams(Iterable<NoteBeamData> data) {
     // Tracks the last 'begin' positions for full beams.
     Map<int, Offset> lastBegin = {};
 
-    // Tracks offsets for hooks (forward and backward).
-    Map<int, List<Offset>> offsets = {};
-
-    // Tracks whether the last beam was a forward hook for each level.
-    Map<int, bool> lastWasForwardHook = {};
-
     final Map<int, List<BeamData>> map = {};
-    for (var noteBeam in data) {
-      for (var beam in noteBeam.beams) {
-        // Handle a forward hook continuation.
-        if (lastWasForwardHook[beam.number] == true &&
-            offsets[beam.number]?.isNotEmpty == true) {
-          map[beam.number] ??= [];
-          map[beam.number]?.add(BeamData(
-            start: offsets[beam.number]!.last,
-            end: noteBeam.offset,
-            type: BeamType.forwardHook,
-          ));
-          lastWasForwardHook.remove(beam.number);
-        }
+    for (var i = 0; i < data.length; i++) {
+      var beams = data.elementAt(i).beams;
+      var offset = data.elementAt(i).offset;
+      Offset? maybeLastOffset;
+      if (i > 0) {
+        maybeLastOffset = data.elementAtOrNull(i - 1)?.offset;
+      }
+      Offset? maybeNextOffset = data.elementAtOrNull(i + 1)?.offset;
 
+      // Filters the beams to include only unique beams based on their number.
+      // Ensures no duplicate beam numbers exist, preventing redundant processing
+      // of beams with the same number. The first beam encountered with a given
+      // number will be retained, and subsequent beams with the same number
+      // will be ignored.
+      var uniqueBeams = SplayTreeSet<Beam>.of(
+        beams,
+        (a, b) => a.number.compareTo(b.number),
+      );
+
+      for (var beam in uniqueBeams) {
         // Process beam value types.
         switch (beam.value) {
           case BeamValue.begin:
-            lastBegin[beam.number] = noteBeam.offset;
+            lastBegin[beam.number] = offset;
             break;
           case BeamValue.end:
             if (lastBegin[beam.number] != null) {
               map[beam.number] ??= [];
               map[beam.number]?.add(BeamData(
                 start: lastBegin[beam.number]!,
-                end: noteBeam.offset,
+                end: offset,
                 type: BeamType.full,
               ));
             }
@@ -103,40 +105,27 @@ class BeamGroupData {
           case BeamValue.bContinue:
             break;
           case BeamValue.forwardHook:
-            lastWasForwardHook[beam.number] = true;
-            break;
-          case BeamValue.backwardHook:
-            if (offsets[beam.number]?.lastOrNull != null) {
+            if (maybeNextOffset != null) {
               map[beam.number] ??= [];
               map[beam.number]?.add(BeamData(
-                start: offsets[beam.number]!.last,
-                end: noteBeam.offset,
-                type: BeamType.full,
+                start: offset,
+                end: maybeNextOffset,
+                type: BeamType.forwardHook,
+              ));
+            }
+
+            break;
+          case BeamValue.backwardHook:
+            if (maybeLastOffset != null) {
+              map[beam.number] ??= [];
+              map[beam.number]?.add(BeamData(
+                start: maybeLastOffset,
+                end: offset,
+                type: BeamType.backwardHook,
               ));
             }
             break;
         }
-
-        // Track offsets for the beam.
-        offsets[beam.number] ??= [];
-        offsets[beam.number]?.add(noteBeam.offset);
-      }
-    }
-
-    // Handle any remaining forward hooks.
-    var uniqueBeamNumbers = data
-        .expand((noteBeam) => noteBeam.beams)
-        .map((beam) => beam.number)
-        .toSet();
-
-    for (var number in uniqueBeamNumbers) {
-      if (lastWasForwardHook[number] == true) {
-        map[number] ??= [];
-        map[number]?.add(BeamData(
-          start: offsets[number]![offsets[number]!.length - 2],
-          end: offsets[number]!.last,
-          type: BeamType.forwardHook,
-        ));
       }
     }
 

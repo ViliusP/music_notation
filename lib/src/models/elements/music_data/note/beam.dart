@@ -16,7 +16,7 @@ class Beam {
   BeamValue value;
 
   /// Indicates the color of an element.
-  Color color;
+  Color? color;
 
   /// Deprecated as of Version 3.0. Formerly used for tremolos,
   ///
@@ -45,7 +45,7 @@ class Beam {
   Beam({
     this.id,
     required this.value,
-    required this.color,
+    this.color,
     this.repeater,
     this.fan,
     this.number = 1,
