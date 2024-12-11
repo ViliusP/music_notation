@@ -138,21 +138,6 @@ class NoteElement extends StatelessWidget {
     return basePosition;
   }
 
-  /// Relative offset from bounding box bottom left if [AlignmentPosition.top] is defined.
-  /// Relative offset from bounding box top left if [AlignmentPosition.bottom] is defined.
-  ///
-  /// X - the middle of stem.
-  /// Y - the tip of stem.
-  Offset? get offsetForBeam {
-    if (stem == null) {
-      return null;
-    }
-    return Offset(
-      _stemAlignment!.left,
-      size.height,
-    );
-  }
-
   static ElementPosition determinePosition(Note note, Clef? clef) {
     switch (note) {
       case GraceTieNote _:

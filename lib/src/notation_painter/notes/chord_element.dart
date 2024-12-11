@@ -216,21 +216,6 @@ class Chord extends StatelessWidget {
     );
   }
 
-  /// Relative offset from bounding box bottom left if [AlignmentPosition.top] is defined.
-  /// Relative offset from bounding box top left if [AlignmentPosition.bottom] is defined.
-  ///
-  /// X - the middle of stem.
-  /// Y - the tip of stem.
-  Offset? get offsetForBeam {
-    if (stem == null) {
-      return null;
-    }
-    return Offset(
-      _stemPosition.left,
-      0,
-    );
-  }
-
   Size get size {
     return Size(
       _width,
@@ -327,18 +312,25 @@ class Chord extends StatelessWidget {
     }
 
     return AlignmentPosition(
-      left: _leftColumnOffset +
-          (noteheadsLeft?.size.width ?? 0) -
-          (NotationLayoutProperties.baseStemStrokeWidth) / 2,
+      left: _leftColumnOffset + (noteheadsLeft?.size.width ?? 0) - _stemSpacing,
       top: top,
       bottom: bottom,
     );
   }
 
+  /// Distance from stem to left column of noteheads.
+  double get _stemSpacing {
+    if (noteheadsLeft == null) {
+      return 0;
+    }
+
+    return (NotationLayoutProperties.baseStemStrokeWidth) / 2;
+  }
+
   @override
   Widget build(BuildContext context) {
-    double rightColumnOffset = NotationLayoutProperties.baseStemStrokeWidth;
-    rightColumnOffset = -rightColumnOffset.scaledByContext(context) / 2;
+    double rightColumnOffset = _stemSpacing;
+    rightColumnOffset = -rightColumnOffset.scaledByContext(context);
 
     return SizedBox.fromSize(
       size: size.scaledByContext(context),

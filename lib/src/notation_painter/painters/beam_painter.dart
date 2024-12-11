@@ -1,92 +1,94 @@
 import 'dart:math';
 
 import 'package:flutter/rendering.dart';
-import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/notation_painter/notes/beaming.dart';
-import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 
+/// Custom painter for drawing musical beams with adjustable properties.
+///
+/// This painter supports angled beams, hooks, and multiple alignment modes.
+/// It can also render debug lines for visualization of the alignment and
+/// beam boundaries.
+///
+/// ## Properties:
+/// - [data] - The list of beam note data defining positions and beam structures.
+/// - [hookLength], [thickness], [spacing] - Visual attributes for the beams.
+/// - [color] - Optional beam color. Defaults to black.
+/// - [debug] -Enables debug visualization of beams and alignment lines.
 class BeamPainter extends CustomPainter {
-  final List<BeamNoteData> beamsPattern;
-
-  final BeamDirection direction;
+  final BeamGroupData data;
   final Color? color;
 
   final double hookLength;
   final double thickness;
   final double spacing;
 
+  final bool flip;
+
   final bool debug;
 
   BeamPainter({
-    required this.beamsPattern,
-    required this.direction,
+    required this.data,
     this.color,
     required this.hookLength,
     required this.thickness,
+    this.flip = false,
     this.debug = false,
     required this.spacing,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Calculate start and end based on the beam direction
-    Offset start;
-    Offset end;
-    if (direction == BeamDirection.upward) {
-      start = Offset(0, size.height - thickness);
-      end = Offset(size.width, 0);
-    } else {
-      start = Offset(0, 0);
-      end = Offset(size.width, size.height - thickness);
-    }
-    // Calculate beam angle
-    double angle = atan2(end.dy - start.dy, end.dx - start.dx);
+    for (var e in data.map.entries) {
+      var level = e.key;
+      var beams = e.value;
+      for (var beam in beams) {
+        // Calculate start and end based on the beam direction
+        Offset start = beam.start;
+        Offset end = beam.end;
 
-    for (var (index, noteBeamData) in beamsPattern.indexed) {
-      double offsetX = noteBeamData.leftOffset;
+        // Calculate beam angle
+        double angle = atan2(end.dy - start.dy, end.dx - start.dx);
 
-      for (var beams in noteBeamData.beams) {
-        double yOffset = (spacing + thickness) * (beams.number - 1);
-
-        if (noteBeamData.stemDirection == StemDirection.down) {
+        double yOffset = (spacing + thickness) * (level - 1);
+        if (flip) {
+          yOffset += thickness;
           yOffset = yOffset * (-1);
         }
 
-        if (beams.value == BeamValue.begin ||
-            beams.value == BeamValue.bContinue) {
-          double beamLength = beamsPattern[index + 1].leftOffset;
-          beamLength -= noteBeamData.leftOffset;
+        double endpointsHorizontalSpan = end.dx - start.dx;
+        switch (beam.type) {
+          case BeamType.full:
+            drawAngledBeam(
+              canvas: canvas,
+              angle: angle,
+              start: start.translate(0, yOffset),
+              length: endpointsHorizontalSpan,
+              alignmentLineLength: 0,
+              alignmentLineOffset: 0,
+              alignment: Alignment.start,
+              alignmentLineByHorizontalSpan: true,
+              beamByHorizontalSpan: true,
+              beamThickness: thickness,
+              color: color ?? const Color.fromRGBO(0, 0, 0, 1),
+              debug: debug,
+            );
+            break;
 
-          drawAngledBeam(
-            angle: angle,
-            canvas: canvas,
-            start: Offset(start.dx, start.dy + yOffset),
-            beamLength: beamLength,
-            alignmentLineLength: 0,
-            alignmentLineOffset: offsetX,
-            alignment: Alignment.start,
-            alignmentLineByHorizontalSpan: true,
-            beamByHorizontalSpan: true,
-            beamThickness: thickness,
-            color: color ?? const Color.fromRGBO(0, 0, 0, 1),
-            debug: debug,
-          );
-        }
-
-        if (beams.value == BeamValue.backwardHook) {
-          drawAngledBeam(
-            angle: angle,
-            canvas: canvas,
-            start: Offset(start.dx, start.dy + yOffset),
-            beamLength: hookLength,
-            alignmentLineLength: offsetX - beamsPattern[index - 1].leftOffset,
-            alignment: Alignment.end,
-            alignmentLineByHorizontalSpan: true,
-            beamByHorizontalSpan: false,
-            beamThickness: thickness,
-            color: color ?? const Color.fromRGBO(0, 0, 0, 1),
-            debug: debug,
-          );
+          case BeamType.backwardHook:
+            drawAngledBeam(
+              canvas: canvas,
+              angle: angle,
+              start: start.translate(0, yOffset),
+              length: hookLength,
+              alignmentLineLength: endpointsHorizontalSpan,
+              alignment: Alignment.end,
+              alignmentLineByHorizontalSpan: true,
+              beamByHorizontalSpan: false,
+              beamThickness: thickness,
+              color: color ?? const Color.fromRGBO(0, 0, 0, 1),
+              debug: debug,
+            );
+          default:
         }
       }
     }
@@ -107,7 +109,7 @@ class BeamPainter extends CustomPainter {
   /// * [start] - The starting point of the beam.
   /// * [angle] - The angle (in radians) at which the beam extends from the start point.
   /// * [alignmentLineLength] - Length of the alignment line for the beam.
-  /// * [beamLength] - The actual length of the beam.
+  /// * [length] - The actual length of the beam.
   /// * [alignment] - The alignment of the beam along the alignment line (start, middle, end).
   /// * [beamThickness] - Thickness of the beam.
   /// * [alignmentLineByHorizontalSpan] - When true, calculates the alignment line's length by its horizontal span.
@@ -123,7 +125,7 @@ class BeamPainter extends CustomPainter {
   ///   start: Offset(0, 0),
   ///   angle: pi / 4,
   ///   alignmentLineLength: 100,
-  ///   beamLength: 80,
+  ///   length: 80,
   ///   alignment: Alignment.middle,
   ///   beamThickness: 4.0,
   ///   alignmentLineByHorizontalSpan: true,
@@ -137,7 +139,7 @@ class BeamPainter extends CustomPainter {
     required Offset start,
     required double angle,
     required double alignmentLineLength,
-    required double beamLength,
+    required double length,
     required Alignment alignment,
     required double beamThickness,
     bool alignmentLineByHorizontalSpan = false,
@@ -159,7 +161,7 @@ class BeamPainter extends CustomPainter {
 
     // Calculate actual beam length based on the `beamByHorizontalSpan` flag
     double adjustedBeamLength =
-        beamByHorizontalSpan ? beamLength / cos(angle) : beamLength;
+        beamByHorizontalSpan ? length / cos(angle) : length;
 
     // Alignment adjustment for both the horizontal and angled beams
     Offset adjustedStart;
@@ -198,47 +200,47 @@ class BeamPainter extends CustomPainter {
       start.dy,
     );
     Offset horizontalEnd = Offset(
-      originalStart.dx + beamLength,
+      originalStart.dx + length,
       originalStart.dy,
     );
 
     // Define the alignment line, borders for top and bottom lines
-    List<Map<String, dynamic>> lines = [
-      {
-        'start': adjustedAlignmentLineStart,
-        'end': Offset(
+    List<_DebugLine> lines = [
+      _DebugLine(
+        start: adjustedAlignmentLineStart,
+        end: Offset(
           adjustedAlignmentLineStart.dx +
               cos(angle) * adjustedAlignmentLineLength,
           adjustedAlignmentLineStart.dy +
               sin(angle) * adjustedAlignmentLineLength,
         ),
-        'color': Color.fromRGBO(255, 10, 100, 0.35),
-        'thickness': 2.0,
-      },
-      {
-        'start': originalStart,
-        'end': horizontalEnd,
-        'color': Color.fromRGBO(255, 0, 0, 0.5),
-        'thickness': 2.0,
-      },
-      {
-        'start': Offset(originalStart.dx, originalStart.dy + beamThickness),
-        'end': Offset(horizontalEnd.dx, horizontalEnd.dy + beamThickness),
-        'color': Color.fromRGBO(200, 0, 0, 0.5),
-        'thickness': 2.0,
-      },
-      {
-        'start': adjustedStart,
-        'end': angledEnd,
-        'color': Color.fromRGBO(0, 0, 255, 0.5),
-        'thickness': 2.0,
-      },
-      {
-        'start': Offset(adjustedStart.dx, adjustedStart.dy + beamThickness),
-        'end': Offset(angledEnd.dx, angledEnd.dy + beamThickness),
-        'color': Color.fromRGBO(0, 0, 200, 0.5),
-        'thickness': 2.0,
-      },
+        color: Color.fromRGBO(255, 10, 100, 0.35),
+        thickness: 2.0,
+      ),
+      _DebugLine(
+        start: originalStart,
+        end: horizontalEnd,
+        color: Color.fromRGBO(255, 0, 0, 0.5),
+        thickness: 2.0,
+      ),
+      _DebugLine(
+        start: Offset(originalStart.dx, originalStart.dy + beamThickness),
+        end: Offset(horizontalEnd.dx, horizontalEnd.dy + beamThickness),
+        color: Color.fromRGBO(200, 0, 0, 0.5),
+        thickness: 2.0,
+      ),
+      _DebugLine(
+        start: adjustedStart,
+        end: angledEnd,
+        color: Color.fromRGBO(0, 0, 255, 0.5),
+        thickness: 2.0,
+      ),
+      _DebugLine(
+        start: Offset(adjustedStart.dx, adjustedStart.dy + beamThickness),
+        end: Offset(angledEnd.dx, angledEnd.dy + beamThickness),
+        color: Color.fromRGBO(0, 0, 200, 0.5),
+        thickness: 2.0,
+      ),
     ];
 
     // Draw debug lines (alignment line and beam borders)
@@ -294,31 +296,47 @@ class BeamPainter extends CustomPainter {
   ///   ],
   /// );
   /// ```
-  void _drawDebugLines(Canvas canvas, List<Map<String, dynamic>> lines) {
+  void _drawDebugLines(Canvas canvas, List<_DebugLine> lines) {
     for (var line in lines) {
-      final Paint paint = Paint()
-        ..color = line['color'] as Color
+      final paint = Paint()
+        ..color = line.color
         ..style = PaintingStyle.stroke
-        ..strokeWidth = line['thickness'] as double;
+        ..strokeWidth = line.thickness;
 
-      // Check if start and end points are the same to draw a dot instead of a line
-      if (line['start'] == line['end']) {
-        canvas.drawCircle(
-          line['start'] as Offset,
-          (line['thickness'] as double) * 2,
-          paint,
-        );
+      if (line.start == line.end) {
+        canvas.drawCircle(line.start, line.thickness * 2, paint);
       } else {
-        canvas.drawLine(line['start'] as Offset, line['end'] as Offset, paint);
+        canvas.drawLine(line.start, line.end, paint);
       }
     }
   }
 
   @override
-  bool shouldRepaint(BeamPainter oldDelegate) => false;
+  bool shouldRepaint(BeamPainter oldDelegate) {
+    return data != oldDelegate.data ||
+        color != oldDelegate.color ||
+        hookLength != oldDelegate.hookLength ||
+        thickness != oldDelegate.thickness ||
+        spacing != oldDelegate.spacing ||
+        debug != oldDelegate.debug;
+  }
 
   @override
   bool shouldRebuildSemantics(BeamPainter oldDelegate) => false;
+}
+
+class _DebugLine {
+  final Offset start;
+  final Offset end;
+  final Color color;
+  final double thickness;
+
+  _DebugLine({
+    required this.start,
+    required this.end,
+    required this.color,
+    required this.thickness,
+  });
 }
 
 enum Alignment {

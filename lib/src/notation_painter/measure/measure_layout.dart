@@ -70,9 +70,6 @@ class MeasureLayout extends StatelessWidget {
     double measureHeight =
         (topRef.numeric - bottomRef.numeric) * spacePerPosition;
 
-    List<BeamData> beams = [];
-    BeamGrouper grouper = BeamGrouper();
-
     var positionedElements = <Widget>[];
 
     for (var (index, entry) in grid.columns.entries.indexed) {
@@ -102,53 +99,6 @@ class MeasureLayout extends StatelessWidget {
           bottomOffset -= interval * spacePerPosition;
         }
 
-        switch (cell.child) {
-          case NoteElement note:
-            if (note.offsetForBeam != null) {
-              grouper.add(
-                BeamElement(
-                  beams: note.beams,
-                  beamOffset: note.offsetForBeam!,
-                  position: note.position,
-                  stemLength: note.stem!.length,
-                  stemDirection: note.stem!.direction,
-                  child: note,
-                ),
-                AlignmentPosition(
-                  left: spacings[index],
-                  top: topOffset,
-                  bottom: bottomOffset,
-                ),
-              );
-            }
-            break;
-          case Chord chord:
-            if (chord.offsetForBeam != null) {
-              grouper.add(
-                BeamElement(
-                  beams: chord.beams,
-                  beamOffset: chord.offsetForBeam!,
-                  position: chord.position,
-                  stemLength: chord.stem!.length,
-                  stemDirection: chord.stem!.direction,
-                  child: chord,
-                ),
-                AlignmentPosition(
-                  left: spacings[index],
-                  top: topOffset,
-                  bottom: bottomOffset,
-                ),
-              );
-            }
-
-            break;
-        }
-
-        if (grouper.isFinalized) {
-          beams.add(BeamData.fromGrouper(grouper: grouper));
-          grouper = BeamGrouper();
-        }
-
         double left = spacings[index];
 
         var maybeRest = cell.child.tryAs<RestElement>();
@@ -170,12 +120,34 @@ class MeasureLayout extends StatelessWidget {
         topOffset = topOffset?.scaledByContext(context);
         bottomOffset = bottomOffset?.scaledByContext(context);
 
+        Widget elementToAdd = cell;
+
+        switch (cell.child) {
+          case NoteElement note:
+            if (note.beams.isNotEmpty && note.stem != null) {
+              elementToAdd = BeamElement(
+                beams: note.beams,
+                child: elementToAdd,
+              );
+            }
+            break;
+          case Chord chord:
+            if (chord.beams.isNotEmpty && chord.stem != null) {
+              elementToAdd = BeamElement(
+                beams: chord.beams,
+                child: elementToAdd,
+              );
+            }
+
+            break;
+        }
+
         positionedElements.add(
           Positioned(
             left: left,
             top: topOffset,
             bottom: bottomOffset,
-            child: cell,
+            child: elementToAdd,
           ),
         );
 
@@ -216,29 +188,30 @@ class MeasureLayout extends StatelessWidget {
     return SizedBox(
       height: measureHeight.scaledByContext(context),
       width: measureWidth.scaledByContext(context),
-      child: Stack(
-        fit: StackFit.loose,
-        children: [
-          if (beams.isNotEmpty) BeamCanvas(beams: beams),
-          StaffLines(
-            bottom: staveBottom,
-          ),
-          if (barlineSettings.start != null)
-            Barline(
-              type: barlineSettings.start!,
-              location: BarlineLocation.start,
-              baseline: staveBottom,
-              baseHeight: layoutProperties.staveHeight,
+      child: BeamCanvas(
+        child: Stack(
+          fit: StackFit.loose,
+          children: [
+            StaffLines(
+              bottom: staveBottom,
             ),
-          if (barlineSettings.end != null)
-            Barline(
-              type: barlineSettings.end!,
-              location: BarlineLocation.end,
-              baseline: staveBottom,
-              baseHeight: layoutProperties.staveHeight,
-            ),
-          ...positionedElements,
-        ],
+            if (barlineSettings.start != null)
+              Barline(
+                type: barlineSettings.start!,
+                location: BarlineLocation.start,
+                baseline: staveBottom,
+                baseHeight: layoutProperties.staveHeight,
+              ),
+            if (barlineSettings.end != null)
+              Barline(
+                type: barlineSettings.end!,
+                location: BarlineLocation.end,
+                baseline: staveBottom,
+                baseHeight: layoutProperties.staveHeight,
+              ),
+            ...positionedElements,
+          ],
+        ),
       ),
     );
   }

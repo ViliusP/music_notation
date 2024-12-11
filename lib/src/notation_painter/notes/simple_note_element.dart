@@ -177,6 +177,57 @@ class StemlessNoteElement extends StatelessWidget {
   }
 }
 
+class BeamStem extends SingleChildRenderObjectWidget {
+  final StemDirection direction;
+
+  const BeamStem({
+    super.key,
+    required this.direction,
+    required super.child,
+  });
+
+  @override
+  RenderObject createRenderObject(BuildContext context) {
+    return BeamStemRenderBox(direction: direction);
+  }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    BeamStemRenderBox renderObject,
+  ) {
+    renderObject.direction = direction;
+  }
+}
+
+class BeamStemRenderBox extends RenderProxyBox {
+  StemDirection direction;
+
+  BeamStemRenderBox({required this.direction});
+
+  @override
+  void performLayout() {
+    // Layout the child with loosened constraints
+    if (child != null) {
+      child!.layout(constraints.loosen(), parentUsesSize: true);
+    }
+
+    // Set the size of the wrapper based on the child or a default
+    size = constraints.constrain(Size(
+      child?.size.width ?? 0,
+      child?.size.height ?? 0,
+    ));
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    // Paint the child
+    if (child != null) {
+      context.paintChild(child!, offset);
+    }
+  }
+}
+
 class StemElement extends StatelessWidget {
   const StemElement({
     super.key,
@@ -328,29 +379,32 @@ class StemElement extends StatelessWidget {
 
     SmuflGlyph? flagGlyph = _glyph;
 
-    return SizedBox.fromSize(
-      size: size.scaledByContext(context),
-      child: Stack(children: [
-        CustomPaint(
-          size: size.scaledByContext(context),
-          painter: StemPainter(
-            direction: direction,
-            thickness: layoutProperties.stemStrokeWidth,
-          ),
-        ),
-        if (flagGlyph != null && length > 0)
-          AlignmentPositioned(
-            position: _flagPosition(direction),
-            child: CustomPaint(
-              size: _baseFlagSize.scaledByContext(context),
-              painter: SimpleGlyphPainter(
-                flagGlyph.codepoint,
-                _bBox(font),
-                layoutProperties.staveSpace,
-              ),
+    return BeamStem(
+      direction: direction,
+      child: SizedBox.fromSize(
+        size: size.scaledByContext(context),
+        child: Stack(children: [
+          CustomPaint(
+            size: size.scaledByContext(context),
+            painter: StemPainter(
+              direction: direction,
+              thickness: layoutProperties.stemStrokeWidth,
             ),
           ),
-      ]),
+          if (flagGlyph != null && length > 0)
+            AlignmentPositioned(
+              position: _flagPosition(direction),
+              child: CustomPaint(
+                size: _baseFlagSize.scaledByContext(context),
+                painter: SimpleGlyphPainter(
+                  flagGlyph.codepoint,
+                  _bBox(font),
+                  layoutProperties.staveSpace,
+                ),
+              ),
+            ),
+        ]),
+      ),
     );
   }
 
