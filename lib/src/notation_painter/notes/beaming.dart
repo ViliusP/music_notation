@@ -10,39 +10,39 @@ import 'package:music_notation/src/notation_painter/painters/beam_painter.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
 
+/// Pair of a BeamElementRenderBox and its corresponding BeamStemRenderBox.
 typedef StemBeamBoxes = ({BeamElementRenderBox beam, BeamStemRenderBox stem});
 
-class NoteBeamData {
-  final List<Beam> beams;
-  final Offset offset;
+/// Beam data associated with a single musical note.
+///
+/// - [beams] - list of beams associated with the note.
+/// - [offset] - position of the note on the canvas.
+typedef NoteBeamData = ({List<Beam> beams, Offset offset});
 
-  NoteBeamData({
-    required this.beams,
-    required this.offset,
-  });
-}
-
+/// The types of beams that can be drawn between notes.
 enum BeamType {
-  /// Beam drawn from start to end point.
+  /// Beam connecting start and end points.
   full,
 
-  /// Beam drawn from start point, to length of provided hook.
+  /// Beam starting at a point and extending forward to a hook length.
   forwardHook,
 
-  /// Beam drawn from end point, backwardly of  of provided hook length.
+  /// Beam starting at the end and extending backward to a hook length.
   backwardHook,
 }
 
+/// Represents a single beam segment between two note stems.
 class BeamData {
-  /// Position of first stem in beamed group.
+  /// Starting position of the beam.
   final Offset start;
 
-  /// Position of last stem in beamed group.
+  /// Ending position of the beam.
   final Offset end;
 
-  /// Type of beam between two stems.
+  /// The type of beam segment (e.g., full, forwardHook, backwardHook).
   final BeamType type;
 
+  /// Constructor to initialize BeamData.
   BeamData({
     required this.start,
     required this.end,
@@ -50,26 +50,29 @@ class BeamData {
   });
 }
 
+/// Represents a group of beams, organized by levels.
 class BeamGroupData {
-  /// key: level (number) of bea
-  /// value: list of Beam start, end position and it's type.
+  /// A map where the key is the beam level, and the value is a list of [BeamData].
   final Map<int, List<BeamData>> map;
 
+  /// Constructor to initialize BeamGroupData.
   BeamGroupData({required this.map});
 
-  factory BeamGroupData.fromNotesBeams(List<NoteBeamData> data) {
-    // For Full beam.
+  /// Factory method to generate BeamGroupData from a list of NoteBeamData.
+  factory BeamGroupData.fromNotesBeams(Iterable<NoteBeamData> data) {
+    // Tracks the last 'begin' positions for full beams.
     Map<int, Offset> lastBegin = {};
 
-    // For backward and forward hook.
+    // Tracks offsets for hooks (forward and backward).
     Map<int, List<Offset>> offsets = {};
 
-    // For foward hook.
+    // Tracks whether the last beam was a forward hook for each level.
     Map<int, bool> lastWasForwardHook = {};
 
     final Map<int, List<BeamData>> map = {};
     for (var noteBeam in data) {
       for (var beam in noteBeam.beams) {
+        // Handle a forward hook continuation.
         if (lastWasForwardHook[beam.number] == true &&
             offsets[beam.number]?.isNotEmpty == true) {
           map[beam.number] ??= [];
@@ -81,6 +84,7 @@ class BeamGroupData {
           lastWasForwardHook.remove(beam.number);
         }
 
+        // Process beam value types.
         switch (beam.value) {
           case BeamValue.begin:
             lastBegin[beam.number] = noteBeam.offset;
@@ -96,7 +100,6 @@ class BeamGroupData {
             }
             lastBegin.remove(beam.number);
             break;
-
           case BeamValue.bContinue:
             break;
           case BeamValue.forwardHook:
@@ -113,10 +116,14 @@ class BeamGroupData {
             }
             break;
         }
+
+        // Track offsets for the beam.
         offsets[beam.number] ??= [];
         offsets[beam.number]?.add(noteBeam.offset);
       }
     }
+
+    // Handle any remaining forward hooks.
     var uniqueBeamNumbers = data
         .expand((noteBeam) => noteBeam.beams)
         .map((beam) => beam.number)
@@ -137,11 +144,12 @@ class BeamGroupData {
   }
 }
 
-enum BeamDirection { downward, upward }
-
+/// Widget representing a beam element in the layout.
 class BeamElement extends SingleChildRenderObjectWidget {
+  /// List of beams managed by this element.
   final List<Beam> beams;
 
+  /// Constructor for BeamElement.
   const BeamElement({
     super.key,
     required this.beams,
@@ -162,19 +170,22 @@ class BeamElement extends SingleChildRenderObjectWidget {
   }
 }
 
+/// Render box for the BeamElement widget.
 class BeamElementRenderBox extends RenderProxyBox {
+  /// List of beams being rendered.
   List<Beam> beams;
 
+  /// Constructor to initialize BeamElementRenderBox.
   BeamElementRenderBox({required this.beams});
 
   @override
   void performLayout() {
-    // Layout the child with loosened constraints
+    // Layout the child with loosened constraints.
     if (child != null) {
       child!.layout(constraints.loosen(), parentUsesSize: true);
     }
 
-    // Set the size of the wrapper based on the child or a default
+    // Set the size of the render box based on the child or a default size.
     size = constraints.constrain(Size(
       child?.size.width ?? 0,
       child?.size.height ?? 0,
@@ -183,13 +194,14 @@ class BeamElementRenderBox extends RenderProxyBox {
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    // Paint the child
+    // Paint the child, if available.
     if (child != null) {
       context.paintChild(child!, offset);
     }
   }
 }
 
+/// Canvas for rendering beams and associated elements.
 class BeamCanvas extends SingleChildRenderObjectWidget {
   const BeamCanvas({
     super.key,
@@ -221,11 +233,18 @@ class BeamCanvas extends SingleChildRenderObjectWidget {
   }
 }
 
+/// Render box for managing and rendering beam groups on the canvas.
 class BeamCanvasRenderBox extends RenderProxyBox {
+  /// List of beam-stem pairs detected during layout.
   final List<StemBeamBoxes> _pairs = [];
+
+  /// Thickness of the beams to be rendered.
   double beamThickness;
+
+  /// Spacing between consecutive beams.
   double spacingBetweenBeams;
 
+  /// Constructor to initialize BeamCanvasRenderBox.
   BeamCanvasRenderBox({
     required this.beamThickness,
     required this.spacingBetweenBeams,
@@ -247,31 +266,23 @@ class BeamCanvasRenderBox extends RenderProxyBox {
     }
   }
 
+  /// Recursively searches for BeamElementRenderBoxes and pairs them with their corresponding stems.
   void _searchForBeamElementRenderBoxes(RenderObject node) {
-    // Check if the current RenderObject is a BeamElementRenderBox
+    // Check if the current node is a BeamElementRenderBox.
     if (node is BeamElementRenderBox) {
-      // Search for a specific descendant of this BeamElementRenderBox
       final BeamStemRenderBox? stem =
           _findSpecificDescendant<BeamStemRenderBox>(node);
 
       if (stem != null) {
-        // Pair BeamElementRenderBox with its specific descendant
         _pairs.add((beam: node, stem: stem));
-
-        // Stop further traversal for this branch
-        return;
+        return; // Stop traversal for this branch.
       }
     }
 
-    // Recursively search single-child nodes
-    if (node is RenderObjectWithChildMixin) {
-      if (node.child != null) {
-        _searchForBeamElementRenderBoxes(node.child!);
-      }
-    }
-
-    // Recursively search multi-child nodes
-    if (node is ContainerRenderObjectMixin) {
+    // Recursively search child nodes for matches.
+    if (node is RenderObjectWithChildMixin && node.child != null) {
+      _searchForBeamElementRenderBoxes(node.child!);
+    } else if (node is ContainerRenderObjectMixin) {
       node.visitChildren(_searchForBeamElementRenderBoxes);
     }
   }
@@ -325,11 +336,8 @@ class BeamCanvasRenderBox extends RenderProxyBox {
         if (e.stem.direction == StemDirection.down) {
           beamOffset = beamOffset.translate(0, e.stem.size.height);
         }
-        return NoteBeamData(
-          beams: e.beam.beams,
-          offset: beamOffset,
-        );
-      }).toList();
+        return (beams: e.beam.beams, offset: beamOffset);
+      });
 
       var painter = BeamPainter(
         data: BeamGroupData.fromNotesBeams(notesBeams),
