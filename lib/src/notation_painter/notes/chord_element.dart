@@ -30,6 +30,7 @@ class Chord extends StatelessWidget {
   final int length;
 
   final StemElement? stem;
+
   final List<Beam> beams;
   final String? voice;
 
@@ -135,10 +136,25 @@ class Chord extends StatelessWidget {
       );
     }
 
+    // ----------- ACCIDENTALS ---------------------
+    ChordColumn accidentalsColumn = ChordColumn(
+      children: notesElements
+          .where((e) => e.accidental != null)
+          .map((e) => MeasureElement(
+                position: e.position,
+                size: e.accidental!.size,
+                alignmentOffset: e.accidental!.alignmentPosition,
+                duration: 0,
+                child: e.accidental!,
+              ))
+          .toList(),
+    );
+
     return Chord(
       key: key,
       noteheadsLeft: leftNoteheads,
       noteheadsRight: rightNoteheads,
+      accidentals: accidentalsColumn,
       beams: beams,
       stem: stem,
       voice: notes.firstOrNull?.editorialVoice.voice,
@@ -146,19 +162,77 @@ class Chord extends StatelessWidget {
     );
   }
 
+  MeasureElement? get _positionedStem {
+    if (stem == null) return null;
+    ElementPosition? stemPosition;
+    double? top;
+    double? bottom;
+    switch (stem?.direction) {
+      case StemDirection.up:
+        bottom = 0;
+        var minLeft = noteheadsLeft?.children
+            .map(
+              (note) => note.position,
+            )
+            .minOrNull;
+
+        var minRight = noteheadsRight?.children
+            .map(
+              (note) => note.position,
+            )
+            .minOrNull;
+
+        stemPosition = [minLeft, minRight].nonNulls.minOrNull;
+      case StemDirection.down:
+        top = 0;
+
+        var posLeft = noteheadsLeft?.children
+            .map(
+              (note) => note.position,
+            )
+            .maxOrNull;
+
+        var posRight = noteheadsRight?.children
+            .map(
+              (note) => note.position,
+            )
+            .maxOrNull;
+
+        if (posLeft == null && posRight == null) return null;
+        stemPosition = [posLeft, posRight].nonNulls.maxOrNull;
+      case null:
+        return null;
+    }
+
+    if (stemPosition == null) return null;
+
+    return MeasureElement(
+      position: stemPosition,
+      size: stem!.size,
+      alignmentOffset: AlignmentPosition(
+        left: 0,
+        top: top,
+        bottom: bottom,
+      ),
+      duration: 0,
+      child: stem!,
+    );
+  }
+
   List<ChordColumn> get _columns {
     List<ChordColumn> columns = [];
-    if (accidentals != null) {
+    if (accidentals != null && accidentals?.children.isNotEmpty == true) {
       columns.add(accidentals!);
     }
-    if (noteheadsLeft != null) {
+    if (noteheadsLeft != null && noteheadsLeft?.children.isNotEmpty == true) {
       columns.add(noteheadsLeft!);
     }
-    if (noteheadsRight != null) {
+    if (noteheadsRight != null && noteheadsRight?.children.isNotEmpty == true) {
       columns.add(noteheadsRight!);
     }
 
-    if (augmentationDots != null) {
+    if (augmentationDots != null &&
+        augmentationDots?.children.isNotEmpty == true) {
       columns.add(augmentationDots!);
     }
 
@@ -226,13 +300,14 @@ class Chord extends StatelessWidget {
   /// Lowest y of every chord elements
   ({double min, double max}) get _verticalRange {
     var children = _columns.expand((column) => column._children).toList();
+    if (_positionedStem != null) {
+      children.add(_positionedStem!);
+    }
     return MeasureElement.columnVerticalRange(children, position);
   }
 
   double get _height {
-    double elementsHeight = _verticalRange.min.abs() + _verticalRange.max.abs();
-    double heightWithStem = _verticalRange.min.abs() + (stem?.length ?? 0);
-    return max(heightWithStem, elementsHeight);
+    return _verticalRange.min.abs() + _verticalRange.max.abs();
   }
 
   double get _width {
@@ -292,7 +367,7 @@ class Chord extends StatelessWidget {
 
   double get _leftColumnOffset {
     double afterAccidentals = 0;
-    if (accidentals != null) {
+    if (accidentals?.size.isEmpty == false) {
       afterAccidentals = NotationLayoutProperties.noteAccidentalDistance;
     }
 
@@ -332,6 +407,14 @@ class Chord extends StatelessWidget {
     double rightColumnOffset = _stemSpacing;
     rightColumnOffset = -rightColumnOffset.scaledByContext(context);
 
+    double accidentalRightPadding = 0;
+    if (noteheadsLeft != null || noteheadsRight != null) {
+      accidentalRightPadding = NotationLayoutProperties.noteAccidentalDistance;
+      accidentalRightPadding = accidentalRightPadding.scaledByContext(
+        context,
+      );
+    }
+
     return SizedBox.fromSize(
       size: size.scaledByContext(context),
       child: Stack(
@@ -345,15 +428,18 @@ class Chord extends StatelessWidget {
             alignment:
                 _alignByTop ? VerticalAlignment.top : VerticalAlignment.bottom,
             children: [
-              if (accidentals != null)
+              if (accidentals?.size.isEmpty == false)
                 Offsetted(
                   offset: Offset(
                     0,
                     _columnOffset(accidentals).scaledByContext(context),
                   ),
-                  child: accidentals!,
+                  child: Padding(
+                    padding: EdgeInsets.only(right: accidentalRightPadding),
+                    child: accidentals!,
+                  ),
                 ),
-              if (noteheadsLeft != null)
+              if (noteheadsLeft?.size.isEmpty == false)
                 Offsetted(
                   offset: Offset(
                     0,
@@ -361,7 +447,7 @@ class Chord extends StatelessWidget {
                   ),
                   child: noteheadsLeft!,
                 ),
-              if (noteheadsRight != null)
+              if (noteheadsRight?.size.isEmpty == false)
                 Offsetted(
                   offset: Offset(
                     rightColumnOffset,
@@ -369,7 +455,7 @@ class Chord extends StatelessWidget {
                   ),
                   child: noteheadsRight!,
                 ),
-              if (augmentationDots != null)
+              if (augmentationDots?.size.isEmpty == false)
                 Offsetted(
                   offset: Offset(
                     0,
@@ -402,10 +488,15 @@ class ChordColumn extends StatelessWidget {
     };
   }
 
-  ElementPosition get position => _children.first.position;
+  ElementPosition get position =>
+      _children.firstOrNull?.position ?? ElementPosition.staffMiddle;
 
   AlignmentPosition get alignmentPosition {
-    MeasureElement reference = _children.first;
+    MeasureElement? reference = _children.firstOrNull;
+
+    if (reference == null) {
+      return AlignmentPosition(left: 0, bottom: 0);
+    }
 
     return AlignmentPosition(
       left: 0,
@@ -438,9 +529,14 @@ class ChordColumn extends StatelessWidget {
           ((child.position.numeric - position.numeric)).toDouble();
       double distanceFromRef = interval * layoutProperties.spacePerPosition;
 
+      double childBottom = child.alignmentOffset
+          .effectiveBottom(child.size)
+          .scaledByContext(context);
+      double refBottom = alignmentPosition.bottom!.scaledByContext(context);
+
       positioned.add(
         Positioned(
-          bottom: distanceFromRef,
+          bottom: distanceFromRef + childBottom - refBottom,
           child: child,
         ),
       );

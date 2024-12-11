@@ -236,19 +236,18 @@ class MeasureElement extends StatelessWidget {
     double minY = 0;
     double maxY = 0;
 
+    const spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
+
     for (var element in elements) {
-      double y = 0;
-      double top = 0;
-      int interval = element.position.distance(reference);
-      y = interval * NotationLayoutProperties.baseSpacePerPosition;
+      int interval = element.position.numeric - reference.numeric;
+      double positionalDistance = interval * spacePerPosition;
 
       double bottom = element.alignmentOffset.effectiveBottom(element.size);
-
-      bottom = y + bottom;
+      bottom = positionalDistance + bottom;
       minY = min(minY, bottom);
 
-      top = -element.alignmentOffset.effectiveTop(element.size);
-      top += y;
+      double top = element.alignmentOffset.effectiveTop(element.size);
+      top = positionalDistance - top;
       maxY = max(maxY, top);
     }
 
@@ -356,6 +355,9 @@ class AlignmentPosition {
   double effectiveBottom(Size size) {
     if (bottom != null) return bottom!;
     double sign = top!.sign;
+    if (sign == 0) {
+      sign = -1;
+    }
     return (top! + size.height) * sign;
   }
 
@@ -364,6 +366,9 @@ class AlignmentPosition {
   double effectiveTop(Size size) {
     if (top != null) return top!;
     double sign = bottom!.sign;
+    if (sign == 0) {
+      sign = -1;
+    }
     return (bottom! + size.height) * sign;
   }
 }
