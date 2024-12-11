@@ -33,39 +33,52 @@ enum BeamType {
   backwardHook,
 }
 
-/// Represents a single beam segment between two note stems.
-class BeamData {
-  /// Starting position of the beam.
-  final Offset start;
+/// Represents a single beam segment connecting two widget beam points.
+/// These two widgets are not necessarily adjacent elements in the layout.
+/// Typically, one widget will be a note, and the beam point will correspond
+/// to one endpoint of the note's stem.
+class BeamSegment {
+  /// The x-coordinate of the starting point of the beam segment.
+  final double startX;
 
-  /// Ending position of the beam.
-  final Offset end;
+  /// The x-coordinate of the ending point of the beam segment.
+  final double endX;
 
-  /// The type of beam segment (e.g., full, forwardHook, backwardHook).
+  /// The type of the beam segment (e.g., full, forwardHook, backwardHook).
   final BeamType type;
 
-  /// Constructor to initialize BeamData.
-  BeamData({
-    required this.start,
-    required this.end,
+  /// Constructor to initialize a [BeamSegment].
+  BeamSegment({
+    required this.startX,
+    required this.endX,
     required this.type,
   });
 }
 
 /// Represents a group of beams, organized by levels.
-class BeamGroupData {
-  /// A map where the key is the beam level, and the value is a list of [BeamData].
-  final Map<int, List<BeamData>> map;
+class BeamGroupPattern {
+  /// Starting position of the group beam.
+  final Offset start;
 
-  /// Constructor to initialize [BeamGroupData].
-  BeamGroupData({required this.map});
+  /// Ending position of the bgroup beameam.
+  final Offset end;
 
-  /// Factory method to generate [BeamGroupData] from a list of NoteBeamData.
-  factory BeamGroupData.fromNotesBeams(Iterable<NoteBeamData> data) {
-    // Tracks the last 'begin' positions for full beams.
-    Map<int, Offset> lastBegin = {};
+  /// A map where the key is the beam level, and the value is a list of [BeamGroupPattern].
+  final Map<int, List<BeamSegment>> map;
 
-    final Map<int, List<BeamData>> map = {};
+  /// Constructor to initialize [BeamGroupPattern].
+  BeamGroupPattern({
+    required this.map,
+    required this.start,
+    required this.end,
+  });
+
+  /// Factory method to generate [BeamPattern] from a list of NoteBeamData.
+  factory BeamGroupPattern.fromNotesBeams(Iterable<NoteBeamData> data) {
+    // Tracks the last 'begin' positions (x value) for full beams.
+    Map<int, double> lastBegin = {};
+
+    final Map<int, List<BeamSegment>> map = {};
     for (var i = 0; i < data.length; i++) {
       var beams = data.elementAt(i).beams;
       var offset = data.elementAt(i).offset;
@@ -89,14 +102,14 @@ class BeamGroupData {
         // Process beam value types.
         switch (beam.value) {
           case BeamValue.begin:
-            lastBegin[beam.number] = offset;
+            lastBegin[beam.number] = offset.dx;
             break;
           case BeamValue.end:
             if (lastBegin[beam.number] != null) {
               map[beam.number] ??= [];
-              map[beam.number]?.add(BeamData(
-                start: lastBegin[beam.number]!,
-                end: offset,
+              map[beam.number]?.add(BeamSegment(
+                startX: lastBegin[beam.number]!,
+                endX: offset.dx,
                 type: BeamType.full,
               ));
             }
@@ -107,9 +120,9 @@ class BeamGroupData {
           case BeamValue.forwardHook:
             if (maybeNextOffset != null) {
               map[beam.number] ??= [];
-              map[beam.number]?.add(BeamData(
-                start: offset,
-                end: maybeNextOffset,
+              map[beam.number]?.add(BeamSegment(
+                startX: offset.dx,
+                endX: maybeNextOffset.dx,
                 type: BeamType.forwardHook,
               ));
             }
@@ -118,9 +131,9 @@ class BeamGroupData {
           case BeamValue.backwardHook:
             if (maybeLastOffset != null) {
               map[beam.number] ??= [];
-              map[beam.number]?.add(BeamData(
-                start: maybeLastOffset,
-                end: offset,
+              map[beam.number]?.add(BeamSegment(
+                startX: maybeLastOffset.dx,
+                endX: offset.dx,
                 type: BeamType.backwardHook,
               ));
             }
@@ -129,7 +142,14 @@ class BeamGroupData {
       }
     }
 
-    return BeamGroupData(map: map);
+    Offset start = data.firstOrNull?.offset ?? Offset.zero;
+    Offset end = data.lastOrNull?.offset ?? start;
+
+    return BeamGroupPattern(
+      start: start,
+      end: end,
+      map: map,
+    );
   }
 }
 
@@ -329,7 +349,7 @@ class BeamCanvasRenderBox extends RenderProxyBox {
       });
 
       var painter = BeamPainter(
-        data: BeamGroupData.fromNotesBeams(notesBeams),
+        pattern: BeamGroupPattern.fromNotesBeams(notesBeams),
         flip: pattern.first.stem.direction == StemDirection.down,
         hookLength: 10,
         thickness: beamThickness,

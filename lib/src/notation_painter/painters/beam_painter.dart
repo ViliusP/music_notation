@@ -15,7 +15,7 @@ import 'package:music_notation/src/notation_painter/notes/beaming.dart';
 /// - [color] - Optional beam color. Defaults to black.
 /// - [debug] -Enables debug visualization of beams and alignment lines.
 class BeamPainter extends CustomPainter {
-  final BeamGroupData data;
+  final BeamGroupPattern pattern;
   final Color? color;
 
   final double hookLength;
@@ -27,7 +27,7 @@ class BeamPainter extends CustomPainter {
   final bool debug;
 
   BeamPainter({
-    required this.data,
+    required this.pattern,
     this.color,
     required this.hookLength,
     required this.thickness,
@@ -38,17 +38,18 @@ class BeamPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    for (var e in data.map.entries) {
+    for (var e in pattern.map.entries) {
       var level = e.key;
       var beams = e.value;
+
+      // Calculate start and end based on the beam direction
+      Offset start = pattern.start;
+      Offset end = pattern.end;
+
+      // Calculate beam angle
+      double angle = atan2(end.dy - start.dy, end.dx - start.dx);
+
       for (var beam in beams) {
-        // Calculate start and end based on the beam direction
-        Offset start = beam.start;
-        Offset end = beam.end;
-
-        // Calculate beam angle
-        double angle = atan2(end.dy - start.dy, end.dx - start.dx);
-
         double yOffset = (spacing + thickness) * (level - 1);
         if (flip) {
           yOffset += thickness;
@@ -313,7 +314,7 @@ class BeamPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(BeamPainter oldDelegate) {
-    return data != oldDelegate.data ||
+    return pattern != oldDelegate.pattern ||
         color != oldDelegate.color ||
         hookLength != oldDelegate.hookLength ||
         thickness != oldDelegate.thickness ||

@@ -57,8 +57,8 @@ void main() {
 
   group('BeamGroupData.fromNotesBeams', () {
     test('creates an empty map when input data is empty', () {
-      final beamGroupData = BeamGroupData.fromNotesBeams([]);
-      expect(beamGroupData.map, isEmpty);
+      final pattern = BeamGroupPattern.fromNotesBeams([]);
+      expect(pattern.map, isEmpty);
     });
 
     test('handles a single beam with "full" type', () {
@@ -73,16 +73,16 @@ void main() {
         ),
       ];
 
-      final beamGroupData = BeamGroupData.fromNotesBeams(data);
+      final pattern = BeamGroupPattern.fromNotesBeams(data);
 
-      expect(beamGroupData.map, isNotEmpty);
-      expect(beamGroupData.map[1], isNotNull);
-      expect(beamGroupData.map[1]!.length, 1);
+      expect(pattern.map, isNotEmpty);
+      expect(pattern.map[1], isNotNull);
+      expect(pattern.map[1]!.length, 1);
 
-      final beamData = beamGroupData.map[1]!.first;
+      final beamData = pattern.map[1]!.first;
       expect(beamData.type, BeamType.full);
-      expect(beamData.start, const Offset(0, 0));
-      expect(beamData.end, const Offset(10, 0));
+      expect(beamData.startX, 0);
+      expect(beamData.endX, 10);
     });
 
     test('handles a single beam with "full" type with improper list of beams',
@@ -103,16 +103,16 @@ void main() {
         ),
       ];
 
-      final beamGroupData = BeamGroupData.fromNotesBeams(data);
+      final pattern = BeamGroupPattern.fromNotesBeams(data);
 
-      expect(beamGroupData.map, isNotEmpty);
-      expect(beamGroupData.map[1], isNotNull);
-      expect(beamGroupData.map[1]!.length, 1);
+      expect(pattern.map, isNotEmpty);
+      expect(pattern.map[1], isNotNull);
+      expect(pattern.map[1]!.length, 1);
 
-      final beamData = beamGroupData.map[1]!.first;
+      final beamData = pattern.map[1]!.first;
       expect(beamData.type, BeamType.full);
-      expect(beamData.start, const Offset(0, 0));
-      expect(beamData.end, const Offset(10, 0));
+      expect(beamData.startX, 0);
+      expect(beamData.endX, 10);
     });
 
     test('handles one note with forward hook beam', () {
@@ -125,9 +125,9 @@ void main() {
         ),
       ];
 
-      final beamGroupData = BeamGroupData.fromNotesBeams(data);
+      final pattern = BeamGroupPattern.fromNotesBeams(data);
 
-      expect(beamGroupData.map, isEmpty);
+      expect(pattern.map, isEmpty);
     });
 
     test('handles one note with multiple forward hook beam', () {
@@ -141,9 +141,9 @@ void main() {
         ),
       ];
 
-      final beamGroupData = BeamGroupData.fromNotesBeams(data);
+      final pattern = BeamGroupPattern.fromNotesBeams(data);
 
-      expect(beamGroupData.map, isEmpty);
+      expect(pattern.map, isEmpty);
     });
 
     test(
@@ -166,23 +166,23 @@ void main() {
         ),
       ];
 
-      final beamGroupData = BeamGroupData.fromNotesBeams(data);
+      final pattern = BeamGroupPattern.fromNotesBeams(data);
 
-      expect(beamGroupData.map.length, 2);
+      expect(pattern.map.length, 2);
 
       // Validate Beam 1
-      expect(beamGroupData.map[1]!.length, 1);
-      final beam1 = beamGroupData.map[1]!.first;
+      expect(pattern.map[1]!.length, 1);
+      final beam1 = pattern.map[1]!.first;
       expect(beam1.type, BeamType.forwardHook);
-      expect(beam1.start, const Offset(0, 0));
-      expect(beam1.end, const Offset(10, 10));
+      expect(beam1.startX, 0);
+      expect(beam1.endX, 10);
 
       // Validate Beam 2
-      expect(beamGroupData.map[2]!.length, 1);
-      final beam2 = beamGroupData.map[2]!.first;
+      expect(pattern.map[2]!.length, 1);
+      final beam2 = pattern.map[2]!.first;
       expect(beam2.type, BeamType.forwardHook);
-      expect(beam2.start, const Offset(0, 0));
-      expect(beam2.end, const Offset(10, 10));
+      expect(beam2.startX, 0);
+      expect(beam2.endX, 10);
     });
 
     test('handles multiple levels of beams', () {
@@ -208,23 +208,23 @@ void main() {
         ),
       ];
 
-      final beamGroupData = BeamGroupData.fromNotesBeams(data);
+      final pattern = BeamGroupPattern.fromNotesBeams(data);
 
-      expect(beamGroupData.map.keys, containsAll([1, 2]));
+      expect(pattern.map.keys, containsAll([1, 2]));
 
       // Validate Beam 1
-      expect(beamGroupData.map[1]!.length, 1);
-      final beam1 = beamGroupData.map[1]!.first;
+      expect(pattern.map[1]!.length, 1);
+      final beam1 = pattern.map[1]!.first;
       expect(beam1.type, BeamType.full);
-      expect(beam1.start, const Offset(0, 0));
-      expect(beam1.end, const Offset(10, 0));
+      expect(beam1.startX, 0);
+      expect(beam1.endX, 10);
 
       // Validate Beam 2
-      expect(beamGroupData.map[2]!.length, 1);
-      final beam2 = beamGroupData.map[2]!.first;
+      expect(pattern.map[2]!.length, 1);
+      final beam2 = pattern.map[2]!.first;
       expect(beam2.type, BeamType.full);
-      expect(beam2.start, const Offset(0, 0));
-      expect(beam2.end, const Offset(20, 0));
+      expect(beam2.startX, 0);
+      expect(beam2.endX, 20);
     });
 
     test('handles an empty beam list in NoteBeamData', () {
@@ -232,9 +232,9 @@ void main() {
         (beams: <Beam>[], offset: const Offset(0, 0)),
       ];
 
-      final beamGroupData = BeamGroupData.fromNotesBeams(data);
+      final pattern = BeamGroupPattern.fromNotesBeams(data);
 
-      expect(beamGroupData.map, isEmpty);
+      expect(pattern.map, isEmpty);
     });
 
     test('handles single note with backward hook beam', () {
@@ -247,9 +247,9 @@ void main() {
         ),
       ];
 
-      final beamGroupData = BeamGroupData.fromNotesBeams(data);
+      final pattern = BeamGroupPattern.fromNotesBeams(data);
 
-      expect(beamGroupData.map, isEmpty);
+      expect(pattern.map, isEmpty);
     });
 
     test('handles multiple notes with backward hook beam (one at start)', () {
@@ -268,16 +268,16 @@ void main() {
         ),
       ];
 
-      final beamGroupData = BeamGroupData.fromNotesBeams(data);
+      final pattern = BeamGroupPattern.fromNotesBeams(data);
 
-      expect(beamGroupData.map, isNotEmpty);
-      expect(beamGroupData.map[3], isNotNull);
-      expect(beamGroupData.map[3]!.length, 1);
+      expect(pattern.map, isNotEmpty);
+      expect(pattern.map[3], isNotNull);
+      expect(pattern.map[3]!.length, 1);
 
-      final beamData = beamGroupData.map[3]!.first;
+      final beamData = pattern.map[3]!.first;
       expect(beamData.type, BeamType.backwardHook);
-      expect(beamData.start, const Offset(0, 0));
-      expect(beamData.end, const Offset(10, 0));
+      expect(beamData.startX, 0);
+      expect(beamData.endX, 10);
     });
 
     test('Handles complex case', () {
@@ -349,88 +349,94 @@ void main() {
         ),
       ];
 
-      final beamGroupData = BeamGroupData.fromNotesBeams(data);
+      final pattern = BeamGroupPattern.fromNotesBeams(data);
 
-      expect(beamGroupData.map, isNotEmpty);
+      expect(pattern.map, isNotEmpty);
 
       // 1st Level
-      expect(beamGroupData.map[1], isNotNull);
-      expect(beamGroupData.map[1]!.length, 1);
-      final firstBeamL1 = beamGroupData.map[1]!.first;
+      expect(pattern.map[1], isNotNull);
+      expect(pattern.map[1]!.length, 1);
+      final firstBeamL1 = pattern.map[1]!.first;
       expect(firstBeamL1.type, BeamType.full);
-      expect(firstBeamL1.start, const Offset(0, 0));
-      expect(firstBeamL1.end, const Offset(4, 4));
+      expect(firstBeamL1.startX, 0);
+      expect(firstBeamL1.endX, 4);
 
       // 2nd level
-      expect(beamGroupData.map[2], isNull);
+      expect(pattern.map[2], isNull);
 
       // 3rd level
-      expect(beamGroupData.map[3], isNull);
+      expect(pattern.map[3], isNull);
 
       // 4th level
-      expect(beamGroupData.map[4], isNotNull);
-      expect(beamGroupData.map[4]!.length, 2);
-      final firstBeamL4 = beamGroupData.map[4]!.first;
+      expect(pattern.map[4], isNotNull);
+      expect(pattern.map[4]!.length, 2);
+      final firstBeamL4 = pattern.map[4]!.first;
       expect(firstBeamL4.type, BeamType.full);
-      expect(firstBeamL4.start, const Offset(0, 0));
-      expect(firstBeamL4.end, const Offset(1, 1));
+      expect(
+        firstBeamL4.startX,
+        0,
+      );
+      expect(firstBeamL4.endX, 1);
 
-      final secondBeamL4 = beamGroupData.map[4]![1];
+      final secondBeamL4 = pattern.map[4]![1];
       expect(secondBeamL4.type, BeamType.full);
-      expect(secondBeamL4.start, const Offset(3, 3));
-      expect(secondBeamL4.end, const Offset(4, 4));
+      expect(secondBeamL4.startX, 3);
+      expect(secondBeamL4.endX, 4);
 
       // 5th level
-      expect(beamGroupData.map[5], isNotNull);
-      expect(beamGroupData.map[5]!.length, 2);
-      final firstBeamL5 = beamGroupData.map[5]!.first;
+      expect(pattern.map[5], isNotNull);
+      expect(pattern.map[5]!.length, 2);
+      final firstBeamL5 = pattern.map[5]!.first;
       expect(firstBeamL5.type, BeamType.full);
-      expect(firstBeamL5.start, const Offset(0, 0));
-      expect(firstBeamL5.end, const Offset(2, 2));
+      expect(firstBeamL5.startX, 0);
+      expect(firstBeamL5.endX, 2);
 
-      final secondBeamL5 = beamGroupData.map[5]![1];
+      final secondBeamL5 = pattern.map[5]![1];
       expect(secondBeamL5.type, BeamType.backwardHook);
-      expect(secondBeamL5.start, const Offset(3, 3));
-      expect(secondBeamL5.end, const Offset(4, 4));
+      expect(secondBeamL5.startX, 3);
+      expect(secondBeamL5.endX, 4);
 
       // 6th level
-      expect(beamGroupData.map[6], isNotNull);
-      expect(beamGroupData.map[6]!.length, 1);
-      final firstBeamL6 = beamGroupData.map[6]!.first;
+      expect(pattern.map[6], isNotNull);
+      expect(pattern.map[6]!.length, 1);
+      final firstBeamL6 = pattern.map[6]!.first;
       expect(firstBeamL6.type, BeamType.full);
-      expect(firstBeamL6.start, const Offset(1, 1));
-      expect(firstBeamL6.end, const Offset(2, 2));
+      expect(
+        firstBeamL6.startX,
+        1,
+      );
+      expect(firstBeamL6.endX, 2);
 
       // 7th level
-      expect(beamGroupData.map[7], isNotNull);
-      expect(beamGroupData.map[7]!.length, 3);
-      final firstBeamL7 = beamGroupData.map[7]!.first;
+      expect(pattern.map[7], isNotNull);
+      expect(pattern.map[7]!.length, 3);
+      final firstBeamL7 = pattern.map[7]!.first;
       expect(firstBeamL7.type, BeamType.backwardHook);
-      expect(firstBeamL7.start, const Offset(0, 0));
-      expect(firstBeamL7.end, const Offset(1, 1));
+      expect(firstBeamL7.startX, 0);
+      expect(firstBeamL7.endX, 1);
 
-      final secondBeamL7 = beamGroupData.map[7]![1];
+      final secondBeamL7 = pattern.map[7]![1];
       expect(secondBeamL7.type, BeamType.backwardHook);
-      expect(secondBeamL7.start, const Offset(2, 2));
-      expect(secondBeamL7.end, const Offset(3, 3));
+      expect(secondBeamL7.startX, 2);
+      expect(secondBeamL7.endX, 3);
 
-      final thirdBeamL7 = beamGroupData.map[7]![2];
+      final thirdBeamL7 = pattern.map[7]![2];
       expect(thirdBeamL7.type, BeamType.backwardHook);
-      expect(thirdBeamL7.start, const Offset(3, 3));
-      expect(thirdBeamL7.end, const Offset(4, 4));
+      expect(thirdBeamL7.startX, 3);
+      expect(thirdBeamL7.endX, 4);
 
       // 8th level
-      expect(beamGroupData.map[8], isNotNull);
-      expect(beamGroupData.map[8]!.length, 2);
-      final firstBeamL8 = beamGroupData.map[8]!.first;
+      expect(pattern.map[8], isNotNull);
+      expect(pattern.map[8]!.length, 2);
+      final firstBeamL8 = pattern.map[8]!.first;
       expect(firstBeamL8.type, BeamType.forwardHook);
-      expect(firstBeamL8.start, const Offset(0, 0));
-      expect(firstBeamL8.end, const Offset(1, 1));
+      expect(firstBeamL8.startX, 0);
+      expect(firstBeamL8.endX, 1);
 
-      final secondBeamL8 = beamGroupData.map[8]![1];
+      final secondBeamL8 = pattern.map[8]![1];
       expect(secondBeamL8.type, BeamType.forwardHook);
-      expect(secondBeamL8.start, const Offset(2, 2));
-      expect(secondBeamL8.end, const Offset(3, 3));
+      expect(secondBeamL8.startX, 2);
+      expect(secondBeamL8.endX, 3);
     });
   });
 }
