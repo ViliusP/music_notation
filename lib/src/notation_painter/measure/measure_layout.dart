@@ -136,7 +136,10 @@ class MeasureLayout extends StatelessWidget {
         );
 
         if (dSettings != null) {
-          Rect boxBelow = cell.boxBelowStaff(layoutProperties.staveSpace);
+          Rect boxBelow = cell.boxBelow(
+            scale: layoutProperties.staveSpace,
+            reference: ElementPosition.staffBottom,
+          );
           if (dSettings.paintBBoxBelowStaff && boxBelow.height > 0) {
             positionedElements.add(
               Positioned(
@@ -151,7 +154,10 @@ class MeasureLayout extends StatelessWidget {
             );
           }
 
-          Rect boxAbove = cell.boxAboveStaff(layoutProperties.staveSpace);
+          Rect boxAbove = cell.boxAbove(
+            scale: layoutProperties.staveSpace,
+            reference: ElementPosition.staffTop,
+          );
           if (dSettings.paintBBoxAboveStaff && boxAbove.height > 0) {
             positionedElements.add(
               Positioned(

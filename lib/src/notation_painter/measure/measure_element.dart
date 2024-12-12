@@ -191,66 +191,31 @@ class MeasureElement extends StatelessWidget {
     );
   }
 
-  /// Calculates a bounding box for elements extending below the staff,
-  /// with consideration for the element's position and vertical alignment offset.
-  Rect boxBelowStaff([double scale = 1]) {
-    double spacePerPosition = scale / 2;
-
-    Size size = this.size.scale(scale);
-    AlignmentPosition alignmentScaled = alignmentOffset.scale(scale);
-
-    double belowStaffLength = 0;
-
-    double distanceToStaffBottom =
-        spacePerPosition * ElementPosition.staffBottom.numeric;
-
-    if (alignmentScaled.top != null) {
-      belowStaffLength = [
-        -spacePerPosition * position.numeric,
-        distanceToStaffBottom,
-        size.height,
-        alignmentScaled.top!,
-      ].sum;
-    }
-
-    if (alignmentScaled.bottom != null) {
-      belowStaffLength = [
-        -spacePerPosition * position.numeric,
-        distanceToStaffBottom,
-        -alignmentScaled.bottom!,
-      ].sum;
-    }
-
-    belowStaffLength = [0.0, belowStaffLength].max;
-
-    return Rect.fromPoints(Offset(0, 0), Offset(size.width, belowStaffLength));
-  }
-
   /// Calculates a bounding box for elements extending above the staff,
   /// considering the element's position and vertical alignment offset.
-  Rect boxAboveStaff([double scale = 1]) {
-    double spacePerPosition = scale / 2;
+  Rect boxAbove({required ElementPosition reference, double scale = 1}) {
+    double spacePerPosition =
+        scale * NotationLayoutProperties.baseSpacePerPosition;
 
     double aboveStaffLength = 0;
 
     Size size = this.size.scale(scale);
     AlignmentPosition alignmentScaled = alignmentOffset.scale(scale);
 
-    double distanceToStaffTop =
-        spacePerPosition * ElementPosition.staffTop.numeric;
+    double distanceToReference = reference.numeric * spacePerPosition;
 
     if (alignmentScaled.top != null) {
       aboveStaffLength = [
         spacePerPosition * position.numeric,
         -alignmentScaled.top!,
-        -distanceToStaffTop,
+        -distanceToReference,
       ].sum;
     }
 
     if (alignmentScaled.bottom != null) {
       aboveStaffLength = [
         spacePerPosition * position.numeric,
-        -distanceToStaffTop,
+        -distanceToReference,
         size.height,
         alignmentScaled.bottom!,
       ].sum;
@@ -259,6 +224,41 @@ class MeasureElement extends StatelessWidget {
     aboveStaffLength = [0.0, aboveStaffLength].max;
 
     return Rect.fromPoints(Offset(0, 0), Offset(size.width, aboveStaffLength));
+  }
+
+  /// Calculates a bounding box for elements extending below the staff,
+  /// with consideration for the element's position and vertical alignment offset.
+  Rect boxBelow({required ElementPosition reference, double scale = 1}) {
+    double spacePerPosition =
+        scale * NotationLayoutProperties.baseSpacePerPosition;
+
+    Size size = this.size.scale(scale);
+    AlignmentPosition alignmentScaled = alignmentOffset.scale(scale);
+
+    double belowStaffLength = 0;
+
+    double distanceToReference = reference.numeric * spacePerPosition;
+
+    if (alignmentScaled.top != null) {
+      belowStaffLength = [
+        -spacePerPosition * position.numeric,
+        distanceToReference,
+        size.height,
+        alignmentScaled.top!,
+      ].sum;
+    }
+
+    if (alignmentScaled.bottom != null) {
+      belowStaffLength = [
+        -spacePerPosition * position.numeric,
+        distanceToReference,
+        -alignmentScaled.bottom!,
+      ].sum;
+    }
+
+    belowStaffLength = [0.0, belowStaffLength].max;
+
+    return Rect.fromPoints(Offset(0, 0), Offset(size.width, belowStaffLength));
   }
 
   static ({double min, double max}) columnVerticalRange(
