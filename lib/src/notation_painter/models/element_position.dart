@@ -156,6 +156,23 @@ class ElementPosition implements Comparable<ElementPosition> {
         numeric + value,
       );
 
+  /// Minus operator. Subtracts an integer [value] from the current position's
+  /// numeric representation and returns a new [ElementPosition] instance.
+  ///
+  /// This operator is equivalent to transposing the current position downward
+  /// by the given [value]. Positive values move the position lower, while negative
+  /// values move it higher. It automatically handles octave changes as necessary.
+  ///
+  /// Example:
+  /// ```dart
+  /// final position = ElementPosition(step: Step.C, octave: 4);
+  /// final transposed = position - 3; // Moves 3 steps down: A3
+  /// print(transposed); // ElementPosition A3
+  /// ```
+  ElementPosition operator -(int value) => ElementPosition.fromInt(
+        numeric - value,
+      );
+
   /// Equality operator. Compares two [ElementPosition] instances and returns `true`
   /// if their [step] and [octave] values are identical. Returns `false` otherwise.
   ///
