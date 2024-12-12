@@ -91,6 +91,12 @@ class ElementPosition implements Comparable<ElementPosition> {
     }
   }
 
+  /// Adjusts the position of the element by the specified [interval].
+  ///
+  /// - If [interval] is positive, the element's position is moved higher.
+  /// - If [interval] is negative, the element's position is moved lower.
+  ///
+  /// Returns a new [ElementPosition] instance representing the adjusted position.
   ElementPosition transpose(int interval) {
     return ElementPosition.fromInt(numeric + interval);
   }

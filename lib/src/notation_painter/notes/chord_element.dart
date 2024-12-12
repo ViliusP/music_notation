@@ -152,16 +152,19 @@ class Chord extends StatelessWidget {
 
     // ----------- DOTS ---------------------
     ChordColumn augmentationDots = ChordColumn(
-      children: notesElements
-          .where((e) => e.dots != null)
-          .map((e) => MeasureElement(
-                position: e.position,
-                size: e.dots!.size,
-                alignmentOffset: e.dots!.alignmentPosition,
-                duration: 0,
-                child: e.dots!,
-              ))
-          .toList(),
+      children: notesElements.where((e) => e.dots != null).map((e) {
+        ElementPosition position = e.position;
+        if (position.numeric % 2 == 0) {
+          position = position.transpose(1);
+        }
+        return MeasureElement(
+          position: position,
+          size: e.dots!.size,
+          alignmentOffset: e.dots!.alignmentPosition,
+          duration: 0,
+          child: e.dots!,
+        );
+      }).toList(),
     );
 
     return Chord(
