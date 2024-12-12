@@ -24,13 +24,13 @@ class MeasureLayout extends StatelessWidget {
 
   final MeasureBarlines barlineSettings;
 
-  final List<double> widths;
+  final List<double> horizontalOffsets;
 
   const MeasureLayout({
     super.key,
     this.barlineSettings = const MeasureBarlines(),
     required this.grid,
-    required this.widths,
+    required this.horizontalOffsets,
   });
 
   @override
@@ -40,21 +40,6 @@ class MeasureLayout extends StatelessWidget {
             NotationLayoutProperties.standard();
 
     DebugSettings? dSettings = DebugSettings.of(context);
-
-    // Spacing
-    List<double> spacings = [];
-    double spacing = 0;
-    for (var (i, width) in widths.indexed) {
-      if (i == 0) {
-        spacing = NotationLayoutProperties.baseMeasurePadding;
-      }
-      spacings.add(spacing);
-      spacing += width;
-      if (!grid.columns.entries.elementAt(i).key.isRhytmic) {
-        spacing += NotationLayoutProperties.baseMeasurePadding;
-      }
-    }
-    spacings.add(spacing + 1);
 
     double spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
     ElementPosition bottomRef = grid.minPosition;
@@ -66,7 +51,7 @@ class MeasureLayout extends StatelessWidget {
         (staveBottomRef.distance(bottomRef)) * spacePerPosition;
     staveBottom = staveBottom.scaledByContext(context);
 
-    double measureWidth = spacings.last;
+    double measureWidth = horizontalOffsets.last;
     double measureHeight =
         (topRef.numeric - bottomRef.numeric) * spacePerPosition;
 
@@ -99,12 +84,12 @@ class MeasureLayout extends StatelessWidget {
           bottomOffset -= interval * spacePerPosition;
         }
 
-        double left = spacings[index] + alignmentPosition.left;
+        double left = horizontalOffsets[index] + alignmentPosition.left;
 
         var maybeRest = cell.child.tryAs<RestElement>();
         if (maybeRest is RestElement && maybeRest.isMeasure) {
           // Positions the rest element at the left side of the last measure attribute.
-          left = spacings[index];
+          left = horizontalOffsets[index];
 
           // Applies standard padding to shift the rest further left after the attributes.
           left -= NotationLayoutProperties.baseMeasurePadding;

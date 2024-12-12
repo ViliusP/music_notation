@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
@@ -11,7 +9,6 @@ import 'package:music_notation/src/notation_painter/measure/measure_layout.dart'
 import 'package:music_notation/src/notation_painter/measure/notation_widgetization.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
-import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
 typedef _MeasureData = ({
@@ -151,7 +148,7 @@ class _SheetMeasuresColumn extends StatelessWidget {
                   start: number == 0 ? value.barlines.start : null,
                   end: value.barlines.end,
                 ),
-                widths: MusicSheetGrid.widthsByPosition(values),
+                horizontalOffsets: MusicSheetGrid.getHorizontalOffsets(values),
               ))
           .toList(),
     );

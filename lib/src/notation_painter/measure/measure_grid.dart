@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
+import 'package:flutter/rendering.dart';
 import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/notation_painter/cursor_element.dart';
@@ -93,7 +94,9 @@ class MusicSheetGrid {
     }
   }
 
-  static List<double> widthsByPosition(List<MeasureGrid> measures) {
+  static List<double> getHorizontalOffsets(
+    List<MeasureGrid> measures,
+  ) {
     if (measures.isEmpty) return [];
 
     List<ColumnIndex> indices =
@@ -104,23 +107,51 @@ class MusicSheetGrid {
 
     var measureSections = MeasureGrid.toMeasureColumns(measures);
 
-    List<double> widths = [];
+    /// First pass to get minimum beat size elements.
+    /// And biggest (negative) left offset.
+    double maxBeatWidth = defaultWidth;
+    List<double> leftOffsets = [];
     for (var (i, columns) in measureSections.indexed) {
-      double width = 0;
+      leftOffsets.add(0);
+      for (var cell in columns.expand((i) => i.cells.entries)) {
+        if (indices[i].isRhytmic) {
+          leftOffsets[i] = min(
+            cell.value?.alignmentOffset.left ?? 0,
+            leftOffsets[i],
+          );
+          maxBeatWidth = max(maxBeatWidth, cell.value?.size.width ?? 0);
+        }
+      }
+    }
+
+    List<double> offsets = [];
+    double accumulatorOffset = NotationLayoutProperties.baseMeasurePadding;
+    for (var (i, columns) in measureSections.indexed) {
+      offsets.add(accumulatorOffset - leftOffsets[i].limit(top: 0));
+
       // Attribute element width depends on attribute size itself
       if (!indices[i].isRhytmic) {
+        double width = 0;
+
+        accumulatorOffset += NotationLayoutProperties.baseMeasurePadding;
         for (var cell in columns.expand((i) => i.cells.entries)) {
           if (cell.value != null) {
             width = max(width, cell.value!.size.width);
           }
         }
+        accumulatorOffset += width;
       }
-      if (width == 0) {
-        width = defaultWidth;
+      // Rhythmic (with duration) element processing
+      else {
+        accumulatorOffset += maxBeatWidth;
       }
-      widths.add(width);
     }
-    return widths;
+
+    // Add last offset for width;
+    accumulatorOffset += NotationLayoutProperties.baseMeasurePadding;
+    offsets.add(accumulatorOffset);
+
+    return offsets;
   }
 
   @override
