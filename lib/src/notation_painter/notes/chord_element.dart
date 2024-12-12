@@ -14,7 +14,7 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 import 'package:music_notation/src/notation_painter/notes/adjacency.dart';
 import 'package:music_notation/src/notation_painter/notes/augmentation_dots.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
-import 'package:music_notation/src/notation_painter/notes/simple_note_element.dart';
+import 'package:music_notation/src/notation_painter/notes/note_parts.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
 import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
