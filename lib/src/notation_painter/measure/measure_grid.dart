@@ -362,10 +362,10 @@ class MeasureGrid {
           }
         }
 
-        var range = child.range;
+        var bounds = child.bounds;
 
-        floor = [floor, range.min, range.max].min;
-        ceil = [ceil, range.min, range.max].max;
+        floor = [floor, bounds.min, bounds.max].min;
+        ceil = [ceil, bounds.min, bounds.max].max;
       }
     }
     for (var e in columns.entries) {
@@ -470,7 +470,7 @@ class MeasureGrid {
 
   @override
   String toString() {
-    int rows = _columns.entries.elementAtOrNull(0)?.value._cells.length ?? 0;
+    int rows = (ceil.numeric - floor.numeric) + 1;
 
     List<List<String>> representationGrid = List.generate(rows + 1, (_) => []);
 
@@ -481,22 +481,23 @@ class MeasureGrid {
     }
 
     /// Add values to grid
-    for (var e in _columns.entries) {
-      var index = e.key;
+    for (var (i, e) in _columns.entries.indexed) {
       var column = e.value;
       int j = 0;
-      for (var pos = floor; pos < ceil; pos++) {
+      for (int j = rows - 1; j >= 0; j--) {
+        var pos = ceil - j;
         var cell = column.cells[pos];
-        if (pos == floor) {
+        if (i == 0) {
           representationGrid[j + 1].add("${pos.numeric}");
         }
         if (cell != null) {
-          representationGrid[j + 1].add("${pos.step}${pos.octave}");
+          representationGrid[j + 1].add(
+            "${cell.position.step}${cell.position.octave}",
+          );
         }
         if (cell == null) {
           representationGrid[j + 1].add("");
         }
-        j++;
       }
     }
 

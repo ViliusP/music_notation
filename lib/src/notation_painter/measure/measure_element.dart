@@ -156,14 +156,9 @@ class MeasureElement extends StatelessWidget {
     );
   }
 
-  /// The range represents the vertical positions of an element within a layout system,
+  /// The bounds represents the vertical positions of an element within a layout system,
   /// with the positions adjusted based on the element's position, alignment and size.
-  Range<ElementPosition, int> get range {
-    print("Bottom");
-    print(ElementPosition.staffBottom);
-
-    print("Top");
-    print(ElementPosition.staffTop);
+  Range<ElementPosition, int> get bounds {
     const spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
 
     // Calculate the bottom alignment offset relative to the size of the element.
@@ -192,7 +187,7 @@ class MeasureElement extends StatelessWidget {
     return Range(
       elementTop,
       elementBottom,
-      (max, min) => max.numeric - min.numeric,
+      (max, min) => max.numeric - min.numeric + 1,
     );
   }
 
