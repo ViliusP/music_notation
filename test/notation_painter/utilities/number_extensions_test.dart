@@ -103,4 +103,59 @@ void main() {
       expect(-0.9.roundTowardsZero(), equals(0.0));
     });
   });
+
+  group('NumberExtensions.limit', () {
+    test('Should return the number if no limits are provided', () {
+      expect(5.limit(), equals(5));
+      expect((-10).limit(), equals(-10));
+      expect(0.limit(), equals(0));
+    });
+
+    test('Should enforce the bottom limit', () {
+      expect(5.limit(bottom: 10), equals(10));
+      expect((-10).limit(bottom: -5), equals(-5));
+      expect(0.limit(bottom: 0), equals(0));
+    });
+
+    test('Should enforce the top limit', () {
+      expect(15.limit(top: 10), equals(10));
+      expect((-5).limit(top: -10), equals(-10));
+      expect(10.limit(top: 10), equals(10));
+    });
+
+    test('Should clamp the number within both bottom and top limits', () {
+      expect(7.limit(bottom: 5, top: 10), equals(7));
+      expect(3.limit(bottom: 5, top: 10), equals(5));
+      expect(15.limit(bottom: 5, top: 10), equals(10));
+    });
+
+    test('Should handle cases where bottom and top are the same', () {
+      expect(7.limit(bottom: 5, top: 5), equals(5));
+      expect(5.limit(bottom: 5, top: 5), equals(5));
+    });
+
+    test('Should handle cases with negative numbers', () {
+      expect((-7).limit(bottom: -10, top: -5), equals(-7));
+      expect((-15).limit(bottom: -10, top: -5), equals(-10));
+      expect((-3).limit(bottom: -10, top: -5), equals(-5));
+    });
+
+    test('Should work with positive decimals', () {
+      expect(5.5.limit(bottom: 5.0, top: 6.0), equals(5.5));
+      expect(4.9.limit(bottom: 5.0, top: 6.0), equals(5.0));
+      expect(6.1.limit(bottom: 5.0, top: 6.0), equals(6.0));
+    });
+
+    test('Should work with negative decimals', () {
+      expect((-5.5).limit(bottom: -6.0, top: -5.0), equals(-5.5));
+      expect((-6.1).limit(bottom: -6.0, top: -5.0), equals(-6.0));
+      expect((-4.9).limit(bottom: -6.0, top: -5.0), equals(-5.0));
+    });
+
+    test('Should handle mixed decimal limits (negative and positive)', () {
+      expect((-0.5).limit(bottom: -1.0, top: 0.0), equals(-0.5));
+      expect((-1.5).limit(bottom: -1.0, top: 0.0), equals(-1.0));
+      expect(0.5.limit(bottom: -1.0, top: 0.0), equals(0.0));
+    });
+  });
 }

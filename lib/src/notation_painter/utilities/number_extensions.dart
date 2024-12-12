@@ -26,6 +26,31 @@ extension NumExtensions on num {
         : (this / of.abs()).floor() * of.abs(); // Round down for negative base
   }
 
+  /// Ensures the number is within the specified bounds.
+  ///
+  /// - If [bottom] is provided and the number is lower than [bottom],
+  /// it returns [bottom].
+  /// - If [top] is provided and the number is higher than [top],
+  /// it returns [top].
+  /// - If both [bottom] and [top] are provided, it clamps the number
+  /// within the range [bottom, top].
+  ///
+  /// Parameters:
+  /// - [bottom - The lower limit (optional).
+  /// - [top] - The upper limit (optional).
+  ///
+  /// Returns:
+  /// The number clamped within the specified range.
+  num limit({num? bottom, num? top}) {
+    if (bottom != null && this < bottom) {
+      return bottom;
+    }
+    if (top != null && this > top) {
+      return top;
+    }
+    return this;
+  }
+
   /// Returns the nearest integer double value by rounding away from zero.
   ///
   /// - For positive numbers, it rounds up to the next whole number as a double.
