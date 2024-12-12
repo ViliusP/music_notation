@@ -7,6 +7,7 @@ import 'package:music_notation/src/models/elements/music_data/note/note_type.dar
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/notes/augmentation_dots.dart';
+import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
@@ -164,7 +165,7 @@ class RestElement extends StatelessWidget {
     if (step != null && octave != null) {
       ElementPosition pos = ElementPosition(step: step, octave: octave);
       if (clef != null) {
-        pos = pos.transpose(ElementPosition.transposeIntervalByClef(clef));
+        pos = pos.transpose(clef.transposeInterval);
       }
       return pos;
     }

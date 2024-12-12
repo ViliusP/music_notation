@@ -10,6 +10,7 @@ import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
+import 'package:music_notation/src/notation_painter/properties/constants.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/augmentation_dots.dart';
 import 'package:music_notation/src/notation_painter/notes/note_parts.dart';
@@ -182,9 +183,7 @@ class NoteElement extends StatelessWidget {
         }
 
         // Unpitched notes probably shouldn't be transposed;
-        return position.transpose(ElementPosition.transposeIntervalByClef(
-          clef,
-        ));
+        return position.transpose(clef.transposeInterval);
 
       default:
         throw UnimplementedError(
@@ -280,5 +279,45 @@ class NoteElement extends StatelessWidget {
         showName: true,
       ),
     );
+  }
+}
+
+extension ClefExtension on Clef {
+  /// The number of positions to transpose a note based on the [Clef].
+  ///
+  /// The calculation considers the clef's sign and optional octave change.
+  /// Unsupported clef signs throw an [UnimplementedError].
+  ///
+  /// Example:
+  /// ```dart
+  /// final clef = Clef(sign: ClefSign.G, octaveChange: -1);
+  /// print(clef.transposeInterval); // -7
+  /// ```
+  ///
+  /// Throws:
+  /// - [UnimplementedError] for unsupported clef signs.
+  int get transposeInterval {
+    int interval = switch (sign) {
+      ClefSign.G => 0,
+      ClefSign.F => 12,
+      ClefSign.C => throw UnimplementedError(
+          "ClefSign.C is transpose is not implemented yet",
+        ),
+      ClefSign.percussion => throw UnimplementedError(
+          "ClefSign.percussion is transpose is not implemented yet",
+        ),
+      ClefSign.tab => throw UnimplementedError(
+          "ClefSign.tab is transpose is not implemented yet",
+        ),
+      ClefSign.jianpu => throw UnimplementedError(
+          "ClefSign.jianpu is transpose is not implemented yet",
+        ),
+      ClefSign.none => throw UnimplementedError(
+          "ClefSign.none is transpose is not implemented yet",
+        ),
+    };
+
+    interval -= (octaveChange ?? 0) * NotationConstants.notesPerOctave;
+    return interval;
   }
 }

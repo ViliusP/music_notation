@@ -1,25 +1,15 @@
 import 'package:music_notation/src/models/data_types/step.dart';
-import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
+import 'package:music_notation/src/notation_painter/properties/constants.dart';
 
 /// The position of a musical element in a diatonic scale.
 ///
-/// An [ElementPosition] is defined by a step (A-G) and an octave. This allows
-/// for precise definition and comparison of positions in a musical context.
+/// The position is defined by a [step] (A-G) and an [octave]. It supports
+/// comparison and manipulation operations, making it suitable for use in
+/// musical scores and representations. The position is numerically represented
+/// using a diatonic scale, where `C0` is the lowest note.
 ///
-/// The class provides various methods and operators for comparing and
-/// manipulating the position of musical elements. It also provides a numerical
-/// representation based on the traditional notion of steps and octaves in a
-/// diatonic scale.
-///
-/// This class is used in the context of generating and manipulating musical
-/// scores and representations, enabling operations that require knowledge of
-/// the position of notes or other musical elements.
-///
-/// By default, a visually lower element position (e.g., C4) is considered less
-/// than a visually higher element position (e.g., B5). This means that when
-/// instances of [ElementPosition] are used in iterables or sorted collections,
-/// lower notes will appear earlier in the order, consistent with their position
-/// on a musical staff.
+/// When compared, a visually lower position (e.g., C4) is considered less
+/// than a visually higher position (e.g., B5), enabling intuitive sorting.
 class ElementPosition implements Comparable<ElementPosition> {
   final Step step;
   final int octave;
@@ -29,152 +19,157 @@ class ElementPosition implements Comparable<ElementPosition> {
     required this.octave,
   });
 
-  /// Numeric representation of step in octave. C being lowest as `0` and B being
-  /// highest as `6`.
-  int get numericalStep {
-    switch (step) {
-      case Step.B:
-        return 6;
-      case Step.A:
-        return 5;
-      case Step.G:
-        return 4;
-      case Step.F:
-        return 3;
-      case Step.E:
-        return 2;
-      case Step.D:
-        return 1;
-      case Step.C:
-        return 0;
-    }
-  }
-
-  static const int _notesPerOctave = 7;
-
-  /// Calculates vertical note/music element position from C0. Note at `7` position
-  /// would be C1, on `25` position would be G3.
-  ///
-  /// Position is calculated from 'C0' because it is the lowest note on standard,
-  /// 88-key piano. Also, the frequency of C0 is approximately 16.35 Hz, which
-  /// is at the very lower end of the human hearing range.
-  int get numeric => (octave * _notesPerOctave) + numericalStep;
-
   factory ElementPosition.fromInt(int numericPosition) {
-    int octave = numericPosition ~/ _notesPerOctave;
-    int remainder = numericPosition.remainder(_notesPerOctave);
+    int octave = numericPosition ~/ NotationConstants.notesPerOctave;
+    int remainder = numericPosition.remainder(NotationConstants.notesPerOctave);
 
     return ElementPosition(
-      step: _fromInt(remainder)!,
+      step: _stepFromInt(remainder),
       octave: octave,
     );
   }
 
-  static Step? _fromInt(int value) {
-    switch (value) {
-      case 6:
-        return Step.B;
-      case 5:
-        return Step.A;
-      case 4:
-        return Step.G;
-      case 3:
-        return Step.F;
-      case 2:
-        return Step.E;
-      case 1:
-        return Step.D;
-      case 0:
-        return Step.C;
-      default:
-        return null;
-    }
+  /// Numeric representation of step in octave. C being lowest as `0` and B being
+  /// highest as `6`.
+  int get _numericalStep {
+    return switch (step) {
+      Step.B => 6,
+      Step.A => 5,
+      Step.G => 4,
+      Step.F => 3,
+      Step.E => 2,
+      Step.D => 1,
+      Step.C => 0,
+    };
   }
 
-  /// Adjusts the position of the element by the specified [interval].
+  /// Returns the numeric position of the element in the diatonic scale.
   ///
-  /// - If [interval] is positive, the element's position is moved higher.
-  /// - If [interval] is negative, the element's position is moved lower.
+  /// The position is calculated relative to `C0`, the lowest note on a standard
+  /// 88-key piano (frequency ~16.35 Hz). For example:
+  /// - Position `7` corresponds to `C1`.
+  /// - Position `25` corresponds to `G3`.
+  int get numeric {
+    return (octave * NotationConstants.notesPerOctave) + _numericalStep;
+  }
+
+  static Step _stepFromInt(int value) {
+    return switch (value) {
+      6 => Step.B,
+      5 => Step.A,
+      4 => Step.G,
+      3 => Step.F,
+      2 => Step.E,
+      1 => Step.D,
+      0 => Step.C,
+      _ => throw ArgumentError(
+          'Converting number to step, you must provide the value from 0 to 6',
+        )
+    };
+  }
+
+  /// Shifts the element's position by the specified [interval].
   ///
-  /// Returns a new [ElementPosition] instance representing the adjusted position.
+  /// - A positive [interval] moves the position higher in the scale.
+  /// - A negative [interval] moves the position lower.
+  ///
+  /// The method computes the new position numerically and wraps it to the
+  /// appropriate step and octave.
+  ///
+  /// Example:
+  /// ```dart
+  /// final position = ElementPosition(step: Step.C, octave: 4);
+  /// final transposed = position.transpose(3); // Results in F4
+  /// ```
   ElementPosition transpose(int interval) {
     return ElementPosition.fromInt(numeric + interval);
   }
 
-  static int transposeIntervalByClef(Clef clef) {
-    const positionsPerOctave = 7;
-    int positionsToTranspose = 0;
-    switch (clef.sign) {
-      case ClefSign.G:
-        positionsToTranspose = 0;
-      case ClefSign.F:
-        positionsToTranspose = 12;
-      case ClefSign.C:
-        throw UnimplementedError(
-          "ClefSign.C is transpose is not implemented yet",
-        );
-      case ClefSign.percussion:
-        throw UnimplementedError(
-          "ClefSign.percussion is transpose is not implemented yet",
-        );
-      case ClefSign.tab:
-        throw UnimplementedError(
-          "ClefSign.tab is transpose is not implemented yet",
-        );
-      case ClefSign.jianpu:
-        throw UnimplementedError(
-          "ClefSign.jianpu is transpose is not implemented yet",
-        );
-      case ClefSign.none:
-        throw UnimplementedError(
-          "ClefSign.none is transpose is not implemented yet",
-        );
-    }
-
-    positionsToTranspose -= (clef.octaveChange ?? 0) * positionsPerOctave;
-    return positionsToTranspose;
-  }
-
-  /// Less-than operator. Compares an [ElementPosition] to another [ElementPosition]
-  /// and returns true if the vertical position in staff left-hand-side operand
-  /// are lower than the position of the right-hand-side operand respectively.
-  /// Returns false otherwise.
+  /// Less-than operator. Compares this [ElementPosition] to another
+  /// [ElementPosition] and returns `true` if this position is numerically
+  /// lower than the other. Returns `false` otherwise.
   ///
-  /// This is a partial ordering. It is possible for two values to be neither
-  /// less, nor greater than, nor equal to, another.
+  /// This comparison aligns with the visual positioning of notes on a staff:
+  /// - Lower notes (e.g., C4) are considered less than higher notes (e.g., B5).
+  ///
+  /// Example:
+  /// ```dart
+  /// final pos1 = ElementPosition(step: Step.C, octave: 4);
+  /// final pos2 = ElementPosition(step: Step.D, octave: 4);
+  /// print(pos1 < pos2); // true
+  /// ```
   bool operator <(ElementPosition other) => numeric < other.numeric;
 
-  /// Greater-than operator. Compares an [ElementPosition] to another [ElementPosition]
-  /// and returns true if the vertical position in staff left-hand-side operand
-  /// are higher than the value of the right-hand-side operand respectively.
-  /// Returns false otherwise.
+  /// Less-than-or-equal-to operator. Compares this [ElementPosition] to another
+  /// [ElementPosition] and returns `true` if this position is numerically less
+  /// than or equal to the other. Returns `false` otherwise.
   ///
-  /// This is a partial ordering. It is possible for two values to be neither
-  /// less, nor greater than, nor equal to, another.
-  bool operator >(ElementPosition other) => numeric > other.numeric;
-
-  /// Greater-than-or-equal-to operator. Compares an [ElementPosition] to another
-  /// [ElementPosition] and returns true if the vertical position in staff
-  /// left-hand-side operand are higher than or equal to the value of the
-  /// right-hand-side operand respectively. Returns false otherwise.
-  ///
-  /// This is a partial ordering. It is possible for two values to be neither
-  /// less, nor greater than, nor equal to, another.
-  bool operator >=(ElementPosition other) => numeric >= other.numeric;
-
-  /// Less-than-or-equal-to operator. Compares an [ElementPosition] to another
-  /// [ElementPosition] and returns true if the vertical position in staff
-  /// left-hand-side operand are lower than or equal to the value of the
-  /// right-hand-side operand respectively. Returns false otherwise.
-  ///
-  /// This is a partial ordering. It is possible for two values to be neither
-  /// less, nor greater than, nor equal to, another.
+  /// Example:
+  /// ```dart
+  /// final pos1 = ElementPosition(step: Step.C, octave: 4);
+  /// final pos2 = ElementPosition(step: Step.C, octave: 4);
+  /// print(pos1 <= pos2); // true
+  /// ```
   bool operator <=(ElementPosition other) => numeric <= other.numeric;
 
-  /// Equality operator. Compares an [ElementPosition] to another [ElementPosition]
-  /// and returns true if the step and octave of the left-hand-side operand are
-  /// equal to the step and octave values of the right-hand-side operand
-  /// respectively. Returns false otherwise.
+  /// Greater-than operator. Compares an [ElementPosition] to another [ElementPosition]
+  /// and returns `true` if the vertical position of the left-hand-side operand
+  /// is higher than that of the right-hand-side operand. Returns `false` otherwise.
+  ///
+  /// This operator allows for natural ordering of musical elements based on
+  /// their position on a staff (higher notes are considered greater).
+  ///
+  /// Example:
+  /// ```dart
+  /// final position1 = ElementPosition(step: Step.C, octave: 4);
+  /// final position2 = ElementPosition(step: Step.D, octave: 4);
+  /// print(position1 > position2); // false
+  /// ```
+  bool operator >(ElementPosition other) => numeric > other.numeric;
+
+  /// Greater-than-or-equal-to operator. Compares two [ElementPosition] instances
+  /// and returns `true` if the vertical position of the left-hand-side operand
+  /// is higher than or equal to the right-hand-side operand. Returns `false` otherwise.
+  ///
+  /// Example:
+  /// ```dart
+  /// final position1 = ElementPosition(step: Step.C, octave: 4);
+  /// final position2 = ElementPosition(step: Step.C, octave: 4);
+  /// print(position1 >= position2); // true
+  /// ```
+  bool operator >=(ElementPosition other) => numeric >= other.numeric;
+
+  /// Plus operator. Adds an integer [value] to the current position's numeric
+  /// representation and returns a new [ElementPosition] instance.
+  ///
+  /// This operator is equivalent to transposing the current position by the
+  /// given [value]. Positive values move the position higher, while negative
+  /// values move it lower. It automatically handles octave changes as necessary.
+  ///
+  /// Example:
+  /// ```dart
+  /// final position = ElementPosition(step: Step.C, octave: 4);
+  /// final transposed = position + 3; // Moves 3 steps up: F4
+  /// print(transposed); // ElementPosition F4
+  /// ```
+  ElementPosition operator +(int value) => ElementPosition.fromInt(
+        numeric + value,
+      );
+
+  /// Equality operator. Compares two [ElementPosition] instances and returns `true`
+  /// if their [step] and [octave] values are identical. Returns `false` otherwise.
+  ///
+  /// This operator ensures that two positions are considered equal only when both
+  /// the note (step) and the octave match exactly.
+  ///
+  /// Example:
+  /// ```dart
+  /// final position1 = ElementPosition(step: Step.C, octave: 4);
+  /// final position2 = ElementPosition(step: Step.C, octave: 4);
+  /// final position3 = ElementPosition(step: Step.D, octave: 4);
+  /// print(position1 == position2); // true
+  /// print(position1 == position3); // false
+  /// ```
   @override
   bool operator ==(Object other) {
     return other is ElementPosition &&
@@ -199,63 +194,100 @@ class ElementPosition implements Comparable<ElementPosition> {
     }
   }
 
+  // Predefined [ElementPosition] constants for standard staff positions:
+
+  /// Represents the middle of the staff (B4).
   static const ElementPosition staffMiddle = ElementPosition(
     step: Step.B,
     octave: 4,
   );
 
+  ///  Represents the bottom line of the staff (E4).
   static const ElementPosition staffBottom = ElementPosition(
     step: Step.E,
     octave: 4,
   );
 
+  ///  Represents the top line of the staff (F5).
   static const ElementPosition staffTop = ElementPosition(
     step: Step.F,
     octave: 5,
   );
 
+  /// First ledger line below the staff (C4).
   static const ElementPosition firstLedgerBelow = ElementPosition(
     step: Step.C,
     octave: 4,
   );
 
+  /// First ledger line above the staff (A5).
   static const ElementPosition firstLedgerAbove = ElementPosition(
     step: Step.A,
     octave: 5,
   );
 
+  /// Second ledger line below the staff (A3).
   static const ElementPosition secondLedgerBelow = ElementPosition(
     step: Step.A,
     octave: 3,
   );
 
+  ///  Second ledger line above the staff (C6).
   static const ElementPosition secondLedgerAbove = ElementPosition(
     step: Step.C,
     octave: 6,
   );
 
-  /// Calculates absolute numerical difference between two notes.
+  /// Calculates the absolute numerical distance between this position and another
+  /// [ElementPosition]. The result is always non-negative.
+  ///
+  /// Example:
+  /// ```dart
+  /// final position1 = ElementPosition(step: Step.C, octave: 4);
+  /// final position2 = ElementPosition(step: Step.F, octave: 5);
+  /// print(position1.distance(position2)); // 10
+  /// ```
   int distance(ElementPosition other) {
     return (numeric - other.numeric).abs();
   }
 
-  /// Calculates numerical difference from middle (B4). If distance is positive,
-  /// note is positioned above staff middle. If it is negative, it is positioned
-  /// below middle of staff.
+  /// Calculates the numerical difference between this position and the middle
+  /// of the staff (B4). Positive values indicate the note is above the middle,
+  /// and negative values indicate it is below.
+  ///
+  /// Example:
+  /// ```dart
+  /// final position = ElementPosition(step: Step.D, octave: 5);
+  /// print(position.distanceFromMiddle); // 5
+  /// ```
   int get distanceFromMiddle {
     return numeric - ElementPosition.staffMiddle.numeric;
   }
 
-  /// Calculates numerical difference from middle (F4). If distance is positive,
-  /// note is positioned above staff bottom line. If it is negative, it is positioned
-  /// below staff bottom line.
+  /// Calculates the numerical difference from the bottom of the staff (E4).
+  ///
+  /// - Positive values indicate a position above the bottom line.
+  /// - Negative values indicate a position below the bottom line.
+  ///
+  /// Example:
+  /// ```dart
+  /// final position = ElementPosition(step: Step.F, octave: 5);
+  /// print(position.distanceFromBottom); // 12
+  /// ```
   int get distanceFromBottom {
     return numeric - ElementPosition.staffBottom.numeric;
   }
 
-  /// Calculates numerical difference from middle (F5). If distance is positive,
-  /// note is positioned above staff top line. If it is negative, it is positioned
-  /// below staff top line.
+  /// Calculates the numerical difference from the top of the staff (F5).
+  ///
+  /// - Positive values indicate a position above the top line.
+  /// - Negative values indicate a position below the top line.
+  ///
+  /// Example:
+  /// ```dart
+  /// final position = ElementPosition(step: Step.E, octave: 4);
+  /// print(position.distanceFromTop); // -12
+  /// ```
   int get distanceFromTop {
     return numeric - ElementPosition.staffTop.numeric;
   }
