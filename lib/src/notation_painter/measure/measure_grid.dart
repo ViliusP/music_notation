@@ -64,10 +64,10 @@ class MusicSheetGrid {
       _setCeil(position: columnToCheck.ceil, stave: staff);
     }
     if (currentFloor > columnToCheck.floor) {
-      column.setFloor(position: currentFloor, stave: staff);
+      _setFloor(position: columnToCheck.floor, stave: staff);
     }
     if (currentFloor < columnToCheck.floor) {
-      _setFloor(position: columnToCheck.floor, stave: staff);
+      column.setFloor(position: currentFloor, stave: staff);
     }
 
     return;
@@ -94,7 +94,7 @@ class MusicSheetGrid {
     for (var (i, column) in _columns.indexed) {
       for (var (j, measure) in column._measures.indexed) {
         repr[j].add(
-          "($j,$i) ↑${measure.ceil}↓${measure.ceil} ↔${measure.columns.length}",
+          "($j,$i) ↑${measure.ceil}↑ ↓${measure.floor}↓ ↔${measure.columns.length}↔",
         );
         widths[i] = max(widths[i], repr[j].last.length);
       }
@@ -483,7 +483,6 @@ class MeasureGrid {
     /// Add values to grid
     for (var (i, e) in _columns.entries.indexed) {
       var column = e.value;
-      int j = 0;
       for (int j = rows - 1; j >= 0; j--) {
         var pos = ceil - j;
         var cell = column.cells[pos];
