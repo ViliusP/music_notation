@@ -81,7 +81,7 @@ class MusicSheet extends StatelessWidget {
         );
         colMeasures.add(measure);
       }
-      musicSheetGrid.add(colMeasures);
+      musicSheetGrid.add(MeasuresColumn.empty()..addAll(colMeasures));
     }
 
     return MusicSheet._(
@@ -117,10 +117,10 @@ class MusicSheet extends StatelessWidget {
         textDirection: TextDirection.ltr,
         verticalDirection: VerticalDirection.down,
         clipBehavior: Clip.none,
-        children: grid.values
+        children: grid.columns
             .mapIndexed((i, col) => _SheetMeasuresColumn(
                   number: i,
-                  values: col,
+                  column: col,
                 ))
             .toList(),
       ),
@@ -130,25 +130,25 @@ class MusicSheet extends StatelessWidget {
 
 class _SheetMeasuresColumn extends StatelessWidget {
   final int number;
-  final List<MeasureGrid> values;
+  final MeasuresColumn column;
 
   const _SheetMeasuresColumn({
     super.key,
-    required this.values,
+    required this.column,
     required this.number,
   });
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: values
+      children: column.measures
           .map((value) => MeasureLayout(
                 grid: value,
                 barlineSettings: MeasureBarlines(
                   start: number == 0 ? value.barlines.start : null,
                   end: value.barlines.end,
                 ),
-                horizontalOffsets: MusicSheetGrid.getHorizontalOffsets(values),
+                horizontalOffsets: column.horizontalOffsets,
               ))
           .toList(),
     );

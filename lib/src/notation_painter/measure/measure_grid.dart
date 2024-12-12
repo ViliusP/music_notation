@@ -2,7 +2,6 @@ import 'dart:collection';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/rendering.dart';
 import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/notation_painter/cursor_element.dart';
@@ -14,154 +13,88 @@ import 'package:music_notation/src/notation_painter/spacing/timeline.dart';
 import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 import 'package:music_notation/src/notation_painter/utilities/string_extensions.dart';
 
+/// Represents a grid-like structure of measures in a musical sheet,
+/// organized by columns. Each column corresponds to a specific measure
+/// number across all staves.
+///
+/// For example:
+/// - The first column (index 0) contains the first measures of all staves.
+/// - The second column (index 1) contains the second measures of all staves, and so on.
 class MusicSheetGrid {
-  /// Outer list represents measure location horizontally (measure number), inner list represents stave position.
-  final List<List<MeasureGrid>> _values;
-  List<List<MeasureGrid>> get values => _values;
+  /// A grid of measures organized by columns, where each column represents
+  /// a specific measure number across all staves.
+  /// - Outer `List` - Columns of the music sheet, indexed by measure number.
+  /// - Inner `List` - Measures of all staves for the specific column (measure number).
+  final List<MeasuresColumn> _columns;
+  List<MeasuresColumn> get columns => _columns;
 
+  /// The number of staves in the music sheet.
   final int staves;
 
-  MusicSheetGrid(this.staves) : _values = [];
+  /// Constructor to initialize the music sheet grid with the given number of staves.
+  MusicSheetGrid(this.staves) : _columns = [];
 
-  void add(List<MeasureGrid> column) {
+  void add(MeasuresColumn column) {
     if (staves != column.length) {
       throw ArgumentError(
         "Provided measures has bigger size than grid has staves",
       );
     }
 
-    List<MeasureGrid> syncedWidth = _syncMeasuresWidth(column);
-    List<MeasureGrid> syncedHeight = [];
-
-    for (var (i, measure) in syncedWidth.indexed) {
-      var synced = _syncMeasureHeight(measure, i);
-      syncedHeight.add(synced);
+    for (int i = 0; i < column.measures.length; i++) {
+      _syncMeasureHeight(column, i);
     }
 
-    _values.add(syncedHeight);
+    _columns.add(column);
   }
 
-  List<MeasureGrid> _syncMeasuresWidth(List<MeasureGrid> measures) {
-    List<MeasureGrid> synced = [];
-    Beatline combined = measures.first.beatline;
-    for (var measure in measures.skip(1)) {
-      combined = combined.combine(measure.beatline);
-    }
-    for (var measure in measures) {
-      var adjusted = measure.adjustByBeatline(combined);
-      synced.add(adjusted);
+  void _syncMeasureHeight(MeasuresColumn column, int staff) {
+    if (_columns.isEmpty) {
+      return;
     }
 
-    return synced;
+    var columnToCheck = column.measures[staff];
+
+    var lastGridMeasure = _columns.last.measures[staff];
+    int currentHeightAboveStave = lastGridMeasure.heightAboveStave;
+    int currentHeightBelowStave = lastGridMeasure.heightBelowStave;
+
+    if (currentHeightAboveStave > columnToCheck.heightAboveStave) {
+      column.setHeightAbove(height: currentHeightAboveStave, stave: staff);
+    }
+    if (currentHeightAboveStave < columnToCheck.heightAboveStave) {
+      _setHeightAbove(height: columnToCheck.heightAboveStave, stave: staff);
+    }
+    if (currentHeightBelowStave > columnToCheck.heightBelowStave) {
+      column.setHeightBelow(height: currentHeightBelowStave, stave: staff);
+    }
+    if (currentHeightBelowStave < columnToCheck.heightBelowStave) {
+      _setHeightBelow(height: columnToCheck.heightBelowStave, stave: staff);
+    }
+
+    return;
   }
 
-  MeasureGrid _syncMeasureHeight(MeasureGrid measure, int staff) {
-    var modifiedMeasure = measure.clone();
-    if (_values.isEmpty) {
-      return modifiedMeasure;
-    }
-
-    var lastStaffMeasure = _values.last[staff];
-
-    int currentHeightAboveStave = lastStaffMeasure.heightAboveStave;
-    int currentHeightBelowStave = lastStaffMeasure.heightBelowStave;
-
-    if (currentHeightAboveStave > measure.heightAboveStave) {
-      modifiedMeasure.setHeightAbove(currentHeightAboveStave);
-    }
-    if (currentHeightAboveStave < measure.heightAboveStave) {
-      _setHeightAbove(measure.heightAboveStave, staff);
-    }
-    if (currentHeightBelowStave > measure.heightBelowStave) {
-      modifiedMeasure.setHeightBelow(currentHeightBelowStave);
-    }
-    if (currentHeightBelowStave < measure.heightBelowStave) {
-      _setHeightBelow(measure.heightBelowStave, staff);
-    }
-
-    return modifiedMeasure;
-  }
-
-  void _setHeightAbove(int height, int staff) {
-    for (var measureCol in _values) {
-      measureCol[staff].setHeightAbove(height);
+  void _setHeightAbove({required int height, required int stave}) {
+    for (var column in _columns) {
+      column.setHeightAbove(height: height, stave: stave);
     }
   }
 
-  void _setHeightBelow(int height, int staff) {
-    for (var measureCol in _values) {
-      measureCol[staff].setHeightBelow(height);
+  void _setHeightBelow({required int height, required int stave}) {
+    for (var column in _columns) {
+      column.setHeightBelow(height: height, stave: stave);
     }
-  }
-
-  static List<double> getHorizontalOffsets(
-    List<MeasureGrid> measures,
-  ) {
-    if (measures.isEmpty) return [];
-
-    List<ColumnIndex> indices =
-        measures.firstOrNull?.columns.keys.toList() ?? [];
-    double divisions = measures.firstOrNull?.beatline.divisions ?? 1;
-    double defaultWidth =
-        NotationLayoutProperties.baseWidthPerQuarter / divisions;
-
-    var measureSections = MeasureGrid.toMeasureColumns(measures);
-
-    /// First pass to get minimum beat size elements.
-    /// And biggest (negative) left offset.
-    double maxBeatWidth = defaultWidth;
-    List<double> leftOffsets = [];
-    for (var (i, columns) in measureSections.indexed) {
-      leftOffsets.add(0);
-      for (var cell in columns.expand((i) => i.cells.entries)) {
-        if (indices[i].isRhytmic) {
-          leftOffsets[i] = min(
-            cell.value?.alignmentOffset.left ?? 0,
-            leftOffsets[i],
-          );
-          maxBeatWidth = max(maxBeatWidth, cell.value?.size.width ?? 0);
-        }
-      }
-    }
-
-    List<double> offsets = [];
-    double accumulatorOffset = NotationLayoutProperties.baseMeasurePadding;
-    for (var (i, columns) in measureSections.indexed) {
-      offsets.add(accumulatorOffset - leftOffsets[i].limit(top: 0));
-
-      // Attribute element width depends on attribute size itself
-      if (!indices[i].isRhytmic) {
-        double width = 0;
-
-        accumulatorOffset += NotationLayoutProperties.baseMeasurePadding;
-        for (var cell in columns.expand((i) => i.cells.entries)) {
-          if (cell.value != null) {
-            width = max(width, cell.value!.size.width);
-          }
-        }
-        accumulatorOffset += width;
-      }
-      // Rhythmic (with duration) element processing
-      else {
-        accumulatorOffset += maxBeatWidth;
-      }
-    }
-
-    // Add last offset for width;
-    accumulatorOffset += NotationLayoutProperties.baseMeasurePadding;
-    offsets.add(accumulatorOffset);
-
-    return offsets;
   }
 
   @override
   String toString() {
-    int length = _values.elementAtOrNull(0)?.length ?? 0;
+    int length = _columns.elementAtOrNull(0)?.length ?? 0;
 
     List<List<String>> repr = List.generate(length, (_) => []);
-    List<int> widths = List.generate(_values.length, (_) => 0);
-    for (var (i, col) in _values.indexed) {
-      for (var (j, measure) in col.indexed) {
+    List<int> widths = List.generate(_columns.length, (_) => 0);
+    for (var (i, column) in _columns.indexed) {
+      for (var (j, measure) in column._measures.indexed) {
         repr[j].add(
           "($j,$i) ↑${measure.heightAboveStave}↓${measure.heightBelowStave} ↔${measure.columns.length}",
         );
@@ -180,6 +113,147 @@ class MusicSheetGrid {
     }
 
     return representation;
+  }
+}
+
+class MeasuresColumn {
+  List<MeasureGrid> _measures;
+
+  MeasuresColumn._({
+    required List<MeasureGrid> measures,
+  }) : _measures = measures;
+
+  MeasuresColumn.empty() : _measures = [];
+
+  List<MeasureGrid> get measures => _measures;
+
+  int get length => _measures.length;
+
+  SplayTreeMap<ColumnIndex, List<MeasureElement>> get _combined {
+    SplayTreeMap<ColumnIndex, List<MeasureElement>> combined =
+        SplayTreeMap.of({});
+
+    for (var measure in _measures) {
+      for (var e in measure.columns.entries) {
+        var key = e.key;
+        var column = e.value;
+        combined[key] ??= [];
+        combined[key]!.addAll(column.cells.values.nonNulls);
+      }
+    }
+    return combined;
+  }
+
+  List<MeasureGrid> _syncWidth(List<MeasureGrid> measures) {
+    List<MeasureGrid> synced = [];
+    Beatline combined = measures.first.beatline;
+    for (var measure in measures.skip(1)) {
+      combined = combined.combine(measure.beatline);
+    }
+    for (var measure in measures) {
+      var adjusted = measure.adjustByBeatline(combined);
+      synced.add(adjusted);
+    }
+
+    return synced;
+  }
+
+  List<double> get horizontalOffsets {
+    if (measures.isEmpty) return [];
+
+    double defaultWidth = NotationLayoutProperties.baseWidthPerQuarter / 24;
+
+    /// First pass to get minimum beat size elements.
+    /// And biggest (negative) left offset.
+    double maxBeatWidth = defaultWidth;
+    List<double> leftOffsets = [];
+
+    // Looping through every key horizontally ->
+    int i = -1;
+    for (var key in measures.first.columns.keys) {
+      i++;
+      leftOffsets.add(0);
+      if (key.isRhytmic) continue;
+
+      // double divisions = measures.firstOrNull?._timeline.divisions ?? 1;
+
+      for (var measure in measures) {
+        // Looping through cell in single measure column (section).
+        for (var cell in measure.columns[key]!.cells.values) {
+          leftOffsets[i] = min(
+            cell?.alignmentOffset.left ?? 0,
+            leftOffsets[i],
+          );
+          // double a = (cell?.duration ?? 0);
+          // if (a != 0) {
+          //   double cellWidth = (cell?.size.width ?? 0) / a;
+
+          //   // if (a != 0) {
+          //   //   print("Divisions ${divisions}");
+          //   //   print("Duration ${cell.value?.duration}");
+          //   //   print("Cell size: ${cell.value?.size.width ?? 0}");
+          //   //   print("New width: ${cellWidth}");
+          //   // }
+          //   maxBeatWidth = max(maxBeatWidth, cellWidth);
+          // }
+        }
+      }
+    }
+
+    List<double> offsets = [];
+    double accumulatorOffset = NotationLayoutProperties.baseMeasurePadding;
+    for (var e in _combined.entries) {
+      var cells = e.value;
+      var key = e.key;
+      offsets.add(accumulatorOffset - leftOffsets[i].limit(top: 0));
+
+      // Attribute element width depends on attribute size itself
+      if (!key.isRhytmic) {
+        double width = 0;
+
+        accumulatorOffset += NotationLayoutProperties.baseMeasurePadding;
+        for (var cell in cells) {
+          width = max(width, cell.size.width);
+        }
+        accumulatorOffset += width;
+      }
+      // Rhythmic (with duration) element processing
+      else {
+        accumulatorOffset += maxBeatWidth;
+      }
+    }
+
+    // Add last offset for width;
+    accumulatorOffset += NotationLayoutProperties.baseMeasurePadding;
+    offsets.add(accumulatorOffset);
+
+    return offsets;
+  }
+
+  void add(MeasureGrid measure) {
+    List<MeasureGrid> synced = _syncWidth([
+      measure,
+      ...measures,
+    ]);
+
+    _measures = synced;
+  }
+
+  void addAll(List<MeasureGrid> measures) {
+    List<MeasureGrid> synced = _syncWidth([
+      ...measures,
+      ...this.measures,
+    ]);
+
+    _measures = synced;
+  }
+
+  void setHeightAbove({required int stave, required int height}) {
+    measures[stave]._setHeightAbove(height);
+  }
+
+  void setHeightBelow({required int stave, required int height}) {
+    measures[stave]._setHeightBelow(height);
   }
 }
 
@@ -326,8 +400,8 @@ class MeasureGrid {
       }
     }
     for (var e in columns.entries) {
-      e.value.setHeightBelow(heightBelowStaff);
-      e.value.setHeightAbove(heightAboveStaff);
+      e.value._setHeightBelow(heightBelowStaff);
+      e.value._setHeightAbove(heightAboveStaff);
     }
 
     return MeasureGrid._(
@@ -357,19 +431,6 @@ class MeasureGrid {
     int distance = ElementPosition.staffBottom.distance(lowestPosition);
 
     return distance.clamp(0, NumberConstants.maxFiniteInt);
-  }
-
-  static List<List<MeasureGridColumn>> toMeasureColumns(
-    List<MeasureGrid> measures,
-  ) {
-    final int maxLength = measures
-        .map((list) => list.columns.entries.length)
-        .reduce((a, b) => a > b ? a : b);
-
-    return List.generate(
-      maxLength,
-      (col) => measures.map((row) => row.columns.values.toList()[col]).toList(),
-    );
   }
 
   @override
@@ -424,15 +485,15 @@ class MeasureGrid {
     return repr;
   }
 
-  void setHeightBelow(int height) {
+  void _setHeightBelow(int height) {
     for (var e in _columns.entries) {
-      e.value.setHeightBelow(height);
+      e.value._setHeightBelow(height);
     }
   }
 
-  void setHeightAbove(int height) {
+  void _setHeightAbove(int height) {
     for (var e in _columns.entries) {
-      e.value.setHeightAbove(height);
+      e.value._setHeightAbove(height);
     }
   }
 
@@ -526,11 +587,11 @@ class MeasureGridColumn {
     int heightBelowStave = 0,
   }) {
     return MeasureGridColumn()
-      ..setHeightAbove(heightAboveStave)
-      ..setHeightBelow(heightBelowStave);
+      .._setHeightAbove(heightAboveStave)
+      .._setHeightBelow(heightBelowStave);
   }
 
-  void setHeightAbove(int height) {
+  void _setHeightAbove(int height) {
     int start = ElementPosition.staffTop.numeric;
 
     for (int i = start + 1; i < start + height + 1; i++) {
@@ -540,7 +601,7 @@ class MeasureGridColumn {
     }
   }
 
-  void setHeightBelow(int height) {
+  void _setHeightBelow(int height) {
     int start = ElementPosition.staffBottom.numeric;
 
     for (int i = start - height; i < start; i++) {
