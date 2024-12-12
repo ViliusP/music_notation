@@ -13,7 +13,7 @@ void main() {
       var beam = Beam.fromXml(XmlDocument.parse(input).rootElement);
 
       expect(beam.value, BeamValue.begin);
-      expect(beam.color.value, isNull);
+      expect(beam.color?.value, isNull);
       expect(beam.id, isNull);
       expect(beam.fan, isNull);
       expect(beam.repeater, isNull);
@@ -27,7 +27,7 @@ void main() {
       var beam = Beam.fromXml(XmlDocument.parse(input).rootElement);
 
       expect(beam.value, BeamValue.bContinue);
-      expect(beam.color.value, isNull);
+      expect(beam.color?.value, isNull);
       expect(beam.id, isNull);
       expect(beam.fan, isNull);
       expect(beam.repeater, isNull);
@@ -42,7 +42,7 @@ void main() {
       var beam = Beam.fromXml(XmlDocument.parse(input).rootElement);
 
       expect(beam.value, BeamValue.end);
-      expect(beam.color.value, isNull);
+      expect(beam.color?.value, isNull);
       expect(beam.id, isNull);
       expect(beam.fan, isNull);
       expect(beam.repeater, isNull);

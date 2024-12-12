@@ -14,7 +14,8 @@ class StemPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final Paint paint = Paint()
       ..color = const Color.fromRGBO(0, 0, 0, 1.0)
-      ..strokeWidth = thickness;
+      ..strokeWidth = thickness
+      ..strokeCap = StrokeCap.butt;
 
     canvas.drawLine(Offset.zero, Offset(0, size.height), paint);
   }

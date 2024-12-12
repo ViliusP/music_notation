@@ -6,17 +6,14 @@ import 'package:music_notation/src/models/elements/music_data/attributes/clef.da
 import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
-import 'package:music_notation/src/notation_painter/aligned_row.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/augmentation_dots.dart';
-import 'package:music_notation/src/notation_painter/notes/simple_note_element.dart';
+import 'package:music_notation/src/notation_painter/notes/note_parts.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
-import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
-import 'package:music_notation/src/notation_painter/utilities/padding_extensions.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
@@ -51,15 +48,11 @@ const Map<String, Color> _voiceColors = {
 /// If you are writing two voices on the same staff, the stems for the upper
 /// voice will go up, and the stems for the lower voice will go down.
 class NoteElement extends StatelessWidget {
-  final SimpleNoteElement note;
+  final StemlessNoteElement base;
 
-  final AccidentalElement? accidental;
+  final StemElement? stem;
 
-  final AugmentationDots? dots;
-
-  final ElementPosition position;
-
-  final FontMetadata font;
+  ElementPosition get position => base.position;
 
   final String? voice;
 
@@ -87,7 +80,6 @@ class NoteElement extends StatelessWidget {
 
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
 
-    double baseStemLength = stemLength ?? _calculateStemLength(note, position);
     StemElement? stem;
     StemDirection? stemDirection = note.stem == null
         ? null
@@ -97,7 +89,7 @@ class NoteElement extends StatelessWidget {
       stem = StemElement(
         type: type,
         font: font,
-        length: baseStemLength,
+        length: stemLength ?? StemElement.calculateStemLength(note, position),
         showFlag: note.beams.isEmpty && showFlag,
         direction: stemDirection,
       );
@@ -108,164 +100,42 @@ class NoteElement extends StatelessWidget {
       dots = AugmentationDots(count: note.dots.length, font: font);
     }
 
-    return NoteElement._(
+    return NoteElement(
       key: key,
-      note: SimpleNoteElement(
+      base: StemlessNoteElement(
+        dots: dots,
+        accidental: accidental,
         head: NoteheadElement(
           type: type,
           font: font,
           ledgerLines: LedgerLines.fromElementPosition(position),
         ),
-        stem: stem,
+        position: position,
       ),
-      font: font,
-      accidental: accidental,
-      position: position,
+      stem: stem,
       voice: note.editorialVoice.voice,
       beams: note.beams,
-      dots: dots,
     );
   }
 
-  const NoteElement._({
+  const NoteElement({
     super.key,
-    required this.note,
-    this.accidental,
-    this.dots,
-    required this.position,
-    required this.font,
+    required this.base,
     this.voice,
     this.beams = const [],
+    this.stem,
   });
 
   AlignmentPosition get alignmentPosition {
-    double? bottom;
-    double? top;
+    AlignmentPosition basePosition = base.alignmentPosition;
 
-    var spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
-
-    if (_alignedBy == VerticalAlignment.bottom) {
-      bottom = -spacePerPosition;
-    } else {
-      top = -spacePerPosition;
+    if (stem?.direction == StemDirection.down) {
+      return AlignmentPosition(
+        left: basePosition.left,
+        top: basePosition.bottom!.abs() - base.size.height,
+      );
     }
-
-    if (position.numeric % 2 == 0 &&
-        dots != null &&
-        _alignedBy == VerticalAlignment.top) {
-      top ??= 0;
-      top -= dots!.baseSize.height / 2;
-      top += _dotOffsetAdjustment;
-    }
-
-    if (accidental != null) {
-      if (note.stem?.direction == StemDirection.down) {
-        top = _accidentalOffset;
-      }
-      if (note.stem?.direction == StemDirection.up) {
-        bottom = _accidentalOffset;
-      }
-    }
-
-    return AlignmentPosition(
-      top: top,
-      bottom: bottom,
-      left: _calculateLeftOffset,
-    );
-  }
-
-  VerticalAlignment get _alignedBy {
-    if (note.stem?.direction == StemDirection.up) {
-      return VerticalAlignment.bottom;
-    }
-    return VerticalAlignment.top;
-  }
-
-  double get _noteOffset => -NotationLayoutProperties.baseSpacePerPosition;
-  double get _accidentalOffset {
-    if (_alignedBy == VerticalAlignment.bottom) {
-      return -(accidental!.baseSize.height -
-          accidental!.alignmentPosition.top!.abs());
-    }
-    return accidental!.alignmentPosition.top!;
-  }
-
-  // Temporary value for fixing dot positioning because of pixel snapping.
-  static const double _dotOffsetAdjustment = 0.05;
-  double get _dotVerticalOffset {
-    double offest = -(dots?.alignmentPosition.top ?? 0);
-    if (position.numeric % 2 == 0) {
-      if (_alignedBy == VerticalAlignment.top) {
-        offest -= dots!.baseSize.height;
-      }
-      if (_alignedBy == VerticalAlignment.bottom) {
-        offest += dots!.baseSize.height;
-        offest += _dotOffsetAdjustment;
-      }
-    }
-    return offest;
-  }
-
-  double get _calculateLeftOffset {
-    double leftOffset = 0;
-
-    if (accidental != null) {
-      Size accidentalSize = accidental!.baseSize;
-      leftOffset -= accidentalSize.width;
-      // Space between notehead and accidental.
-      leftOffset -= NotationLayoutProperties.noteAccidentalDistance;
-    }
-
-    return leftOffset;
-  }
-
-  /// Relative offset from bounding box bottom left if [AlignmentPosition.top] is defined.
-  /// Relative offset from bounding box top left if [AlignmentPosition.bottom] is defined.
-  ///
-  /// X - the middle of stem.
-  /// Y - the tip of stem.
-  Offset get offsetForBeam {
-    double? offsetX;
-    double offsetY = baseSize.height;
-
-    if (note.stem?.direction == StemDirection.down) {
-      offsetX = NotationLayoutProperties.baseStemStrokeWidth / 2;
-    }
-
-    if (accidental != null) {
-      offsetX ??= note.head.baseSize.width;
-      offsetX -= alignmentPosition.left;
-    }
-
-    return Offset(
-      offsetX ?? note.head.baseSize.width,
-      offsetY,
-    );
-  }
-
-  /// Default stem length: `3.5*stave_space`.
-  ///
-  /// Stems for notes on more than one ledger line extend to the middle stave-line
-  static double _calculateStemLength(Note note, ElementPosition position) {
-    if (note.type?.value.stemmed != true) {
-      return 0.0;
-    }
-
-    double stemLength = NotationLayoutProperties.baseStandardStemLength;
-    var spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
-
-    int distance = 0;
-
-    if (position >= ElementPosition.secondLedgerAbove) {
-      distance = position.distance(ElementPosition.secondLedgerAbove) + 1;
-    }
-
-    if (position <= ElementPosition.secondLedgerBelow) {
-      distance = position.distance(ElementPosition.secondLedgerBelow) + 1;
-    }
-
-    stemLength += distance * spacePerPosition;
-    return stemLength;
+    return basePosition;
   }
 
   static ElementPosition determinePosition(Note note, Clef? clef) {
@@ -323,101 +193,77 @@ class NoteElement extends StatelessWidget {
     }
   }
 
-  Size get baseSize => calculateBaseSize(
-        note: note,
-        position: position,
-        dots: dots,
-        accidental: accidental,
-      );
+  Size get size {
+    double height = base.size.height;
 
-  static Size calculateBaseSize({
-    required SimpleNoteElement note,
-    required AugmentationDots? dots,
-    required AccidentalElement? accidental,
-    required ElementPosition position,
-  }) {
-    Size noteSize = note.baseSize;
-
-    double height = noteSize.height;
-    double width = noteSize.width;
-
-    if (dots != null) {
-      Size dotsSize = dots.baseSize;
-
-      width += dotsSize.width;
-      width += AugmentationDots.defaultBaseOffset;
-
-      if (note.stem?.direction == StemDirection.down &&
-          position.numeric % 2 == 0) {
-        height += dotsSize.height / 2;
+    if (stem != null) {
+      height = stem!.length;
+      if (stem!.direction == StemDirection.up) {
+        height += base.alignmentPosition.bottom!.abs();
+      }
+      if (stem!.direction == StemDirection.down) {
+        height += base.size.height - base.alignmentPosition.bottom!.abs();
       }
     }
 
-    if (accidental != null) {
-      Size accidentalSize = accidental.baseSize;
-      AlignmentPosition accidentalPosition = accidental.alignmentPosition;
-
-      width += accidentalSize.width;
-      // Space between notehead and accidental.
-      width += NotationLayoutProperties.noteAccidentalDistance;
-
-      height += (accidentalPosition.top?.abs() ?? 0) / 2;
-    }
+    double width = base.size.width;
 
     return Size(width, height);
   }
 
-  double get verticalAlignmentAxisOffset {
-    if ((note.stem?.length ?? 0) > 0) {
-      return note.stem!.length;
+  /// Calculates position for stem - relative position by
+  /// component's left, bottom/top bounding box sides that is determined by [size].
+  AlignmentPosition? get _stemAlignment {
+    if (stem == null) {
+      return null;
     }
 
-    var spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
-
-    // When note is on drawn the line and it's stem is drawn down,
-    // the dots size must be taken in the account.
-    if (note.stem?.direction == StemDirection.down &&
-        position.numeric % 2 == 0 &&
-        dots != null) {
-      return spacePerPosition + dots!.baseSize.height / 2;
+    double left = 0;
+    double? top;
+    double? bottom;
+    if (base.accidental != null) {
+      left += base.accidental!.size.width;
+      left += NotationLayoutProperties.noteAccidentalDistance;
     }
-    return spacePerPosition;
+    if (stem?.direction == StemDirection.down) {
+      left += StemElement.defaultHorizontalOffset;
+      bottom = 0;
+    }
+    if (stem?.direction == StemDirection.up) {
+      left += base.head.size.width;
+      left -= StemElement.defaultHorizontalOffset;
+      top = 0;
+    }
+
+    return AlignmentPosition(
+      left: left,
+      top: top,
+      bottom: bottom,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    Alignment baseAlignment = Alignment.topCenter;
+    if (stem?.direction == StemDirection.up) {
+      baseAlignment = Alignment.bottomCenter;
+    }
+
     return SizedBox.fromSize(
-      size: baseSize.scaledByContext(context),
-      child: AlignedRow(
-        alignment: _alignedBy,
-        children: [
-          if (accidental != null)
-            Offsetted(
-              offset: _accidentalOffset.scaledByContext(context),
-              child: Padding(
-                padding: EdgeInsets.only(
-                  right: NotationLayoutProperties.noteAccidentalDistance,
-                ).scaledByContext(context),
-                child: accidental!,
-              ),
+        size: size.scaledByContext(context),
+        child: Stack(
+          children: [
+            Align(
+              alignment: baseAlignment,
+              child: base,
             ),
-          Offsetted(
-            offset: _noteOffset.scaledByContext(context),
-            child: note,
-          ),
-          if (dots != null)
-            Offsetted(
-              offset: _dotVerticalOffset.scaledByContext(context),
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: AugmentationDots.defaultBaseOffset,
-                ).scaledByContext(context),
-                child: dots!,
+            if (stem != null)
+              AlignmentPositioned(
+                position: _stemAlignment!.scaledByContext(context),
+                child: stem!,
               ),
-            ),
-        ],
-      ),
-    );
+          ],
+        ));
   }
 
   @override
@@ -434,28 +280,5 @@ class NoteElement extends StatelessWidget {
         showName: true,
       ),
     );
-  }
-}
-
-extension StemProperties on NoteTypeValue {
-  bool get stemmed {
-    switch (this) {
-      case NoteTypeValue.n1024th:
-      case NoteTypeValue.n512th:
-      case NoteTypeValue.n256th:
-      case NoteTypeValue.n128th:
-      case NoteTypeValue.n64th:
-      case NoteTypeValue.n32nd:
-      case NoteTypeValue.n16th:
-      case NoteTypeValue.eighth:
-      case NoteTypeValue.quarter:
-      case NoteTypeValue.half:
-        return true;
-      case NoteTypeValue.whole:
-      case NoteTypeValue.breve:
-      case NoteTypeValue.long:
-      case NoteTypeValue.maxima:
-        return false;
-    }
   }
 }

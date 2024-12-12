@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
@@ -6,6 +9,8 @@ import 'package:music_notation/src/models/elements/music_data/attributes/key.dar
 import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/notation_painter/clef_element.dart';
+import 'package:music_notation/src/notation_painter/debug/alignment_debug_painter.dart';
+import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
@@ -53,7 +58,7 @@ class MeasureElement extends StatelessWidget {
     );
     return MeasureElement(
       position: noteElement.position,
-      size: noteElement.baseSize,
+      size: noteElement.size,
       alignmentOffset: noteElement.alignmentPosition,
       duration: note.determineDuration(),
       child: noteElement,
@@ -91,7 +96,7 @@ class MeasureElement extends StatelessWidget {
     );
     return MeasureElement(
       position: chord.position,
-      size: chord.baseSize,
+      size: chord.size,
       alignmentOffset: chord.alignmentPosition,
       duration: notes.first.determineDuration(),
       child: chord,
@@ -220,18 +225,88 @@ class MeasureElement extends StatelessWidget {
     return Rect.fromPoints(Offset(0, 0), Offset(size.width, aboveStaffLength));
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return child;
+  static ({double min, double max}) columnVerticalRange(
+    List<MeasureElement> elements,
+    ElementPosition reference,
+  ) {
+    if (elements.isEmpty) {
+      return (min: 0, max: 0);
+    }
+
+    double minY = 0;
+    double maxY = 0;
+
+    const spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
+
+    for (var element in elements) {
+      int interval = element.position.numeric - reference.numeric;
+      double positionalDistance = interval * spacePerPosition;
+
+      double bottom = element.alignmentOffset.effectiveBottom(element.size);
+      bottom = positionalDistance + bottom;
+      minY = min(minY, bottom);
+
+      double top = element.alignmentOffset.effectiveTop(element.size);
+      top = positionalDistance - top;
+      maxY = max(maxY, top);
+    }
+
+    return (min: minY, max: maxY);
   }
-}
-
-class MyWidget extends StatelessWidget {
-  const MyWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    DebugSettings? debugSettings = DebugSettings.of(context);
+
+    return CustomPaint(
+      foregroundPainter: AlignmentDebugPainter(
+        offset: alignmentOffset.scaledByContext(context),
+        lines: debugSettings?.alignmentDebugOptions ?? {},
+      ),
+      child: child,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    DiagnosticLevel level = DiagnosticLevel.info;
+
+    properties.add(
+      StringProperty(
+        'position',
+        position.toString(),
+        level: level,
+        showName: true,
+      ),
+    );
+
+    properties.add(
+      StringProperty(
+        'alignment',
+        "left: ${alignmentOffset.left}, top: ${alignmentOffset.top}, bottom: ${alignmentOffset.bottom}",
+        level: level,
+        showName: true,
+      ),
+    );
+
+    properties.add(
+      StringProperty(
+        'effective alignment',
+        "bottom: ${alignmentOffset.effectiveBottom(size)}, top: ${alignmentOffset.effectiveTop(size)}",
+        level: level,
+        showName: true,
+      ),
+    );
+
+    properties.add(
+      StringProperty(
+        'size',
+        "width: ${size.width}, height: ${size.height}",
+        level: level,
+        showName: true,
+      ),
+    );
   }
 }
 
@@ -265,6 +340,36 @@ class AlignmentPosition {
       top: top != null ? top! * scale : null,
       bottom: bottom != null ? bottom! * scale : null,
     );
+  }
+
+  AlignmentPosition scaledByContext(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
+    return scale(layoutProperties.staveSpace);
+  }
+
+  /// Returns [bottom] if it is not null,
+  /// otherwise, returns calculated top from [size] and [top].
+  double effectiveBottom(Size size) {
+    if (bottom != null) return bottom!;
+    double sign = top!.sign;
+    if (sign == 0) {
+      sign = -1;
+    }
+    return (top! + size.height) * sign;
+  }
+
+  /// Returns [top] if it is not null,
+  /// otherwise, returns calculated top from [size] and [bottom].
+  double effectiveTop(Size size) {
+    if (top != null) return top!;
+    double sign = bottom!.sign;
+    if (sign == 0) {
+      sign = -1;
+    }
+    return (bottom! + size.height) * sign;
   }
 }
 

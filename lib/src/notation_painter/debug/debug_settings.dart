@@ -36,6 +36,8 @@ class DebugSettings extends InheritedWidget {
   /// `0.25` beat marker will appear every whole note.
   final double beatMarkerMultiplier;
 
+  final Set<AlignmentDebugOption> alignmentDebugOptions;
+
   /// Creates a [DebugSettings] widget with specified debugging options.
   ///
   /// The [child] widget subtree inherits these debug settings. The [paintBBoxBelowStaff]
@@ -51,6 +53,7 @@ class DebugSettings extends InheritedWidget {
     this.verticalStaveLineSpacingMultiplier = 0,
     this.beatMarker = false,
     this.beatMarkerMultiplier = 1,
+    this.alignmentDebugOptions = const {},
     required super.child,
   });
 
@@ -91,4 +94,18 @@ enum ExtraStaveLines {
 
   /// Renders extra stave lines above and below the staff.
   double,
+}
+
+enum AlignmentDebugOption {
+  /// Draws only top alignment line.
+  top,
+
+  /// Draws only effective top alignment line.
+  topEffective,
+
+  /// Draws only bottom alignment line.
+  bottom,
+
+  /// Draws only effective bottom alignment line.
+  bottomEffective,
 }
