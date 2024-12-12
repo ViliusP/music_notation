@@ -20,7 +20,7 @@ import 'package:music_notation/src/notation_painter/utilities/type_extensions.da
 
 /// A widget that lays out musical measures with notes, chords, beams, and staff lines.
 class MeasureLayout extends StatelessWidget {
-  final MeasureGrid grid;
+  final MeasureGrid measure;
 
   final MeasureBarlines barlineSettings;
 
@@ -29,7 +29,7 @@ class MeasureLayout extends StatelessWidget {
   const MeasureLayout({
     super.key,
     this.barlineSettings = const MeasureBarlines(),
-    required this.grid,
+    required this.measure,
     required this.horizontalOffsets,
   });
 
@@ -42,11 +42,11 @@ class MeasureLayout extends StatelessWidget {
     DebugSettings? dSettings = DebugSettings.of(context);
 
     double spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
-    ElementPosition bottomRef = grid.minPosition;
-    ElementPosition topRef = grid.maxPosition;
+    ElementPosition bottomRef = measure.floor;
+    ElementPosition topRef = measure.ceil;
 
     // Stave bottom values
-    ElementPosition staveBottomRef = grid.staveBottom;
+    ElementPosition staveBottomRef = measure.staveBottom;
     double staveBottom =
         (staveBottomRef.distance(bottomRef)) * spacePerPosition;
     staveBottom = staveBottom.scaledByContext(context);
@@ -57,11 +57,10 @@ class MeasureLayout extends StatelessWidget {
 
     var positionedElements = <Widget>[];
 
-    for (var (index, entry) in grid.columns.entries.indexed) {
+    for (var (index, entry) in measure.columns.entries.indexed) {
       for (var cellEntry in entry.value.cells.entries) {
         var position = cellEntry.key;
         var cell = cellEntry.value;
-        if (cell == null) continue;
 
         double? topOffset;
         double? bottomOffset;

@@ -35,10 +35,8 @@ class MusicSheetGrid {
   MusicSheetGrid(this.staves) : _columns = [];
 
   void add(MeasuresColumn column) {
-    if (staves != column.length) {
-      throw ArgumentError(
-        "Provided measures has bigger size than grid has staves",
-      );
+    if (staves != column.measures.length) {
+      throw ArgumentError("Provided column has different size than the grid");
     }
 
     for (int i = 0; i < column.measures.length; i++) {
@@ -56,47 +54,47 @@ class MusicSheetGrid {
     var columnToCheck = column.measures[staff];
 
     var lastGridMeasure = _columns.last.measures[staff];
-    int currentHeightAboveStave = lastGridMeasure.heightAboveStave;
-    int currentHeightBelowStave = lastGridMeasure.heightBelowStave;
+    var currentCeil = lastGridMeasure.ceil;
+    var currentFloor = lastGridMeasure.floor;
 
-    if (currentHeightAboveStave > columnToCheck.heightAboveStave) {
-      column.setHeightAbove(height: currentHeightAboveStave, stave: staff);
+    if (currentCeil > columnToCheck.ceil) {
+      column.setCeil(position: currentCeil, stave: staff);
     }
-    if (currentHeightAboveStave < columnToCheck.heightAboveStave) {
-      _setHeightAbove(height: columnToCheck.heightAboveStave, stave: staff);
+    if (currentCeil < columnToCheck.ceil) {
+      _setCeil(position: columnToCheck.ceil, stave: staff);
     }
-    if (currentHeightBelowStave > columnToCheck.heightBelowStave) {
-      column.setHeightBelow(height: currentHeightBelowStave, stave: staff);
+    if (currentFloor > columnToCheck.floor) {
+      column.setFloor(position: currentFloor, stave: staff);
     }
-    if (currentHeightBelowStave < columnToCheck.heightBelowStave) {
-      _setHeightBelow(height: columnToCheck.heightBelowStave, stave: staff);
+    if (currentFloor < columnToCheck.floor) {
+      _setFloor(position: columnToCheck.floor, stave: staff);
     }
 
     return;
   }
 
-  void _setHeightAbove({required int height, required int stave}) {
+  void _setCeil({required ElementPosition position, required int stave}) {
     for (var column in _columns) {
-      column.setHeightAbove(height: height, stave: stave);
+      column.setCeil(position: position, stave: stave);
     }
   }
 
-  void _setHeightBelow({required int height, required int stave}) {
+  void _setFloor({required ElementPosition position, required int stave}) {
     for (var column in _columns) {
-      column.setHeightBelow(height: height, stave: stave);
+      column.setFloor(position: position, stave: stave);
     }
   }
 
   @override
   String toString() {
-    int length = _columns.elementAtOrNull(0)?.length ?? 0;
+    int length = _columns.elementAtOrNull(0)?.measures.length ?? 0;
 
     List<List<String>> repr = List.generate(length, (_) => []);
     List<int> widths = List.generate(_columns.length, (_) => 0);
     for (var (i, column) in _columns.indexed) {
       for (var (j, measure) in column._measures.indexed) {
         repr[j].add(
-          "($j,$i) ↑${measure.heightAboveStave}↓${measure.heightBelowStave} ↔${measure.columns.length}",
+          "($j,$i) ↑${measure.ceil}↓${measure.ceil} ↔${measure.columns.length}",
         );
         widths[i] = max(widths[i], repr[j].last.length);
       }
@@ -126,8 +124,6 @@ class MeasuresColumn {
   MeasuresColumn.empty() : _measures = [];
 
   List<MeasureGrid> get measures => _measures;
-
-  int get length => _measures.length;
 
   SplayTreeMap<ColumnIndex, List<MeasureElement>> get _combined {
     SplayTreeMap<ColumnIndex, List<MeasureElement>> combined =
@@ -161,41 +157,42 @@ class MeasuresColumn {
   List<double> get horizontalOffsets {
     if (measures.isEmpty) return [];
 
-    double defaultWidth = NotationLayoutProperties.baseWidthPerQuarter / 24;
-
     /// First pass to get minimum beat size elements.
     /// And biggest (negative) left offset.
-    double maxBeatWidth = defaultWidth;
+
     List<double> leftOffsets = [];
 
-    // Looping through every key horizontally ->
+    double maxBeatWidth = 0;
+
     int i = -1;
-    for (var key in measures.first.columns.keys) {
+    // Looping through every key horizontally ->
+    for (var key in _combined.keys) {
       i++;
       leftOffsets.add(0);
-      if (key.isRhytmic) continue;
 
-      // double divisions = measures.firstOrNull?._timeline.divisions ?? 1;
-
+      // Looping trough every staff measure to take whole column of widgets.
       for (var measure in measures) {
         // Looping through cell in single measure column (section).
         for (var cell in measure.columns[key]!.cells.values) {
           leftOffsets[i] = min(
-            cell?.alignmentOffset.left ?? 0,
+            cell.alignmentOffset.left,
             leftOffsets[i],
           );
-          // double a = (cell?.duration ?? 0);
-          // if (a != 0) {
-          //   double cellWidth = (cell?.size.width ?? 0) / a;
 
-          //   // if (a != 0) {
-          //   //   print("Divisions ${divisions}");
-          //   //   print("Duration ${cell.value?.duration}");
-          //   //   print("Cell size: ${cell.value?.size.width ?? 0}");
-          //   //   print("New width: ${cellWidth}");
-          //   // }
-          //   maxBeatWidth = max(maxBeatWidth, cellWidth);
-          // }
+          if (key.isRhytmic) {
+            double a = cell.duration;
+            if (a != 0) {
+              double cellWidth = cell.size.width;
+
+              // if (a != 0) {
+              //   print("Divisions ${divisions}");
+              //   print("Duration ${cell.value?.duration}");
+              //   print("Cell size: ${cell.value?.size.width ?? 0}");
+              //   print("New width: ${cellWidth}");
+              // }
+              maxBeatWidth = max(maxBeatWidth, cellWidth);
+            }
+          }
         }
       }
     }
@@ -248,12 +245,12 @@ class MeasuresColumn {
     _measures = synced;
   }
 
-  void setHeightAbove({required int stave, required int height}) {
-    measures[stave]._setHeightAbove(height);
+  void setCeil({required int stave, required ElementPosition position}) {
+    measures[stave]._setCeil(position);
   }
 
-  void setHeightBelow({required int stave, required int height}) {
-    measures[stave]._setHeightBelow(height);
+  void setFloor({required int stave, required ElementPosition position}) {
+    measures[stave]._setFloor(position);
   }
 }
 
@@ -281,18 +278,10 @@ class MeasureGrid {
   final MeasureBarlines barlines;
   final Beatline beatline;
   final MeasureTimeline _timeline;
-  final int minHeightAbove;
-  final int minHeightBelow;
 
   final SplayTreeMap<ColumnIndex, MeasureGridColumn> _columns;
 
   SplayTreeMap<ColumnIndex, MeasureGridColumn> get columns => _columns;
-
-  /// Highest element position in whole measure.
-  ElementPosition get minPosition => columns.values.last._cells.keys.last;
-
-  /// Highest element position in whole measure.
-  ElementPosition get maxPosition => columns.values.last.cells.keys.first;
 
   /// Reference position for stave bottom.
   ElementPosition get staveBottom => ElementPosition(step: Step.E, octave: 4);
@@ -305,7 +294,7 @@ class MeasureGrid {
       (e) => e.key.isRhytmic,
     );
     var maybeMeasureRest = firstRhytmic?.value.cells.values.firstWhereOrNull(
-      (v) => v?.child is RestElement && (v?.child as RestElement).isMeasure,
+      (v) => v.child is RestElement && (v.child as RestElement).isMeasure,
     );
     return maybeMeasureRest != null;
   }
@@ -316,17 +305,13 @@ class MeasureGrid {
     required this.barlines,
     required MeasureTimeline timeline,
     required SplayTreeMap<ColumnIndex, MeasureGridColumn> columns,
-    this.minHeightAbove = 0,
-    this.minHeightBelow = 0,
   })  : _timeline = timeline,
         _columns = columns;
 
-  factory MeasureGrid.fromMeasureWidgets({
+  factory MeasureGrid.fromMeasureElements({
     required List<MeasureElement> children,
-    required MeasureBarlines barlineSettings,
+    required MeasureBarlines barlines,
     required double divisions,
-    int minHeightAbove = 0,
-    int minHeightBelow = 0,
   }) {
     MeasureTimeline timeline = MeasureTimeline.fromMeasureElements(
       children,
@@ -335,8 +320,8 @@ class MeasureGrid {
     Beatline beatline = Beatline.fromTimeline(timeline);
 
     SplayTreeMap<ColumnIndex, MeasureGridColumn> columns = SplayTreeMap.of({});
-    int heightBelowStaff = minHeightBelow;
-    int heightAboveStaff = minHeightAbove;
+    ElementPosition floor = ElementPosition.staffBottom;
+    ElementPosition ceil = ElementPosition.staffTop;
 
     int? attributes;
     int i = 0;
@@ -346,23 +331,23 @@ class MeasureGrid {
         (a, b) => a.voice.compareTo(b.voice),
       );
 
-      MeasureGridColumn col = MeasureGridColumn.fromHeights(
-        heightAboveStave: minHeightAbove,
-        heightBelowStave: minHeightBelow,
-      );
+      MeasureGridColumn col = MeasureGridColumn()
+        .._setFloor(floor)
+        .._setCeil(ceil);
       if (beatCol.isEmpty) {
         columns[ColumnIndex(i, attributes)] = col;
         i++;
       }
 
       for (var (j, value) in beatCol.indexed) {
-        var position = children[value.index].position;
+        var child = children[value.index];
+        var position = child.position;
 
         if (value.duration == 0) {
-          MeasureGridColumn col = MeasureGridColumn.fromHeights(
-            heightAboveStave: minHeightAbove,
-            heightBelowStave: minHeightBelow,
-          );
+          MeasureGridColumn col = MeasureGridColumn()
+            .._setFloor(floor)
+            .._setCeil(ceil);
+
           col.set(position, children[value.index]);
 
           attributes ??= 0;
@@ -377,136 +362,47 @@ class MeasureGrid {
           }
         }
 
-        var elementHeightBelowStaff = position.distanceFromBottom
-            .clamp(NumberConstants.minFiniteInt, 0)
-            .abs();
+        var range = child.range;
 
-        heightBelowStaff = [
-          heightBelowStaff,
-          elementHeightBelowStaff,
-          (children[value.index].boxBelowStaff().height * 2).ceil(),
-        ].max;
-
-        var elementHeightAboveStaff = position.distanceFromTop.clamp(
-          0,
-          NumberConstants.maxFiniteInt,
-        );
-
-        heightAboveStaff = [
-          heightAboveStaff,
-          elementHeightAboveStaff,
-          (children[value.index].boxAboveStaff().height * 2).ceil(),
-        ].max;
+        floor = [floor, range.min, range.max].min;
+        ceil = [ceil, range.min, range.max].max;
       }
     }
     for (var e in columns.entries) {
-      e.value._setHeightBelow(heightBelowStaff);
-      e.value._setHeightAbove(heightAboveStaff);
+      e.value._setFloor(floor);
+
+      e.value._setCeil(ceil);
     }
 
     return MeasureGrid._(
-      barlines: barlineSettings,
+      barlines: barlines,
       timeline: timeline,
       beatline: beatline,
       children: children,
-      minHeightAbove: heightAboveStaff,
-      minHeightBelow: heightBelowStaff,
       columns: columns,
     );
   }
 
-  int get heightAboveStave {
-    var highestPosition = _columns.values.last._cells.keys.firstOrNull;
-    highestPosition ??= ElementPosition.staffTop;
-
-    int distance = ElementPosition.staffTop.distance(highestPosition);
-
-    return distance.clamp(0, NumberConstants.maxFiniteInt);
+  ElementPosition get ceil {
+    return _columns.values.map((value) => value.ceil).maxOrNull ??
+        ElementPosition.staffBottom;
   }
 
-  int get heightBelowStave {
-    var lowestPosition = _columns.values.last._cells.keys.lastOrNull;
-    lowestPosition ??= ElementPosition.staffBottom;
-
-    int distance = ElementPosition.staffBottom.distance(lowestPosition);
-
-    return distance.clamp(0, NumberConstants.maxFiniteInt);
+  ElementPosition get floor {
+    return _columns.values.map((value) => value.floor).minOrNull ??
+        ElementPosition.staffBottom;
   }
 
-  @override
-  String toString() {
-    int rows = _columns.entries.elementAtOrNull(0)?.value._cells.length ?? 0;
-
-    List<List<String>> representationGrid = List.generate(rows + 1, (_) => []);
-
-    // Add header
-    representationGrid[0].add("p");
-    for (var key in _columns.keys) {
-      representationGrid[0].add(key.toString());
-    }
-
-    /// Add values to grid
-    for (var (i, entry) in _columns.entries.indexed) {
-      for (var (j, colValue) in entry.value._cells.entries.indexed) {
-        if (i == 0) {
-          representationGrid[j + 1].add("${colValue.key.numeric}");
-        }
-        if (colValue.value != null) {
-          representationGrid[j + 1].add(
-            "${colValue.key.step}${colValue.key.octave}",
-          );
-        }
-        if (colValue.value == null) {
-          representationGrid[j + 1].add("");
-        }
-      }
-    }
-
-    // Calculates column widths
-    List<int> widths = [];
-    for (var row in representationGrid) {
-      for (var (i, cell) in row.indexed) {
-        if (widths.elementAtOrNull(i) == null) {
-          widths.add(cell.length);
-        }
-        widths[i] = max(widths[i], cell.length);
-      }
-    }
-
-    // Convert grid to string representation
-    String repr = "\n";
-    for (var row in representationGrid) {
-      for (var (i, cell) in row.indexed) {
-        repr += "|${cell.padCenter(widths[i] + 2)}";
-      }
-      repr += "|\n";
-    }
-
-    return repr;
-  }
-
-  void _setHeightBelow(int height) {
+  void _setFloor(ElementPosition position) {
     for (var e in _columns.entries) {
-      e.value._setHeightBelow(height);
+      e.value._setFloor(position);
     }
   }
 
-  void _setHeightAbove(int height) {
+  void _setCeil(ElementPosition position) {
     for (var e in _columns.entries) {
-      e.value._setHeightAbove(height);
+      e.value._setCeil(position);
     }
-  }
-
-  MeasureGrid clone() {
-    return MeasureGrid._(
-      children: children,
-      barlines: barlines,
-      minHeightAbove: minHeightAbove,
-      minHeightBelow: minHeightBelow,
-      beatline: beatline,
-      timeline: _timeline,
-      columns: _columns,
-    );
   }
 
   MeasureGrid adjustByBeatline(Beatline beatline) {
@@ -514,10 +410,10 @@ class MeasureGrid {
       return this;
     }
     var adjusted = SplayTreeMap<ColumnIndex, MeasureGridColumn>.of({});
-    var emptyCol = MeasureGridColumn.fromHeights(
-      heightAboveStave: heightAboveStave,
-      heightBelowStave: heightBelowStave,
-    );
+    var emptyCol = MeasureGridColumn()
+      .._setFloor(floor)
+      .._setCeil(ceil);
+
     double ratio = beatline.divisions / this.beatline.divisions;
     int beat = 0;
     int attributes = 0;
@@ -559,71 +455,72 @@ class MeasureGrid {
       barlines: barlines,
       timeline: _timeline,
       columns: adjusted,
-      minHeightAbove: minHeightAbove,
-      minHeightBelow: minHeightBelow,
     );
   }
-}
 
-class MeasureGridColumn {
-  final SplayTreeMap<ElementPosition, MeasureElement?> _cells;
-  SplayTreeMap<ElementPosition, MeasureElement?> get cells => _cells;
-
-  MeasureGridColumn()
-      : _cells = SplayTreeMap.of({
-          ElementPosition.staffBottom.transpose(0): null,
-          ElementPosition.staffBottom.transpose(1): null,
-          ElementPosition.staffBottom.transpose(2): null,
-          ElementPosition.staffBottom.transpose(3): null,
-          ElementPosition.staffBottom.transpose(4): null,
-          ElementPosition.staffBottom.transpose(5): null,
-          ElementPosition.staffBottom.transpose(6): null,
-          ElementPosition.staffBottom.transpose(7): null,
-          ElementPosition.staffBottom.transpose(8): null, // Staff top
-        }, (a, b) => b.compareTo(a));
-
-  factory MeasureGridColumn.fromHeights({
-    int heightAboveStave = 0,
-    int heightBelowStave = 0,
-  }) {
-    return MeasureGridColumn()
-      .._setHeightAbove(heightAboveStave)
-      .._setHeightBelow(heightBelowStave);
-  }
-
-  void _setHeightAbove(int height) {
-    int start = ElementPosition.staffTop.numeric;
-
-    for (int i = start + 1; i < start + height + 1; i++) {
-      if (!_cells.containsKey(ElementPosition.fromInt(i))) {
-        _cells[ElementPosition.fromInt(i)] = null;
-      }
-    }
-  }
-
-  void _setHeightBelow(int height) {
-    int start = ElementPosition.staffBottom.numeric;
-
-    for (int i = start - height; i < start; i++) {
-      if (!_cells.containsKey(ElementPosition.fromInt(i))) {
-        _cells[ElementPosition.fromInt(i)] = null;
-      }
-    }
-  }
-
-  void set(ElementPosition position, MeasureElement? widget) {
-    _cells[position] = widget;
+  MeasureGrid clone() {
+    return MeasureGrid._(
+      children: children,
+      barlines: barlines,
+      beatline: beatline,
+      timeline: _timeline,
+      columns: _columns,
+    );
   }
 
   @override
   String toString() {
-    String value = "\n";
+    int rows = _columns.entries.elementAtOrNull(0)?.value._cells.length ?? 0;
 
-    for (var e in _cells.entries) {
-      value += "${e.key.numeric} ${e.key.step}${e.key.octave}: ${e.value}";
-      value += "\n";
+    List<List<String>> representationGrid = List.generate(rows + 1, (_) => []);
+
+    // Add header
+    representationGrid[0].add("p");
+    for (var key in _columns.keys) {
+      representationGrid[0].add(key.toString());
     }
-    return value;
+
+    /// Add values to grid
+    for (var e in _columns.entries) {
+      var index = e.key;
+      var column = e.value;
+      int j = 0;
+      for (var pos = floor; pos < ceil; pos++) {
+        var cell = column.cells[pos];
+        if (pos == floor) {
+          representationGrid[j + 1].add("${pos.numeric}");
+        }
+        if (cell != null) {
+          representationGrid[j + 1].add("${pos.step}${pos.octave}");
+        }
+        if (cell == null) {
+          representationGrid[j + 1].add("");
+        }
+        j++;
+      }
+    }
+
+    // Calculates column widths
+    List<int> widths = [];
+    for (var row in representationGrid) {
+      for (var (i, cell) in row.indexed) {
+        if (widths.elementAtOrNull(i) == null) {
+          widths.add(cell.length);
+        }
+        widths[i] = max(widths[i], cell.length);
+      }
+    }
+
+    // Convert grid to string representation
+    String repr = "\n";
+    for (var row in representationGrid) {
+      for (var (i, cell) in row.indexed) {
+        repr += "|${cell.padCenter(widths[i] + 2)}";
+      }
+      repr += "|\n";
+    }
+
+    return repr;
   }
 }
 
@@ -659,4 +556,69 @@ class ColumnIndex implements Comparable<ColumnIndex> {
 
   @override
   String toString() => "$beat${"*" * ((attributeNumber ?? -1) + 1)}";
+}
+
+class MeasureGridColumn {
+  final SplayTreeMap<ElementPosition, MeasureElement> _cells;
+  SplayTreeMap<ElementPosition, MeasureElement> get cells => _cells;
+
+  ElementPosition _ceil;
+  ElementPosition get ceil => _ceil;
+
+  ElementPosition _floor;
+  ElementPosition get floor => _floor;
+
+  MeasureGridColumn()
+      : _cells = SplayTreeMap.of({}, (a, b) => b.compareTo(a)),
+        _floor = ElementPosition.staffBottom,
+        _ceil = ElementPosition.staffBottom.transpose(8);
+
+  void _setCeil(ElementPosition position) {
+    if (position >= _ceil) {
+      _ceil = position;
+      return;
+    }
+    if (position < _floor) {
+      return;
+    }
+    for (ElementPosition p = _ceil - 1; p > _floor; p--) {
+      if (_cells[p] != null) {
+        break;
+      }
+      _ceil = p;
+    }
+  }
+
+  void _setFloor(ElementPosition position) {
+    if (position <= _floor) {
+      _floor = position;
+      return;
+    }
+    if (position > _ceil) {
+      return;
+    }
+    for (ElementPosition p = _floor + 1; p < _ceil; p++) {
+      if (_cells[p] != null) {
+        break;
+      }
+      _floor = p;
+    }
+  }
+
+  void set(ElementPosition position, MeasureElement widget) {
+    if (position > _ceil) _ceil = position;
+    if (position < floor) _floor = position;
+    _cells[position] = widget;
+  }
+
+  @override
+  String toString() {
+    String value = "\n";
+
+    for (var e in _cells.entries) {
+      value += "${e.key.numeric} ${e.key.step}${e.key.octave}: ${e.value}";
+      value += "\n";
+    }
+    return value;
+  }
 }

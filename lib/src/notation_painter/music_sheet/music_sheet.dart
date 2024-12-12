@@ -74,8 +74,8 @@ class MusicSheet extends StatelessWidget {
       var colMeasures = <MeasureGrid>[];
 
       for (var data in col) {
-        var measure = MeasureGrid.fromMeasureWidgets(
-          barlineSettings: data.barlineSettings,
+        var measure = MeasureGrid.fromMeasureElements(
+          barlines: data.barlineSettings,
           children: data.children,
           divisions: data.divisions,
         );
@@ -143,7 +143,7 @@ class _SheetMeasuresColumn extends StatelessWidget {
     return Column(
       children: column.measures
           .map((value) => MeasureLayout(
-                grid: value,
+                measure: value,
                 barlineSettings: MeasureBarlines(
                   start: number == 0 ? value.barlines.start : null,
                   end: value.barlines.end,

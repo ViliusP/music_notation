@@ -17,7 +17,7 @@ class ClefElement extends StatelessWidget {
   final FontMetadata font;
 
   AlignmentPosition get alignmentPosition {
-    return AlignmentPosition(left: 0, top: -_verticalAlignmentAxisOffset);
+    return AlignmentPosition(left: 0, top: -_bBox.bBoxNE.y);
   }
 
   const ClefElement({
@@ -53,10 +53,6 @@ class ClefElement extends StatelessWidget {
 
   GlyphBBox get _bBox {
     return font.glyphBBoxes[_glyph]!;
-  }
-
-  double get _verticalAlignmentAxisOffset {
-    return _bBox.bBoxNE.y;
   }
 
   ElementPosition get position {

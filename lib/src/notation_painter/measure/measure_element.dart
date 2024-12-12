@@ -13,6 +13,7 @@ import 'package:music_notation/src/notation_painter/debug/alignment_debug_painte
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
+import 'package:music_notation/src/notation_painter/models/range.dart';
 import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rest_element.dart';
@@ -152,6 +153,46 @@ class MeasureElement extends StatelessWidget {
       alignmentOffset: element.alignmentPosition,
       duration: 0,
       child: element,
+    );
+  }
+
+  /// The range represents the vertical positions of an element within a layout system,
+  /// with the positions adjusted based on the element's position, alignment and size.
+  Range<ElementPosition, int> get range {
+    print("Bottom");
+    print(ElementPosition.staffBottom);
+
+    print("Top");
+    print(ElementPosition.staffTop);
+    const spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
+
+    // Calculate the bottom alignment offset relative to the size of the element.
+    // This gives the bottom edge of the element in the layout.
+    var bottom = alignmentOffset.effectiveBottom(size);
+
+    // Calculate the number of positions the element's bottom needs to move,
+    // relative to its current position.
+    var positionBottom = (bottom / spacePerPosition).ceil();
+    positionBottom = (position.numeric + positionBottom);
+
+    // Final calculated position for the bottom edge of the element.
+    var elementBottom = ElementPosition.fromInt(positionBottom);
+
+    // Calculate the top alignment offset relative to the size of the element.
+    // This gives the top edge of the element in the layout.
+    var top = alignmentOffset.effectiveTop(size);
+
+    // Calculate the number of positions the element's top needs to move, relative to its
+    // current position.
+    var positionTop = -(top / spacePerPosition).floor();
+    positionTop = (position.numeric + positionTop);
+
+    var elementTop = ElementPosition.fromInt(positionTop);
+
+    return Range(
+      elementTop,
+      elementBottom,
+      (max, min) => max.numeric - min.numeric,
     );
   }
 
