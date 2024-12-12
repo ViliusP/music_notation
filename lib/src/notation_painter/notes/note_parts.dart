@@ -108,7 +108,8 @@ class StemlessNoteElement extends StatelessWidget {
   static const double _dotOffsetAdjustment = 0.1;
 
   double get _dotVerticalOffset {
-    double offest = -(dots?.alignmentPosition.top ?? 0);
+    if (dots == null) return 0;
+    double offest = dots!.alignmentPosition.effectiveTop(dots!.size);
     if (position.numeric % 2 == 0) {
       offest -= dots!.size.height;
       offest -= _dotOffsetAdjustment;
