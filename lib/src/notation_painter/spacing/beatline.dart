@@ -207,7 +207,6 @@ class Beatline {
 class BeatlineValue {
   final int attributesBefore;
 
-  // final double width;
   final double beat;
 
   const BeatlineValue({

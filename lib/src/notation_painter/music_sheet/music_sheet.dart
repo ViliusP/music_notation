@@ -143,31 +143,6 @@ class _SheetMeasuresColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<List<MeasureGridColumn>> columnColumns = MeasureGrid.toMeasureColumns(
-      values,
-    );
-
-    List<ColumnIndex> indices = values.firstOrNull?.columns.keys.toList() ?? [];
-    double divisions = values.firstOrNull?.beatline.divisions ?? 1;
-    double defaultWidth =
-        NotationLayoutProperties.baseWidthPerQuarter / divisions;
-    List<double> widths = [];
-    for (var (i, columns) in columnColumns.indexed) {
-      double width = 0;
-      // Attribute element width depends on attribute size itself
-      if (!indices[i].isRhytmic) {
-        for (var cell in columns.expand((i) => i.cells.entries)) {
-          if (cell.value != null) {
-            width = max(width, cell.value!.size.width);
-          }
-        }
-      }
-      if (width == 0) {
-        width = defaultWidth;
-      }
-      widths.add(width);
-    }
-
     return Column(
       children: values
           .map((value) => MeasureLayout(
@@ -176,7 +151,7 @@ class _SheetMeasuresColumn extends StatelessWidget {
                   start: number == 0 ? value.barlines.start : null,
                   end: value.barlines.end,
                 ),
-                widths: widths,
+                widths: MusicSheetGrid.widthsByPosition(values),
               ))
           .toList(),
     );

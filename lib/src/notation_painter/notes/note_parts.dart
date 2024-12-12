@@ -130,8 +130,8 @@ class StemlessNoteElement extends StatelessWidget {
 
       if (accidental != null) {
         bottom = _accidentalOffset.abs() - size.height;
-        left = accidental!.size.width;
-        left += NotationLayoutProperties.noteAccidentalDistance;
+        left -= accidental!.size.width;
+        left -= NotationLayoutProperties.noteAccidentalDistance;
       }
 
       return AlignmentPosition(

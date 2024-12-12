@@ -99,7 +99,7 @@ class MeasureLayout extends StatelessWidget {
           bottomOffset -= interval * spacePerPosition;
         }
 
-        double left = spacings[index];
+        double left = spacings[index] + alignmentPosition.left;
 
         var maybeRest = cell.child.tryAs<RestElement>();
         if (maybeRest is RestElement && maybeRest.isMeasure) {

@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
+import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/notation_painter/cursor_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_barlines.dart';
@@ -90,6 +91,36 @@ class MusicSheetGrid {
     for (var measureCol in _values) {
       measureCol[staff].setHeightBelow(height);
     }
+  }
+
+  static List<double> widthsByPosition(List<MeasureGrid> measures) {
+    if (measures.isEmpty) return [];
+
+    List<ColumnIndex> indices =
+        measures.firstOrNull?.columns.keys.toList() ?? [];
+    double divisions = measures.firstOrNull?.beatline.divisions ?? 1;
+    double defaultWidth =
+        NotationLayoutProperties.baseWidthPerQuarter / divisions;
+
+    var measureSections = MeasureGrid.toMeasureColumns(measures);
+
+    List<double> widths = [];
+    for (var (i, columns) in measureSections.indexed) {
+      double width = 0;
+      // Attribute element width depends on attribute size itself
+      if (!indices[i].isRhytmic) {
+        for (var cell in columns.expand((i) => i.cells.entries)) {
+          if (cell.value != null) {
+            width = max(width, cell.value!.size.width);
+          }
+        }
+      }
+      if (width == 0) {
+        width = defaultWidth;
+      }
+      widths.add(width);
+    }
+    return widths;
   }
 
   @override

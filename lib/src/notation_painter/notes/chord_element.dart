@@ -303,7 +303,7 @@ class Chord extends StatelessWidget {
     }
 
     return AlignmentPosition(
-      left: _leftColumnOffset,
+      left: -_leftColumnOffset,
       bottom: bottom,
     );
   }
