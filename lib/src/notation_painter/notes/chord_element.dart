@@ -150,11 +150,26 @@ class Chord extends StatelessWidget {
           .toList(),
     );
 
+    // ----------- DOTS ---------------------
+    ChordColumn augmentationDots = ChordColumn(
+      children: notesElements
+          .where((e) => e.dots != null)
+          .map((e) => MeasureElement(
+                position: e.position,
+                size: e.dots!.size,
+                alignmentOffset: e.dots!.alignmentPosition,
+                duration: 0,
+                child: e.dots!,
+              ))
+          .toList(),
+    );
+
     return Chord(
       key: key,
       noteheadsLeft: leftNoteheads,
       noteheadsRight: rightNoteheads,
       accidentals: accidentalsColumn,
+      augmentationDots: augmentationDots,
       beams: beams,
       stem: stem,
       voice: notes.firstOrNull?.editorialVoice.voice,
@@ -332,11 +347,12 @@ class Chord extends StatelessWidget {
     if (noteheadsRight != null) {
       currentWidth += nextElementPosition;
       currentWidth += noteheadsRight!.size.width;
-      nextElementPosition = AugmentationDots.defaultBaseOffset;
+      nextElementPosition = 0;
     }
     if (augmentationDots != null) {
       currentWidth += nextElementPosition;
       currentWidth += augmentationDots!.size.width;
+      currentWidth += nextElementPosition = AugmentationDots.defaultBaseOffset;
     }
     // If stem has flag, chord sizes must be increase to fit that flag.
     if (stem != null) {
@@ -461,7 +477,14 @@ class Chord extends StatelessWidget {
                     0,
                     _columnOffset(augmentationDots).scaledByContext(context),
                   ),
-                  child: augmentationDots!,
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                        left:
+                            AugmentationDots.defaultBaseOffset.scaledByContext(
+                      context,
+                    )),
+                    child: augmentationDots!,
+                  ),
                 ),
             ],
           ),

@@ -30,7 +30,7 @@ class AugmentationDots extends StatelessWidget {
   /// The default spacing between two augmentation dots.
   ///
   /// *Value taken from [_defaultSize].
-  static const double defaultSpacing = 2.376;
+  static const double _defaultSpacing = 2.376;
 
   /// Calculates the total size of the augmentation dots.
   ///
@@ -45,7 +45,7 @@ class AugmentationDots extends StatelessWidget {
 
   AlignmentPosition get alignmentPosition => AlignmentPosition(
         left: 0,
-        top: size.height / 2,
+        bottom: -size.height / 2,
       );
 
   ElementPosition get position => ElementPosition.staffMiddle;
@@ -59,7 +59,7 @@ class AugmentationDots extends StatelessWidget {
     super.key,
     required this.count,
     required this.font,
-    this.spacing = defaultSpacing,
+    this.spacing = _defaultSpacing,
   })  : assert(count > 0), // Ensure at least one dot
         assert(spacing >= 0); // Ensure non-negative spacing
 
