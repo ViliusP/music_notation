@@ -174,8 +174,8 @@ class AccidentalElement extends StatelessWidget {
   final AccidentalValue type;
   final FontMetadata font;
 
-  AlignmentOffset get offset => AlignmentOffset(
-        top: -font.glyphBBoxes[_glyph]!.bBoxNE.y,
+  AlignmentOffset get offset => AlignmentOffset.fromBbox(
+        bBox: font.glyphBBoxes[_glyph]!,
         left: 0,
       );
 
@@ -219,14 +219,12 @@ class KeySignatureElement extends StatelessWidget {
   static const _baseSpaceBetweenAccidentals = 0.25;
 
   AlignmentOffset get offset {
-    if (accidentals.isEmpty) return AlignmentOffset(left: 0, top: 0);
+    if (accidentals.isEmpty) return AlignmentOffset.zero();
     SmuflGlyph glyph = _accidentalSmuflMapping[
         accidentals.first.accidental?.value ?? AccidentalValue.other]!;
 
-    double top = -font.glyphBBoxes[glyph]!.bBoxNE.y;
-
-    return AlignmentOffset(
-      top: top,
+    return AlignmentOffset.fromBbox(
+      bBox: font.glyphBBoxes[glyph]!,
       left: 0,
     );
   }

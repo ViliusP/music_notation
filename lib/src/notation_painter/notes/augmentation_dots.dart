@@ -43,10 +43,7 @@ class AugmentationDots extends StatelessWidget {
     return Size(width, singleDotSize.height);
   }
 
-  AlignmentOffset get offset => AlignmentOffset(
-        left: 0,
-        bottom: -size.height / 2,
-      );
+  AlignmentOffset get offset => AlignmentOffset.center(left: 0, size: size);
 
   ElementPosition get position => ElementPosition.staffMiddle;
 

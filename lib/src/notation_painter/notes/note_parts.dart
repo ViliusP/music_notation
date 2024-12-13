@@ -103,13 +103,13 @@ class StemlessNoteElement extends StatelessWidget {
   double get _headOffset => -NotationLayoutProperties.baseSpacePerPosition;
 
   /// Vertical offset for accidental
-  double get _accidentalOffset => accidental!.offset.top!;
+  double get _accidentalOffset => accidental!.offset.top;
 
   static const double _dotOffsetAdjustment = 0.1;
 
   double get _dotVerticalOffset {
     if (dots == null) return 0;
-    double offest = dots!.offset.effectiveTop(dots!.size);
+    double offest = dots!.offset.top;
     if (position.numeric % 2 == 0) {
       offest -= dots!.size.height;
       offest -= _dotOffsetAdjustment;
@@ -134,7 +134,8 @@ class StemlessNoteElement extends StatelessWidget {
         left -= NotationLayoutProperties.noteAccidentalDistance;
       }
 
-      return AlignmentOffset(
+      return AlignmentOffset.fromBottom(
+        height: size.height,
         bottom: bottom,
         left: left,
       );
@@ -251,6 +252,19 @@ class StemElement extends StatelessWidget {
   /// Determines if flag should be shown with stem. By default it is true;
   final bool showFlag;
 
+  AlignmentOffset get offset => switch (direction) {
+        StemDirection.up => AlignmentOffset.fromBottom(
+            left: 0,
+            bottom: 0,
+            height: size.height,
+          ),
+        StemDirection.down => AlignmentOffset.fromTop(
+            left: 0,
+            top: 0,
+            height: size.height,
+          ),
+      };
+
   Size get size {
     double width = NotationLayoutProperties.baseStemStrokeWidth;
     if (showFlag && length > 0) {
@@ -342,9 +356,17 @@ class StemElement extends StatelessWidget {
 
   AlignmentOffset _flagPosition(StemDirection direction) {
     if (direction == StemDirection.down) {
-      return AlignmentOffset(left: 0, bottom: 0);
+      return AlignmentOffset.fromBottom(
+        left: 0,
+        bottom: 0,
+        height: _baseFlagSize.height,
+      );
     }
-    return AlignmentOffset(left: 0, top: 0);
+    return AlignmentOffset.fromTop(
+      left: 0,
+      top: 0,
+      height: _baseFlagSize.height,
+    );
   }
 
   /// Default stem length: `3.5*stave_space`.
@@ -465,7 +487,7 @@ class NoteheadElement extends StatelessWidget {
 
   final Color color;
 
-  GlyphBBox _bBox(FontMetadata font) {
+  GlyphBBox get _bBox {
     return font.glyphBBoxes[_glyph]!;
   }
 
@@ -494,11 +516,7 @@ class NoteheadElement extends StatelessWidget {
     }
   }
 
-  AlignmentOffset get offset {
-    double top = _bBox(font).bBoxNE.y;
-
-    return AlignmentOffset(left: 0, top: -top);
-  }
+  AlignmentOffset get offset => AlignmentOffset.fromBbox(left: 0, bBox: _bBox);
 
   /// Size of notehead symbol.
   ///
@@ -508,7 +526,7 @@ class NoteheadElement extends StatelessWidget {
   ///
   /// The height of all notehead types is same and equal to the sum of the staff
   /// line stroke width and stave space.
-  Size get size => _bBox(font).toSize();
+  Size get size => _bBox.toSize();
 
   const NoteheadElement({
     super.key,
@@ -531,7 +549,7 @@ class NoteheadElement extends StatelessWidget {
         ledgerLines: ledgerLines,
         color: color,
         staveSpace: layoutProperties.staveSpace,
-        bBox: _bBox(font),
+        bBox: _bBox,
         ledgerLinesThickness: layoutProperties.staveLineThickness,
       ),
     );

@@ -189,7 +189,7 @@ class MeasureElement extends StatelessWidget {
 
     // The height of the element extending above its own alignment offset.
     // A positive value means the element is entirely below its alignment axis.
-    double extentAbove = offset.effectiveTop(size).limit(top: 0);
+    double extentAbove = offset.top.limit(top: 0);
     extentAbove = extentAbove.abs();
 
     double aboveReference = extentAbove - distanceToReference;
@@ -209,7 +209,7 @@ class MeasureElement extends StatelessWidget {
 
     // The height of the element extending below its own alignment offset.
     // A positive value means the element is entirely above its alignment axis.
-    double extentBelow = offset.effectiveBottom(size).limit(top: 0);
+    double extentBelow = offset.bottom.limit(top: 0);
     extentBelow = extentBelow.abs();
 
     double belowReference = extentBelow + distanceToReference;
@@ -236,11 +236,11 @@ class MeasureElement extends StatelessWidget {
       int interval = element.position.numeric - reference.numeric;
       double positionalDistance = interval * spacePerPosition;
 
-      double bottom = element.offset.effectiveBottom(element.size);
+      double bottom = element.offset.bottom;
       bottom = positionalDistance + bottom;
       minY = min(minY, bottom);
 
-      double top = element.offset.effectiveTop(element.size);
+      double top = element.offset.top;
       top = positionalDistance - top;
       maxY = max(maxY, top);
     }
@@ -286,15 +286,6 @@ class MeasureElement extends StatelessWidget {
 
     properties.add(
       StringProperty(
-        'effective alignment',
-        "bottom: ${offset.effectiveBottom(size)}, top: ${offset.effectiveTop(size)}",
-        level: level,
-        showName: true,
-      ),
-    );
-
-    properties.add(
-      StringProperty(
         'size',
         "width: ${size.width}, height: ${size.height}",
         level: level,
@@ -308,33 +299,70 @@ class MeasureElement extends StatelessWidget {
 /// horizontal positioning within their container.
 class AlignmentOffset {
   /// Vertical offset from the top of the bounding box, aligning the element with
-  /// the staff line when positioned at `Y=0`. If null, alignment is based on [bottom].
-  final double? top;
+  /// the staff line when positioned at `Y=0`.
+  final double top;
 
   /// Vertical offset from the bottom of the bounding box, aligning the element with
-  /// the staff line when positioned at `Y=container.height`. If null, alignment is based on [top].
-  final double? bottom;
+  /// the staff line when positioned at `Y=container.height`.
+  final double bottom;
+
+  double get height => (top + bottom).abs();
 
   /// Horizontal offset from the left side of the element’s bounding box, aligning the
   /// element horizontally, typically at the visual or optical center.
   final double left;
 
   const AlignmentOffset({
-    this.top,
-    this.bottom,
+    required this.top,
+    required this.bottom,
     required this.left,
-  }) : assert(
-          (top == null) != (bottom == null),
-          'Either top or bottom must be null, but not both.',
-        );
+  });
 
-  const AlignmentOffset.zero() : this(left: 0, top: 0);
+  const AlignmentOffset.zero() : this(left: 0, top: 0, bottom: 0);
+
+  factory AlignmentOffset.fromTop({
+    required double left,
+    required double top,
+    required double height,
+  }) {
+    return AlignmentOffset(
+      top: top,
+      bottom: _effectiveBottom(bottom: null, top: top, height: height),
+      left: left,
+    );
+  }
+
+  factory AlignmentOffset.fromBottom({
+    required double left,
+    required double bottom,
+    required double height,
+  }) {
+    return AlignmentOffset(
+      top: _effectiveTop(bottom: bottom, top: null, height: height),
+      bottom: bottom,
+      left: left,
+    );
+  }
+  // TODO CHECK BOTTOM
+  AlignmentOffset.fromBbox({
+    required double left,
+    required GlyphBBox bBox,
+  }) : this(left: left, top: -bBox.topRight.y, bottom: bBox.bBoxNE.y);
+
+  AlignmentOffset.center({
+    required double left,
+    required Size size,
+  }) : this(
+          left: left,
+          top: -size.height / 2,
+          bottom: -size.height / 2,
+        );
 
   AlignmentOffset scale(double scale) {
     return AlignmentOffset(
       left: left * scale,
-      top: top != null ? top! * scale : null,
-      bottom: bottom != null ? bottom! * scale : null,
+      top: top * scale,
+      bottom: bottom * scale,
     );
   }
 
@@ -348,24 +376,32 @@ class AlignmentOffset {
 
   /// Returns [bottom] if it is not null,
   /// otherwise, returns calculated top from [size] and [top].
-  double effectiveBottom(Size size) {
-    if (bottom != null) return bottom!;
+  static double _effectiveBottom({
+    required double height,
+    required double? bottom,
+    required double? top,
+  }) {
+    if (bottom != null) return bottom;
     double sign = top!.sign;
     if (sign == 0) {
       sign = -1;
     }
-    return (top! + size.height) * sign;
+    return (top + height) * sign;
   }
 
   /// Returns [top] if it is not null,
   /// otherwise, returns calculated top from [size] and [bottom].
-  double effectiveTop(Size size) {
-    if (top != null) return top!;
+  static double _effectiveTop({
+    required double height,
+    required double? bottom,
+    required double? top,
+  }) {
+    if (top != null) return top;
     double sign = bottom!.sign;
     if (sign == 0) {
       sign = -1;
     }
-    return (bottom! + size.height) * sign;
+    return (bottom + height) * sign;
   }
 }
 

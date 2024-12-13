@@ -183,11 +183,9 @@ class Chord extends StatelessWidget {
   MeasureElement? get _positionedStem {
     if (stem == null) return null;
     ElementPosition? stemPosition;
-    double? top;
-    double? bottom;
+
     switch (stem?.direction) {
       case StemDirection.up:
-        bottom = 0;
         var minLeft = noteheadsLeft?.children
             .map(
               (note) => note.position,
@@ -202,8 +200,6 @@ class Chord extends StatelessWidget {
 
         stemPosition = [minLeft, minRight].nonNulls.minOrNull;
       case StemDirection.down:
-        top = 0;
-
         var posLeft = noteheadsLeft?.children
             .map(
               (note) => note.position,
@@ -227,11 +223,7 @@ class Chord extends StatelessWidget {
     return MeasureElement(
       position: stemPosition,
       size: stem!.size,
-      offset: AlignmentOffset(
-        left: 0,
-        top: top,
-        bottom: bottom,
-      ),
+      offset: stem!.offset,
       duration: 0,
       child: stem!,
     );
@@ -292,7 +284,7 @@ class Chord extends StatelessWidget {
   /// Alignment offset for correctly placing on measure
   AlignmentOffset get offset {
     if (_referenceColumn == null) {
-      return AlignmentOffset(left: 0, bottom: 0);
+      return AlignmentOffset.zero();
     }
 
     double bottom;
@@ -302,9 +294,10 @@ class Chord extends StatelessWidget {
       bottom = _verticalRange.min;
     }
 
-    return AlignmentOffset(
+    return AlignmentOffset.fromBottom(
       left: -_leftColumnOffset,
       bottom: bottom,
+      height: size.height,
     );
   }
 
@@ -375,10 +368,10 @@ class Chord extends StatelessWidget {
 
     if (_alignByTop) {
       offset = -interval * NotationLayoutProperties.baseSpacePerPosition;
-      offset += column.offset.effectiveTop(column.size);
+      offset += column.offset.top;
     } else {
       offset = interval * NotationLayoutProperties.baseSpacePerPosition;
-      offset += column.offset.effectiveBottom(column.size);
+      offset += column.offset.bottom;
     }
 
     return offset;
@@ -396,19 +389,10 @@ class Chord extends StatelessWidget {
   /// Calculates position for stem - relative position by
   /// component's left, bottom/top bounding box sides that is determined by [size].
   AlignmentOffset get _stemPosition {
-    double? top;
-    double? bottom;
-
-    if (_alignByTop) {
-      bottom = 0;
-    } else {
-      top = 0;
-    }
-
     return AlignmentOffset(
       left: _leftColumnOffset + (noteheadsLeft?.size.width ?? 0) - _stemSpacing,
-      top: top,
-      bottom: bottom,
+      top: stem?.offset.top ?? 0,
+      bottom: stem?.offset.bottom ?? 0,
     );
   }
 
@@ -521,12 +505,13 @@ class ChordColumn extends StatelessWidget {
     MeasureElement? reference = _children.firstOrNull;
 
     if (reference == null) {
-      return AlignmentOffset(left: 0, bottom: 0);
+      return AlignmentOffset.zero();
     }
 
-    return AlignmentOffset(
+    return AlignmentOffset.fromBottom(
       left: 0,
-      bottom: reference.offset.effectiveBottom(reference.size),
+      bottom: reference.offset.bottom,
+      height: reference.size.height,
     );
   }
 
@@ -555,12 +540,8 @@ class ChordColumn extends StatelessWidget {
           ((child.position.numeric - position.numeric)).toDouble();
       double distanceFromRef = interval * layoutProperties.spacePerPosition;
 
-      double childBottom = child.offset
-          .effectiveBottom(
-            child.size,
-          )
-          .scaledByContext(context);
-      double refBottom = offset.bottom!.scaledByContext(context);
+      double childBottom = child.offset.bottom.scaledByContext(context);
+      double refBottom = offset.bottom.scaledByContext(context);
 
       positioned.add(
         Positioned(

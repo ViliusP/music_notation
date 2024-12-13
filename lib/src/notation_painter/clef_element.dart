@@ -16,9 +16,7 @@ class ClefElement extends StatelessWidget {
   final Clef clef;
   final FontMetadata font;
 
-  AlignmentOffset get offset {
-    return AlignmentOffset(left: 0, top: -_bBox.bBoxNE.y);
-  }
+  AlignmentOffset get offset => AlignmentOffset.fromBbox(left: 0, bBox: _bBox);
 
   const ClefElement({
     super.key,

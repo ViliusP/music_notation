@@ -18,10 +18,7 @@ class TimeSignatureElement extends StatelessWidget {
 
   final FontMetadata font;
 
-  AlignmentOffset get offset => AlignmentOffset(
-        top: -size.height / 2,
-        left: 0,
-      );
+  AlignmentOffset get offset => AlignmentOffset.center(left: 0, size: size);
 
   Size get size {
     double height = 0;

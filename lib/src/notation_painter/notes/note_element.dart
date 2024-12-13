@@ -130,12 +130,12 @@ class NoteElement extends StatelessWidget {
   AlignmentOffset get offset {
     AlignmentOffset basePosition = base.offset;
 
-    if (stem?.direction == StemDirection.down) {
-      return AlignmentOffset(
-        left: basePosition.left,
-        top: basePosition.bottom!.abs() - base.size.height,
-      );
-    }
+    // if (stem?.direction == StemDirection.down) {
+    //   return AlignmentOffset(
+    //     left: basePosition.left,
+    //     top: basePosition.bottom.abs() - base.size.height,
+    //   );
+    // }
     return basePosition;
   }
 
@@ -198,10 +198,10 @@ class NoteElement extends StatelessWidget {
     if (stem != null) {
       height = stem!.length;
       if (stem!.direction == StemDirection.up) {
-        height += base.offset.bottom!.abs();
+        height += base.offset.bottom.abs();
       }
       if (stem!.direction == StemDirection.down) {
-        height += base.size.height - base.offset.bottom!.abs();
+        height += base.size.height - base.offset.bottom.abs();
       }
     }
 
@@ -218,26 +218,23 @@ class NoteElement extends StatelessWidget {
     }
 
     double left = 0;
-    double? top;
-    double? bottom;
+
     if (base.accidental != null) {
       left += base.accidental!.size.width;
       left += NotationLayoutProperties.noteAccidentalDistance;
     }
     if (stem?.direction == StemDirection.down) {
       left += StemElement.defaultHorizontalOffset;
-      bottom = 0;
     }
     if (stem?.direction == StemDirection.up) {
       left += base.head.size.width;
       left -= StemElement.defaultHorizontalOffset;
-      top = 0;
     }
 
     return AlignmentOffset(
       left: left,
-      top: top,
-      bottom: bottom,
+      top: stem!.offset.top,
+      bottom: stem!.offset.bottom,
     );
   }
 

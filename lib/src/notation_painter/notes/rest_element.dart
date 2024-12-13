@@ -25,7 +25,11 @@ class RestElement extends StatelessWidget {
   final String? voice;
 
   AlignmentOffset get offset {
-    return AlignmentOffset(left: 0, top: -_verticalAlignmentAxisOffset);
+    return AlignmentOffset.fromTop(
+      left: 0,
+      height: size.height,
+      top: -_verticalAlignmentAxisOffset,
+    );
   }
 
   GlyphBBox get _bBox {
@@ -67,7 +71,7 @@ class RestElement extends StatelessWidget {
     // Alignment line of rest.
     double top = _bBox.bBoxNE.y;
 
-    top -= dots!.offset.top ?? 0;
+    top -= dots!.offset.top;
     top -= .5;
     return top;
   }

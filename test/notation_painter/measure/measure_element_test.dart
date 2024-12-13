@@ -6,12 +6,10 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 
 const epsilon = 0.01;
 
-const noteheadTop = -0.528;
-const noteheadBottom = -0.532;
+const noteheadOffset = AlignmentOffset(top: -0.528, bottom: -0.532, left: 0);
 const noteheadSize = Size(1.3, 1.056);
 
-const clefTop = -4.448;
-const clefBottom = 0;
+const clefOffset = AlignmentOffset(top: -4.448, bottom: -2.664, left: 0);
 const clefSize = Size(2.6, 7.1);
 
 void main() {
@@ -22,14 +20,14 @@ void main() {
       var element = MeasureElement(
         position: ElementPosition(step: Step.G, octave: 4),
         size: clefSize,
-        offset: AlignmentOffset(left: 0, top: clefTop, bottom: null),
+        offset: clefOffset,
         duration: 0,
         child: SizedBox(),
       );
 
       expect(
         element.heightAboveReference(element.position),
-        -element.offset.top!,
+        -element.offset.top,
       );
     });
     test("Vertical extent of Clef G above staff should be correct", () {
@@ -37,24 +35,24 @@ void main() {
       var element = MeasureElement(
         position: ElementPosition(step: Step.G, octave: 4),
         size: clefSize,
-        offset: AlignmentOffset(left: 0, top: clefTop, bottom: null),
+        offset: clefOffset,
         duration: 0,
         child: SizedBox(),
       );
 
       expect(
         element.heightAboveReference(ElementPosition.staffTop),
-        -element.offset.top! - (6 * 1 / 2),
+        -element.offset.top - (6 * 1 / 2),
       );
     });
     test(
-      "Vertical extent of C4 notehead above staff should be zero (using top)",
+      "Vertical extent of C4 notehead above staff should be zero",
       () {
         //  C4 notehead
         var element = MeasureElement(
           position: ElementPosition(step: Step.C, octave: 4),
           size: noteheadSize,
-          offset: AlignmentOffset(left: 0, top: noteheadTop, bottom: null),
+          offset: noteheadOffset,
           duration: 0,
           child: SizedBox(),
         );
@@ -63,37 +61,19 @@ void main() {
         expect(actual, 0);
       },
     );
-    test(
-      "Vertical extent of C4 notehead above staff should be zero (using bottom)",
-      () {
-        //  C4 notehead
-        var element = MeasureElement(
-          position: ElementPosition(step: Step.C, octave: 4),
-          size: noteheadSize,
-          offset: AlignmentOffset(left: 0, top: null, bottom: noteheadBottom),
-          duration: 0,
-          child: SizedBox(),
-        );
-
-        var actual = element.heightAboveReference(ElementPosition.staffBottom);
-
-        var expected = 0;
-        expect(actual, expected);
-      },
-    );
     test("Vertical extent of A5 notehead above staff should be correct", () {
       //  A5 notehead
       var element = MeasureElement(
         position: ElementPosition(step: Step.A, octave: 5),
         size: noteheadSize,
-        offset: AlignmentOffset(left: 0, top: noteheadTop, bottom: null),
+        offset: noteheadOffset,
         duration: 0,
         child: SizedBox(),
       );
 
       var actual = element.heightAboveReference(ElementPosition.staffTop);
 
-      var expected = -element.offset.top! + (2 * 1 / 2);
+      var expected = -element.offset.top + (2 * 1 / 2);
       expect((actual - expected).abs() < epsilon, true);
     });
   });
@@ -105,50 +85,29 @@ void main() {
       var element = MeasureElement(
         position: ElementPosition(step: Step.G, octave: 4),
         size: clefSize,
-        offset: AlignmentOffset(left: 0, top: clefTop, bottom: null),
+        offset: clefOffset,
         duration: 0,
         child: SizedBox(),
       );
 
-      expect(
-        element.heightBelowReference(element.position),
-        element.size.height + element.offset.top!,
-      );
+      var actual = element.heightBelowReference(element.position);
+      var expected = element.offset.height + element.offset.top;
+      expect((actual - expected).abs() < epsilon, true);
     });
     test("Vertical extent of Clef G below staff should be correct", () {
       /// Clef G
       var element = MeasureElement(
         position: ElementPosition(step: Step.G, octave: 4),
         size: clefSize,
-        offset: AlignmentOffset(left: 0, top: clefTop, bottom: null),
+        offset: clefOffset,
         duration: 0,
         child: SizedBox(),
       );
 
-      expect(
-        element.heightBelowReference(ElementPosition.staffBottom),
-        element.size.height + element.offset.top! + (-2 * 1 / 2),
-      );
+      var actual = element.heightBelowReference(ElementPosition.staffBottom);
+      var expected = element.offset.height + element.offset.top + (-2 * 1 / 2);
+      expect((actual - expected).abs() < epsilon, true);
     });
-
-    test(
-      "Vertical extent of C4 notehead below staff should be correct (using top)",
-      () {
-        //  C4 notehead
-        var element = MeasureElement(
-          position: ElementPosition(step: Step.C, octave: 4),
-          size: noteheadSize,
-          offset: AlignmentOffset(left: 0, top: noteheadTop, bottom: null),
-          duration: 0,
-          child: SizedBox(),
-        );
-
-        var actual = element.heightBelowReference(ElementPosition.staffBottom);
-
-        var expected = element.size.height + element.offset.top! + (2 * 1 / 2);
-        expect(actual, expected);
-      },
-    );
 
     test(
       "Vertical extent of C4 notehead below staff should be correct (using bottom)",
@@ -157,14 +116,14 @@ void main() {
         var element = MeasureElement(
           position: ElementPosition(step: Step.C, octave: 4),
           size: noteheadSize,
-          offset: AlignmentOffset(left: 0, top: null, bottom: noteheadBottom),
+          offset: noteheadOffset,
           duration: 0,
           child: SizedBox(),
         );
 
         var actual = element.heightBelowReference(ElementPosition.staffBottom);
 
-        var expected = -element.offset.bottom! + (2 * 1 / 2);
+        var expected = -element.offset.bottom + (2 * 1 / 2);
         expect(actual, expected);
       },
     );
@@ -174,7 +133,7 @@ void main() {
       var element = MeasureElement(
         position: ElementPosition(step: Step.A, octave: 5),
         size: noteheadSize,
-        offset: AlignmentOffset(left: 0, top: noteheadTop, bottom: null),
+        offset: noteheadOffset,
         duration: 0,
         child: SizedBox(),
       );
@@ -192,7 +151,7 @@ void main() {
       var element = MeasureElement(
         position: ElementPosition(step: Step.G, octave: 4),
         size: clefSize,
-        offset: AlignmentOffset(left: 0, top: clefTop, bottom: null),
+        offset: clefOffset,
         duration: 0,
         child: SizedBox(),
       );
@@ -207,7 +166,7 @@ void main() {
         var element = MeasureElement(
           position: ElementPosition(step: Step.A, octave: 5),
           size: noteheadSize,
-          offset: AlignmentOffset(left: 0, top: noteheadTop, bottom: null),
+          offset: noteheadOffset,
           duration: 0,
           child: SizedBox(),
         );
@@ -224,7 +183,7 @@ void main() {
         var element = MeasureElement(
           position: ElementPosition(step: Step.A, octave: 5),
           size: noteheadSize,
-          offset: AlignmentOffset(left: 0, top: null, bottom: noteheadBottom),
+          offset: noteheadOffset,
           duration: 0,
           child: SizedBox(),
         );

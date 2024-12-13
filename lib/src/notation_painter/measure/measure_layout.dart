@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:music_notation/src/notation_painter/measure/measure_grid.dart';

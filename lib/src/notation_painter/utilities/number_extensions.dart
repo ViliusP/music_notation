@@ -2,6 +2,13 @@ import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
 
+class NumberConstants {
+  static const int maxFiniteInt = -1 >>> 1;
+
+  /// From https://stackoverflow.com/a/50429767
+  static const int minFiniteInt = -0x8000000000000000;
+}
+
 extension NumExtensions on num {
   /// Finds the nearest multiple of base [of], rounding up if base [of] is positive
   /// or rounding down if [base] is negative.
@@ -24,31 +31,6 @@ extension NumExtensions on num {
     return of > 0
         ? (this / of).ceil() * of // Round up for positive base
         : (this / of.abs()).floor() * of.abs(); // Round down for negative base
-  }
-
-  /// Ensures the number is within the specified bounds.
-  ///
-  /// - If [bottom] is provided and the number is lower than [bottom],
-  /// it returns [bottom].
-  /// - If [top] is provided and the number is higher than [top],
-  /// it returns [top].
-  /// - If both [bottom] and [top] are provided, it clamps the number
-  /// within the range [bottom, top].
-  ///
-  /// Parameters:
-  /// - [bottom - The lower limit (optional).
-  /// - [top] - The upper limit (optional).
-  ///
-  /// Returns:
-  /// The number clamped within the specified range.
-  T limit<T extends num>({num? bottom, num? top}) {
-    if (bottom != null && this < bottom) {
-      return bottom as T;
-    }
-    if (top != null && this > top) {
-      return top as T;
-    }
-    return this as T;
   }
 
   /// Returns the nearest integer double value by rounding away from zero.
@@ -105,9 +87,29 @@ extension NumExtensions on num {
   }
 }
 
-class NumberConstants {
-  static const int maxFiniteInt = -1 >>> 1;
-
-  /// From https://stackoverflow.com/a/50429767
-  static const int minFiniteInt = -0x8000000000000000;
+extension DoubleExtensions on double {
+  /// Ensures the number is within the specified bounds.
+  ///
+  /// - If [bottom] is provided and the number is lower than [bottom],
+  /// it returns [bottom].
+  /// - If [top] is provided and the number is higher than [top],
+  /// it returns [top].
+  /// - If both [bottom] and [top] are provided, it clamps the number
+  /// within the range [bottom, top].
+  ///
+  /// Parameters:
+  /// - [bottom - The lower limit (optional).
+  /// - [top] - The upper limit (optional).
+  ///
+  /// Returns:
+  /// The number clamped within the specified range.
+  double limit({double? bottom, double? top}) {
+    if (bottom != null && this < bottom) {
+      return bottom;
+    }
+    if (top != null && this > top) {
+      return top;
+    }
+    return this;
+  }
 }
