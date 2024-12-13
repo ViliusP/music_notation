@@ -256,10 +256,14 @@ class MeasureElement extends StatelessWidget {
       ref = columnPositionalRange(elements)!.min;
     }
 
-    double minY = -elements.map((e) => e.heightBelowReference(ref)).max;
-    double maxY = elements.map((e) => e.heightAboveReference(ref)).max;
+    var bottoms = elements.map(
+      (e) => e.distanceToPosition(ref, BoxSide.bottom),
+    );
+    var tops = elements.map(
+      (e) => e.distanceToPosition(ref, BoxSide.top),
+    );
 
-    return NumericRange<double>(minY, maxY);
+    return NumericRange<double>(bottoms.min, tops.max);
   }
 
   /// TODO CHECK

@@ -89,9 +89,9 @@ class MeasureLayout extends StatelessWidget {
 
         switch (cell.child) {
           case NoteElement note:
-            if (note.beams.isNotEmpty && note.stem != null) {
+            if (note.beams?.isNotEmpty == true && note.stem != null) {
               elementToAdd = BeamElement(
-                beams: note.beams,
+                beams: note.beams!,
                 child: elementToAdd,
               );
             }

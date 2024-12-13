@@ -1,4 +1,3 @@
-import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:music_notation/src/models/data_types/step.dart';
@@ -10,12 +9,14 @@ import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
+import 'package:music_notation/src/notation_painter/music_sheet/measure_row.dart';
 import 'package:music_notation/src/notation_painter/properties/constants.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/augmentation_dots.dart';
 import 'package:music_notation/src/notation_painter/notes/note_parts.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
+import 'package:music_notation/src/notation_painter/utilities/type_extensions.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
 const Map<String, Color> _voiceColors = {
@@ -25,39 +26,27 @@ const Map<String, Color> _voiceColors = {
   "3": Color.fromRGBO(206, 192, 0, 1),
 };
 
-/// Notes below line 3 have up stems on the right side of the notehead.
-///
-/// Notes on or above line 3 have down stems on the left side of the notehead.
-///
-/// The stem is always placed between the two notes of an interval of a 2nd,
-/// with the upper note always to the right, the lower note always to the left.
-///
-/// When two notes share a stem:
-/// - If the interval above the middle line is greater, the stem goes down;
-/// - If the interval below the middle line is greater, the stem goes up;
-/// - If the intervals above and below the middle ine are equidistant, the stem
-/// goes down;
-///
-/// When more than two notes share a stem, the direction is determined by the
-/// highest and the lowest notes:
-/// - If the interval from the highest note to the middle line is greater,
-/// the stem goes down;
-/// - If the interval from the lowest note to the middle line is greater, the
-/// stem goes up;
-/// - If equidistant the stem goes down.
-///
-/// If you are writing two voices on the same staff, the stems for the upper
-/// voice will go up, and the stems for the lower voice will go down.
 class NoteElement extends StatelessWidget {
-  final StemlessNoteElement base;
+  final MeasureElement head;
+  final MeasureElement? stem;
+  final MeasureElement? accidental;
+  final MeasureElement? dots;
+  final ElementPosition position;
 
-  final StemElement? stem;
-
-  ElementPosition get position => base.position;
+  const NoteElement({
+    super.key,
+    required this.head,
+    required this.position,
+    this.beams,
+    this.accidental,
+    this.dots,
+    this.voice,
+    this.stem,
+  });
 
   final String? voice;
 
-  final List<Beam> beams;
+  final List<Beam>? beams;
 
   /// Create [NoteElement] from musicXML [note].
   factory NoteElement.fromNote({
@@ -65,78 +54,85 @@ class NoteElement extends StatelessWidget {
     required Note note,
     required FontMetadata font,
     Clef? clef,
-    double? stemLength,
-    bool showFlag = true,
-    bool showLedger = true,
   }) {
+    ElementPosition position = determinePosition(note, clef);
+
     AccidentalElement? accidental;
+    MeasureElement? accidentalElement;
     if (note.accidental != null) {
       accidental = AccidentalElement(
         type: note.accidental!.value,
         font: font,
       );
-    }
 
-    ElementPosition position = determinePosition(note, clef);
+      accidentalElement = MeasureElement(
+        position: position,
+        size: accidental.size,
+        offset: accidental.offset,
+        duration: 0,
+        child: accidental,
+      );
+    }
 
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
 
-    StemElement? stem;
+    StemElement? stemElement;
+    MeasureElement? noteStem;
     StemDirection? stemDirection = note.stem == null
         ? null
         : StemDirection.fromStemValue(note.stem!.value);
 
     if (stemDirection != null) {
-      stem = StemElement(
+      stemElement = StemElement(
         type: type,
         font: font,
-        length: stemLength ?? StemElement.calculateStemLength(note, position),
-        showFlag: note.beams.isEmpty && showFlag,
+        length: StemElement.calculateStemLength(note, position),
+        showFlag: note.beams.isEmpty,
         direction: stemDirection,
+      );
+      noteStem = MeasureElement(
+        position: position,
+        size: stemElement.size,
+        offset: stemElement.offset,
+        duration: 0,
+        child: stemElement,
       );
     }
 
     AugmentationDots? dots;
+    MeasureElement? noteDots;
     if (note.dots.isNotEmpty) {
       dots = AugmentationDots(count: note.dots.length, font: font);
+      noteDots = MeasureElement(
+        position: position,
+        size: dots.size,
+        offset: dots.offset,
+        duration: 0,
+        child: dots,
+      );
     }
-
+    var noteheadElements = NoteheadElement(
+      type: type,
+      font: font,
+      ledgerLines: LedgerLines.fromElementPosition(position),
+    );
+    var notehead = MeasureElement(
+      position: position,
+      size: noteheadElements.size,
+      offset: noteheadElements.offset,
+      duration: 0,
+      child: noteheadElements,
+    );
     return NoteElement(
       key: key,
-      base: StemlessNoteElement(
-        dots: dots,
-        accidental: accidental,
-        head: NoteheadElement(
-          type: type,
-          font: font,
-          ledgerLines: LedgerLines.fromElementPosition(position),
-        ),
-        position: position,
-      ),
-      stem: stem,
+      head: notehead,
+      dots: noteDots,
+      accidental: accidentalElement,
+      position: position,
+      stem: noteStem,
       voice: note.editorialVoice.voice,
-      beams: note.beams,
+      beams: note.beams.isEmpty ? [] : note.beams,
     );
-  }
-
-  const NoteElement({
-    super.key,
-    required this.base,
-    this.voice,
-    this.beams = const [],
-    this.stem,
-  });
-
-  AlignmentOffset get offset {
-    AlignmentOffset basePosition = base.offset;
-
-    // if (stem?.direction == StemDirection.down) {
-    //   return AlignmentOffset(
-    //     left: basePosition.left,
-    //     top: basePosition.bottom.abs() - base.size.height,
-    //   );
-    // }
-    return basePosition;
   }
 
   static ElementPosition determinePosition(Note note, Clef? clef) {
@@ -192,88 +188,69 @@ class NoteElement extends StatelessWidget {
     }
   }
 
+  List<MeasureElement> get _children {
+    return [
+      if (accidental != null) accidental!,
+      if (stem != null) stem!,
+      head,
+      if (dots != null) dots!,
+    ];
+  }
+
   Size get size {
-    double height = base.size.height;
+    double height = MeasureElement.columnVerticalRange(_children).distance;
+    double width = head.size.width;
 
-    if (stem != null) {
-      height = stem!.length;
-      if (stem!.direction == StemDirection.up) {
-        height += base.offset.bottom.abs();
-      }
-      if (stem!.direction == StemDirection.down) {
-        height += base.size.height - base.offset.bottom.abs();
-      }
+    if (dots != null) {
+      Size dotsSize = dots!.size;
+
+      width += dotsSize.width;
+      width += AugmentationDots.defaultBaseOffset;
     }
+    if (accidental != null) {
+      Size accidentalSize = accidental!.size;
 
-    double width = base.size.width;
+      width += accidentalSize.width;
+      // Space between notehead and accidental.
+      width += NotationLayoutProperties.noteAccidentalDistance;
+    }
 
     return Size(width, height);
   }
 
-  /// Calculates position for stem - relative position by
-  /// component's left, bottom/top bounding box sides that is determined by [size].
-  AlignmentOffset? get _stemAlignment {
-    if (stem == null) {
-      return null;
-    }
+  static const double _dotOffsetAdjustment = 0.1;
 
-    double left = 0;
+  AlignmentOffset get offset {
+    {
+      double left = 0;
 
-    if (base.accidental != null) {
-      left += base.accidental!.size.width;
-      left += NotationLayoutProperties.noteAccidentalDistance;
-    }
-    if (stem?.direction == StemDirection.down) {
-      left += StemElement.defaultHorizontalOffset;
-    }
-    if (stem?.direction == StemDirection.up) {
-      left += base.head.size.width;
-      left -= StemElement.defaultHorizontalOffset;
-    }
+      if (accidental != null) {
+        left -= accidental!.size.width;
+        left -= NotationLayoutProperties.noteAccidentalDistance;
+      }
 
-    return AlignmentOffset(
-      left: left,
-      top: stem!.offset.top,
-      bottom: stem!.offset.bottom,
-    );
+      return AlignmentOffset.fromBottom(
+        height: size.height,
+        bottom: MeasureElement.columnVerticalRange(_children).min,
+        left: left,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    Alignment baseAlignment = Alignment.topCenter;
-    if (stem?.direction == StemDirection.up) {
-      baseAlignment = Alignment.bottomCenter;
-    }
+    var direction = stem?.child.tryAs<StemElement>()?.direction;
 
     return SizedBox.fromSize(
-        size: size.scaledByContext(context),
-        child: Stack(
-          children: [
-            Align(
-              alignment: baseAlignment,
-              child: base,
-            ),
-            if (stem != null)
-              AlignmentPositioned(
-                position: _stemAlignment!.scaledByContext(context),
-                child: stem!,
-              ),
-          ],
-        ));
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    DiagnosticLevel level = DiagnosticLevel.info;
-
-    properties.add(
-      StringProperty(
-        'Position',
-        position.toString(),
-        defaultValue: null,
-        level: level,
-        showName: true,
+      size: size.scaledByContext(context),
+      child: MeasureRow(
+        children: [
+          if (accidental != null) accidental!,
+          if (stem != null && direction == StemDirection.down) stem!,
+          head,
+          if (stem != null && direction == StemDirection.up) stem!,
+          if (dots != null) dots!,
+        ],
       ),
     );
   }

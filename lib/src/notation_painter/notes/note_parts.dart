@@ -1,183 +1,18 @@
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
-import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
-import 'package:music_notation/src/notation_painter/music_sheet/measure_row.dart';
-import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
-import 'package:music_notation/src/notation_painter/notes/augmentation_dots.dart';
-import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/painters/note_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/stem_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
-import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
-import 'package:music_notation/src/notation_painter/utilities/padding_extensions.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart';
-
-class StemlessNoteElement extends StatelessWidget {
-  final NoteheadElement head;
-  final ElementPosition position;
-
-  final AccidentalElement? accidental;
-  final AugmentationDots? dots;
-
-  const StemlessNoteElement({
-    super.key,
-    required this.head,
-    required this.position,
-    this.accidental,
-    this.dots,
-  });
-
-  factory StemlessNoteElement.fromNote({
-    Key? key,
-    required Note note,
-    required Clef? clef,
-    required FontMetadata font,
-  }) {
-    AccidentalElement? accidental;
-    if (note.accidental != null) {
-      accidental = AccidentalElement(
-        type: note.accidental!.value,
-        font: font,
-      );
-    }
-
-    ElementPosition position = NoteElement.determinePosition(note, clef);
-
-    NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
-
-    AugmentationDots? dots;
-    if (note.dots.isNotEmpty) {
-      dots = AugmentationDots(count: note.dots.length, font: font);
-    }
-
-    return StemlessNoteElement(
-      dots: dots,
-      accidental: accidental,
-      head: NoteheadElement(
-        type: type,
-        font: font,
-        ledgerLines: LedgerLines.fromElementPosition(position),
-      ),
-      position: position,
-    );
-  }
-
-  Size get size {
-    double height = head.size.height;
-    double width = head.size.width;
-
-    if (dots != null) {
-      Size dotsSize = dots!.size;
-
-      width += dotsSize.width;
-      width += AugmentationDots.defaultBaseOffset;
-
-      // if (note.stem?.direction == StemDirection.down &&
-      //     position.numeric % 2 == 0) {
-      //   height += dotsSize.height / 2;
-      // }
-    }
-    if (accidental != null) {
-      Size accidentalSize = accidental!.size;
-
-      width += accidentalSize.width;
-      // Space between notehead and accidental.
-      width += NotationLayoutProperties.noteAccidentalDistance;
-
-      height = accidentalSize.height;
-    }
-
-    return Size(width, height);
-  }
-
-  /// Vertical offset for head
-  double get _headOffset => -NotationLayoutProperties.baseSpacePerPosition;
-
-  /// Vertical offset for accidental
-  double get _accidentalOffset => accidental!.offset.top;
-
-  static const double _dotOffsetAdjustment = 0.1;
-
-  double get _dotVerticalOffset {
-    if (dots == null) return 0;
-    double offest = dots!.offset.top;
-    if (position.numeric % 2 == 0) {
-      offest -= dots!.size.height;
-      offest -= _dotOffsetAdjustment;
-    }
-    return offest;
-  }
-
-  AlignmentOffset get offset {
-    {
-      var spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
-
-      double bottom = -spacePerPosition;
-      double left = 0;
-
-      if (dots != null && position.numeric % 2 == 0) {
-        bottom += _dotOffsetAdjustment;
-      }
-
-      if (accidental != null) {
-        bottom = _accidentalOffset.abs() - size.height;
-        left -= accidental!.size.width;
-        left -= NotationLayoutProperties.noteAccidentalDistance;
-      }
-
-      return AlignmentOffset.fromBottom(
-        height: size.height,
-        bottom: bottom,
-        left: left,
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox.fromSize(
-      size: size.scaledByContext(context),
-      child: AlignedRow(
-        alignment: VerticalAlignment.top,
-        children: [
-          if (accidental != null)
-            Offsetted(
-              offset: Offset(0, _accidentalOffset.scaledByContext(context)),
-              child: Padding(
-                padding: EdgeInsets.only(
-                  right: NotationLayoutProperties.noteAccidentalDistance,
-                ).scaledByContext(context),
-                child: accidental!,
-              ),
-            ),
-          Offsetted(
-            offset: Offset(0, _headOffset.scaledByContext(context)),
-            child: head,
-          ),
-          if (dots != null)
-            Offsetted(
-              offset: Offset(0, _dotVerticalOffset.scaledByContext(context)),
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: AugmentationDots.defaultBaseOffset,
-                ).scaledByContext(context),
-                child: dots!,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
 
 class BeamStem extends SingleChildRenderObjectWidget {
   final StemDirection direction;
