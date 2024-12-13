@@ -22,7 +22,7 @@ void main() {
       var element = MeasureElement(
         position: ElementPosition(step: Step.G, octave: 4),
         size: clefSize,
-        offset: AlignmentPosition(left: 0, top: clefTop, bottom: null),
+        offset: AlignmentOffset(left: 0, top: clefTop, bottom: null),
         duration: 0,
         child: SizedBox(),
       );
@@ -37,7 +37,7 @@ void main() {
       var element = MeasureElement(
         position: ElementPosition(step: Step.G, octave: 4),
         size: clefSize,
-        offset: AlignmentPosition(left: 0, top: clefTop, bottom: null),
+        offset: AlignmentOffset(left: 0, top: clefTop, bottom: null),
         duration: 0,
         child: SizedBox(),
       );
@@ -54,7 +54,7 @@ void main() {
         var element = MeasureElement(
           position: ElementPosition(step: Step.C, octave: 4),
           size: noteheadSize,
-          offset: AlignmentPosition(left: 0, top: noteheadTop, bottom: null),
+          offset: AlignmentOffset(left: 0, top: noteheadTop, bottom: null),
           duration: 0,
           child: SizedBox(),
         );
@@ -70,7 +70,7 @@ void main() {
         var element = MeasureElement(
           position: ElementPosition(step: Step.C, octave: 4),
           size: noteheadSize,
-          offset: AlignmentPosition(left: 0, top: null, bottom: noteheadBottom),
+          offset: AlignmentOffset(left: 0, top: null, bottom: noteheadBottom),
           duration: 0,
           child: SizedBox(),
         );
@@ -86,7 +86,7 @@ void main() {
       var element = MeasureElement(
         position: ElementPosition(step: Step.A, octave: 5),
         size: noteheadSize,
-        offset: AlignmentPosition(left: 0, top: noteheadTop, bottom: null),
+        offset: AlignmentOffset(left: 0, top: noteheadTop, bottom: null),
         duration: 0,
         child: SizedBox(),
       );
@@ -105,7 +105,7 @@ void main() {
       var element = MeasureElement(
         position: ElementPosition(step: Step.G, octave: 4),
         size: clefSize,
-        offset: AlignmentPosition(left: 0, top: clefTop, bottom: null),
+        offset: AlignmentOffset(left: 0, top: clefTop, bottom: null),
         duration: 0,
         child: SizedBox(),
       );
@@ -120,7 +120,7 @@ void main() {
       var element = MeasureElement(
         position: ElementPosition(step: Step.G, octave: 4),
         size: clefSize,
-        offset: AlignmentPosition(left: 0, top: clefTop, bottom: null),
+        offset: AlignmentOffset(left: 0, top: clefTop, bottom: null),
         duration: 0,
         child: SizedBox(),
       );
@@ -138,7 +138,7 @@ void main() {
         var element = MeasureElement(
           position: ElementPosition(step: Step.C, octave: 4),
           size: noteheadSize,
-          offset: AlignmentPosition(left: 0, top: noteheadTop, bottom: null),
+          offset: AlignmentOffset(left: 0, top: noteheadTop, bottom: null),
           duration: 0,
           child: SizedBox(),
         );
@@ -157,7 +157,7 @@ void main() {
         var element = MeasureElement(
           position: ElementPosition(step: Step.C, octave: 4),
           size: noteheadSize,
-          offset: AlignmentPosition(left: 0, top: null, bottom: noteheadBottom),
+          offset: AlignmentOffset(left: 0, top: null, bottom: noteheadBottom),
           duration: 0,
           child: SizedBox(),
         );
@@ -174,7 +174,7 @@ void main() {
       var element = MeasureElement(
         position: ElementPosition(step: Step.A, octave: 5),
         size: noteheadSize,
-        offset: AlignmentPosition(left: 0, top: noteheadTop, bottom: null),
+        offset: AlignmentOffset(left: 0, top: noteheadTop, bottom: null),
         duration: 0,
         child: SizedBox(),
       );
@@ -192,7 +192,7 @@ void main() {
       var element = MeasureElement(
         position: ElementPosition(step: Step.G, octave: 4),
         size: clefSize,
-        offset: AlignmentPosition(left: 0, top: clefTop, bottom: null),
+        offset: AlignmentOffset(left: 0, top: clefTop, bottom: null),
         duration: 0,
         child: SizedBox(),
       );
@@ -207,7 +207,7 @@ void main() {
         var element = MeasureElement(
           position: ElementPosition(step: Step.A, octave: 5),
           size: noteheadSize,
-          offset: AlignmentPosition(left: 0, top: noteheadTop, bottom: null),
+          offset: AlignmentOffset(left: 0, top: noteheadTop, bottom: null),
           duration: 0,
           child: SizedBox(),
         );
@@ -224,7 +224,7 @@ void main() {
         var element = MeasureElement(
           position: ElementPosition(step: Step.A, octave: 5),
           size: noteheadSize,
-          offset: AlignmentPosition(left: 0, top: null, bottom: noteheadBottom),
+          offset: AlignmentOffset(left: 0, top: null, bottom: noteheadBottom),
           duration: 0,
           child: SizedBox(),
         );

@@ -91,7 +91,7 @@ class Chord extends StatelessWidget {
           .map((note) => MeasureElement(
                 position: note.position,
                 size: note.head.size,
-                offset: note.head.alignmentPosition,
+                offset: note.head.offset,
                 duration: 0,
                 child: note.head,
               ))
@@ -108,7 +108,7 @@ class Chord extends StatelessWidget {
           .map((note) => MeasureElement(
                 position: note.position,
                 size: note.head.size,
-                offset: note.head.alignmentPosition,
+                offset: note.head.offset,
                 duration: 0,
                 child: note.head,
               ))
@@ -143,7 +143,7 @@ class Chord extends StatelessWidget {
           .map((e) => MeasureElement(
                 position: e.position,
                 size: e.accidental!.size,
-                offset: e.accidental!.alignmentPosition,
+                offset: e.accidental!.offset,
                 duration: 0,
                 child: e.accidental!,
               ))
@@ -160,7 +160,7 @@ class Chord extends StatelessWidget {
         return MeasureElement(
           position: position,
           size: e.dots!.size,
-          offset: e.dots!.alignmentPosition,
+          offset: e.dots!.offset,
           duration: 0,
           child: e.dots!,
         );
@@ -227,7 +227,7 @@ class Chord extends StatelessWidget {
     return MeasureElement(
       position: stemPosition,
       size: stem!.size,
-      offset: AlignmentPosition(
+      offset: AlignmentOffset(
         left: 0,
         top: top,
         bottom: bottom,
@@ -290,9 +290,9 @@ class Chord extends StatelessWidget {
       _referenceColumn?.position ?? ElementPosition.staffMiddle;
 
   /// Alignment offset for correctly placing on measure
-  AlignmentPosition get alignmentPosition {
+  AlignmentOffset get offset {
     if (_referenceColumn == null) {
-      return AlignmentPosition(left: 0, bottom: 0);
+      return AlignmentOffset(left: 0, bottom: 0);
     }
 
     double bottom;
@@ -302,7 +302,7 @@ class Chord extends StatelessWidget {
       bottom = _verticalRange.min;
     }
 
-    return AlignmentPosition(
+    return AlignmentOffset(
       left: -_leftColumnOffset,
       bottom: bottom,
     );
@@ -375,10 +375,10 @@ class Chord extends StatelessWidget {
 
     if (_alignByTop) {
       offset = -interval * NotationLayoutProperties.baseSpacePerPosition;
-      offset += column.alignmentPosition.effectiveTop(column.size);
+      offset += column.offset.effectiveTop(column.size);
     } else {
       offset = interval * NotationLayoutProperties.baseSpacePerPosition;
-      offset += column.alignmentPosition.effectiveBottom(column.size);
+      offset += column.offset.effectiveBottom(column.size);
     }
 
     return offset;
@@ -395,7 +395,7 @@ class Chord extends StatelessWidget {
 
   /// Calculates position for stem - relative position by
   /// component's left, bottom/top bounding box sides that is determined by [size].
-  AlignmentPosition get _stemPosition {
+  AlignmentOffset get _stemPosition {
     double? top;
     double? bottom;
 
@@ -405,7 +405,7 @@ class Chord extends StatelessWidget {
       top = 0;
     }
 
-    return AlignmentPosition(
+    return AlignmentOffset(
       left: _leftColumnOffset + (noteheadsLeft?.size.width ?? 0) - _stemSpacing,
       top: top,
       bottom: bottom,
@@ -517,14 +517,14 @@ class ChordColumn extends StatelessWidget {
   ElementPosition get position =>
       _children.firstOrNull?.position ?? ElementPosition.staffMiddle;
 
-  AlignmentPosition get alignmentPosition {
+  AlignmentOffset get offset {
     MeasureElement? reference = _children.firstOrNull;
 
     if (reference == null) {
-      return AlignmentPosition(left: 0, bottom: 0);
+      return AlignmentOffset(left: 0, bottom: 0);
     }
 
-    return AlignmentPosition(
+    return AlignmentOffset(
       left: 0,
       bottom: reference.offset.effectiveBottom(reference.size),
     );
@@ -560,7 +560,7 @@ class ChordColumn extends StatelessWidget {
             child.size,
           )
           .scaledByContext(context);
-      double refBottom = alignmentPosition.bottom!.scaledByContext(context);
+      double refBottom = offset.bottom!.scaledByContext(context);
 
       positioned.add(
         Positioned(

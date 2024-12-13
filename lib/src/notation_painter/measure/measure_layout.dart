@@ -47,6 +47,7 @@ class MeasureLayout extends StatelessWidget {
 
     // Stave bottom values
     ElementPosition staveBottomRef = measure.staveBottom;
+    ElementPosition staveTopRef = measure.staveTop;
     double staveBottom = staveBottomRef.distance(bottomRef) * spacePerPosition;
     staveBottom = staveBottom.scaledByContext(context);
 
@@ -63,18 +64,18 @@ class MeasureLayout extends StatelessWidget {
 
         double? topOffset;
         double? bottomOffset;
-        AlignmentPosition alignmentPosition = cell.offset;
+        AlignmentOffset offset = cell.offset;
 
-        if (alignmentPosition.top != null) {
-          topOffset = alignmentPosition.top!;
+        if (offset.top != null) {
+          topOffset = offset.top!;
 
           // Calculate the interval from staff top to the child's position.
           int interval = topRef.numeric;
           interval -= position.numeric;
           topOffset += interval * spacePerPosition;
         }
-        if (alignmentPosition.bottom != null) {
-          bottomOffset = alignmentPosition.bottom ?? 0;
+        if (offset.bottom != null) {
+          bottomOffset = offset.bottom ?? 0;
 
           // Calculate the interval from staff bottom to the child's position.
           int interval = bottomRef.numeric;
@@ -82,7 +83,7 @@ class MeasureLayout extends StatelessWidget {
           bottomOffset -= interval * spacePerPosition;
         }
 
-        double left = horizontalOffsets[index] + alignmentPosition.left;
+        double left = horizontalOffsets[index] + offset.left;
 
         var maybeRest = cell.child.tryAs<RestElement>();
         if (maybeRest is RestElement && maybeRest.isMeasure) {
@@ -137,19 +138,17 @@ class MeasureLayout extends StatelessWidget {
         if (dSettings != null) {
           Size boxBelow = Size(
             cell.size.width.scaledByContext(context),
-            cell
-                .heightBelowReference(ElementPosition.staffBottom)
-                .scaledByContext(context),
+            cell.heightBelowReference(staveBottomRef).scaledByContext(context),
           );
 
-          if (dSettings.paintBBoxBelowStaff && boxBelow.height > 0) {
+          if (dSettings.paintBBoxBelowStaff) {
             positionedElements.add(
               Positioned(
                 left: left,
                 bottom: staveBottom - boxBelow.height,
                 child: Container(
                   width: boxBelow.width,
-                  height: [boxBelow.height, 0].max.toDouble(),
+                  height: boxBelow.height,
                   color: Color.fromRGBO(255, 10, 100, 0.2),
                 ),
               ),
@@ -158,18 +157,16 @@ class MeasureLayout extends StatelessWidget {
 
           Size boxAbove = Size(
             cell.size.width.scaledByContext(context),
-            cell
-                .heightAboveReference(ElementPosition.staffTop)
-                .scaledByContext(context),
+            cell.heightAboveReference(staveTopRef).scaledByContext(context),
           );
-          if (dSettings.paintBBoxAboveStaff && boxAbove.height > 0) {
+          if (dSettings.paintBBoxAboveStaff) {
             positionedElements.add(
               Positioned(
                 left: left,
                 bottom: staveBottom + layoutProperties.staveHeight,
                 child: Container(
                   width: boxAbove.width,
-                  height: [boxAbove.height, 0].max.toDouble(),
+                  height: boxAbove.height,
                   color: Color.fromRGBO(3, 154, 255, 0.2),
                 ),
               ),

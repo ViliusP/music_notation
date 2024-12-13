@@ -89,7 +89,7 @@ class MeasureTimeline {
                   "ElementPosition  ",
                   "",
                 ),
-            leftOffset: note.alignmentPosition.left,
+            leftOffset: note.offset.left,
           );
         case RestElement rest:
           String voice = rest.voice ?? "1";
@@ -97,10 +97,10 @@ class MeasureTimeline {
             index,
             child.duration,
             voice: voice,
-            width: rest.baseSize.width,
+            width: rest.size.width,
             widgetType: NoteElement,
             name: "R",
-            leftOffset: rest.alignmentPosition.left,
+            leftOffset: rest.offset.left,
           );
         case Chord chord:
           String voice = chord.voice ?? "1";
@@ -112,7 +112,7 @@ class MeasureTimeline {
             width: chord.size.width,
             name:
                 "C${child.position.toString().replaceFirst("ElementPosition  ", "")}",
-            leftOffset: chord.alignmentPosition.left,
+            leftOffset: chord.offset.left,
           );
         case CursorElement cursorElement:
           valueToAdd = TimelineValue(
@@ -123,38 +123,38 @@ class MeasureTimeline {
                 ? "${cursorElement.duration.toInt()}>"
                 : "<${cursorElement.duration.toInt().abs()}",
             widgetType: CursorElement,
-            leftOffset: cursorElement.alignmentPosition.left,
+            leftOffset: cursorElement.offset.left,
           );
 
         case TimeSignatureElement timeBeatElement:
           valueToAdd = TimelineValue(
             index,
             0,
-            width: timeBeatElement.baseSize.width,
+            width: timeBeatElement.size.width,
             voice: "-1", // The "-1" indicates attributes sector
             name: "TS",
             widgetType: TimeSignatureElement,
-            leftOffset: timeBeatElement.alignmentPosition.left,
+            leftOffset: timeBeatElement.offset.left,
           );
         case ClefElement clefElement:
           valueToAdd = TimelineValue(
             index,
             0,
-            width: clefElement.baseSize.width,
+            width: clefElement.size.width,
             voice: "-1", // The "-1" indicates attributes sector
             name: "CLF",
             widgetType: ClefElement,
-            leftOffset: clefElement.alignmentPosition.left,
+            leftOffset: clefElement.offset.left,
           );
         case KeySignatureElement keyElement:
           valueToAdd = TimelineValue(
             index,
             0,
-            width: keyElement.baseSize.width,
+            width: keyElement.size.width,
             voice: "-1", // The "-1" indicates attributes sector
             name: "KeS",
             widgetType: KeySignatureElement,
-            leftOffset: keyElement.alignmentPosition.left,
+            leftOffset: keyElement.offset.left,
           );
         default:
           valueToAdd = TimelineValue(

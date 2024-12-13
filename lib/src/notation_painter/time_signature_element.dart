@@ -18,14 +18,12 @@ class TimeSignatureElement extends StatelessWidget {
 
   final FontMetadata font;
 
-  AlignmentPosition get alignmentPosition {
-    return AlignmentPosition(
-      top: -baseSize.height / 2,
-      left: 0,
-    );
-  }
+  AlignmentOffset get offset => AlignmentOffset(
+        top: -size.height / 2,
+        left: 0,
+      );
 
-  Size get baseSize {
+  Size get size {
     double height = 0;
     double width = 0;
 
@@ -137,7 +135,7 @@ class TimeSignatureElement extends StatelessWidget {
     }
 
     return SizedBox.fromSize(
-      size: baseSize.scaledByContext(context),
+      size: size.scaledByContext(context),
       child: Row(
           mainAxisSize: MainAxisSize.min,
           children: _glyphGrid

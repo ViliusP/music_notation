@@ -16,8 +16,8 @@ class ClefElement extends StatelessWidget {
   final Clef clef;
   final FontMetadata font;
 
-  AlignmentPosition get alignmentPosition {
-    return AlignmentPosition(left: 0, top: -_bBox.bBoxNE.y);
+  AlignmentOffset get offset {
+    return AlignmentOffset(left: 0, top: -_bBox.bBoxNE.y);
   }
 
   const ClefElement({
@@ -76,7 +76,7 @@ class ClefElement extends StatelessWidget {
     }
   }
 
-  Size get baseSize => _bBox.toRect(1).size;
+  Size get size => _bBox.toSize();
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +85,7 @@ class ClefElement extends StatelessWidget {
             NotationLayoutProperties.standard();
 
     return CustomPaint(
-      size: baseSize.scaledByContext(context),
+      size: size.scaledByContext(context),
       painter: SimpleGlyphPainter(
         _glyph.codepoint,
         _bBox,

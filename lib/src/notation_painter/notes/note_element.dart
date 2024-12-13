@@ -127,11 +127,11 @@ class NoteElement extends StatelessWidget {
     this.stem,
   });
 
-  AlignmentPosition get alignmentPosition {
-    AlignmentPosition basePosition = base.alignmentPosition;
+  AlignmentOffset get offset {
+    AlignmentOffset basePosition = base.offset;
 
     if (stem?.direction == StemDirection.down) {
-      return AlignmentPosition(
+      return AlignmentOffset(
         left: basePosition.left,
         top: basePosition.bottom!.abs() - base.size.height,
       );
@@ -198,10 +198,10 @@ class NoteElement extends StatelessWidget {
     if (stem != null) {
       height = stem!.length;
       if (stem!.direction == StemDirection.up) {
-        height += base.alignmentPosition.bottom!.abs();
+        height += base.offset.bottom!.abs();
       }
       if (stem!.direction == StemDirection.down) {
-        height += base.size.height - base.alignmentPosition.bottom!.abs();
+        height += base.size.height - base.offset.bottom!.abs();
       }
     }
 
@@ -212,7 +212,7 @@ class NoteElement extends StatelessWidget {
 
   /// Calculates position for stem - relative position by
   /// component's left, bottom/top bounding box sides that is determined by [size].
-  AlignmentPosition? get _stemAlignment {
+  AlignmentOffset? get _stemAlignment {
     if (stem == null) {
       return null;
     }
@@ -234,7 +234,7 @@ class NoteElement extends StatelessWidget {
       top = 0;
     }
 
-    return AlignmentPosition(
+    return AlignmentOffset(
       left: left,
       top: top,
       bottom: bottom,

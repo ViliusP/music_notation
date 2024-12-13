@@ -24,8 +24,8 @@ class RestElement extends StatelessWidget {
 
   final String? voice;
 
-  AlignmentPosition get alignmentPosition {
-    return AlignmentPosition(left: 0, top: -_verticalAlignmentAxisOffset);
+  AlignmentOffset get offset {
+    return AlignmentOffset(left: 0, top: -_verticalAlignmentAxisOffset);
   }
 
   GlyphBBox get _bBox {
@@ -36,7 +36,7 @@ class RestElement extends StatelessWidget {
     double alignment = _bBox.bBoxNE.y;
     if (dots != null) {
       double maybeDotOffset = alignment;
-      maybeDotOffset -= dots?.alignmentPosition.top ?? 0;
+      maybeDotOffset -= dots?.offset.top ?? 0;
       maybeDotOffset -= 1 / 2;
       if (maybeDotOffset < 0) {
         alignment -= maybeDotOffset;
@@ -47,8 +47,8 @@ class RestElement extends StatelessWidget {
 
   final bool isMeasure;
 
-  Size get baseSize {
-    Size restSymbolSize = _bBox.toRect(1).size;
+  Size get size {
+    Size restSymbolSize = _bBox.toSize();
     double width = restSymbolSize.width;
     double height = restSymbolSize.height;
     if (dots != null) {
@@ -67,7 +67,7 @@ class RestElement extends StatelessWidget {
     // Alignment line of rest.
     double top = _bBox.bBoxNE.y;
 
-    top -= dots!.alignmentPosition.top ?? 0;
+    top -= dots!.offset.top ?? 0;
     top -= .5;
     return top;
   }
@@ -198,7 +198,7 @@ class RestElement extends StatelessWidget {
             NotationLayoutProperties.standard();
 
     return SizedBox.fromSize(
-      size: baseSize.scaledByContext(context),
+      size: size.scaledByContext(context),
       child: Stack(
         children: [
           if (dots != null)

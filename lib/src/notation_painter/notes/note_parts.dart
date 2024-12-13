@@ -103,13 +103,13 @@ class StemlessNoteElement extends StatelessWidget {
   double get _headOffset => -NotationLayoutProperties.baseSpacePerPosition;
 
   /// Vertical offset for accidental
-  double get _accidentalOffset => accidental!.alignmentPosition.top!;
+  double get _accidentalOffset => accidental!.offset.top!;
 
   static const double _dotOffsetAdjustment = 0.1;
 
   double get _dotVerticalOffset {
     if (dots == null) return 0;
-    double offest = dots!.alignmentPosition.effectiveTop(dots!.size);
+    double offest = dots!.offset.effectiveTop(dots!.size);
     if (position.numeric % 2 == 0) {
       offest -= dots!.size.height;
       offest -= _dotOffsetAdjustment;
@@ -117,7 +117,7 @@ class StemlessNoteElement extends StatelessWidget {
     return offest;
   }
 
-  AlignmentPosition get alignmentPosition {
+  AlignmentOffset get offset {
     {
       var spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
 
@@ -134,7 +134,7 @@ class StemlessNoteElement extends StatelessWidget {
         left -= NotationLayoutProperties.noteAccidentalDistance;
       }
 
-      return AlignmentPosition(
+      return AlignmentOffset(
         bottom: bottom,
         left: left,
       );
@@ -340,11 +340,11 @@ class StemElement extends StatelessWidget {
     }
   }
 
-  AlignmentPosition _flagPosition(StemDirection direction) {
+  AlignmentOffset _flagPosition(StemDirection direction) {
     if (direction == StemDirection.down) {
-      return AlignmentPosition(left: 0, bottom: 0);
+      return AlignmentOffset(left: 0, bottom: 0);
     }
-    return AlignmentPosition(left: 0, top: 0);
+    return AlignmentOffset(left: 0, top: 0);
   }
 
   /// Default stem length: `3.5*stave_space`.
@@ -494,10 +494,10 @@ class NoteheadElement extends StatelessWidget {
     }
   }
 
-  AlignmentPosition get alignmentPosition {
+  AlignmentOffset get offset {
     double top = _bBox(font).bBoxNE.y;
 
-    return AlignmentPosition(left: 0, top: -top);
+    return AlignmentOffset(left: 0, top: -top);
   }
 
   /// Size of notehead symbol.

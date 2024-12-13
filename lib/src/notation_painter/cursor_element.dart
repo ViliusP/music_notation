@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
+import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 
 /// Represents the `<forward>` and `<backup>` element in MusicXML, which moves the cursor
 /// backward or forward in time by a specified duration without rendering any visual element.
@@ -14,15 +15,15 @@ class CursorElement extends StatelessWidget {
 
   final int? staff;
 
-  AlignmentPosition get alignmentPosition => AlignmentPosition(
-        left: 0,
-        top: 0,
-      );
+  AlignmentOffset get offset => AlignmentOffset.zero();
 
   /// Generic position as `<forward>` does not correspond to a specific musical position.
   ElementPosition get position => ElementPosition.staffMiddle;
 
-  Size get baseSize => const Size(0.25, 0.25);
+  Size get size => const Size(
+        NotationLayoutProperties.baseSpacePerPosition / 2,
+        NotationLayoutProperties.baseSpacePerPosition / 2,
+      );
 
   /// Creates a [CursorElement] with the given [duration] data.
   const CursorElement({

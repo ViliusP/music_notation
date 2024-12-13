@@ -174,44 +174,24 @@ class AccidentalElement extends StatelessWidget {
   final AccidentalValue type;
   final FontMetadata font;
 
-  AlignmentPosition get alignmentPosition => calculateAlignmentPosition(
-        type,
-        font,
+  AlignmentOffset get offset => AlignmentOffset(
+        top: -font.glyphBBoxes[_glyph]!.bBoxNE.y,
+        left: 0,
       );
 
-  static AlignmentPosition calculateAlignmentPosition(
-    AccidentalValue accidental,
-    FontMetadata font,
-  ) {
-    SmuflGlyph glyph = _accidentalSmuflMapping[accidental]!;
-
-    return AlignmentPosition(
-      top: -font.glyphBBoxes[glyph]!.bBoxNE.y,
-      left: 0,
-    );
+  SmuflGlyph get _glyph {
+    return _accidentalSmuflMapping[type] ?? SmuflGlyph.noteheadXBlack;
   }
 
-  Size get size => calculateSize(type, font);
+  GlyphBBox get _bBox => font.glyphBBoxes[_glyph]!;
 
-  static Size calculateSize(
-    AccidentalValue accidental,
-    FontMetadata font,
-  ) {
-    SmuflGlyph glyph = _accidentalSmuflMapping[accidental]!;
-
-    return font.glyphBBoxes[glyph]!.toSize(1);
-  }
+  Size get size => _bBox.toSize();
 
   const AccidentalElement({
     super.key,
     required this.type,
     required this.font,
   });
-
-  static String smufl(AccidentalValue? accidentalValue) {
-    if (accidentalValue == null) return SmuflGlyph.noteheadXBlack.codepoint;
-    return _accidentalSmuflMapping[accidentalValue]!.codepoint;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -222,8 +202,8 @@ class AccidentalElement extends StatelessWidget {
     return CustomPaint(
       size: size.scaledByContext(context),
       painter: SimpleGlyphPainter(
-        smufl(type),
-        font.glyphBBoxes[_accidentalSmuflMapping[type]]!,
+        _glyph.codepoint,
+        _bBox,
         layoutProperties.staveSpace,
       ),
     );
@@ -238,14 +218,14 @@ class KeySignatureElement extends StatelessWidget {
 
   static const _baseSpaceBetweenAccidentals = 0.25;
 
-  AlignmentPosition get alignmentPosition {
-    if (accidentals.isEmpty) return AlignmentPosition(left: 0, top: 0);
+  AlignmentOffset get offset {
+    if (accidentals.isEmpty) return AlignmentOffset(left: 0, top: 0);
     SmuflGlyph glyph = _accidentalSmuflMapping[
         accidentals.first.accidental?.value ?? AccidentalValue.other]!;
 
     double top = -font.glyphBBoxes[glyph]!.bBoxNE.y;
 
-    return AlignmentPosition(
+    return AlignmentOffset(
       top: top,
       left: 0,
     );
@@ -331,7 +311,7 @@ class KeySignatureElement extends StatelessWidget {
     );
   }
 
-  Size get baseSize {
+  Size get size {
     if (accidentals.isEmpty) {
       return const Size(0, 0);
     }
@@ -428,7 +408,7 @@ class KeySignatureElement extends StatelessWidget {
     }
 
     return SizedBox.fromSize(
-      size: baseSize.scaledByContext(context),
+      size: size.scaledByContext(context),
       child: Stack(
         alignment: Alignment.centerLeft,
         children: children,

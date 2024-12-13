@@ -27,11 +27,13 @@ class MeasureElement extends StatelessWidget {
   /// object to define note pitch and octave. This allows accurate placement on the staff.
   final ElementPosition position;
 
-  /// The size of the element, in stave spaces, defining its width and height within the measure.
+  /// The size of the element, in stave spaces, defining its width and height
+  /// within the measure.
   final Size size;
 
-  /// Optional positioning and alignment information for precise element placement.
-  final AlignmentPosition offset;
+  /// Optional positioning and alignment information for precise element placement
+  /// within its own container.
+  final AlignmentOffset offset;
 
   final double duration;
 
@@ -60,7 +62,7 @@ class MeasureElement extends StatelessWidget {
     return MeasureElement(
       position: noteElement.position,
       size: noteElement.size,
-      offset: noteElement.alignmentPosition,
+      offset: noteElement.offset,
       duration: note.determineDuration(),
       child: noteElement,
     );
@@ -78,8 +80,8 @@ class MeasureElement extends StatelessWidget {
     );
     return MeasureElement(
       position: restElement.position,
-      size: restElement.baseSize,
-      offset: restElement.alignmentPosition,
+      size: restElement.size,
+      offset: restElement.offset,
       duration: rest.determineDuration(),
       child: restElement,
     );
@@ -98,7 +100,7 @@ class MeasureElement extends StatelessWidget {
     return MeasureElement(
       position: chord.position,
       size: chord.size,
-      offset: chord.alignmentPosition,
+      offset: chord.offset,
       duration: notes.first.determineDuration(),
       child: chord,
     );
@@ -111,8 +113,8 @@ class MeasureElement extends StatelessWidget {
     var element = ClefElement(clef: clef, font: font);
     return MeasureElement(
       position: element.position,
-      size: element.baseSize,
-      offset: element.alignmentPosition,
+      size: element.size,
+      offset: element.offset,
       duration: 0,
       child: element,
     );
@@ -128,8 +130,8 @@ class MeasureElement extends StatelessWidget {
     );
     return MeasureElement(
       position: element.position,
-      size: element.baseSize,
-      offset: element.alignmentPosition,
+      size: element.size,
+      offset: element.offset,
       duration: 0,
       child: element,
     );
@@ -149,8 +151,8 @@ class MeasureElement extends StatelessWidget {
     );
     return MeasureElement(
       position: element.position,
-      size: element.baseSize,
-      offset: element.alignmentPosition,
+      size: element.size,
+      offset: element.offset,
       duration: 0,
       child: element,
     );
@@ -304,7 +306,7 @@ class MeasureElement extends StatelessWidget {
 
 /// Defines specific alignment offsets for musical elements, used for vertical and
 /// horizontal positioning within their container.
-class AlignmentPosition {
+class AlignmentOffset {
   /// Vertical offset from the top of the bounding box, aligning the element with
   /// the staff line when positioned at `Y=0`. If null, alignment is based on [bottom].
   final double? top;
@@ -317,7 +319,7 @@ class AlignmentPosition {
   /// element horizontally, typically at the visual or optical center.
   final double left;
 
-  const AlignmentPosition({
+  const AlignmentOffset({
     this.top,
     this.bottom,
     required this.left,
@@ -326,15 +328,17 @@ class AlignmentPosition {
           'Either top or bottom must be null, but not both.',
         );
 
-  AlignmentPosition scale(double scale) {
-    return AlignmentPosition(
+  const AlignmentOffset.zero() : this(left: 0, top: 0);
+
+  AlignmentOffset scale(double scale) {
+    return AlignmentOffset(
       left: left * scale,
       top: top != null ? top! * scale : null,
       bottom: bottom != null ? bottom! * scale : null,
     );
   }
 
-  AlignmentPosition scaledByContext(BuildContext context) {
+  AlignmentOffset scaledByContext(BuildContext context) {
     NotationLayoutProperties layoutProperties =
         NotationProperties.of(context)?.layout ??
             NotationLayoutProperties.standard();
@@ -368,7 +372,7 @@ class AlignmentPosition {
 class AlignmentPositioned extends Positioned {
   AlignmentPositioned({
     super.key,
-    required AlignmentPosition position,
+    required AlignmentOffset position,
     required super.child,
   }) : super(
           bottom: position.bottom,
