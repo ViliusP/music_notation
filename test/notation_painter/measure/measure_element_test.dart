@@ -13,6 +13,7 @@ const noteheadSize = Size(1.3, 1.056);
 const clefTop = -4.448;
 const clefBottom = 0;
 const clefSize = Size(2.6, 7.1);
+
 void main() {
   group("MeasureElement.heightAboveReference", () {
     test("Vertical extent of Clef G above it's own position should be correct",
