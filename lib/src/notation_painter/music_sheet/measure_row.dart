@@ -1,6 +1,11 @@
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
+import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
+import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
+import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 
 class Offsetted extends StatelessWidget {
   final Widget child;
@@ -40,6 +45,81 @@ class Aligned extends StatelessWidget {
 enum VerticalAlignment {
   top,
   bottom;
+}
+
+class MeasureRow extends StatelessWidget {
+  final List<MeasureElement> children;
+  final double spaceBetween;
+  final bool strictlyBounded;
+
+  const MeasureRow({
+    super.key,
+    required this.children,
+    this.spaceBetween = 0,
+    this.strictlyBounded = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (children.isEmpty) {
+      return SizedBox.shrink();
+    }
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
+    return CustomMultiChildLayout(
+      delegate: _MeasureRowDelegate(
+        children: children,
+        strictlyBounded: strictlyBounded,
+        spaceBetween: spaceBetween,
+        scale: layoutProperties.staveSpace,
+      ),
+      children: [
+        for (int i = 0; i < children.length; i++)
+          LayoutId(id: i, child: children[i]),
+      ],
+    );
+  }
+}
+
+class _MeasureRowDelegate extends MultiChildLayoutDelegate {
+  final List<MeasureElement> children;
+  final bool strictlyBounded;
+  final double spaceBetween;
+  final double scale;
+
+  _MeasureRowDelegate({
+    required this.children,
+    required this.scale,
+    this.spaceBetween = 0,
+    this.strictlyBounded = false,
+  });
+
+  @override
+  void performLayout(Size size) {
+    MeasureElement reference =
+        children.sorted((a, b) => a.position.compareTo(b.position)).last;
+    double left = 0;
+    for (int i = 0; i < children.length; i++) {
+      final child = children[i];
+
+      final childSize = layoutChild(
+        i,
+        BoxConstraints.loose(child.size.scale(scale)),
+      );
+
+      double top = -child.distance(reference, BoxSide.top) * scale;
+
+      positionChild(i, Offset(left, top));
+      left += childSize.width + spaceBetween * scale;
+    }
+  }
+
+  @override
+  bool shouldRelayout(covariant MultiChildLayoutDelegate oldDelegate) {
+    return true;
+  }
 }
 
 class AlignedRow extends StatelessWidget {

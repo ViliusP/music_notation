@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -175,12 +173,30 @@ class MeasureElement extends StatelessWidget {
     return PositionalRange(top, bottom);
   }
 
-  // In stave spaces
-  double distanceFromReference(ElementPosition reference) {
-    if (position > reference) {
-      return heightAboveReference(reference) - offset.height;
-    }
-    return heightBelowReference(reference) - offset.height;
+  double _distanceToBottom(ElementPosition reference) {
+    double spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
+
+    int interval = position.numeric - reference.numeric;
+    double distanceToReference = interval * spacePerPosition;
+
+    return distanceToReference + offset.bottom;
+  }
+
+  /// Vertical Distance from [reference] position to provided vertical [side] of element.
+  /// Negative values means that [side] of [MeasureElement] is positioned below [reference].
+  double distanceToPosition(ElementPosition reference, BoxSide side) {
+    return switch (side) {
+      BoxSide.top => _distanceToBottom(reference) + size.height,
+      BoxSide.bottom => _distanceToBottom(reference),
+    };
+  }
+
+  /// Vertical distance from element [side] to [reference] element [side].
+  /// Negative values means that [side] of element is below [reference] element [side].
+  double distance(MeasureElement reference, BoxSide side) {
+    ElementPosition upperBound = reference.bounds.max;
+    return distanceToPosition(upperBound, side) -
+        reference.distanceToPosition(upperBound, side);
   }
 
   /// Calculates the height of the bounding box for elements extending above
@@ -223,33 +239,60 @@ class MeasureElement extends StatelessWidget {
     return [0.0, belowReference].max;
   }
 
-  static ({double min, double max}) columnVerticalRange(
+  /// TODO CHECK
+  /// Calculates how much does elements extent above [reference] and below [reference] position.
+  /// If reference is not given, the lowest position will be considered as reference position.
+  static NumericRange<double> columnVerticalRange(
+    List<MeasureElement> elements, [
+    ElementPosition? reference,
+  ]) {
+    if (elements.isEmpty) {
+      return NumericRange<double>(0.0, 0.0);
+    }
+    ElementPosition ref;
+    if (reference != null) {
+      ref = reference;
+    } else {
+      ref = columnPositionalRange(elements)!.min;
+    }
+
+    double minY = -elements.map((e) => e.heightBelowReference(ref)).max;
+    double maxY = elements.map((e) => e.heightAboveReference(ref)).max;
+
+    return NumericRange<double>(minY, maxY);
+  }
+
+  /// TODO CHECK
+  ///
+  /// Maximum and minimun values of [elements] position.
+  static PositionalRange? columnPositionalRange(
     List<MeasureElement> elements,
-    ElementPosition reference,
   ) {
     if (elements.isEmpty) {
-      return (min: 0, max: 0);
+      return null;
     }
+    var positions = elements.map((e) => e.position);
+    var min = positions.min;
+    var max = positions.max;
 
-    double minY = 0;
-    double maxY = 0;
+    return PositionalRange(min, max);
+  }
 
-    const spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
-
-    for (var element in elements) {
-      int interval = element.position.numeric - reference.numeric;
-      double positionalDistance = interval * spacePerPosition;
-
-      double bottom = element.offset.bottom;
-      bottom = positionalDistance + bottom;
-      minY = min(minY, bottom);
-
-      double top = element.offset.top;
-      top = positionalDistance - top;
-      maxY = max(maxY, top);
+  /// TODO CHECK
+  ///
+  /// Positions needed to fully fit column bound in container.
+  /// Do not mix with [columnPositionalRange].
+  static PositionalRange? columnPositionalBounds(
+    List<MeasureElement> elements,
+  ) {
+    if (elements.isEmpty) {
+      return null;
     }
+    var ranges = elements.map((e) => e.bounds);
+    var min = ranges.map((range) => range.min).min;
+    var max = ranges.map((range) => range.max).max;
 
-    return (min: minY, max: maxY);
+    return PositionalRange(min, max);
   }
 
   @override
@@ -298,6 +341,8 @@ class MeasureElement extends StatelessWidget {
     );
   }
 }
+
+class ElementLayoutProperties {}
 
 /// Defines specific alignment offsets for musical elements, used for vertical and
 /// horizontal positioning within their container.
@@ -443,4 +488,9 @@ extension NoteWidgetization on Note {
         );
     }
   }
+}
+
+enum BoxSide {
+  top,
+  bottom,
 }

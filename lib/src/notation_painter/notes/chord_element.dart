@@ -8,7 +8,7 @@ import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
-import 'package:music_notation/src/notation_painter/aligned_row.dart';
+import 'package:music_notation/src/notation_painter/music_sheet/measure_row.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/range.dart';

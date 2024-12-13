@@ -5,13 +5,13 @@ import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/key.dart'
     hide Key;
+import 'package:music_notation/src/notation_painter/music_sheet/measure_row.dart';
 
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/octaved_key_accidental.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
-import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart';
 
@@ -216,12 +216,54 @@ class KeySignatureElement extends StatelessWidget {
   final FontMetadata font;
   final Clef? clef;
 
+  const KeySignatureElement({
+    required this.font,
+    required this.fifths,
+    required this.fifthsBefore,
+    this.clef,
+    super.key,
+  });
+
+  factory KeySignatureElement.traditional({
+    required TraditionalKey key,
+    required TraditionalKey? keyBefore,
+    required Clef? clef,
+    required FontMetadata font,
+  }) {
+    return KeySignatureElement(
+      fifths: key.fifths,
+      fifthsBefore: keyBefore?.fifths,
+      clef: clef,
+      font: font,
+    );
+  }
+
+  List<MeasureElement> get _children {
+    List<MeasureElement> children = [];
+
+    for (var accidental in _accidentals) {
+      var accidentalElement = AccidentalElement(
+        type: accidental.accidental?.value ?? AccidentalValue.other,
+        font: font,
+      );
+
+      children.add(MeasureElement(
+        position: accidental.position,
+        size: accidentalElement.size,
+        offset: accidentalElement.offset,
+        duration: 0,
+        child: accidentalElement,
+      ));
+    }
+    return children;
+  }
+
   static const _baseSpaceBetweenAccidentals = 0.25;
 
   AlignmentOffset get offset {
-    if (accidentals.isEmpty) return AlignmentOffset.zero();
+    if (_accidentals.isEmpty) return AlignmentOffset.zero();
     SmuflGlyph glyph = _accidentalSmuflMapping[
-        accidentals.first.accidental?.value ?? AccidentalValue.other]!;
+        _accidentals.first.accidental?.value ?? AccidentalValue.other]!;
 
     return AlignmentOffset.fromBbox(
       bBox: font.glyphBBoxes[glyph]!,
@@ -248,7 +290,7 @@ class KeySignatureElement extends StatelessWidget {
     return lastFifths != 0 && fifths == 0;
   }
 
-  List<OctavedKeyAccidental> get accidentals {
+  List<OctavedKeyAccidental> get _accidentals {
     var accidentals = <OctavedKeyAccidental>[];
     int fifthsToShow = fifths; // ???
     if (fullCancel == true) {
@@ -269,70 +311,20 @@ class KeySignatureElement extends StatelessWidget {
     return accidentals.sublist(0, fifthsToShow);
   }
 
-  List<double> get _leftOffsets {
-    var leftOffset = 0.0;
-    if (accidentals.isEmpty) {
-      return [];
-    }
-    var offsets = <double>[];
-    for (var accidental in accidentals) {
-      Size accidentalSize = AccidentalElement(
-        type: accidental.accidental?.value ?? AccidentalValue.other,
-        font: font,
-      ).size;
-
-      offsets.add(leftOffset);
-      leftOffset += accidentalSize.width + _baseSpaceBetweenAccidentals;
-    }
-    return offsets;
-  }
-
-  ({ElementPosition lowest, ElementPosition highest}) get _range {
-    ElementPosition? lowestAccidental;
-    ElementPosition? highestAccidental;
-
-    for (var accidental in accidentals) {
-      var accidentalPosition = accidental.position;
-
-      if (lowestAccidental == null || lowestAccidental > accidentalPosition) {
-        lowestAccidental = accidentalPosition;
-      }
-
-      if (highestAccidental == null || highestAccidental < accidentalPosition) {
-        highestAccidental = accidentalPosition;
-      }
-    }
-
-    return (
-      lowest: lowestAccidental ?? ElementPosition.staffMiddle,
-      highest: highestAccidental ?? ElementPosition.staffMiddle,
-    );
-  }
-
   Size get size {
-    if (accidentals.isEmpty) {
+    if (_accidentals.isEmpty) {
       return const Size(0, 0);
     }
 
     var width = 0.0;
 
-    int range = _range.highest.numeric - _range.lowest.numeric;
-    double height = range * .5;
-    for (var (i, accidental) in accidentals.indexed) {
-      Size accidentalSize = AccidentalElement(
-        type: accidental.accidental?.value ?? AccidentalValue.other,
-        font: font,
-      ).size;
+    double height = MeasureElement.columnVerticalRange(_children).distance;
 
-      if (i == 0) {
-        height += accidentalSize.height;
-      }
-
-      width += accidentalSize.width + _baseSpaceBetweenAccidentals;
+    double spacings = 0;
+    for (var accidental in _children) {
+      width += accidental.size.width + spacings;
+      spacings = _baseSpaceBetweenAccidentals;
     }
-
-    // Remove last width
-    width = width - _baseSpaceBetweenAccidentals;
 
     return Size(width, height);
   }
@@ -346,70 +338,19 @@ class KeySignatureElement extends StatelessWidget {
     return 0;
   }
 
-  ElementPosition get _position => _range.highest;
+  ElementPosition get _position =>
+      MeasureElement.columnPositionalRange(_children)?.min ??
+      ElementPosition.staffMiddle;
 
-  // TODO: fix
   ElementPosition get position => _position.transpose(_transposeInterval);
-
-  const KeySignatureElement({
-    required this.font,
-    required this.fifths,
-    required this.fifthsBefore,
-    this.clef,
-    super.key,
-  });
-
-  factory KeySignatureElement.traditional({
-    required TraditionalKey key,
-    required TraditionalKey? keyBefore,
-    required Clef? clef,
-    required FontMetadata font,
-  }) {
-    return KeySignatureElement(
-      fifths: key.fifths,
-      fifthsBefore: keyBefore?.fifths,
-      clef: clef,
-      font: font,
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
-    NotationLayoutProperties layoutProperties =
-        NotationProperties.of(context)?.layout ??
-            NotationLayoutProperties.standard();
-
-    var children = <Widget>[];
-
-    int highestAccidentalPosition = _range.highest.numeric;
-
-    for (var (index, accidental) in accidentals.indexed) {
-      var accidentalWidget = AccidentalElement(
-        type: accidental.accidental?.value ?? AccidentalValue.other,
-        font: font,
-      );
-
-      int distanceFromHighest =
-          highestAccidentalPosition - accidental.position.numeric;
-
-      children.add(
-        Positioned(
-          top: distanceFromHighest * layoutProperties.spacePerPosition,
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: _leftOffsets[index].scaledByContext(context),
-            ),
-            child: accidentalWidget,
-          ),
-        ),
-      );
-    }
-
     return SizedBox.fromSize(
       size: size.scaledByContext(context),
-      child: Stack(
-        alignment: Alignment.centerLeft,
-        children: children,
+      child: MeasureRow(
+        spaceBetween: _baseSpaceBetweenAccidentals,
+        children: _children,
       ),
     );
   }
