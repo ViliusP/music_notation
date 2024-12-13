@@ -11,6 +11,7 @@ import 'package:music_notation/src/models/elements/music_data/note/stem.dart';
 import 'package:music_notation/src/notation_painter/aligned_row.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
+import 'package:music_notation/src/notation_painter/models/range.dart';
 import 'package:music_notation/src/notation_painter/notes/adjacency.dart';
 import 'package:music_notation/src/notation_painter/notes/augmentation_dots.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
@@ -287,16 +288,9 @@ class Chord extends StatelessWidget {
       return AlignmentOffset.zero();
     }
 
-    double bottom;
-    if (_alignByTop) {
-      bottom = _verticalRange.max - _height;
-    } else {
-      bottom = _verticalRange.min;
-    }
-
     return AlignmentOffset.fromBottom(
       left: -_leftColumnOffset,
-      bottom: bottom,
+      bottom: _referenceColumn?.offset.bottom ?? 0,
       height: size.height,
     );
   }
@@ -304,21 +298,17 @@ class Chord extends StatelessWidget {
   Size get size {
     return Size(
       _width,
-      _height,
+      _verticalRange.distance,
     );
   }
 
   /// Lowest y of every chord elements
-  ({double min, double max}) get _verticalRange {
+  NumericRange<double> get _verticalRange {
     var children = _columns.expand((column) => column._children).toList();
     if (_positionedStem != null) {
       children.add(_positionedStem!);
     }
-    return MeasureElement.columnVerticalRange(children, position);
-  }
-
-  double get _height {
-    return _verticalRange.min.abs() + _verticalRange.max.abs();
+    return MeasureElement.columnVerticalRange(children);
   }
 
   double get _width {
@@ -511,13 +501,13 @@ class ChordColumn extends StatelessWidget {
     return AlignmentOffset.fromBottom(
       left: 0,
       bottom: reference.offset.bottom,
-      height: reference.size.height,
+      height: size.height,
     );
   }
 
   Size get size {
-    var range = MeasureElement.columnVerticalRange(children, position);
-    double height = range.max.abs() + range.min.abs();
+    var range = MeasureElement.columnVerticalRange(children);
+    double height = range.distance;
 
     double width = 0;
     for (var child in _children) {

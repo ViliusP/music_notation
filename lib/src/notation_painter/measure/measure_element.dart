@@ -160,7 +160,7 @@ class MeasureElement extends StatelessWidget {
 
   /// The bounds represents the vertical positions of an element within a layout system,
   /// with the positions adjusted based on the element's position, alignment and size.
-  Range<ElementPosition, int> get bounds {
+  PositionalRange get bounds {
     double spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
 
     double extentAbove = heightAboveReference(position);
@@ -172,11 +172,15 @@ class MeasureElement extends StatelessWidget {
 
     ElementPosition bottom = position - positionsBelow;
 
-    return Range(
-      top,
-      bottom,
-      (max, min) => max.numeric - min.numeric,
-    );
+    return PositionalRange(top, bottom);
+  }
+
+  // In stave spaces
+  double distanceFromReference(ElementPosition reference) {
+    if (position > reference) {
+      return heightAboveReference(reference) - offset.height;
+    }
+    return heightBelowReference(reference) - offset.height;
   }
 
   /// Calculates the height of the bounding box for elements extending above
@@ -343,11 +347,11 @@ class AlignmentOffset {
       left: left,
     );
   }
-  // TODO CHECK BOTTOM
+
   AlignmentOffset.fromBbox({
     required double left,
     required GlyphBBox bBox,
-  }) : this(left: left, top: -bBox.topRight.y, bottom: bBox.bBoxNE.y);
+  }) : this(left: left, top: -bBox.topRight.y, bottom: bBox.bottomLeft.y);
 
   AlignmentOffset.center({
     required double left,
