@@ -87,6 +87,33 @@ extension NumExtensions on num {
   }
 }
 
+extension IntegerExtensions on int {
+  /// Ensures the number is within the specified bounds.
+  ///
+  /// - If [bottom] is provided and the number is lower than [bottom],
+  /// it returns [bottom].
+  /// - If [top] is provided and the number is higher than [top],
+  /// it returns [top].
+  /// - If both [bottom] and [top] are provided, it clamps the number
+  /// within the range [bottom, top].
+  ///
+  /// Parameters:
+  /// - [bottom - The lower limit (optional).
+  /// - [top] - The upper limit (optional).
+  ///
+  /// Returns:
+  /// The number clamped within the specified range.
+  int limit({int? bottom, int? top}) {
+    if (bottom != null && this < bottom) {
+      return bottom;
+    }
+    if (top != null && this > top) {
+      return top;
+    }
+    return this;
+  }
+}
+
 extension DoubleExtensions on double {
   /// Ensures the number is within the specified bounds.
   ///
