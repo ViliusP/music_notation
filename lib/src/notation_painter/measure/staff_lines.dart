@@ -1,6 +1,5 @@
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
-import 'package:music_notation/src/notation_painter/debug/stave_space_indicator_painter.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_barlines.dart';
 import 'package:music_notation/src/notation_painter/painters/barline_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/staff_lines_painter.dart';
@@ -47,14 +46,6 @@ class StaffLines extends StatelessWidget {
               ),
             ),
           ),
-          if ((debugSettings?.verticalStaveLineSpacingMultiplier ?? 0) != 0)
-            CustomPaint(
-              painter: StaveSpaceIndicatorPainter(
-                multiplier:
-                    debugSettings?.verticalStaveLineSpacingMultiplier ?? 0,
-                spacing: layoutProperties.staveHeight,
-              ),
-            ),
         ],
       );
     });

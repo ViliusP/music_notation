@@ -1,6 +1,4 @@
 import 'package:music_notation/src/models/elements/music_data/attributes/attributes.dart';
-import 'package:music_notation/src/models/elements/music_data/backup.dart';
-import 'package:music_notation/src/models/elements/music_data/forward.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/exceptions.dart';
 import 'package:music_notation/src/models/utilities/type_parsers.dart';

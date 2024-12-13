@@ -97,7 +97,6 @@ class MusicSheet extends StatelessWidget {
       paintBBoxAboveStaff: false,
       paintBBoxBelowStaff: false,
       extraStaveLineCount: 0,
-      verticalStaveLineSpacingMultiplier: 0,
       extraStaveLines: ExtraStaveLines.none,
       beatMarkerMultiplier: 1,
       beatMarker: false,

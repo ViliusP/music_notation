@@ -149,8 +149,8 @@ class EditorialVoice extends Editorial {
 
     return EditorialVoice(
       voice: xmlElement.getElement("voice")?.innerText,
-      footnote: editorial?.footnote,
-      level: editorial?.level,
+      footnote: editorial.footnote,
+      level: editorial.level,
     );
   }
 }
