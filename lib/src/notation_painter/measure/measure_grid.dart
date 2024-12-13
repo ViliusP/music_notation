@@ -175,7 +175,7 @@ class MeasuresColumn {
         // Looping through cell in single measure column (section).
         for (var cell in measure.columns[key]!.cells.values) {
           leftOffsets[i] = min(
-            cell.alignmentOffset.left,
+            cell.offset.left,
             leftOffsets[i],
           );
 

@@ -41,14 +41,14 @@ extension NumExtensions on num {
   ///
   /// Returns:
   /// The number clamped within the specified range.
-  num limit({num? bottom, num? top}) {
+  T limit<T extends num>({num? bottom, num? top}) {
     if (bottom != null && this < bottom) {
-      return bottom;
+      return bottom as T;
     }
     if (top != null && this > top) {
-      return top;
+      return top as T;
     }
-    return this;
+    return this as T;
   }
 
   /// Returns the nearest integer double value by rounding away from zero.

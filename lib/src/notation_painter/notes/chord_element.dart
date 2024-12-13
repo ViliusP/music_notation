@@ -91,7 +91,7 @@ class Chord extends StatelessWidget {
           .map((note) => MeasureElement(
                 position: note.position,
                 size: note.head.size,
-                alignmentOffset: note.head.alignmentPosition,
+                offset: note.head.alignmentPosition,
                 duration: 0,
                 child: note.head,
               ))
@@ -108,7 +108,7 @@ class Chord extends StatelessWidget {
           .map((note) => MeasureElement(
                 position: note.position,
                 size: note.head.size,
-                alignmentOffset: note.head.alignmentPosition,
+                offset: note.head.alignmentPosition,
                 duration: 0,
                 child: note.head,
               ))
@@ -143,7 +143,7 @@ class Chord extends StatelessWidget {
           .map((e) => MeasureElement(
                 position: e.position,
                 size: e.accidental!.size,
-                alignmentOffset: e.accidental!.alignmentPosition,
+                offset: e.accidental!.alignmentPosition,
                 duration: 0,
                 child: e.accidental!,
               ))
@@ -160,7 +160,7 @@ class Chord extends StatelessWidget {
         return MeasureElement(
           position: position,
           size: e.dots!.size,
-          alignmentOffset: e.dots!.alignmentPosition,
+          offset: e.dots!.alignmentPosition,
           duration: 0,
           child: e.dots!,
         );
@@ -227,7 +227,7 @@ class Chord extends StatelessWidget {
     return MeasureElement(
       position: stemPosition,
       size: stem!.size,
-      alignmentOffset: AlignmentPosition(
+      offset: AlignmentPosition(
         left: 0,
         top: top,
         bottom: bottom,
@@ -526,7 +526,7 @@ class ChordColumn extends StatelessWidget {
 
     return AlignmentPosition(
       left: 0,
-      bottom: reference.alignmentOffset.effectiveBottom(reference.size),
+      bottom: reference.offset.effectiveBottom(reference.size),
     );
   }
 
@@ -555,8 +555,10 @@ class ChordColumn extends StatelessWidget {
           ((child.position.numeric - position.numeric)).toDouble();
       double distanceFromRef = interval * layoutProperties.spacePerPosition;
 
-      double childBottom = child.alignmentOffset
-          .effectiveBottom(child.size)
+      double childBottom = child.offset
+          .effectiveBottom(
+            child.size,
+          )
           .scaledByContext(context);
       double refBottom = alignmentPosition.bottom!.scaledByContext(context);
 

@@ -42,13 +42,12 @@ class MeasureLayout extends StatelessWidget {
     DebugSettings? dSettings = DebugSettings.of(context);
 
     double spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
-    ElementPosition bottomRef = measure.floor;
+    ElementPosition bottomRef = measure.floor - 1;
     ElementPosition topRef = measure.ceil;
 
     // Stave bottom values
     ElementPosition staveBottomRef = measure.staveBottom;
-    double staveBottom =
-        (staveBottomRef.distance(bottomRef)) * spacePerPosition;
+    double staveBottom = staveBottomRef.distance(bottomRef) * spacePerPosition;
     staveBottom = staveBottom.scaledByContext(context);
 
     double measureWidth = horizontalOffsets.last;
@@ -64,7 +63,7 @@ class MeasureLayout extends StatelessWidget {
 
         double? topOffset;
         double? bottomOffset;
-        AlignmentPosition alignmentPosition = cell.alignmentOffset;
+        AlignmentPosition alignmentPosition = cell.offset;
 
         if (alignmentPosition.top != null) {
           topOffset = alignmentPosition.top!;
@@ -136,10 +135,13 @@ class MeasureLayout extends StatelessWidget {
         );
 
         if (dSettings != null) {
-          Rect boxBelow = cell.boxBelow(
-            scale: layoutProperties.staveSpace,
-            reference: ElementPosition.staffBottom,
+          Size boxBelow = Size(
+            cell.size.width.scaledByContext(context),
+            cell
+                .heightBelowReference(ElementPosition.staffBottom)
+                .scaledByContext(context),
           );
+
           if (dSettings.paintBBoxBelowStaff && boxBelow.height > 0) {
             positionedElements.add(
               Positioned(
@@ -154,9 +156,11 @@ class MeasureLayout extends StatelessWidget {
             );
           }
 
-          Rect boxAbove = cell.boxAbove(
-            scale: layoutProperties.staveSpace,
-            reference: ElementPosition.staffTop,
+          Size boxAbove = Size(
+            cell.size.width.scaledByContext(context),
+            cell
+                .heightAboveReference(ElementPosition.staffTop)
+                .scaledByContext(context),
           );
           if (dSettings.paintBBoxAboveStaff && boxAbove.height > 0) {
             positionedElements.add(

@@ -163,7 +163,7 @@ class MeasureTimeline {
             voice: "-1", // The "-1" indicates attributes sector
             name: child.runtimeType.toString().substring(0, 2),
             width: child.size.width,
-            leftOffset: child.alignmentOffset.left,
+            leftOffset: child.offset.left,
           );
       }
       TimelinePosition pos;

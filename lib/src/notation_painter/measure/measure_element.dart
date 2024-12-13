@@ -18,7 +18,7 @@ import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rest_element.dart';
 import 'package:music_notation/src/notation_painter/time_signature_element.dart';
-import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
+import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 
 /// An Wrapper widget representing a musical element within a measure,
 /// including properties for positioning, size, and alignment.
@@ -31,7 +31,7 @@ class MeasureElement extends StatelessWidget {
   final Size size;
 
   /// Optional positioning and alignment information for precise element placement.
-  final AlignmentPosition alignmentOffset;
+  final AlignmentPosition offset;
 
   final double duration;
 
@@ -42,7 +42,7 @@ class MeasureElement extends StatelessWidget {
     super.key,
     required this.position,
     required this.size,
-    required this.alignmentOffset,
+    required this.offset,
     required this.duration,
     required this.child,
   });
@@ -60,7 +60,7 @@ class MeasureElement extends StatelessWidget {
     return MeasureElement(
       position: noteElement.position,
       size: noteElement.size,
-      alignmentOffset: noteElement.alignmentPosition,
+      offset: noteElement.alignmentPosition,
       duration: note.determineDuration(),
       child: noteElement,
     );
@@ -79,7 +79,7 @@ class MeasureElement extends StatelessWidget {
     return MeasureElement(
       position: restElement.position,
       size: restElement.baseSize,
-      alignmentOffset: restElement.alignmentPosition,
+      offset: restElement.alignmentPosition,
       duration: rest.determineDuration(),
       child: restElement,
     );
@@ -98,7 +98,7 @@ class MeasureElement extends StatelessWidget {
     return MeasureElement(
       position: chord.position,
       size: chord.size,
-      alignmentOffset: chord.alignmentPosition,
+      offset: chord.alignmentPosition,
       duration: notes.first.determineDuration(),
       child: chord,
     );
@@ -112,7 +112,7 @@ class MeasureElement extends StatelessWidget {
     return MeasureElement(
       position: element.position,
       size: element.baseSize,
-      alignmentOffset: element.alignmentPosition,
+      offset: element.alignmentPosition,
       duration: 0,
       child: element,
     );
@@ -129,7 +129,7 @@ class MeasureElement extends StatelessWidget {
     return MeasureElement(
       position: element.position,
       size: element.baseSize,
-      alignmentOffset: element.alignmentPosition,
+      offset: element.alignmentPosition,
       duration: 0,
       child: element,
     );
@@ -150,7 +150,7 @@ class MeasureElement extends StatelessWidget {
     return MeasureElement(
       position: element.position,
       size: element.baseSize,
-      alignmentOffset: element.alignmentPosition,
+      offset: element.alignmentPosition,
       duration: 0,
       child: element,
     );
@@ -159,106 +159,62 @@ class MeasureElement extends StatelessWidget {
   /// The bounds represents the vertical positions of an element within a layout system,
   /// with the positions adjusted based on the element's position, alignment and size.
   Range<ElementPosition, int> get bounds {
-    const spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
+    double spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
 
-    // Calculate the bottom alignment offset relative to the size of the element.
-    // This gives the bottom edge of the element in the layout.
-    var bottom = alignmentOffset.effectiveBottom(size);
+    double extentAbove = heightAboveReference(position);
+    int positionsAbove = (extentAbove / spacePerPosition).ceil();
+    ElementPosition top = position + positionsAbove;
 
-    // Calculate the number of positions the element's bottom needs to move,
-    // relative to its current position.
-    var positionBottom = (bottom / spacePerPosition).ceil();
-    positionBottom = (position.numeric + positionBottom);
+    double extentBelow = heightBelowReference(position);
+    int positionsBelow = (extentBelow / spacePerPosition).ceil();
 
-    // Final calculated position for the bottom edge of the element.
-    var elementBottom = ElementPosition.fromInt(positionBottom);
-
-    // Calculate the top alignment offset relative to the size of the element.
-    // This gives the top edge of the element in the layout.
-    var top = alignmentOffset.effectiveTop(size);
-
-    // Calculate the number of positions the element's top needs to move, relative to its
-    // current position.
-    var positionTop = -(top / spacePerPosition).floor();
-    positionTop = (position.numeric + positionTop);
-
-    var elementTop = ElementPosition.fromInt(positionTop);
+    ElementPosition bottom = position - positionsBelow;
 
     return Range(
-      elementTop,
-      elementBottom,
-      (max, min) => max.numeric - min.numeric + 1,
+      top,
+      bottom,
+      (max, min) => max.numeric - min.numeric,
     );
   }
 
-  /// Calculates a bounding box for elements extending above the staff,
-  /// considering the element's position and vertical alignment offset.
-  Rect boxAbove({required ElementPosition reference, double scale = 1}) {
-    double spacePerPosition =
-        scale * NotationLayoutProperties.baseSpacePerPosition;
+  /// Calculates the height of the bounding box for elements extending above
+  /// the [reference] position, considering the element's [position] and vertical alignment [offset].
+  double heightAboveReference(ElementPosition reference) {
+    double spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
 
-    double aboveStaffLength = 0;
+    int interval = reference.numeric - position.numeric;
+    double distanceToReference = interval * spacePerPosition;
 
-    Size size = this.size.scale(scale);
-    AlignmentPosition alignmentScaled = alignmentOffset.scale(scale);
+    // The height of the element extending above its own alignment offset.
+    // A positive value means the element is entirely below its alignment axis.
+    double extentAbove = offset.effectiveTop(size).limit(top: 0);
+    extentAbove = extentAbove.abs();
 
-    double distanceToReference = reference.numeric * spacePerPosition;
+    double aboveReference = extentAbove - distanceToReference;
 
-    if (alignmentScaled.top != null) {
-      aboveStaffLength = [
-        spacePerPosition * position.numeric,
-        -alignmentScaled.top!,
-        -distanceToReference,
-      ].sum;
-    }
-
-    if (alignmentScaled.bottom != null) {
-      aboveStaffLength = [
-        spacePerPosition * position.numeric,
-        -distanceToReference,
-        size.height,
-        alignmentScaled.bottom!,
-      ].sum;
-    }
-
-    aboveStaffLength = [0.0, aboveStaffLength].max;
-
-    return Rect.fromPoints(Offset(0, 0), Offset(size.width, aboveStaffLength));
+    // If the value is negative, the element's top is below the reference,
+    // meaning nothing extends above the reference, so the height is 0.
+    return [0.0, aboveReference].max;
   }
 
-  /// Calculates a bounding box for elements extending below the staff,
-  /// with consideration for the element's position and vertical alignment offset.
-  Rect boxBelow({required ElementPosition reference, double scale = 1}) {
-    double spacePerPosition =
-        scale * NotationLayoutProperties.baseSpacePerPosition;
+  /// Calculates the height of the bounding box for elements extending below
+  /// the [reference] position, considering the element's position and [position] alignment [offset].
+  double heightBelowReference(ElementPosition reference) {
+    double spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
 
-    Size size = this.size.scale(scale);
-    AlignmentPosition alignmentScaled = alignmentOffset.scale(scale);
+    int interval = reference.numeric - position.numeric;
+    double distanceToReference = interval * spacePerPosition;
 
-    double belowStaffLength = 0;
+    // The height of the element extending below its own alignment offset.
+    // A positive value means the element is entirely above its alignment axis.
+    double extentBelow = offset.effectiveBottom(size).limit(top: 0);
+    extentBelow = extentBelow.abs();
 
-    double distanceToReference = reference.numeric * spacePerPosition;
+    double belowReference = extentBelow + distanceToReference;
 
-    if (alignmentScaled.top != null) {
-      belowStaffLength = [
-        -spacePerPosition * position.numeric,
-        distanceToReference,
-        size.height,
-        alignmentScaled.top!,
-      ].sum;
-    }
-
-    if (alignmentScaled.bottom != null) {
-      belowStaffLength = [
-        -spacePerPosition * position.numeric,
-        distanceToReference,
-        -alignmentScaled.bottom!,
-      ].sum;
-    }
-
-    belowStaffLength = [0.0, belowStaffLength].max;
-
-    return Rect.fromPoints(Offset(0, 0), Offset(size.width, belowStaffLength));
+    // If the value is negative, the element's bottom is above the reference,
+    // meaning nothing extends below the reference, so the height is 0.
+    return [0.0, belowReference].max;
   }
 
   static ({double min, double max}) columnVerticalRange(
@@ -278,11 +234,11 @@ class MeasureElement extends StatelessWidget {
       int interval = element.position.numeric - reference.numeric;
       double positionalDistance = interval * spacePerPosition;
 
-      double bottom = element.alignmentOffset.effectiveBottom(element.size);
+      double bottom = element.offset.effectiveBottom(element.size);
       bottom = positionalDistance + bottom;
       minY = min(minY, bottom);
 
-      double top = element.alignmentOffset.effectiveTop(element.size);
+      double top = element.offset.effectiveTop(element.size);
       top = positionalDistance - top;
       maxY = max(maxY, top);
     }
@@ -296,7 +252,7 @@ class MeasureElement extends StatelessWidget {
 
     return CustomPaint(
       foregroundPainter: AlignmentDebugPainter(
-        offset: alignmentOffset.scaledByContext(context),
+        offset: offset.scaledByContext(context),
         lines: debugSettings?.alignmentDebugOptions ?? {},
       ),
       child: child,
@@ -320,7 +276,7 @@ class MeasureElement extends StatelessWidget {
     properties.add(
       StringProperty(
         'alignment',
-        "left: ${alignmentOffset.left}, top: ${alignmentOffset.top}, bottom: ${alignmentOffset.bottom}",
+        "left: ${offset.left}, top: ${offset.top}, bottom: ${offset.bottom}",
         level: level,
         showName: true,
       ),
@@ -329,7 +285,7 @@ class MeasureElement extends StatelessWidget {
     properties.add(
       StringProperty(
         'effective alignment',
-        "bottom: ${alignmentOffset.effectiveBottom(size)}, top: ${alignmentOffset.effectiveTop(size)}",
+        "bottom: ${offset.effectiveBottom(size)}, top: ${offset.effectiveTop(size)}",
         level: level,
         showName: true,
       ),

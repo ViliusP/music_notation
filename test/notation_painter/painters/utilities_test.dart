@@ -15,7 +15,7 @@ void main() {
         bBoxSW: Coordinates(x: 0.0, y: -0.536),
       ).toSize(defaultStaveSpace);
 
-      expect(size, equals(Size(19, 14)));
+      expect(size, equals(Size(18.6, 13.5)));
     });
     test("Half notehead calculated size should have correct size", () {
       // Whole notehead
@@ -24,7 +24,7 @@ void main() {
         bBoxSW: Coordinates(x: 0.0, y: -0.528),
       ).toSize(defaultStaveSpace);
 
-      expect(size, equals(Size(17, 14)));
+      expect(size, equals(Size(16.3, 13.2)));
     });
     test("Black notehead calculated size should have correct size", () {
       // Whole notehead
@@ -33,7 +33,7 @@ void main() {
         bBoxSW: Coordinates(x: 0.0, y: -0.532),
       ).toSize(defaultStaveSpace);
 
-      expect(size, equals(Size(17, 14)));
+      expect(size, equals(Size(16.3, 13.3)));
     });
   });
 }
