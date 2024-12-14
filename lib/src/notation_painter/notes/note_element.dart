@@ -31,12 +31,10 @@ class NoteElement extends StatelessWidget {
   final MeasureElement? stem;
   final MeasureElement? accidental;
   final MeasureElement? dots;
-  final ElementPosition position;
 
   const NoteElement({
     super.key,
     required this.head,
-    required this.position,
     this.beams,
     this.accidental,
     this.dots,
@@ -128,7 +126,6 @@ class NoteElement extends StatelessWidget {
       head: notehead,
       dots: noteDots,
       accidental: accidentalElement,
-      position: position,
       stem: noteStem,
       voice: note.editorialVoice.voice,
       beams: note.beams.isEmpty ? [] : note.beams,

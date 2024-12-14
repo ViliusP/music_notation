@@ -80,7 +80,7 @@ class Chord extends StatelessWidget {
         clef: clef,
         font: font,
       ));
-      positions.add(notesElements.last.position);
+      positions.add(notesElements.last.head.position);
     }
 
     // Direction of real or imaginary (if stem isn't needed) stem.
@@ -93,7 +93,7 @@ class Chord extends StatelessWidget {
       children: notesElements
           .whereIndexed((i, _) => sides[i] == NoteheadSide.left)
           .map((note) => MeasureElement(
-                position: note.position,
+                position: note.head.position,
                 size: note.head.size,
                 offset: note.head.offset,
                 duration: 0,
@@ -110,7 +110,7 @@ class Chord extends StatelessWidget {
       children: notesElements
           .whereIndexed((i, _) => sides[i] == NoteheadSide.right)
           .map((note) => MeasureElement(
-                position: note.position,
+                position: note.head.position,
                 size: note.head.size,
                 offset: note.head.offset,
                 duration: 0,
@@ -145,7 +145,7 @@ class Chord extends StatelessWidget {
       children: notesElements
           .where((e) => e.accidental != null)
           .map((e) => MeasureElement(
-                position: e.position,
+                position: e.head.position,
                 size: e.accidental!.size,
                 offset: e.accidental!.offset,
                 duration: 0,
@@ -157,7 +157,7 @@ class Chord extends StatelessWidget {
     // ----------- DOTS ---------------------
     MeasureColumn augmentationDots = MeasureColumn(
       children: notesElements.where((e) => e.dots != null).map((e) {
-        ElementPosition position = e.position;
+        ElementPosition position = e.head.position;
         if (position.numeric % 2 == 0) {
           position = position.transpose(1);
         }
@@ -310,11 +310,11 @@ class Chord extends StatelessWidget {
   /// Calculates stem lenght
   static double _stemStartLength(List<NoteElement> notes) {
     var sortedNotes = notes.sortedBy(
-      (note) => note.position,
+      (note) => note.head.position,
     );
 
-    int lowestPosition = sortedNotes.last.position.numeric;
-    int highestPosition = sortedNotes.first.position.numeric;
+    int lowestPosition = sortedNotes.last.head.position.numeric;
+    int highestPosition = sortedNotes.first.head.position.numeric;
     int range = (highestPosition - lowestPosition).abs();
 
     return range * NotationLayoutProperties.baseSpacePerPosition;
