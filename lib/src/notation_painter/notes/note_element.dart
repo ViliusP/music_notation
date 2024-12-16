@@ -195,7 +195,7 @@ class NoteElement extends StatelessWidget {
   }
 
   Size get size {
-    double height = MeasureElement.columnVerticalRange(_children).distance;
+    double height = MeasurePositioned.columnVerticalRange(_children).distance;
     double width = head.size.width;
 
     if (dots != null) {
@@ -228,7 +228,7 @@ class NoteElement extends StatelessWidget {
 
       return AlignmentOffset.fromBottom(
         height: size.height,
-        bottom: MeasureElement.columnVerticalRange(_children).min,
+        bottom: MeasurePositioned.columnVerticalRange(_children).min,
         left: left,
       );
     }

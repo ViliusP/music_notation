@@ -39,7 +39,7 @@ class MeasureColumn extends StatelessWidget {
   }
 
   Size get size {
-    var range = MeasureElement.columnVerticalRange(children);
+    var range = MeasurePositioned.columnVerticalRange(children);
     double height = range.distance;
 
     double width = 0;

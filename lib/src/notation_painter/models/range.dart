@@ -78,7 +78,7 @@ base class Range<T, D> {
   }
 
   @override
-  String toString() => 'Range($min, $max)';
+  String toString() => '$runtimeType(min: $min, max: $max)';
 }
 
 final class ComparablesRange<T extends Comparable<T>, D> extends Range<T, D> {

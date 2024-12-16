@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
+import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_barlines.dart';
@@ -7,8 +8,11 @@ import 'package:music_notation/src/notation_painter/measure/measure_element.dart
 import 'package:music_notation/src/notation_painter/measure/measure_grid.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_layout.dart';
 import 'package:music_notation/src/notation_painter/measure/notation_widgetization.dart';
+import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
+import 'package:music_notation/src/notation_painter/music_sheet/measure_stack.dart';
+import 'package:music_notation/src/notation_painter/notes/note_parts.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
 typedef _MeasureData = ({
@@ -93,6 +97,65 @@ class MusicSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var head1 = NoteheadElement(type: NoteTypeValue.eighth, font: font);
+    var head2 = NoteheadElement(type: NoteTypeValue.half, font: font);
+    var head3 = NoteheadElement(type: NoteTypeValue.whole, font: font);
+
+    // return Stack(
+    //   children: [
+    //     MeasureElementV2(
+    //       position: ElementPosition.staffMiddle,
+    //       size: head2.size,
+    //       offset: head2.offset,
+    //       duration: 0,
+    //       child: head2,
+    //     ),
+    //   ],
+    // );
+
+    return MeasureLayoutV2(
+      debug: false,
+      strictBounds: false,
+      debugName: "Outer",
+      children: [
+        ColoredBox(
+          color: Color.fromRGBO(255, 0, 0, 1),
+          child: SizedBox(
+            width: 20,
+            height: 20,
+          ),
+        ),
+        // MeasureLayoutV2(
+        //   debug: true,
+        //   strictBounds: false,
+        //   debugName: "Inner",
+        //   children: [
+        //     MeasureElementV2(
+        //       position: ElementPosition.staffMiddle - 2,
+        //       size: head3.size,
+        //       offset: head3.offset,
+        //       duration: 0,
+        //       child: head3,
+        //     ),
+        //   ],
+        // ),
+        // MeasureElementV2(
+        //   position: ElementPosition.staffMiddle,
+        //   size: head2.size,
+        //   offset: head2.offset,
+        //   duration: 0,
+        //   child: head2,
+        // ),
+        // MeasureElementV2(
+        //   position: ElementPosition.staffMiddle + 2,
+        //   size: head1.size,
+        //   offset: head1.offset,
+        //   duration: 0,
+        //   child: head1,
+        // ),
+      ],
+    );
+
     return DebugSettings(
       paintBBoxAboveStaff: false,
       paintBBoxBelowStaff: false,

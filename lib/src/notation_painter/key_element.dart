@@ -318,7 +318,7 @@ class KeySignatureElement extends StatelessWidget {
 
     var width = 0.0;
 
-    double height = MeasureElement.columnVerticalRange(_children).distance;
+    double height = MeasurePositioned.columnVerticalRange(_children).distance;
 
     double spacings = 0;
     for (var accidental in _children) {
@@ -339,7 +339,7 @@ class KeySignatureElement extends StatelessWidget {
   }
 
   ElementPosition get _position =>
-      MeasureElement.columnPositionalRange(_children)?.min ??
+      MeasurePositioned.columnPositionalRange(_children)?.min ??
       ElementPosition.staffMiddle;
 
   ElementPosition get position => _position.transpose(_transposeInterval);
