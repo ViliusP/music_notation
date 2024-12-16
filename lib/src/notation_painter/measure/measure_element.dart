@@ -242,12 +242,12 @@ class MeasureElement extends StatelessWidget {
   /// TODO CHECK
   /// Calculates how much does elements extent above [reference] and below [reference] position.
   /// If reference is not given, the lowest position will be considered as reference position.
-  static NumericRange<double> columnVerticalRange(
+  static NumericalRange<double> columnVerticalRange(
     List<MeasureElement> elements, [
     ElementPosition? reference,
   ]) {
     if (elements.isEmpty) {
-      return NumericRange<double>(0.0, 0.0);
+      return NumericalRange<double>(0.0, 0.0);
     }
     ElementPosition ref;
     if (reference != null) {
@@ -263,7 +263,7 @@ class MeasureElement extends StatelessWidget {
       (e) => e.distanceToPosition(ref, BoxSide.top),
     );
 
-    return NumericRange<double>(bottoms.min, tops.max);
+    return NumericalRange<double>(bottoms.min, tops.max);
   }
 
   /// TODO CHECK

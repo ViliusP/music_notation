@@ -24,7 +24,7 @@ base class Range<T, D> {
   ///
   /// Automatically determines the minimum and maximum values, ensuring
   /// that [min] is less than or equal to [max].
-  Range._({
+  const Range._({
     required T a,
     required T b,
     required Subtractor<T, D> subtractor,
@@ -82,30 +82,45 @@ base class Range<T, D> {
 }
 
 final class ComparablesRange<T extends Comparable<T>, D> extends Range<T, D> {
-  ComparablesRange(T a, T b, Subtractor<T, D> subtractor)
+  const ComparablesRange(T a, T b, Subtractor<T, D> subtractor)
       : super._(
           a: a,
           b: b,
           subtractor: subtractor,
-          comparator: (a, b) => a.compareTo(b),
+          comparator: _defaultCompare,
         );
+
+  static int _defaultCompare<T extends Comparable<T>>(T a, T b) {
+    return a.compareTo(b);
+  }
 }
 
-final class NumericRange<T extends num> extends Range<T, T> {
-  NumericRange(T a, T b)
+final class NumericalRange<T extends num> extends Range<T, T> {
+  const NumericalRange(T a, T b)
       : super._(
           a: a,
           b: b,
-          subtractor: (max, min) => (max - min) as T,
-          comparator: (a, b) => a.compareTo(b),
+          subtractor: _numericalSubtract,
+          comparator: _numericalCompare,
         );
+
+  static T _numericalSubtract<T extends num>(T max, T min) {
+    return (max - min) as T;
+  }
+
+  static int _numericalCompare<T extends num>(T a, T b) {
+    return a.compareTo(b);
+  }
 }
 
 final class PositionalRange extends ComparablesRange<ElementPosition, int> {
-  PositionalRange(ElementPosition a, ElementPosition b)
-      : super(
-          a,
-          b,
-          (max, min) => (max.numeric - min.numeric),
-        );
+  const PositionalRange(ElementPosition a, ElementPosition b)
+      : super(a, b, _positionalSubtract);
+
+  static int _positionalSubtract(
+    ElementPosition max,
+    ElementPosition min,
+  ) {
+    return max.numeric - min.numeric;
+  }
 }
