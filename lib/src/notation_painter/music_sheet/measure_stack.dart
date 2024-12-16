@@ -179,8 +179,8 @@ class RenderMeasureColumn extends RenderMeasureLayout {
 
     for (var entry in data) {
       double width = entry.size.width;
-      bool isInfinitive = width.isInfinite && width == double.maxFinite;
-
+      double maybeInfinity = (width * _staveSpace * 1.01);
+      bool isInfinitive = maybeInfinity.isInfinite || width.isInfinite;
       if (!isInfinitive) {
         maxWidth = max(entry.size.width, maxWidth);
       }
