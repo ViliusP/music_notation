@@ -121,7 +121,7 @@ class RenderMeasureStack extends RenderBox
     // Ranges
     // ---------------
     var nonNullElements = measureElements.nonNulls.toList();
-    if (nonNullElements.isNotEmpty) {}
+
     PositionalRange? range = switch (strictBounds) {
       true => MeasurePositioned.columnPositionalRange(nonNullElements),
       false => MeasurePositioned.columnPositionalBounds(nonNullElements),
@@ -134,22 +134,26 @@ class RenderMeasureStack extends RenderBox
       false => range?.distance.toDouble(),
     };
 
-    var topOffset = nonNullElements
-        .sorted((a, b) => a.bounds.max.compareTo(b.bounds.max))
-        .lastOrNull
-        ?.offset
-        .top;
+    var topOffset = switch (strictBounds) {
+      true => nonNullElements
+          .sorted((a, b) => a.bounds.max.compareTo(b.bounds.max))
+          .lastOrNull
+          ?.offset
+          .top,
+      false => 0.0,
+    };
 
     // ---------------
     // SECOND PASS
     // ---------------
     Size positionlessSize = _placePositionless(measureElements);
+
     Size? measureElementSize;
     if (range != null) {
       double width = _placeMeasureElements(
         measureElements,
         range.max,
-        topOffset,
+        topOffset ?? 0,
       );
 
       double height = switch (strictBounds) {
@@ -162,24 +166,16 @@ class RenderMeasureStack extends RenderBox
 
     // If child has parentData as MeasureParentData,
     // it means it is child of RenderMeasureStack
-    if (parentData is MeasureParentData) {
-      ElementPosition? toSet = range?.max;
-
-      if ((parentData as MeasureParentData).position != toSet) {
-        (parentData as MeasureParentData).position = toSet;
-        if (range == null) {
-          (parentData as MeasureParentData).alignment = AlignmentOffset.zero();
-        } else {
-          (parentData as MeasureParentData).alignment = AlignmentOffset.fromTop(
-            left: 0,
-            top: switch (strictBounds) {
-              true => topOffset ?? 0.0,
-              false => 0.0,
-            },
-            height: measureElementSize!.height / _staveSpace,
-          );
-        }
-      }
+    if (parentData is MeasureParentData && range != null) {
+      (parentData as MeasureParentData).position = range.max;
+      (parentData as MeasureParentData).alignment = AlignmentOffset.fromTop(
+        left: 0,
+        top: topOffset ?? 0,
+        height: measureElementSize!.height / _staveSpace,
+      );
+    } else if (parentData is MeasureParentData) {
+      (parentData as MeasureParentData).alignment = null;
+      (parentData as MeasureParentData).position = null;
     }
 
     size = constraints.constrain(measureElementSize ?? positionlessSize);
@@ -239,7 +235,7 @@ class RenderMeasureStack extends RenderBox
   double _placeMeasureElements(
     List<MeasureElementData?> data,
     ElementPosition reference,
-    double? verticalOffset,
+    double verticalOffset,
   ) {
     double width = 0;
 
@@ -251,11 +247,9 @@ class RenderMeasureStack extends RenderBox
       var positionalData = data.elementAt(i);
       if (positionalData != null) {
         double y = positionalData.distanceToPosition(reference, BoxSide.top);
-        if (verticalOffset != null) {
-          // Strict bounds means that top element will have negative Y,
-          // so we need to shift every element by that top element's top offset.
-          y = y + verticalOffset;
-        }
+        // Strict bounds means that top element will have negative Y,
+        // so we need to shift every element by that top element's top offset.
+        y = y + verticalOffset;
         y = -y * _staveSpace;
 
         width = max(width, child.size.width);
