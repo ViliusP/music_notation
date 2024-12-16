@@ -164,9 +164,7 @@ class MeasureLayout extends StatelessWidget {
         child: Stack(
           fit: StackFit.loose,
           children: [
-            StaffLines(
-              bottom: staveBottom,
-            ),
+            StaffLinesStack(bottom: staveBottom),
             if (barlineSettings.start != null)
               Barline(
                 type: barlineSettings.start!,

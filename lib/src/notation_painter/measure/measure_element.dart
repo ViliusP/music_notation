@@ -425,7 +425,7 @@ class MeasureElementV2 extends ParentDataWidget<MeasureParentData>
   }
 
   @override
-  Type get debugTypicalAncestorWidgetClass => MeasureLayoutV2;
+  Type get debugTypicalAncestorWidgetClass => RenderMeasureColumn;
 }
 
 class ElementLayoutProperties {}

@@ -6,10 +6,10 @@ import 'package:music_notation/src/notation_painter/painters/staff_lines_painter
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
 
-class StaffLines extends StatelessWidget {
+class StaffLinesStack extends StatelessWidget {
   final double bottom;
 
-  const StaffLines({
+  const StaffLinesStack({
     super.key,
     required this.bottom,
   });
@@ -23,32 +23,46 @@ class StaffLines extends StatelessWidget {
     //   BarlineExtension.top: Color.fromRGBO(4, 0, 255, .5),
     // };
 
-    DebugSettings? debugSettings = DebugSettings.of(context);
-
     NotationLayoutProperties layoutProperties =
         NotationProperties.of(context)?.layout ??
             NotationLayoutProperties.standard();
-
     return LayoutBuilder(builder: (context, constraints) {
       return Stack(
         fit: StackFit.expand,
         children: [
           Positioned(
             bottom: bottom,
-            child: CustomPaint(
+            child: SizedBox.fromSize(
               size: Size(constraints.maxWidth, layoutProperties.staveHeight),
-              painter: StaffLinesPainter(
-                extraStaveLineCount: debugSettings?.extraStaveLineCount ?? 0,
-                extraStaveLines:
-                    debugSettings?.extraStaveLines ?? ExtraStaveLines.none,
-                spacing: layoutProperties.staveSpace,
-                thickness: layoutProperties.staveLineThickness,
-              ),
+              child: StaffLines(),
             ),
           ),
         ],
       );
     });
+  }
+}
+
+class StaffLines extends StatelessWidget {
+  const StaffLines({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    DebugSettings? debugSettings = DebugSettings.of(context);
+
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
+    return CustomPaint(
+      size: Size(double.maxFinite, layoutProperties.staveHeight),
+      painter: StaffLinesPainter(
+        extraStaveLineCount: debugSettings?.extraStaveLineCount ?? 0,
+        extraStaveLines: debugSettings?.extraStaveLines ?? ExtraStaveLines.none,
+        spacing: layoutProperties.staveSpace,
+        thickness: layoutProperties.staveLineThickness,
+      ),
+    );
   }
 }
 

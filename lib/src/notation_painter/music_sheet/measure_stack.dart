@@ -6,7 +6,6 @@ import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
-import 'package:music_notation/src/notation_painter/models/range.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 
 typedef OffsetCalculator = double Function(MeasureElementData);
@@ -15,15 +14,17 @@ class MeasureParentData extends ContainerBoxParentData<RenderBox> {
   ElementPosition? position;
 
   AlignmentOffset? alignment;
+
+  bool get isPositioned => position != null;
 }
 
-class MeasureLayoutV2 extends MultiChildRenderObjectWidget {
+class MeasureColumn extends MultiChildRenderObjectWidget {
   // final PositionalRange? range;
   final bool debug;
   final String debugName;
 
   final bool strictBounds;
-  const MeasureLayoutV2({
+  const MeasureColumn({
     super.key,
     // this.range,
     required super.children,
@@ -38,7 +39,7 @@ class MeasureLayoutV2 extends MultiChildRenderObjectWidget {
         NotationProperties.of(context)?.layout ??
             NotationLayoutProperties.standard();
 
-    return RenderMeasureStack(
+    return RenderMeasureColumn(
       heightPerPosition: layoutProperties.spacePerPosition,
       debug: debug,
       debugName: debugName,
@@ -49,7 +50,7 @@ class MeasureLayoutV2 extends MultiChildRenderObjectWidget {
   @override
   void updateRenderObject(
     BuildContext context,
-    RenderMeasureStack renderObject,
+    RenderMeasureColumn renderObject,
   ) {
     NotationLayoutProperties layoutProperties =
         NotationProperties.of(context)?.layout ??
@@ -63,12 +64,19 @@ class MeasureLayoutV2 extends MultiChildRenderObjectWidget {
   }
 }
 
-class RenderMeasureStack extends RenderBox
+abstract class RenderMeasureLayout extends RenderBox
     with
         ContainerRenderObjectMixin<RenderBox, MeasureParentData>,
         RenderBoxContainerDefaultsMixin<RenderBox, MeasureParentData> {
   double heightPerPosition;
   double get _staveSpace => heightPerPosition * 2;
+
+  RenderMeasureLayout({
+    required this.heightPerPosition,
+  });
+}
+
+class RenderMeasureColumn extends RenderMeasureLayout {
   bool debug;
   String debugName;
   bool strictBounds;
@@ -89,12 +97,161 @@ class RenderMeasureStack extends RenderBox
 
   bool positionlessAlignAtTop = true;
 
-  RenderMeasureStack({
-    required this.heightPerPosition,
+  RenderMeasureColumn({
+    required super.heightPerPosition,
     required this.strictBounds,
     this.debug = false,
     this.debugName = "",
   });
+
+  List<MeasureElementData?> _computePositionedData({
+    required ChildLayouter layoutChild,
+  }) {
+    if (childCount == 0) return [];
+
+    List<MeasureElementData?> data = [];
+
+    RenderBox? child = firstChild;
+    while (child != null) {
+      final MeasureParentData childParentData =
+          child.parentData! as MeasureParentData;
+
+      final Size childSize = layoutChild(
+        child,
+        BoxConstraints(minHeight: 0, minWidth: 0),
+      );
+
+      if (childParentData.isPositioned) {
+        data.add(MeasureElementData(
+          position: childParentData.position!,
+          size: childSize.scale(1 / _staveSpace),
+          offset: childParentData.alignment ?? AlignmentOffset.zero(),
+          duration: 0,
+        ));
+      } else {
+        data.add(null);
+      }
+      child = childParentData.nextSibling;
+    }
+    return data;
+  }
+
+  double _computeHeightByPositioned(List<MeasureElementData> data) {
+    // Distance between lowest element bottom side and highest element top side.
+    // In stave spaces.
+    var height = switch (strictBounds) {
+      true => MeasurePositioned.columnVerticalRange(data).distance,
+      false => MeasurePositioned.columnPositionalBounds(data)!.distance,
+    };
+
+    height = switch (strictBounds) {
+      true => height * _staveSpace,
+      false => height * heightPerPosition,
+    };
+
+    return height.toDouble();
+  }
+
+  ({ElementPosition position, double top}) _computeReference(
+    List<MeasureElementData> data,
+  ) {
+    ElementPosition max = switch (strictBounds) {
+      true => MeasurePositioned.columnPositionalRange(data)!.max,
+      false => MeasurePositioned.columnPositionalBounds(data)!.max,
+    };
+
+    var top = switch (strictBounds) {
+      true => data
+          .sorted((a, b) => a.bounds.max.compareTo(b.bounds.max))
+          .last
+          .offset
+          .top,
+      false => 0.0,
+    };
+
+    return (position: max, top: top);
+  }
+
+  double _computeWidthByPositioned(List<MeasureElementData> data) {
+    assert(data.isNotEmpty);
+
+    double maxWidth = 0;
+
+    for (var entry in data) {
+      double width = entry.size.width;
+      bool isInfinitive = width.isInfinite && width == double.maxFinite;
+
+      if (!isInfinitive) {
+        maxWidth = max(entry.size.width, maxWidth);
+      }
+    }
+    return maxWidth * _staveSpace;
+  }
+
+  Size _computeSizeByPositioned(List<MeasureElementData> data) {
+    return Size(
+      _computeWidthByPositioned(data),
+      _computeHeightByPositioned(data),
+    );
+  }
+
+  Size _computeSize(List<MeasureElementData?> data) {
+    var nonNull = data.nonNulls.toList();
+    if (nonNull.isNotEmpty) {
+      return _computeSizeByPositioned(nonNull);
+    }
+    return size = _computeSizeByNonPositioned(
+      constraints: constraints,
+      layoutChild: ChildLayoutHelper.dryLayoutChild,
+    );
+  }
+
+  Size _computeSizeByNonPositioned({
+    required BoxConstraints constraints,
+    required ChildLayouter layoutChild,
+  }) {
+    if (childCount == 0) {
+      return (constraints.biggest.isFinite) ? Size.zero : constraints.smallest;
+    }
+
+    double width = constraints.minWidth;
+    double height = constraints.minHeight;
+
+    RenderBox? child = firstChild;
+    while (child != null) {
+      final MeasureParentData childParentData =
+          child.parentData! as MeasureParentData;
+
+      if (!childParentData.isPositioned) {
+        final Size childSize = layoutChild(
+          child,
+          BoxConstraints(minHeight: 0, minWidth: 0),
+        );
+
+        if (childSize.width.isFinite) {
+          width = max(width, childSize.width);
+        }
+
+        if (childSize.height.isFinite) {
+          height = max(height, childSize.height);
+        }
+      }
+
+      child = childParentData.nextSibling;
+    }
+
+    // assert(size.isFinite);
+    return Size(width, height);
+  }
+
+  @override
+  Size computeDryLayout(covariant BoxConstraints constraints) {
+    var positionedData = _computePositionedData(
+      layoutChild: ChildLayoutHelper.dryLayoutChild,
+    );
+
+    return _computeSize(positionedData);
+  }
 
   @override
   void performLayout() {
@@ -111,148 +268,77 @@ class RenderMeasureStack extends RenderBox
       }
       return true;
     }());
+    final BoxConstraints constraints = this.constraints;
+    var positionedData = _computePositionedData(
+      layoutChild: ChildLayoutHelper.layoutChild,
+    );
+    var nonNullData = positionedData.nonNulls.toList();
+    size = constraints.constrain(_computeSize(positionedData));
 
-    // ---------------
-    // FIRST PASS
-    // ---------------
-    var measureElements = _layoutChildren();
+    bool hasPositioned = nonNullData.isNotEmpty;
+    if (hasPositioned) {
+      var reference = _computeReference(nonNullData);
 
-    // ---------------
-    // Ranges
-    // ---------------
-    var nonNullElements = measureElements.nonNulls.toList();
-
-    PositionalRange? range = switch (strictBounds) {
-      true => MeasurePositioned.columnPositionalRange(nonNullElements),
-      false => MeasurePositioned.columnPositionalBounds(nonNullElements),
-    };
-
-    // Distance between lowest element bottom side and highest element top side.
-    // In stave spaces.
-    double? distance = switch (strictBounds) {
-      true => MeasurePositioned.columnVerticalRange(nonNullElements).distance,
-      false => range?.distance.toDouble(),
-    };
-
-    var topOffset = switch (strictBounds) {
-      true => nonNullElements
-          .sorted((a, b) => a.bounds.max.compareTo(b.bounds.max))
-          .lastOrNull
-          ?.offset
-          .top,
-      false => 0.0,
-    };
-
-    // ---------------
-    // SECOND PASS
-    // ---------------
-    Size positionlessSize = _placePositionless(measureElements);
-
-    Size? measureElementSize;
-    if (range != null) {
-      double width = _placeMeasureElements(
-        measureElements,
-        range.max,
-        topOffset ?? 0,
-      );
-
-      double height = switch (strictBounds) {
-        true => distance! * _staveSpace,
-        false => distance! * heightPerPosition,
-      };
-
-      measureElementSize = Size(width, height);
-    }
-
-    // If child has parentData as MeasureParentData,
-    // it means it is child of RenderMeasureStack
-    if (parentData is MeasureParentData && range != null) {
-      (parentData as MeasureParentData).position = range.max;
-      (parentData as MeasureParentData).alignment = AlignmentOffset.fromTop(
-        left: 0,
-        top: topOffset ?? 0,
-        height: measureElementSize!.height / _staveSpace,
-      );
-    } else if (parentData is MeasureParentData) {
-      (parentData as MeasureParentData).alignment = null;
-      (parentData as MeasureParentData).position = null;
-    }
-
-    size = constraints.constrain(measureElementSize ?? positionlessSize);
-  }
-
-  List<MeasureElementData?> _layoutChildren() {
-    RenderBox? child = firstChild;
-
-    List<MeasureElementData?> elements = [];
-
-    while (child != null) {
-      final childParentData = child.parentData as MeasureParentData;
-      child.layout(
-        BoxConstraints(minHeight: 0, minWidth: 0),
-        parentUsesSize: true,
-      );
-
-      var position = childParentData.position;
-      if (position == null) {
-        elements.add(null);
-      } else {
-        elements.add(MeasureElementData(
-          position: position,
-          size: child.size.scale(1 / _staveSpace),
-          offset: childParentData.alignment ?? AlignmentOffset.zero(),
-          duration: 0,
-        ));
+      // If child has parentData as MeasureParentData,
+      // it means it is child of RenderMeasureStack
+      if (parentData is MeasureParentData) {
+        (parentData as MeasureParentData).position = reference.position;
+        (parentData as MeasureParentData).alignment = AlignmentOffset.fromTop(
+          left: 0,
+          top: reference.top,
+          height: size.height / _staveSpace,
+        );
       }
-
-      _log("Child position ${childParentData.position}");
-      child = childParentData.nextSibling;
+      _layoutChildren(
+        data: positionedData,
+        reference: reference.position,
+        top: reference.top,
+        size: size,
+      );
+    } else {
+      _layoutNonPositioned(size);
+      if (parentData is MeasureParentData) {
+        (parentData as MeasureParentData).alignment = null;
+        (parentData as MeasureParentData).position = null;
+      }
     }
-    return elements;
   }
 
-  Size _placePositionless(List<MeasureElementData?> data) {
-    double width = 0;
-    double height = 0;
-
-    int i = 0;
+  void _layoutNonPositioned(Size size) {
     RenderBox? child = firstChild;
     while (child != null) {
       final childParentData = child.parentData as MeasureParentData;
-      if (data.elementAt(i) == null) {
-        height = max(width, child.size.height);
-        width = max(height, child.size.width);
-
-        childParentData.offset = Offset(0, 0);
-      }
+      child.layout(BoxConstraints.loose(size), parentUsesSize: true);
+      childParentData.offset = Offset(0, 0);
       child = childParentData.nextSibling;
-      i++;
     }
-
-    return Size(width, height);
   }
 
-  double _placeMeasureElements(
-    List<MeasureElementData?> data,
-    ElementPosition reference,
-    double verticalOffset,
-  ) {
-    double width = 0;
-
+  void _layoutChildren({
+    required List<MeasureElementData?> data,
+    required ElementPosition reference,
+    required double top,
+    required Size size,
+  }) {
     int i = 0;
     RenderBox? child = firstChild;
     while (child != null) {
       final childParentData = child.parentData as MeasureParentData;
 
       var positionalData = data.elementAt(i);
+      if (positionalData == null) {
+        child.layout(BoxConstraints.loose(size), parentUsesSize: true);
+        childParentData.offset = Offset(0, 0);
+      }
+
       if (positionalData != null) {
+        child.layout(BoxConstraints.loose(size), parentUsesSize: true);
         double y = positionalData.distanceToPosition(reference, BoxSide.top);
         // Strict bounds means that top element will have negative Y,
         // so we need to shift every element by that top element's top offset.
-        y = y + verticalOffset;
+        y = y + top;
         y = -y * _staveSpace;
 
-        width = max(width, child.size.width);
         Offset offset = Offset(0, y);
 
         childParentData.offset = offset;
@@ -260,8 +346,6 @@ class RenderMeasureStack extends RenderBox
       child = childParentData.nextSibling;
       i++;
     }
-
-    return width;
   }
 
   @override
