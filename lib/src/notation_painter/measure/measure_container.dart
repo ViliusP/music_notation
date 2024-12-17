@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:music_notation/src/notation_painter/layout/measure_stack.dart';
 
 import 'package:music_notation/src/notation_painter/measure/measure_grid.dart';
 import 'package:music_notation/src/notation_painter/measure/staff_lines.dart';
@@ -330,29 +332,28 @@ class MeasureContainerV2 extends StatelessWidget {
     return SizedBox(
       height: measureHeight.scaledByContext(context),
       width: measureWidth.scaledByContext(context),
-      child: BeamCanvas(
-        child: Stack(
-          fit: StackFit.loose,
-          children: [
-            StaffLinesStack(bottom: staveBottom),
-            if (barlineSettings.start != null)
-              Barline(
-                type: barlineSettings.start!,
-                location: BarlineLocation.start,
-                baseline: staveBottom,
-                baseHeight: layoutProperties.staveHeight,
-              ),
-            if (barlineSettings.end != null)
-              Barline(
-                type: barlineSettings.end!,
-                location: BarlineLocation.end,
-                baseline: staveBottom,
-                baseHeight: layoutProperties.staveHeight,
-              ),
-            ...positionedElements,
-          ],
-        ),
+      // child: BeamCanvas(
+      child: MeasureStack(
+        children: [
+          // StaffLinesStack(bottom: staveBottom),
+          // if (barlineSettings.start != null)
+          //   Barline(
+          //     type: barlineSettings.start!,
+          //     location: BarlineLocation.start,
+          //     baseline: staveBottom,
+          //     baseHeight: layoutProperties.staveHeight,
+          //   ),
+          // if (barlineSettings.end != null)
+          //   Barline(
+          //     type: barlineSettings.end!,
+          //     location: BarlineLocation.end,
+          //     baseline: staveBottom,
+          //     baseHeight: layoutProperties.staveHeight,
+          //   ),
+          // ...positionedElements,
+        ],
       ),
+      // ),
     );
   }
 }

@@ -19,7 +19,7 @@ class MeasureElementPosition {
 }
 
 class MeasureElementLayoutData extends MeasureElementPosition {
-  MeasureElementLayoutData({
+  const MeasureElementLayoutData({
     required this.size,
     required super.position,
     required super.offset,

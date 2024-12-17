@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/models/elements/score/score.dart';
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
-import 'package:music_notation/src/notation_painter/layout/measure_column.dart';
+import 'package:music_notation/src/notation_painter/layout/measure_stack.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_barlines.dart';
 import 'package:music_notation/src/notation_painter/layout/measure_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_grid.dart';
@@ -115,12 +115,12 @@ class MusicSheet extends StatelessWidget {
       font: font,
     );
     // Stack()
-    var abc = MeasureColumnV2(
+    var abc = MeasureStack(
       debug: true,
       strictBounds: false,
       debugName: "Outer",
       children: [
-        MeasureColumnV2(
+        MeasureStack(
           debug: true,
           strictBounds: false,
           debugName: "Inner",

@@ -10,7 +10,7 @@ import 'package:music_notation/src/notation_painter/clef_element.dart';
 import 'package:music_notation/src/notation_painter/debug/alignment_debug_painter.dart';
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
-import 'package:music_notation/src/notation_painter/layout/measure_column.dart';
+import 'package:music_notation/src/notation_painter/layout/measure_stack.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/layout/positioning.dart';
 import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
@@ -204,7 +204,7 @@ class MeasureElement extends StatelessWidget implements MeasureWidget {
   }
 }
 
-class MeasureElementV2 extends ParentDataWidget<MeasureParentData>
+class MeasureElementV2 extends ParentDataWidget<MeasureStackParentData>
     implements MeasureWidget {
   @override
   final AlignmentOffset offset;
@@ -225,7 +225,7 @@ class MeasureElementV2 extends ParentDataWidget<MeasureParentData>
 
   @override
   void applyParentData(RenderObject renderObject) {
-    final parentData = renderObject.parentData as MeasureParentData;
+    final parentData = renderObject.parentData as MeasureStackParentData;
     if (parentData.position != position || parentData.alignment != offset) {
       parentData.position = position;
       parentData.alignment = offset;
@@ -239,7 +239,7 @@ class MeasureElementV2 extends ParentDataWidget<MeasureParentData>
   }
 
   @override
-  Type get debugTypicalAncestorWidgetClass => RenderMeasureColumn;
+  Type get debugTypicalAncestorWidgetClass => RenderMeasureStack;
 }
 
 class ElementLayoutProperties {}
@@ -448,9 +448,9 @@ class MusicElementRenderBox extends RenderProxyBox {
       child?.size.height ?? 0,
     ));
 
-    if (parentData is MeasureParentData) {
-      (parentData as MeasureParentData).position = position;
-      (parentData as MeasureParentData).alignment = alignment;
+    if (parentData is MeasureStackParentData) {
+      (parentData as MeasureStackParentData).position = position;
+      (parentData as MeasureStackParentData).alignment = alignment;
     }
   }
 
