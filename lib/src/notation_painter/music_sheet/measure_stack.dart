@@ -6,9 +6,8 @@ import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
+import 'package:music_notation/src/notation_painter/music_sheet/music_element.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
-
-typedef OffsetCalculator = double Function(MeasureElementData);
 
 class MeasureParentData extends ContainerBoxParentData<RenderBox> {
   ElementPosition? position;
@@ -104,12 +103,12 @@ class RenderMeasureColumn extends RenderMeasureLayout {
     this.debugName = "",
   });
 
-  List<MeasureElementData?> _computePositionedData({
+  List<MeasureElementLayoutData?> _computePositionedData({
     required ChildLayouter layoutChild,
   }) {
     if (childCount == 0) return [];
 
-    List<MeasureElementData?> data = [];
+    List<MeasureElementLayoutData?> data = [];
 
     RenderBox? child = firstChild;
     while (child != null) {
@@ -122,11 +121,10 @@ class RenderMeasureColumn extends RenderMeasureLayout {
       );
 
       if (childParentData.isPositioned) {
-        data.add(MeasureElementData(
+        data.add(MeasureElementLayoutData(
           position: childParentData.position!,
           size: childSize.scale(1 / _staveSpace),
           offset: childParentData.alignment ?? AlignmentOffset.zero(),
-          duration: 0,
         ));
       } else {
         data.add(null);
@@ -136,12 +134,12 @@ class RenderMeasureColumn extends RenderMeasureLayout {
     return data;
   }
 
-  double _computeHeightByPositioned(List<MeasureElementData> data) {
+  double _computeHeightByPositioned(List<MeasureElementLayoutData> data) {
     // Distance between lowest element bottom side and highest element top side.
     // In stave spaces.
     var height = switch (strictBounds) {
-      true => MeasurePositioned.columnVerticalRange(data).distance,
-      false => MeasurePositioned.columnPositionalBounds(data)!.distance,
+      true => MeasureElementLayoutData.columnVerticalRange(data).distance,
+      false => MeasureElementLayoutData.columnPositionalBounds(data)!.distance,
     };
 
     height = switch (strictBounds) {
@@ -153,11 +151,11 @@ class RenderMeasureColumn extends RenderMeasureLayout {
   }
 
   ({ElementPosition position, double top}) _computeReference(
-    List<MeasureElementData> data,
+    List<MeasureElementLayoutData> data,
   ) {
     ElementPosition max = switch (strictBounds) {
-      true => MeasurePositioned.columnPositionalRange(data)!.max,
-      false => MeasurePositioned.columnPositionalBounds(data)!.max,
+      true => MeasureElementLayoutData.columnPositionalRange(data)!.max,
+      false => MeasureElementLayoutData.columnPositionalBounds(data)!.max,
     };
 
     var top = switch (strictBounds) {
@@ -172,7 +170,7 @@ class RenderMeasureColumn extends RenderMeasureLayout {
     return (position: max, top: top);
   }
 
-  double _computeWidthByPositioned(List<MeasureElementData> data) {
+  double _computeWidthByPositioned(List<MeasureElementLayoutData> data) {
     assert(data.isNotEmpty);
 
     double maxWidth = 0;
@@ -188,14 +186,14 @@ class RenderMeasureColumn extends RenderMeasureLayout {
     return maxWidth * _staveSpace;
   }
 
-  Size _computeSizeByPositioned(List<MeasureElementData> data) {
+  Size _computeSizeByPositioned(List<MeasureElementLayoutData> data) {
     return Size(
       _computeWidthByPositioned(data),
       _computeHeightByPositioned(data),
     );
   }
 
-  Size _computeSize(List<MeasureElementData?> data) {
+  Size _computeSize(List<MeasureElementLayoutData?> data) {
     var nonNull = data.nonNulls.toList();
     if (nonNull.isNotEmpty) {
       return _computeSizeByPositioned(nonNull);
@@ -223,10 +221,7 @@ class RenderMeasureColumn extends RenderMeasureLayout {
           child.parentData! as MeasureParentData;
 
       if (!childParentData.isPositioned) {
-        final Size childSize = layoutChild(
-          child,
-          BoxConstraints(minHeight: 0, minWidth: 0),
-        );
+        final Size childSize = child.size;
 
         if (childSize.width.isFinite) {
           width = max(width, childSize.width);
@@ -315,7 +310,7 @@ class RenderMeasureColumn extends RenderMeasureLayout {
   }
 
   void _layoutChildren({
-    required List<MeasureElementData?> data,
+    required List<MeasureElementLayoutData?> data,
     required ElementPosition reference,
     required double top,
     required Size size,

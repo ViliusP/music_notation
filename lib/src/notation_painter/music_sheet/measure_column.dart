@@ -5,18 +5,21 @@ import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
+import 'package:music_notation/src/notation_painter/music_sheet/music_element.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 
-class MeasureColumn extends StatelessWidget {
-  final List<MeasureElement> children;
+class MeasureColumn extends StatelessWidget implements MeasureWidget {
+  final List<MeasureWidget> children;
 
   const MeasureColumn({
     super.key,
     required this.children,
   });
 
-  ElementPosition? get position => _reference?.position;
-
+  @override
+  ElementPosition get position =>
+      _reference?.position ?? ElementPosition.staffMiddle;
+  @override
   AlignmentOffset get offset {
     if (_reference == null) return AlignmentOffset.zero();
     return AlignmentOffset.fromBottom(
@@ -26,7 +29,7 @@ class MeasureColumn extends StatelessWidget {
     );
   }
 
-  MeasureElement? get _reference {
+  MeasureElementLayoutData? get _reference {
     if (children.isEmpty) return null;
     if (children.length == 1) return children.first;
 
@@ -38,8 +41,9 @@ class MeasureColumn extends StatelessWidget {
     return sortedByBottom.first;
   }
 
+  @override
   Size get size {
-    var range = MeasurePositioned.columnVerticalRange(children);
+    var range = MeasureElementLayoutData.columnVerticalRange(children);
     double height = range.distance;
 
     double width = 0;
@@ -74,7 +78,7 @@ class MeasureColumn extends StatelessWidget {
 }
 
 class _MeasureColumnDelegate extends MultiChildLayoutDelegate {
-  final List<MeasureElement> children;
+  final List<MeasureWidget> children;
   final bool strictlyBounded;
   final double scale;
 
@@ -86,7 +90,7 @@ class _MeasureColumnDelegate extends MultiChildLayoutDelegate {
 
   @override
   void performLayout(Size size) {
-    MeasureElement reference =
+    MeasureElementLayoutData reference =
         children.sorted((a, b) => a.position.compareTo(b.position)).last;
     for (int i = 0; i < children.length; i++) {
       final child = children[i];

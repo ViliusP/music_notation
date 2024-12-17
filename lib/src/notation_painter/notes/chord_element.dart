@@ -13,6 +13,7 @@ import 'package:music_notation/src/notation_painter/music_sheet/measure_row.dart
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/range.dart';
+import 'package:music_notation/src/notation_painter/music_sheet/music_element.dart';
 import 'package:music_notation/src/notation_painter/notes/adjacency.dart';
 import 'package:music_notation/src/notation_painter/notes/augmentation_dots.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
@@ -23,9 +24,9 @@ import 'package:music_notation/src/notation_painter/utilities/size_extensions.da
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
 class Chord extends StatelessWidget {
-  final MeasureColumn? noteheadsLeft;
+  final List<PositionedNotehead> noteheadsLeft;
 
-  final MeasureColumn? noteheadsRight;
+  final List<PositionedNotehead> noteheadsRight;
 
   final MeasureColumn? augmentationDots;
 
@@ -40,8 +41,8 @@ class Chord extends StatelessWidget {
 
   const Chord({
     super.key,
-    this.noteheadsLeft,
-    this.noteheadsRight,
+    this.noteheadsLeft = const [],
+    this.noteheadsRight = const [],
     this.augmentationDots,
     this.accidentals,
     this.stem,
@@ -80,7 +81,7 @@ class Chord extends StatelessWidget {
         clef: clef,
         font: font,
       ));
-      positions.add(notesElements.last.head.position);
+      positions.add(notesElements.last.position);
     }
 
     // Direction of real or imaginary (if stem isn't needed) stem.
@@ -89,39 +90,21 @@ class Chord extends StatelessWidget {
 
     var sides = Adjacency.determineNoteSides(positions, direction);
 
-    MeasureColumn? leftNoteheads = MeasureColumn(
-      children: notesElements
-          .whereIndexed((i, _) => sides[i] == NoteheadSide.left)
-          .map((note) => MeasureElement(
-                position: note.head.position,
-                size: note.head.size,
-                offset: note.head.offset,
-                duration: 0,
-                child: note.head,
-              ))
-          .toList(),
-    );
+    List<PositionedNotehead> leftNoteheads = notesElements
+        .whereIndexed((i, _) => sides[i] == NoteheadSide.left)
+        .map((note) => PositionedNotehead.fromParent(
+              element: note.head,
+              position: note.position,
+            ))
+        .toList();
 
-    if (leftNoteheads.children.isEmpty) {
-      leftNoteheads = null;
-    }
-
-    MeasureColumn? rightNoteheads = MeasureColumn(
-      children: notesElements
-          .whereIndexed((i, _) => sides[i] == NoteheadSide.right)
-          .map((note) => MeasureElement(
-                position: note.head.position,
-                size: note.head.size,
-                offset: note.head.offset,
-                duration: 0,
-                child: note.head,
-              ))
-          .toList(),
-    );
-
-    if (rightNoteheads.children.isEmpty) {
-      rightNoteheads = null;
-    }
+    List<PositionedNotehead> rightNoteheads = notesElements
+        .whereIndexed((i, _) => sides[i] == NoteheadSide.right)
+        .map((note) => PositionedNotehead.fromParent(
+              element: note.head,
+              position: note.position,
+            ))
+        .toList();
 
     // -------------------- STEM ----------------------
     NoteTypeValue type = notes.first.type?.value ?? NoteTypeValue.quarter;
@@ -145,7 +128,7 @@ class Chord extends StatelessWidget {
       children: notesElements
           .where((e) => e.accidental != null)
           .map((e) => MeasureElement(
-                position: e.head.position,
+                position: e.position,
                 size: e.accidental!.size,
                 offset: e.accidental!.offset,
                 duration: 0,
@@ -157,7 +140,7 @@ class Chord extends StatelessWidget {
     // ----------- DOTS ---------------------
     MeasureColumn augmentationDots = MeasureColumn(
       children: notesElements.where((e) => e.dots != null).map((e) {
-        ElementPosition position = e.head.position;
+        ElementPosition position = e.position;
         if (position.numeric % 2 == 0) {
           position = position.transpose(1);
         }
@@ -184,37 +167,17 @@ class Chord extends StatelessWidget {
     );
   }
 
-  MeasureElement? get _noteheadsLeft =>
-      noteheadsLeft?.children.isNotEmpty == true
-          ? MeasureElement(
-              position: noteheadsLeft!.position!,
-              size: noteheadsLeft!.size,
-              offset: noteheadsLeft!.offset,
-              duration: 0,
-              child: noteheadsLeft!,
-            )
-          : null;
+  MeasureColumn? get _leftColumn {
+    if (noteheadsLeft.isEmpty) return null;
 
-  MeasureElement? get _noteheadsRight =>
-      noteheadsRight?.children.isNotEmpty == true
-          ? MeasureElement(
-              position: noteheadsRight!.position!,
-              size: noteheadsRight!.size,
-              offset: noteheadsRight!.offset,
-              duration: 0,
-              child: noteheadsRight!,
-            )
-          : null;
-  MeasureElement? get _augmentationDots =>
-      augmentationDots?.children.isNotEmpty == true
-          ? MeasureElement(
-              position: augmentationDots!.position!,
-              size: augmentationDots!.size,
-              offset: augmentationDots!.offset,
-              duration: 0,
-              child: augmentationDots!,
-            )
-          : null;
+    return MeasureColumn(children: noteheadsLeft);
+  }
+
+  MeasureColumn? get _rightColumn {
+    if (noteheadsRight.isEmpty) return null;
+
+    return MeasureColumn(children: noteheadsRight);
+  }
 
   MeasureElement? get _accidentals => accidentals?.children.isNotEmpty == true
       ? MeasureElement(
@@ -226,16 +189,27 @@ class Chord extends StatelessWidget {
         )
       : null;
 
-  List<MeasureElement> get _elements {
-    List<MeasureElement> columns = [];
+  MeasureElement? get _augmentationDots =>
+      augmentationDots?.children.isNotEmpty == true
+          ? MeasureElement(
+              position: augmentationDots!.position!,
+              size: augmentationDots!.size,
+              offset: augmentationDots!.offset,
+              duration: 0,
+              child: augmentationDots!,
+            )
+          : null;
+
+  List<MeasureWidget> get _elements {
+    List<MeasureWidget> columns = [];
     if (_accidentals != null) {
       columns.add(_accidentals!);
     }
-    if (_noteheadsLeft != null) {
-      columns.add(_noteheadsLeft!);
+    if (noteheadsLeft.isNotEmpty) {
+      columns.addAll(noteheadsLeft);
     }
-    if (_noteheadsRight != null) {
-      columns.add(_noteheadsRight!);
+    if (noteheadsRight.isNotEmpty) {
+      columns.addAll(noteheadsRight);
     }
 
     if (_augmentationDots != null) {
@@ -254,31 +228,15 @@ class Chord extends StatelessWidget {
 
     switch (stem!.direction) {
       case StemDirection.up:
-        var minLeft = noteheadsLeft?.children
-            .map(
-              (note) => note.position,
-            )
-            .minOrNull;
+        var minLeft = noteheadsLeft.map((note) => note.position).minOrNull;
 
-        var minRight = noteheadsRight?.children
-            .map(
-              (note) => note.position,
-            )
-            .minOrNull;
+        var minRight = noteheadsRight.map((note) => note.position).minOrNull;
 
         stemPosition = [minLeft, minRight].nonNulls.minOrNull;
       case StemDirection.down:
-        var posLeft = noteheadsLeft?.children
-            .map(
-              (note) => note.position,
-            )
-            .maxOrNull;
+        var posLeft = noteheadsLeft.map((note) => note.position).maxOrNull;
 
-        var posRight = noteheadsRight?.children
-            .map(
-              (note) => note.position,
-            )
-            .maxOrNull;
+        var posRight = noteheadsRight.map((note) => note.position).maxOrNull;
 
         if (posLeft == null && posRight == null) return null;
         stemPosition = [posLeft, posRight].nonNulls.maxOrNull;
@@ -295,7 +253,7 @@ class Chord extends StatelessWidget {
     );
   }
 
-  MeasureElement? get _reference {
+  MeasureElementLayoutData? get _reference {
     if (_elements.isEmpty) return null;
     if (_elements.length == 1) return _elements.first;
 
@@ -310,11 +268,11 @@ class Chord extends StatelessWidget {
   /// Calculates stem lenght
   static double _stemStartLength(List<NoteElement> notes) {
     var sortedNotes = notes.sortedBy(
-      (note) => note.head.position,
+      (note) => note.position,
     );
 
-    int lowestPosition = sortedNotes.last.head.position.numeric;
-    int highestPosition = sortedNotes.first.head.position.numeric;
+    int lowestPosition = sortedNotes.last.position.numeric;
+    int highestPosition = sortedNotes.first.position.numeric;
     int range = (highestPosition - lowestPosition).abs();
 
     return range * NotationLayoutProperties.baseSpacePerPosition;
@@ -345,7 +303,7 @@ class Chord extends StatelessWidget {
 
   /// Lowest y of every chord elements
   NumericalRange<double> get _verticalRange {
-    return MeasurePositioned.columnVerticalRange(_elements);
+    return MeasureElementLayoutData.columnVerticalRange(_elements);
   }
 
   double get _width {
@@ -356,9 +314,9 @@ class Chord extends StatelessWidget {
       currentWidth += accidentals!.size.width;
       nextElementPosition = NotationLayoutProperties.noteAccidentalDistance;
     }
-    if (_noteheadsLeft != null) {
+    if (_leftColumn != null) {
       currentWidth += nextElementPosition;
-      currentWidth += noteheadsLeft!.size.width;
+      currentWidth += _leftColumn!.size.width;
       nextElementPosition = 0;
     }
     if (_positionedStem != null) {
@@ -367,9 +325,9 @@ class Chord extends StatelessWidget {
       widthTillStem = currentWidth;
       nextElementPosition = -(NotationLayoutProperties.baseStemStrokeWidth) / 2;
     }
-    if (_noteheadsRight != null) {
+    if (_rightColumn != null) {
       currentWidth += nextElementPosition;
-      currentWidth += noteheadsRight!.size.width;
+      currentWidth += _rightColumn!.size.width;
       nextElementPosition = 0;
     }
     if (_augmentationDots != null) {
@@ -391,9 +349,9 @@ class Chord extends StatelessWidget {
       child: MeasureRow(
         children: [
           if (_accidentals != null) _accidentals!,
-          if (_noteheadsLeft != null) _noteheadsLeft!,
+          if (_leftColumn != null) _leftColumn!,
           if (_positionedStem != null) _positionedStem!,
-          if (_noteheadsRight != null) _noteheadsRight!,
+          if (_rightColumn != null) _rightColumn!,
           if (_augmentationDots != null) _augmentationDots!,
         ],
       ),

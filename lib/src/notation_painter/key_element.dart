@@ -10,6 +10,7 @@ import 'package:music_notation/src/notation_painter/music_sheet/measure_row.dart
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/octaved_key_accidental.dart';
+import 'package:music_notation/src/notation_painter/music_sheet/music_element.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
@@ -318,7 +319,8 @@ class KeySignatureElement extends StatelessWidget {
 
     var width = 0.0;
 
-    double height = MeasurePositioned.columnVerticalRange(_children).distance;
+    double height =
+        MeasureElementLayoutData.columnVerticalRange(_children).distance;
 
     double spacings = 0;
     for (var accidental in _children) {
@@ -339,7 +341,7 @@ class KeySignatureElement extends StatelessWidget {
   }
 
   ElementPosition get _position =>
-      MeasurePositioned.columnPositionalRange(_children)?.min ??
+      MeasureElementLayoutData.columnPositionalRange(_children)?.min ??
       ElementPosition.staffMiddle;
 
   ElementPosition get position => _position.transpose(_transposeInterval);

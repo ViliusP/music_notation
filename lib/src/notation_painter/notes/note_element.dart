@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/models/elements/music_data/note/beam.dart';
@@ -10,13 +9,13 @@ import 'package:music_notation/src/notation_painter/measure/measure_element.dart
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
 import 'package:music_notation/src/notation_painter/music_sheet/measure_row.dart';
+import 'package:music_notation/src/notation_painter/music_sheet/music_element.dart';
 import 'package:music_notation/src/notation_painter/properties/constants.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/augmentation_dots.dart';
 import 'package:music_notation/src/notation_painter/notes/note_parts.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
-import 'package:music_notation/src/notation_painter/utilities/type_extensions.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
 const Map<String, Color> _voiceColors = {
@@ -27,10 +26,11 @@ const Map<String, Color> _voiceColors = {
 };
 
 class NoteElement extends StatelessWidget {
-  final MeasureElement head;
-  final MeasureElement? stem;
-  final MeasureElement? accidental;
-  final MeasureElement? dots;
+  final NoteheadElement head;
+  final StemElement? stem;
+  final AccidentalElement? accidental;
+  final AugmentationDots? dots;
+  final ElementPosition position;
 
   const NoteElement({
     super.key,
@@ -40,6 +40,7 @@ class NoteElement extends StatelessWidget {
     this.dots,
     this.voice,
     this.stem,
+    required this.position,
   });
 
   final String? voice;
@@ -56,26 +57,16 @@ class NoteElement extends StatelessWidget {
     ElementPosition position = determinePosition(note, clef);
 
     AccidentalElement? accidental;
-    MeasureElement? accidentalElement;
     if (note.accidental != null) {
       accidental = AccidentalElement(
         type: note.accidental!.value,
         font: font,
-      );
-
-      accidentalElement = MeasureElement(
-        position: position,
-        size: accidental.size,
-        offset: accidental.offset,
-        duration: 0,
-        child: accidental,
       );
     }
 
     NoteTypeValue type = note.type?.value ?? NoteTypeValue.quarter;
 
     StemElement? stemElement;
-    MeasureElement? noteStem;
     StemDirection? stemDirection = note.stem == null
         ? null
         : StemDirection.fromStemValue(note.stem!.value);
@@ -88,47 +79,26 @@ class NoteElement extends StatelessWidget {
         showFlag: note.beams.isEmpty,
         direction: stemDirection,
       );
-      noteStem = MeasureElement(
-        position: position,
-        size: stemElement.size,
-        offset: stemElement.offset,
-        duration: 0,
-        child: stemElement,
-      );
     }
 
     AugmentationDots? dots;
-    MeasureElement? noteDots;
     if (note.dots.isNotEmpty) {
       dots = AugmentationDots(count: note.dots.length, font: font);
-      noteDots = MeasureElement(
-        position: position,
-        size: dots.size,
-        offset: dots.offset,
-        duration: 0,
-        child: dots,
-      );
     }
-    var noteheadElements = NoteheadElement(
+    var notehead = NoteheadElement(
       type: type,
       font: font,
       ledgerLines: LedgerLines.fromElementPosition(position),
     );
-    var notehead = MeasureElement(
-      position: position,
-      size: noteheadElements.size,
-      offset: noteheadElements.offset,
-      duration: 0,
-      child: noteheadElements,
-    );
     return NoteElement(
       key: key,
       head: notehead,
-      dots: noteDots,
-      accidental: accidentalElement,
-      stem: noteStem,
+      dots: dots,
+      accidental: accidental,
+      stem: stemElement,
       voice: note.editorialVoice.voice,
       beams: note.beams.isEmpty ? [] : note.beams,
+      position: position,
     );
   }
 
@@ -186,16 +156,52 @@ class NoteElement extends StatelessWidget {
   }
 
   List<MeasureElement> get _children {
+    var direction = stem?.direction;
+
+    MeasureElement? measureStem;
+    if (stem != null) {
+      measureStem = MeasureElement(
+        position: position,
+        size: stem!.size,
+        offset: stem!.offset,
+        duration: 0,
+        child: stem!,
+      );
+    }
+
     return [
-      if (accidental != null) accidental!,
-      if (stem != null) stem!,
-      head,
-      if (dots != null) dots!,
+      if (accidental != null)
+        MeasureElement(
+          position: position,
+          size: accidental!.size,
+          offset: accidental!.offset,
+          duration: 0,
+          child: accidental!,
+        ),
+      if (stem != null && direction == StemDirection.down) measureStem!,
+      MeasureElement(
+        position: position,
+        size: head.size,
+        offset: head.offset,
+        duration: 0,
+        child: head,
+      ),
+      if (stem != null && direction == StemDirection.up) measureStem!,
+      if (dots != null)
+        MeasureElement(
+          position: position,
+          size: dots!.size,
+          offset: dots!.offset,
+          duration: 0,
+          child: dots!,
+        ),
     ];
   }
 
   Size get size {
-    double height = MeasurePositioned.columnVerticalRange(_children).distance;
+    double height = MeasureElementLayoutData.columnVerticalRange(
+      _children,
+    ).distance;
     double width = head.size.width;
 
     if (dots != null) {
@@ -228,7 +234,7 @@ class NoteElement extends StatelessWidget {
 
       return AlignmentOffset.fromBottom(
         height: size.height,
-        bottom: MeasurePositioned.columnVerticalRange(_children).min,
+        bottom: MeasureElementLayoutData.columnVerticalRange(_children).min,
         left: left,
       );
     }
@@ -236,18 +242,10 @@ class NoteElement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var direction = stem?.child.tryAs<StemElement>()?.direction;
-
     return SizedBox.fromSize(
       size: size.scaledByContext(context),
       child: MeasureRow(
-        children: [
-          if (accidental != null) accidental!,
-          if (stem != null && direction == StemDirection.down) stem!,
-          head,
-          if (stem != null && direction == StemDirection.up) stem!,
-          if (dots != null) dots!,
-        ],
+        children: _children,
       ),
     );
   }

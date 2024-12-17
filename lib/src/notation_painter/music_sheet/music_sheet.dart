@@ -99,9 +99,21 @@ class MusicSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var head1 = NoteheadElement(type: NoteTypeValue.eighth, font: font);
-    var head2 = NoteheadElement(type: NoteTypeValue.half, font: font);
-    var head3 = NoteheadElement(type: NoteTypeValue.whole, font: font);
+    var head1 = PositionedNotehead(
+      position: ElementPosition.staffBottom,
+      type: NoteTypeValue.eighth,
+      font: font,
+    );
+    var head2 = PositionedNotehead(
+      type: NoteTypeValue.half,
+      font: font,
+      position: ElementPosition.staffMiddle - 2,
+    );
+    var head3 = PositionedNotehead(
+      position: ElementPosition.staffMiddle,
+      type: NoteTypeValue.whole,
+      font: font,
+    );
     // Stack()
     var abc = MeasureColumn(
       debug: true,
@@ -113,36 +125,18 @@ class MusicSheet extends StatelessWidget {
           strictBounds: false,
           debugName: "Inner",
           children: [
-            MeasureElementV2(
-              position: ElementPosition.staffMiddle - 2,
-              size: head3.size,
-              offset: head3.offset,
-              duration: 0,
-              child: head3,
-            ),
+            head3,
           ],
         ),
-        // MeasureElementV2(
-        //   position: ElementPosition.staffTop,
-        //   size: Size(0, 0),
-        //   offset: AlignmentOffset.fromTop(left: 0, top: 0, height: 4),
-        //   duration: 0,
-        //   child: StaffLines(),
-        // ),
         MeasureElementV2(
-          position: ElementPosition.staffMiddle,
-          size: head2.size,
-          offset: head2.offset,
-          duration: 0,
-          child: head2,
+          position: ElementPosition.staffTop,
+          size: Size(0, 0),
+          offset: AlignmentOffset.fromTop(left: 0, top: 0, height: 4),
+          child: StaffLines(),
         ),
-        MeasureElementV2(
-          position: ElementPosition.staffMiddle + 2,
-          size: head1.size,
-          offset: head1.offset,
-          duration: 0,
-          child: head1,
-        ),
+        // NoteElement(head: head),
+        head2,
+        head1,
       ],
     );
 

@@ -1,12 +1,13 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
+import 'package:music_notation/src/notation_painter/music_sheet/music_element.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/properties/notation_properties.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 
 class MeasureRow extends StatelessWidget {
-  final List<MeasureElement> children;
+  final List<MeasureWidget> children;
   final double spaceBetween;
   final bool strictlyBounded;
 
@@ -42,7 +43,7 @@ class MeasureRow extends StatelessWidget {
 }
 
 class _MeasureRowDelegate extends MultiChildLayoutDelegate {
-  final List<MeasureElement> children;
+  final List<MeasureWidget> children;
   final bool strictlyBounded;
   final double spaceBetween;
   final double scale;

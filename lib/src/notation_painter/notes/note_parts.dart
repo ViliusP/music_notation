@@ -3,9 +3,11 @@ import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note.dart';
 import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
+import 'package:music_notation/src/models/elements/music_data/note/notehead.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
+import 'package:music_notation/src/notation_painter/music_sheet/music_element.dart';
 import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/painters/note_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
@@ -309,6 +311,40 @@ class StemElement extends StatelessWidget {
   }
 }
 
+class PositionedNotehead extends NoteheadElement implements MeasureWidget {
+  @override
+  final ElementPosition position;
+
+  const PositionedNotehead({
+    super.key,
+    required super.type,
+    required super.font,
+    super.ledgerLines,
+    super.color,
+    required this.position,
+  });
+
+  PositionedNotehead.fromParent({
+    super.key,
+    required this.position,
+    required NoteheadElement element,
+  }) : super(
+          font: element.font,
+          type: element.type,
+          color: element.color,
+          ledgerLines: element.ledgerLines,
+        );
+
+  @override
+  Widget build(BuildContext context) {
+    return MusicElement(
+      position: position,
+      offset: super.offset,
+      child: super.build(context),
+    );
+  }
+}
+
 /// Painting noteheads, it should fill the space between two lines, touching
 /// the stave-line on each side of it, but without extending beyond either line.
 ///
@@ -321,6 +357,14 @@ class NoteheadElement extends StatelessWidget {
   final LedgerLines? ledgerLines;
 
   final Color color;
+
+  const NoteheadElement({
+    super.key,
+    required this.type,
+    required this.font,
+    this.ledgerLines,
+    this.color = const Color.fromRGBO(0, 0, 0, 1),
+  });
 
   GlyphBBox get _bBox {
     return font.glyphBBoxes[_glyph]!;
@@ -363,21 +407,13 @@ class NoteheadElement extends StatelessWidget {
   /// line stroke width and stave space.
   Size get size => _bBox.toSize();
 
-  const NoteheadElement({
-    super.key,
-    required this.type,
-    required this.font,
-    this.ledgerLines,
-    this.color = const Color.fromRGBO(0, 0, 0, 1),
-  });
-
   @override
   Widget build(BuildContext context) {
     NotationLayoutProperties layoutProperties =
         NotationProperties.of(context)?.layout ??
             NotationLayoutProperties.standard();
 
-    return CustomPaint(
+    var widget = CustomPaint(
       size: size.scaledByContext(context),
       painter: NotePainter(
         smufl: _glyph.codepoint,
@@ -388,6 +424,8 @@ class NoteheadElement extends StatelessWidget {
         ledgerLinesThickness: layoutProperties.staveLineThickness,
       ),
     );
+
+    return widget;
   }
 
   @override

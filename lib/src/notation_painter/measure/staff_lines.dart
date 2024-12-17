@@ -53,7 +53,6 @@ class StaffLines extends StatelessWidget {
     NotationLayoutProperties layoutProperties =
         NotationProperties.of(context)?.layout ??
             NotationLayoutProperties.standard();
-
     return CustomPaint(
       size: Size(double.maxFinite, layoutProperties.staveHeight),
       painter: StaffLinesPainter(
