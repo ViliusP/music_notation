@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -11,8 +10,8 @@ import 'package:music_notation/src/notation_painter/clef_element.dart';
 import 'package:music_notation/src/notation_painter/debug/alignment_debug_painter.dart';
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
+import 'package:music_notation/src/notation_painter/layout/measure_column.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
-import 'package:music_notation/src/notation_painter/layout/measure_stack.dart';
 import 'package:music_notation/src/notation_painter/layout/positioning.dart';
 import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';

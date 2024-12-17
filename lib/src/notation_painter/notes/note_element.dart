@@ -221,6 +221,7 @@ class NoteElement extends StatelessWidget {
     return Size(width, height);
   }
 
+  // ignore: unused_field
   static const double _dotOffsetAdjustment = 0.1;
 
   AlignmentOffset get offset {
