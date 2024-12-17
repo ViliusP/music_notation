@@ -175,10 +175,7 @@ class AccidentalElement extends StatelessWidget {
   final AccidentalValue type;
   final FontMetadata font;
 
-  AlignmentOffset get offset => AlignmentOffset.fromBbox(
-        bBox: font.glyphBBoxes[_glyph]!,
-        left: 0,
-      );
+  Alignment get alignment => font.glyphBBoxes[_glyph]!.toAlignment();
 
   SmuflGlyph get _glyph {
     return _accidentalSmuflMapping[type] ?? SmuflGlyph.noteheadXBlack;
@@ -251,7 +248,7 @@ class KeySignatureElement extends StatelessWidget {
       children.add(MeasureElement(
         position: accidental.position,
         size: accidentalElement.size,
-        offset: accidentalElement.offset,
+        alignment: accidentalElement.alignment,
         duration: 0,
         child: accidentalElement,
       ));
@@ -261,15 +258,12 @@ class KeySignatureElement extends StatelessWidget {
 
   static const _baseSpaceBetweenAccidentals = 0.25;
 
-  AlignmentOffset get offset {
-    if (_accidentals.isEmpty) return AlignmentOffset.zero();
+  Alignment get alignment {
+    if (_accidentals.isEmpty) return Alignment.topLeft;
     SmuflGlyph glyph = _accidentalSmuflMapping[
         _accidentals.first.accidental?.value ?? AccidentalValue.other]!;
 
-    return AlignmentOffset.fromBbox(
-      bBox: font.glyphBBoxes[glyph]!,
-      left: 0,
-    );
+    return font.glyphBBoxes[glyph]!.toAlignment();
   }
 
   /// Returns how many keys are canceled.

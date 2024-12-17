@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/time.dart';
-import 'package:music_notation/src/notation_painter/layout/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
@@ -18,7 +17,7 @@ class TimeSignatureElement extends StatelessWidget {
 
   final FontMetadata font;
 
-  AlignmentOffset get offset => AlignmentOffset.center(left: 0, size: size);
+  Alignment get alignment => Alignment.centerLeft;
 
   Size get size {
     double height = 0;

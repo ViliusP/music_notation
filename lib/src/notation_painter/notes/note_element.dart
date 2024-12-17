@@ -163,7 +163,7 @@ class NoteElement extends StatelessWidget {
       measureStem = MeasureElement(
         position: position,
         size: stem!.size,
-        offset: stem!.offset,
+        alignment: stem!.alignment,
         duration: 0,
         child: stem!,
       );
@@ -174,7 +174,7 @@ class NoteElement extends StatelessWidget {
         MeasureElement(
           position: position,
           size: accidental!.size,
-          offset: accidental!.offset,
+          alignment: accidental!.alignment,
           duration: 0,
           child: accidental!,
         ),
@@ -182,7 +182,7 @@ class NoteElement extends StatelessWidget {
       MeasureElement(
         position: position,
         size: head.size,
-        offset: head.offset,
+        alignment: head.alignment,
         duration: 0,
         child: head,
       ),
@@ -191,7 +191,7 @@ class NoteElement extends StatelessWidget {
         MeasureElement(
           position: position,
           size: dots!.size,
-          offset: dots!.offset,
+          alignment: dots!.alignment,
           duration: 0,
           child: dots!,
         ),
@@ -224,7 +224,7 @@ class NoteElement extends StatelessWidget {
   // ignore: unused_field
   static const double _dotOffsetAdjustment = 0.1;
 
-  AlignmentOffset get offset {
+  Alignment get alignment {
     {
       double left = 0;
 

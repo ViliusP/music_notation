@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
@@ -11,8 +13,8 @@ void main() {
     test("Whole notehead calculated size should have correct size", () {
       // Whole notehead
       Size size = GlyphBBox(
-        bBoxNE: Coordinates(x: 1.492, y: 0.544),
-        bBoxSW: Coordinates(x: 0.0, y: -0.536),
+        bBoxNE: Point(1.492, 0.544),
+        bBoxSW: Point(0.0, -0.536),
       ).toSize(defaultStaveSpace);
 
       expect(size, equals(Size(18.6, 13.5)));
@@ -20,8 +22,8 @@ void main() {
     test("Half notehead calculated size should have correct size", () {
       // Whole notehead
       Size size = GlyphBBox(
-        bBoxNE: Coordinates(x: 1.3, y: 0.528),
-        bBoxSW: Coordinates(x: 0.0, y: -0.528),
+        bBoxNE: Point(1.3, 0.528),
+        bBoxSW: Point(0.0, -0.528),
       ).toSize(defaultStaveSpace);
 
       expect(size, equals(Size(16.3, 13.2)));
@@ -29,8 +31,8 @@ void main() {
     test("Black notehead calculated size should have correct size", () {
       // Whole notehead
       Size size = GlyphBBox(
-        bBoxNE: Coordinates(x: 1.3, y: 0.528),
-        bBoxSW: Coordinates(x: 0.0, y: -0.532),
+        bBoxNE: Point(1.3, 0.528),
+        bBoxSW: Point(0.0, -0.532),
       ).toSize(defaultStaveSpace);
 
       expect(size, equals(Size(16.3, 13.3)));

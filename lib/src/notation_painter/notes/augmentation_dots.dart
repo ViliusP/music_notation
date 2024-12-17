@@ -1,6 +1,5 @@
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
-import 'package:music_notation/src/notation_painter/layout/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
@@ -43,7 +42,7 @@ class AugmentationDots extends StatelessWidget {
     return Size(width, singleDotSize.height);
   }
 
-  AlignmentOffset get offset => AlignmentOffset.center(left: 0, size: size);
+  Alignment get alignment => Alignment.centerLeft;
 
   ElementPosition get position => ElementPosition.staffMiddle;
 

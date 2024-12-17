@@ -63,7 +63,7 @@ base class Range<T, D> {
     return include(sortedValues.first).include(sortedValues.last);
   }
 
-  Range _copyWith({
+  Range<T, D> _copyWith({
     T? a,
     T? b,
     Subtractor<T, D>? subtractor,

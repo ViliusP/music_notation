@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart';
 import 'package:music_notation/src/smufl/smufl_glyph.dart';
 import 'package:music_notation/src/smufl/utilities.dart';
 
@@ -206,16 +209,16 @@ class EngravingDefaults {
 /// Represents a bounding box for a glyph, defined by its north-east and south-west corners.
 class GlyphBBox {
   /// North-east (top-right) corner coordinates of the bounding box.
-  final Coordinates bBoxNE;
+  final Point<double> bBoxNE;
 
   /// South-west (bottom-left) corner coordinates of the bounding box.
-  final Coordinates bBoxSW;
+  final Point<double> bBoxSW;
 
   /// Top-right (north-east) corner coordinates of the bounding box.
-  Coordinates get topRight => bBoxNE;
+  Point get topRight => bBoxNE;
 
   /// Bottom-left (south-west) corner coordinates of the bounding box.
-  Coordinates get bottomLeft => bBoxSW;
+  Point get bottomLeft => bBoxSW;
 
   /// Creates an instance of [GlyphBBox].
   ///
@@ -243,8 +246,8 @@ class GlyphBBox {
   /// ```
   factory GlyphBBox.fromJson(Map<String, dynamic> json) {
     return GlyphBBox(
-      bBoxNE: Coordinates.fromList(List<double>.from(json['bBoxNE'])),
-      bBoxSW: Coordinates.fromList(List<double>.from(json['bBoxSW'])),
+      bBoxNE: FontMetadata.pointFromList(List<double>.from(json['bBoxNE'])),
+      bBoxSW: FontMetadata.pointFromList(List<double>.from(json['bBoxSW'])),
     );
   }
 
@@ -261,6 +264,34 @@ class GlyphBBox {
         other.bBoxSW == bBoxSW;
   }
 
+  /// Converts the vertical position of a bounding box into an [Alignment] value.
+  ///
+  /// The function calculates a vertical "shift" based on the relative position
+  /// of the bounding box's midpoint and the half-distance of its height.
+  /// The resulting shift is normalized, where:
+  /// - `0` means the bounding box is centered vertically.
+  /// - Positive value means the alignment axis of bounding box shifted down (closer to bottom side).
+  /// - Negative value means the alignment axis of bounding box shifted up (closer to top side).
+  ///
+  /// Returns:
+  /// - An [Alignment] object with the computed vertical shift.
+  ///
+  /// Example:
+  /// ```dart
+  /// final box1 = toAlignment();
+  /// print(box1); // Alignment(0.0, shift)
+  /// ```
+  Alignment toAlignment([bool noHorizontalAlignment = true]) {
+    final midpoint = (bBoxNE.y + bBoxSW.y) / 2;
+    final halfDistance = (bBoxNE.y - bBoxSW.y).abs() / 2;
+    final shift = midpoint / halfDistance;
+
+    return switch (noHorizontalAlignment) {
+      true => Alignment(0, shift),
+      false => Alignment(0, shift)
+    };
+  }
+
   @override
   int get hashCode => bBoxNE.hashCode ^ bBoxSW.hashCode;
 }
@@ -271,7 +302,7 @@ class GlyphAnchor {
   final String name;
 
   /// Coordinates of the anchor point.
-  final Coordinates coordinates;
+  final Point<double> coordinates;
 
   /// Creates an instance of [GlyphAnchor].
   ///
@@ -300,7 +331,9 @@ class GlyphAnchor {
   factory GlyphAnchor.fromJson(Map<String, dynamic> json) {
     return GlyphAnchor(
       name: json['name'],
-      coordinates: Coordinates.fromList(List<double>.from(json['coordinates'])),
+      coordinates: FontMetadata.pointFromList(
+        List<double>.from(json['coordinates']),
+      ),
     );
   }
 }
@@ -624,31 +657,12 @@ class FontMetadata {
       glyphsWithAnchors: glyphsWithAnchors,
     );
   }
-}
 
-class Coordinates {
-  final double x;
-  final double y;
-
-  const Coordinates({required this.x, required this.y});
-
-  factory Coordinates.fromList(List<double> coordinates) {
-    return Coordinates(x: coordinates[0], y: coordinates[1]);
+  static Point<double> pointFromList(List<double> values) {
+    assert(values.length == 2);
+    return Point(
+      values.elementAt(0),
+      values.elementAt(1),
+    );
   }
-
-  @override
-  String toString() {
-    return "($x, $y)";
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Coordinates &&
-          runtimeType == other.runtimeType &&
-          x == other.x &&
-          y == other.y;
-
-  @override
-  int get hashCode => x.hashCode ^ y.hashCode;
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/notation_painter/layout/measure_stack.dart';
 
 import 'package:music_notation/src/notation_painter/measure/measure_grid.dart';
@@ -15,7 +14,6 @@ import 'package:music_notation/src/notation_painter/layout/measure_element.dart'
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
-import 'package:music_notation/src/notation_painter/notes/note_parts.dart';
 import 'package:music_notation/src/notation_painter/notes/rest_element.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 
@@ -67,7 +65,7 @@ class MeasureContainer extends StatelessWidget {
         var cell = cellEntry.value;
 
         double? bottomOffset;
-        AlignmentOffset offset = cell.offset;
+        Alignment alignment = cell.alignment;
 
         bottomOffset = cell.distanceToPosition(bottomRef, BoxSide.bottom);
 
@@ -212,8 +210,6 @@ class MeasureContainerV2 extends StatelessWidget {
         NotationProperties.of(context)?.layout ??
             NotationLayoutProperties.standard();
 
-    NotationProperties? properties = NotationProperties.of(context);
-
     double measureWidth = horizontalOffsets.last;
 
     var positionedElements = <Widget>[];
@@ -222,7 +218,7 @@ class MeasureContainerV2 extends StatelessWidget {
       for (var cellEntry in entry.value.cells.entries) {
         var cell = cellEntry.value;
 
-        AlignmentOffset offset = cell.offset;
+        Alignment alignment = cell.alignment;
 
         double left = horizontalOffsets[index] + offset.left;
 
@@ -268,7 +264,7 @@ class MeasureContainerV2 extends StatelessWidget {
         positionedElements.add(
           MusicElement(
             position: cell.position,
-            offset: cell.offset,
+            alignment: cell.alignment,
             child: Padding(
               padding: EdgeInsets.only(left: left),
               child: elementToAdd,
@@ -325,7 +321,7 @@ class MeasureContainerV2 extends StatelessWidget {
         children: [
           MusicElement(
             position: ElementPosition.staffTop,
-            offset: AlignmentOffset.fromTop(top: 0, height: 4, left: 0),
+            alignment: Alignment.topLeft,
             child: SizedBox(
               width: measureWidth * layoutProperties.staveSpace,
               child: StaffLines(),

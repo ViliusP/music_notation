@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:music_notation/src/smufl/font_metadata.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart';
 import 'package:test/test.dart';
@@ -104,20 +106,6 @@ void main() {
     });
   });
 
-  group('GlyphBBox', () {
-    test('fromJson constructs a valid object', () {
-      final json = {
-        'bBoxNE': [1.0, 1.5],
-        'bBoxSW': [0.0, -1.0],
-      };
-
-      final bbox = GlyphBBox.fromJson(json);
-
-      expect(bbox.bBoxNE, Coordinates.fromList([1.0, 1.5]));
-      expect(bbox.bBoxSW, Coordinates.fromList([0.0, -1.0]));
-    });
-  });
-
   group('GlyphAnchor', () {
     test('fromJson constructs a valid object', () {
       final json = {
@@ -128,7 +116,7 @@ void main() {
       final anchor = GlyphAnchor.fromJson(json);
 
       expect(anchor.name, 'top');
-      expect(anchor.coordinates, Coordinates.fromList([0.0, 1.0]));
+      expect(anchor.coordinates, Point(0.0, 1.0));
     });
   });
 
@@ -186,7 +174,7 @@ void main() {
       );
       expect(
         fontMetadata.glyphBBoxes[Noteheads.noteABlack]!.bBoxNE,
-        Coordinates(x: 1, y: 1.5),
+        Point(1, 1.5),
       );
       expect(fontMetadata.glyphsWithAnchors.length, 1);
       expect(fontMetadata.glyphsWithAnchors[0].value, Noteheads.noteABlack);
@@ -194,6 +182,90 @@ void main() {
         fontMetadata.glyphsWithAnchors[0].anchors[AnchorField.stemDownNW],
         [0, -0.184],
       );
+    });
+  });
+
+  group('GlyphBBox.fromJson', () {
+    test('fromJson constructs a valid object', () {
+      final json = {
+        'bBoxNE': [1.0, 1.5],
+        'bBoxSW': [0.0, -1.0],
+      };
+
+      final bbox = GlyphBBox.fromJson(json);
+
+      expect(bbox.bBoxNE, Point(1.0, 1.5));
+      expect(bbox.bBoxSW, Point(0.0, -1.0));
+    });
+  });
+
+  group('GlyphBBox.toAlignment', () {
+    test('Should calculate correct Alignment values from Bbox A', () {
+      final bbox = GlyphBBox(
+        bBoxNE: Point(1.3, 0.5),
+        bBoxSW: Point(0.0, -0.5),
+      );
+      var result = bbox.toAlignment();
+      expect(result.x, 0);
+      expect(result.y, 0);
+    });
+    test('Should calculate correct Alignment values from Bbox B', () {
+      final bbox = GlyphBBox(
+        bBoxNE: Point(1.3, 1),
+        bBoxSW: Point(0.0, -1),
+      );
+      var result = bbox.toAlignment();
+      expect(result.x, 0);
+      expect(result.y, 0);
+    });
+    test('Should calculate correct Alignment values from Bbox C', () {
+      final bbox = GlyphBBox(
+        bBoxNE: Point(1.3, 0),
+        bBoxSW: Point(0.0, -1),
+      );
+      var result = bbox.toAlignment();
+      expect(result.x, 0);
+      expect(result.y, -1);
+    });
+
+    test('Should calculate correct Alignment values from Bbox CC', () {
+      final bbox = GlyphBBox(
+        bBoxNE: Point(1.3, 0),
+        bBoxSW: Point(0.0, -2),
+      );
+      var result = bbox.toAlignment();
+      expect(result.x, 0);
+      expect(result.y, -1);
+    });
+
+    test('Should calculate correct Alignment values from Bbox CCC', () {
+      final bbox = GlyphBBox(
+        bBoxNE: Point(1.3, -1),
+        bBoxSW: Point(0.0, -2),
+      );
+      var result = bbox.toAlignment();
+      expect(result.x, 0);
+      expect(result.y, -3);
+    });
+
+    test('Should calculate correct Alignment values from Bbox DDD', () {
+      final bbox = GlyphBBox(
+        bBoxNE: Point(1.3, 1),
+        bBoxSW: Point(0.0, 0),
+      );
+      var result = bbox.toAlignment();
+      expect(result.x, 0);
+      expect(result.y, 1);
+    });
+
+    test('Should calculate correct Alignment values from Bbox EE', () {
+      final bbox = GlyphBBox(
+        bBoxNE: Point(1.3, 2),
+        bBoxSW: Point(0.0, 1),
+      );
+      var result = bbox.toAlignment();
+      expect(result.x, 0);
+      expect(result.y, 3);
     });
   });
 }

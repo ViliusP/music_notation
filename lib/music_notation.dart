@@ -12,7 +12,7 @@ export 'src/models/elements/score/score.dart' show ScorePartwise, ScoreHeader;
 
 export 'src/smufl/glyph_class.dart' show GlyphClasses;
 export 'src/smufl/smufl_glyph.dart' show SmuflGlyph;
-export 'src/smufl/font_metadata.dart' show FontMetadata, GlyphBBox, Coordinates;
+export 'src/smufl/font_metadata.dart' show FontMetadata, GlyphBBox;
 
 export 'src/smufl/font_metadata.dart'
     show

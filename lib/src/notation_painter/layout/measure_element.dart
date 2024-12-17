@@ -24,7 +24,7 @@ class MeasureElement extends StatelessWidget implements MeasureWidget {
   final double duration;
 
   @override
-  final AlignmentOffset offset;
+  final Alignment alignment;
 
   @override
   final ElementPosition position;
@@ -39,7 +39,7 @@ class MeasureElement extends StatelessWidget implements MeasureWidget {
     super.key,
     required this.position,
     required this.size,
-    required this.offset,
+    required this.alignment,
     required this.duration,
     required this.child,
   });
@@ -57,7 +57,7 @@ class MeasureElement extends StatelessWidget implements MeasureWidget {
     return MeasureElement(
       position: noteElement.position,
       size: noteElement.size,
-      offset: noteElement.offset,
+      alignment: noteElement.alignment,
       duration: note.determineDuration(),
       child: noteElement,
     );
@@ -76,7 +76,7 @@ class MeasureElement extends StatelessWidget implements MeasureWidget {
     return MeasureElement(
       position: restElement.position,
       size: restElement.size,
-      offset: restElement.offset,
+      alignment: restElement.alignment,
       duration: rest.determineDuration(),
       child: restElement,
     );
@@ -95,7 +95,7 @@ class MeasureElement extends StatelessWidget implements MeasureWidget {
     return MeasureElement(
       position: chord.position,
       size: chord.size,
-      offset: chord.offset,
+      alignment: chord.alignment,
       duration: notes.first.determineDuration(),
       child: chord,
     );
@@ -109,7 +109,7 @@ class MeasureElement extends StatelessWidget implements MeasureWidget {
     return MeasureElement(
       position: element.position,
       size: element.size,
-      offset: element.offset,
+      alignment: element.alignment,
       duration: 0,
       child: element,
     );
@@ -126,7 +126,7 @@ class MeasureElement extends StatelessWidget implements MeasureWidget {
     return MeasureElement(
       position: element.position,
       size: element.size,
-      offset: element.offset,
+      alignment: element.alignment,
       duration: 0,
       child: element,
     );
@@ -147,7 +147,7 @@ class MeasureElement extends StatelessWidget implements MeasureWidget {
     return MeasureElement(
       position: element.position,
       size: element.size,
-      offset: element.offset,
+      alignment: element.alignment,
       duration: 0,
       child: element,
     );
@@ -159,10 +159,10 @@ class MeasureElement extends StatelessWidget implements MeasureWidget {
 
     return MusicElement(
       position: position,
-      offset: offset,
+      alignment: alignment,
       child: CustomPaint(
         foregroundPainter: AlignmentDebugPainter(
-          offset: offset.scaledByContext(context),
+          alignment: alignment,
           lines: debugSettings?.alignmentDebugOptions ?? {},
         ),
         child: child,
@@ -187,7 +187,7 @@ class MeasureElement extends StatelessWidget implements MeasureWidget {
     properties.add(
       StringProperty(
         'alignment',
-        "left: ${offset.left}, top: ${offset.top}, bottom: ${offset.bottom}",
+        "x: ${alignment.x}, y: ${alignment.y}",
         level: level,
         showName: true,
       ),
@@ -207,7 +207,7 @@ class MeasureElement extends StatelessWidget implements MeasureWidget {
 class MeasureElementV2 extends ParentDataWidget<MeasureStackParentData>
     implements MeasureWidget {
   @override
-  final AlignmentOffset offset;
+  final Alignment alignment;
 
   @override
   final ElementPosition position;
@@ -219,16 +219,16 @@ class MeasureElementV2 extends ParentDataWidget<MeasureStackParentData>
     super.key,
     required this.position,
     required this.size,
-    required this.offset,
+    required this.alignment,
     required super.child,
   });
 
   @override
   void applyParentData(RenderObject renderObject) {
     final parentData = renderObject.parentData as MeasureStackParentData;
-    if (parentData.position != position || parentData.alignment != offset) {
+    if (parentData.position != position || parentData.alignment != alignment) {
       parentData.position = position;
-      parentData.alignment = offset;
+      parentData.alignment = alignment;
 
       // Notify the parent RenderObject to relayout.
       final target = renderObject.parent;
@@ -244,132 +244,132 @@ class MeasureElementV2 extends ParentDataWidget<MeasureStackParentData>
 
 class ElementLayoutProperties {}
 
-/// Defines specific alignment offsets for musical elements, used for vertical and
-/// horizontal positioning within their container.
-class AlignmentOffset {
-  /// Vertical offset from the top of the bounding box, aligning the element with
-  /// the staff line when positioned at `Y=0`.
-  final double top;
+// /// Defines specific alignment offsets for musical elements, used for vertical and
+// /// horizontal positioning within their container.
+// class AlignmentOffset {
+//   /// Vertical offset from the top of the bounding box, aligning the element with
+//   /// the staff line when positioned at `Y=0`.
+//   final double top;
 
-  /// Vertical offset from the bottom of the bounding box, aligning the element with
-  /// the staff line when positioned at `Y=container.height`.
-  final double bottom;
+//   /// Vertical offset from the bottom of the bounding box, aligning the element with
+//   /// the staff line when positioned at `Y=container.height`.
+//   final double bottom;
 
-  double get height => (top + bottom).abs();
+//   double get height => (top + bottom).abs();
 
-  /// Horizontal offset from the left side of the element’s bounding box, aligning the
-  /// element horizontally, typically at the visual or optical center.
-  final double left;
+//   /// Horizontal offset from the left side of the element’s bounding box, aligning the
+//   /// element horizontally, typically at the visual or optical center.
+//   final double left;
 
-  const AlignmentOffset({
-    required this.top,
-    required this.bottom,
-    required this.left,
-  });
+//   const AlignmentOffset({
+//     required this.top,
+//     required this.bottom,
+//     required this.left,
+//   });
 
-  const AlignmentOffset.zero() : this(left: 0, top: 0, bottom: 0);
+//   const AlignmentOffset.zero() : this(left: 0, top: 0, bottom: 0);
 
-  factory AlignmentOffset.fromTop({
-    required double left,
-    required double top,
-    required double height,
-  }) {
-    return AlignmentOffset(
-      top: top,
-      bottom: _effectiveBottom(bottom: null, top: top, height: height),
-      left: left,
-    );
-  }
+//   factory AlignmentOffset.fromTop({
+//     required double left,
+//     required double top,
+//     required double height,
+//   }) {
+//     return AlignmentOffset(
+//       top: top,
+//       bottom: _effectiveBottom(bottom: null, top: top, height: height),
+//       left: left,
+//     );
+//   }
 
-  factory AlignmentOffset.fromBottom({
-    required double left,
-    required double bottom,
-    required double height,
-  }) {
-    return AlignmentOffset(
-      top: _effectiveTop(bottom: bottom, top: null, height: height),
-      bottom: bottom,
-      left: left,
-    );
-  }
+//   factory AlignmentOffset.fromBottom({
+//     required double left,
+//     required double bottom,
+//     required double height,
+//   }) {
+//     return AlignmentOffset(
+//       top: _effectiveTop(bottom: bottom, top: null, height: height),
+//       bottom: bottom,
+//       left: left,
+//     );
+//   }
 
-  AlignmentOffset.fromBbox({
-    required double left,
-    required GlyphBBox bBox,
-  }) : this(left: left, top: -bBox.topRight.y, bottom: bBox.bottomLeft.y);
+//   AlignmentOffset.fromBbox({
+//     required double left,
+//     required GlyphBBox bBox,
+//   }) : this(left: left, top: -bBox.topRight.y, bottom: bBox.bottomLeft.y);
 
-  AlignmentOffset.center({
-    required double left,
-    required Size size,
-  }) : this(
-          left: left,
-          top: -size.height / 2,
-          bottom: -size.height / 2,
-        );
+//   AlignmentOffset.center({
+//     required double left,
+//     required Size size,
+//   }) : this(
+//           left: left,
+//           top: -size.height / 2,
+//           bottom: -size.height / 2,
+//         );
 
-  AlignmentOffset scale(double scale) {
-    return AlignmentOffset(
-      left: left * scale,
-      top: top * scale,
-      bottom: bottom * scale,
-    );
-  }
+//   AlignmentOffset scale(double scale) {
+//     return AlignmentOffset(
+//       left: left * scale,
+//       top: top * scale,
+//       bottom: bottom * scale,
+//     );
+//   }
 
-  AlignmentOffset scaledByContext(BuildContext context) {
-    NotationLayoutProperties layoutProperties =
-        NotationProperties.of(context)?.layout ??
-            NotationLayoutProperties.standard();
+//   AlignmentOffset scaledByContext(BuildContext context) {
+//     NotationLayoutProperties layoutProperties =
+//         NotationProperties.of(context)?.layout ??
+//             NotationLayoutProperties.standard();
 
-    return scale(layoutProperties.staveSpace);
-  }
+//     return scale(layoutProperties.staveSpace);
+//   }
 
-  /// Returns [bottom] if it is not null,
-  /// otherwise, returns calculated top from [size] and [top].
-  static double _effectiveBottom({
-    required double height,
-    required double? bottom,
-    required double? top,
-  }) {
-    if (bottom != null) return bottom;
-    double sign = top!.sign;
-    if (sign == 0) {
-      sign = -1;
-    }
-    return (top + height) * sign;
-  }
+//   /// Returns [bottom] if it is not null,
+//   /// otherwise, returns calculated top from [size] and [top].
+//   static double _effectiveBottom({
+//     required double height,
+//     required double? bottom,
+//     required double? top,
+//   }) {
+//     if (bottom != null) return bottom;
+//     double sign = top!.sign;
+//     if (sign == 0) {
+//       sign = -1;
+//     }
+//     return (top + height) * sign;
+//   }
 
-  /// Returns [top] if it is not null,
-  /// otherwise, returns calculated top from [size] and [bottom].
-  static double _effectiveTop({
-    required double height,
-    required double? bottom,
-    required double? top,
-  }) {
-    if (top != null) return top;
-    double sign = bottom!.sign;
-    if (sign == 0) {
-      sign = -1;
-    }
-    return (bottom + height) * sign;
-  }
+//   /// Returns [top] if it is not null,
+//   /// otherwise, returns calculated top from [size] and [bottom].
+//   static double _effectiveTop({
+//     required double height,
+//     required double? bottom,
+//     required double? top,
+//   }) {
+//     if (top != null) return top;
+//     double sign = bottom!.sign;
+//     if (sign == 0) {
+//       sign = -1;
+//     }
+//     return (bottom + height) * sign;
+//   }
 
-  @override
-  String toString() {
-    return "AlignmentOffset(left: $left, top: $top, bottom: $bottom)";
-  }
-}
+//   @override
+//   String toString() {
+//     return "AlignmentOffset(left: $left, top: $top, bottom: $bottom)";
+//   }
+// }
 
-class AlignmentPositioned extends Positioned {
-  AlignmentPositioned({
-    super.key,
-    required AlignmentOffset position,
-    required super.child,
-  }) : super(
-          bottom: position.bottom,
-          top: position.top,
-          left: position.left,
-        );
-}
+// class AlignmentPositioned extends Positioned {
+//   AlignmentPositioned({
+//     super.key,
+//     required AlignmentOffset position,
+//     required super.child,
+//   }) : super(
+//           bottom: position.bottom,
+//           top: position.top,
+//           left: position.left,
+//         );
+// }
 
 extension NoteWidgetization on Note {
   double determineDuration() {
@@ -396,20 +396,20 @@ extension NoteWidgetization on Note {
 }
 
 class MusicElement extends SingleChildRenderObjectWidget {
-  final AlignmentOffset offset;
+  final Alignment alignment;
 
   final ElementPosition position;
 
   const MusicElement({
     super.key,
     required this.position,
-    required this.offset,
+    required this.alignment,
     required super.child,
   });
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return MusicElementRenderBox(position: position, alignment: offset);
+    return MusicElementRenderBox(position: position, alignment: alignment);
   }
 
   @override
@@ -418,7 +418,7 @@ class MusicElement extends SingleChildRenderObjectWidget {
     MusicElementRenderBox renderObject,
   ) {
     renderObject.position = position;
-    renderObject.alignment = offset;
+    renderObject.alignment = alignment;
   }
 }
 
@@ -427,7 +427,7 @@ class MusicElementRenderBox extends RenderProxyBox {
   /// List of beams managed by this element.
   ElementPosition position;
 
-  AlignmentOffset alignment;
+  Alignment alignment;
 
   /// Constructor to initialize BeamElementRenderBox.
   MusicElementRenderBox({

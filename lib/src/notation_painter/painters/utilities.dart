@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/rendering.dart';
 
 import 'package:music_notation/src/smufl/font_metadata.dart';
@@ -23,8 +25,8 @@ extension FontPainting on GlyphBBox {
   /// `o1` (first value of [Offset]) represents the NW corner;
   /// `o2` (second value of [Offset]) represents the SE corner.
   (Offset, Offset) toOffsets() {
-    Coordinates ne = bBoxNE;
-    Coordinates sw = bBoxSW;
+    Point<double> ne = bBoxNE;
+    Point<double> sw = bBoxSW;
 
     // Calculate the north-west (NW) corner in Flutter's coordinate system.
     // - `sw.x` is used for the X-coordinate (left side in Cartesian),

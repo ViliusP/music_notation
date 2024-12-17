@@ -89,7 +89,7 @@ class MeasureTimeline {
                   "ElementPosition  ",
                   "",
                 ),
-            leftOffset: note.offset.left,
+            leftOffset: note.alignment.x,
           );
         case RestElement rest:
           String voice = rest.voice ?? "1";
@@ -100,7 +100,7 @@ class MeasureTimeline {
             width: rest.size.width,
             widgetType: NoteElement,
             name: "R",
-            leftOffset: rest.offset.left,
+            leftOffset: rest.alignment.x,
           );
         case Chord chord:
           String voice = chord.voice ?? "1";
@@ -112,7 +112,7 @@ class MeasureTimeline {
             width: chord.size.width,
             name:
                 "C${child.position.toString().replaceFirst("ElementPosition  ", "")}",
-            leftOffset: chord.offset.left,
+            leftOffset: chord.alignment.x,
           );
         case CursorElement cursorElement:
           valueToAdd = TimelineValue(
@@ -123,7 +123,7 @@ class MeasureTimeline {
                 ? "${cursorElement.duration.toInt()}>"
                 : "<${cursorElement.duration.toInt().abs()}",
             widgetType: CursorElement,
-            leftOffset: cursorElement.offset.left,
+            leftOffset: cursorElement.alignment.x,
           );
 
         case TimeSignatureElement timeBeatElement:
@@ -134,7 +134,7 @@ class MeasureTimeline {
             voice: "-1", // The "-1" indicates attributes sector
             name: "TS",
             widgetType: TimeSignatureElement,
-            leftOffset: timeBeatElement.offset.left,
+            leftOffset: timeBeatElement.alignment.x,
           );
         case ClefElement clefElement:
           valueToAdd = TimelineValue(
@@ -144,7 +144,7 @@ class MeasureTimeline {
             voice: "-1", // The "-1" indicates attributes sector
             name: "CLF",
             widgetType: ClefElement,
-            leftOffset: clefElement.offset.left,
+            leftOffset: clefElement.alignment.x,
           );
         case KeySignatureElement keyElement:
           valueToAdd = TimelineValue(
@@ -154,7 +154,7 @@ class MeasureTimeline {
             voice: "-1", // The "-1" indicates attributes sector
             name: "KeS",
             widgetType: KeySignatureElement,
-            leftOffset: keyElement.offset.left,
+            leftOffset: keyElement.alignment.x,
           );
         default:
           valueToAdd = TimelineValue(
@@ -163,7 +163,7 @@ class MeasureTimeline {
             voice: "-1", // The "-1" indicates attributes sector
             name: child.runtimeType.toString().substring(0, 2),
             width: child.size.width,
-            leftOffset: child.offset.left,
+            leftOffset: child.alignment.x,
           );
       }
       TimelinePosition pos;

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/rendering.dart';
 import 'package:music_notation/music_notation.dart';
 
@@ -92,26 +94,26 @@ class SmuflPainter extends CustomPainter {
     return false;
   }
 
-  Offset fromCoordinates(Coordinates c) {
+  Offset fromCoordinates(Point<double> c) {
     return Offset(c.x, c.y);
   }
 
-  Coordinates c1(GlyphBBox bBox) {
-    Coordinates ne = bBox.bBoxNE;
-    Coordinates sw = bBox.bBoxSW;
+  Point<double> c1(GlyphBBox bBox) {
+    Point<double> ne = bBox.bBoxNE;
+    Point<double> sw = bBox.bBoxSW;
 
     // Calculate NW point in the original Cartesian coordinate system
-    Coordinates nw = Coordinates(x: sw.x, y: -ne.y);
+    Point<double> nw = Point<double>(sw.x, -ne.y);
 
     return nw;
   }
 
-  Coordinates c2(GlyphBBox bBox) {
-    Coordinates ne = bBox.bBoxNE;
-    Coordinates sw = bBox.bBoxSW;
+  Point<double> c2(GlyphBBox bBox) {
+    Point<double> ne = bBox.bBoxNE;
+    Point<double> sw = bBox.bBoxSW;
 
     // Calculate SE point in the original Cartesian coordinate system
-    Coordinates se = Coordinates(x: ne.x, y: -sw.y);
+    Point<double> se = Point<double>(ne.x, -sw.y);
 
     return se;
   }

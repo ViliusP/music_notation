@@ -1,7 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
-import 'package:music_notation/src/notation_painter/layout/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/range.dart';
 import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
@@ -13,16 +12,19 @@ class MeasureElementPosition {
 
   /// Optional positioning and alignment information for precise element placement
   /// within its own container.
-  final AlignmentOffset offset;
+  final Alignment alignment;
 
-  const MeasureElementPosition({required this.position, required this.offset});
+  const MeasureElementPosition({
+    required this.position,
+    required this.alignment,
+  });
 }
 
 class MeasureElementLayoutData extends MeasureElementPosition {
   const MeasureElementLayoutData({
     required this.size,
     required super.position,
-    required super.offset,
+    required super.alignment,
   });
 
   /// The size of the element, in stave spaces, defining its width and height

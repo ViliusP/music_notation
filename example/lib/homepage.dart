@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:collection/collection.dart';
 import 'package:example/music_painter_debug.dart';
 import 'package:flutter/material.dart';
@@ -68,35 +70,35 @@ List<SmuflGlyph> glyphs = [
 
 List<GlyphBBox?> bBoxes = [
   GlyphBBox(
-    bBoxNE: Coordinates(x: 2.556, y: 4.448),
-    bBoxSW: Coordinates(x: 0.0, y: -2.664),
+    bBoxNE: Point<double>(2.556, 4.448),
+    bBoxSW: Point<double>(0.0, -2.664),
   ),
   GlyphBBox(
-    bBoxNE: Coordinates(x: 1.3, y: 0.528),
-    bBoxSW: Coordinates(x: 0.0, y: -0.532),
+    bBoxNE: Point<double>(1.3, 0.528),
+    bBoxSW: Point<double>(0.0, -0.532),
   ),
   GlyphBBox(
-    bBoxNE: Coordinates(x: 0.812, y: 1.812),
-    bBoxSW: Coordinates(x: 0.0, y: -0.704),
+    bBoxNE: Point<double>(0.812, 1.812),
+    bBoxSW: Point<double>(0.0, -0.704),
   ),
   GlyphBBox(
-    bBoxNE: Coordinates(x: 0.976, y: 1.336),
-    bBoxSW: Coordinates(x: 0.0, y: -1.332),
+    bBoxNE: Point<double>(0.976, 1.336),
+    bBoxSW: Point<double>(0.0, -1.332),
   ),
   GlyphBBox(
-    bBoxNE: Coordinates(x: 1.3, y: 0.02),
-    bBoxSW: Coordinates(x: 0.0, y: -0.524),
+    bBoxNE: Point<double>(1.3, 0.02),
+    bBoxSW: Point<double>(0.0, -0.524),
   ),
   GlyphBBox(
-    bBoxNE: Coordinates(x: 0.94, y: 1.604),
-    bBoxSW: Coordinates(x: 0.0, y: -1.324),
+    bBoxNE: Point<double>(0.94, 1.604),
+    bBoxSW: Point<double>(0.0, -1.324),
   ),
   GlyphBBox(
-    bBoxNE: Coordinates(x: 1.856, y: 0.056),
-    bBoxSW: Coordinates(x: -0.556, y: -0.488),
+    bBoxNE: Point<double>(1.856, 0.056),
+    bBoxSW: Point<double>(-0.556, -0.488),
   ),
   GlyphBBox(
-    bBoxNE: Coordinates(x: 0.4, y: 0.2),
-    bBoxSW: Coordinates(x: 0, y: -0.196),
+    bBoxNE: Point<double>(0.4, 0.2),
+    bBoxSW: Point<double>(0, -0.196),
   ),
 ];

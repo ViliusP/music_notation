@@ -206,7 +206,7 @@ class NotationWidgetization {
             MeasureElement(
               position: cursor.position,
               size: cursor.size,
-              offset: cursor.offset,
+              alignment: cursor.alignment,
               duration: cursor.duration,
               child: cursor,
             ),
@@ -223,7 +223,7 @@ class NotationWidgetization {
             MeasureElement(
               position: cursor.position,
               size: cursor.size,
-              offset: cursor.offset,
+              alignment: cursor.alignment,
               duration: cursor.duration,
               child: cursor,
             ),

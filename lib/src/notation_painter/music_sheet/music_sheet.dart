@@ -129,7 +129,7 @@ class MusicSheet extends StatelessWidget {
         MeasureElementV2(
           position: ElementPosition.staffTop,
           size: Size(0, 0),
-          offset: AlignmentOffset.fromTop(left: 0, top: 0, height: 4),
+          alignment: Alignment.topLeft,
           child: StaffLines(),
         ),
         // NoteElement(head: head),
@@ -137,6 +137,7 @@ class MusicSheet extends StatelessWidget {
         head1,
       ],
     );
+    abc;
 
     // var def = Stack(
     //   children: [

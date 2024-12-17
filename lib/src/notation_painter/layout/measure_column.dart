@@ -1,10 +1,8 @@
 import 'dart:math';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
-import 'package:music_notation/src/notation_painter/layout/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/layout/positioning.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
@@ -20,14 +18,9 @@ class MeasureColumn extends StatelessWidget implements MeasureWidget {
   @override
   ElementPosition get position =>
       _reference?.position ?? ElementPosition.staffMiddle;
+
   @override
-  AlignmentOffset get offset {
-    if (_reference == null) return AlignmentOffset.zero();
-    return AlignmentOffset.fromBottom(
-      left: 0,
-      bottom: _reference!.offset.bottom,
-      height: size.height,
-    );
+  Alignment get alignment {
   }
 
   MeasureElementLayoutData? get _reference {

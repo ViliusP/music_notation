@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-import 'package:music_notation/src/notation_painter/layout/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 
@@ -15,7 +14,7 @@ class CursorElement extends StatelessWidget {
 
   final int? staff;
 
-  AlignmentOffset get offset => AlignmentOffset.zero();
+  Alignment get alignment => Alignment.topLeft;
 
   /// Generic position as `<forward>` does not correspond to a specific musical position.
   ElementPosition get position => ElementPosition.staffMiddle;

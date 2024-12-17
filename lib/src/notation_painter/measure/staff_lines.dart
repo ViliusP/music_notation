@@ -144,7 +144,7 @@ class BarlineStack extends StatelessWidget {
 
 class PositionedBarlineElement extends BarlineElement implements MeasureWidget {
   @override
-  final AlignmentOffset offset;
+  final Alignment alignment;
 
   @override
   final ElementPosition position;
@@ -161,7 +161,7 @@ class PositionedBarlineElement extends BarlineElement implements MeasureWidget {
 
   const PositionedBarlineElement({
     super.key,
-    required this.offset,
+    required this.alignment,
     required this.position,
     required super.height,
   });
@@ -178,19 +178,16 @@ class PositionedBarlineElement extends BarlineElement implements MeasureWidget {
       BarlineExtension.bottom => double.maxFinite,
     };
 
-    AlignmentOffset offset = switch (type) {
-      BarlineExtension.none => AlignmentOffset.fromTop(
-          top: 0,
-          height: 4,
-          left: 0,
-        ),
-      BarlineExtension.both => AlignmentOffset.zero(),
-      BarlineExtension.top => AlignmentOffset.zero(),
-      BarlineExtension.bottom => AlignmentOffset.zero(),
+    // TODO CHECK
+    Alignment alignment = switch (type) {
+      BarlineExtension.none => Alignment.topLeft,
+      BarlineExtension.both => Alignment.topLeft,
+      BarlineExtension.top => Alignment.topLeft,
+      BarlineExtension.bottom => Alignment.bottomLeft,
     };
 
     return PositionedBarlineElement(
-      offset: offset,
+      alignment: alignment,
       position: position,
       height: adjustedHeight,
     );
@@ -200,7 +197,7 @@ class PositionedBarlineElement extends BarlineElement implements MeasureWidget {
   Widget build(BuildContext context) {
     return MusicElement(
       position: position,
-      offset: offset,
+      alignment: alignment,
       child: super.build(context),
     );
   }

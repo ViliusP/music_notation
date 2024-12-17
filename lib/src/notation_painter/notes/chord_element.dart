@@ -130,7 +130,7 @@ class Chord extends StatelessWidget {
           .map((e) => MeasureElement(
                 position: e.position,
                 size: e.accidental!.size,
-                offset: e.accidental!.offset,
+                alignment: e.accidental!.alignment,
                 duration: 0,
                 child: e.accidental!,
               ))
@@ -147,7 +147,7 @@ class Chord extends StatelessWidget {
         return MeasureElement(
           position: position,
           size: e.dots!.size,
-          offset: e.dots!.offset,
+          alignment: e.dots!.alignment,
           duration: 0,
           child: e.dots!,
         );
@@ -183,7 +183,7 @@ class Chord extends StatelessWidget {
       ? MeasureElement(
           position: accidentals!.position,
           size: accidentals!.size,
-          offset: accidentals!.offset,
+          alignment: accidentals!.alignment,
           duration: 0,
           child: accidentals!,
         )
@@ -194,7 +194,7 @@ class Chord extends StatelessWidget {
           ? MeasureElement(
               position: augmentationDots!.position,
               size: augmentationDots!.size,
-              offset: augmentationDots!.offset,
+              alignment: augmentationDots!.alignment,
               duration: 0,
               child: augmentationDots!,
             )
@@ -247,7 +247,7 @@ class Chord extends StatelessWidget {
     return MeasureElement(
       position: stemPosition,
       size: stem!.size,
-      offset: stem!.offset,
+      alignment: stem!.alignment,
       duration: 0,
       child: stem!,
     );
@@ -282,9 +282,9 @@ class Chord extends StatelessWidget {
   ElementPosition get position =>
       _reference?.position ?? ElementPosition.staffMiddle;
 
-  AlignmentOffset get offset {
+  Alignment get alignment {
     if (_reference == null) {
-      return AlignmentOffset.zero();
+      return Alignment.topLeft;
     }
 
     return AlignmentOffset.fromBottom(

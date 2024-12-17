@@ -1,7 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
-import 'package:music_notation/src/notation_painter/layout/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
@@ -16,7 +15,7 @@ class ClefElement extends StatelessWidget {
   final Clef clef;
   final FontMetadata font;
 
-  AlignmentOffset get offset => AlignmentOffset.fromBbox(left: 0, bBox: _bBox);
+  Alignment get alignment => _bBox.toAlignment();
 
   const ClefElement({
     super.key,

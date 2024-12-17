@@ -88,17 +88,9 @@ class StemElement extends StatelessWidget {
   /// Determines if flag should be shown with stem. By default it is true;
   final bool showFlag;
 
-  AlignmentOffset get offset => switch (direction) {
-        StemDirection.up => AlignmentOffset.fromBottom(
-            left: 0,
-            bottom: 0,
-            height: size.height,
-          ),
-        StemDirection.down => AlignmentOffset.fromTop(
-            left: 0,
-            top: 0,
-            height: size.height,
-          ),
+  Alignment get alignment => switch (direction) {
+        StemDirection.up => Alignment.bottomLeft,
+        StemDirection.down => Alignment.bottomRight,
       };
 
   Size get size {
@@ -190,19 +182,11 @@ class StemElement extends StatelessWidget {
     }
   }
 
-  AlignmentOffset _flagPosition(StemDirection direction) {
+  Alignment _flagPosition(StemDirection direction) {
     if (direction == StemDirection.down) {
-      return AlignmentOffset.fromBottom(
-        left: 0,
-        bottom: 0,
-        height: _baseFlagSize.height,
-      );
+      return Alignment.bottomLeft;
     }
-    return AlignmentOffset.fromTop(
-      left: 0,
-      top: 0,
-      height: _baseFlagSize.height,
-    );
+    return Alignment.topLeft;
   }
 
   /// Default stem length: `3.5*stave_space`.
@@ -338,7 +322,7 @@ class PositionedNotehead extends NoteheadElement implements MeasureWidget {
   Widget build(BuildContext context) {
     return MusicElement(
       position: position,
-      offset: super.offset,
+      alignment: super.alignment,
       child: super.build(context),
     );
   }
@@ -394,7 +378,7 @@ class NoteheadElement extends StatelessWidget {
     }
   }
 
-  AlignmentOffset get offset => AlignmentOffset.fromBbox(left: 0, bBox: _bBox);
+  Alignment get alignment => _bBox.toAlignment();
 
   /// Size of notehead symbol.
   ///
