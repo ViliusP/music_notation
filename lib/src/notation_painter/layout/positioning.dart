@@ -155,8 +155,9 @@ extension MeasureElementDimensions on MeasureElementLayoutData {
 
     // The height of the element extending above its own alignment offset.
     // A positive value means the element is entirely below its alignment axis.
-    double extentAbove = offset.top.limit(top: 0);
-    extentAbove = extentAbove.abs();
+    double halfHeight = size.height / 2;
+    double extentAbove = halfHeight + (alignment.y * halfHeight);
+    extentAbove = extentAbove.limit(bottom: 0);
 
     double aboveReference = extentAbove - distanceToReference;
 
@@ -175,8 +176,9 @@ extension MeasureElementDimensions on MeasureElementLayoutData {
 
     // The height of the element extending below its own alignment offset.
     // A positive value means the element is entirely above its alignment axis.
-    double extentBelow = offset.bottom.limit(top: 0);
-    extentBelow = extentBelow.abs();
+
+    double halfHeight = size.height / 2;
+    double extentBelow = halfHeight - (alignment.y * halfHeight);
 
     double belowReference = extentBelow + distanceToReference;
 

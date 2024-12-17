@@ -4,11 +4,11 @@ import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/layout/measure_element.dart';
 
 class AlignmentDebugPainter extends CustomPainter {
-  final AlignmentOffset offset;
+  final Alignment alignment;
   final Set<AlignmentDebugOption> lines;
 
   const AlignmentDebugPainter({
-    required this.offset,
+    required this.alignment,
     this.lines = const {},
   });
 

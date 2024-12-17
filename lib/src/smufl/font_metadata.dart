@@ -229,7 +229,7 @@ class GlyphBBox {
   ///   bBoxSW: [0.0, -1.0],
   /// );
   /// ```
-  GlyphBBox({
+  const GlyphBBox({
     required this.bBoxNE,
     required this.bBoxSW,
   });

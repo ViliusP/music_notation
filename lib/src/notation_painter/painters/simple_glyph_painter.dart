@@ -8,7 +8,7 @@ class SimpleGlyphPainter extends CustomPainter {
   final String smufl;
   final GlyphBBox bBox;
 
-  // Most of the times, it is stave space height
+  // Stave space height.
   final double height;
 
   SimpleGlyphPainter(this.smufl, this.bBox, this.height);
@@ -39,10 +39,6 @@ class SimpleGlyphPainter extends CustomPainter {
     // -------------------------
     // BBox painting
     // --------------------------
-    final paint = Paint()
-      ..color = Color.fromRGBO(0, 0, 0, 0.5)
-      ..strokeWidth = 1.0
-      ..style = PaintingStyle.stroke;
 
     var (o1, o2) = bBox.toOffsets();
 
@@ -51,17 +47,6 @@ class SimpleGlyphPainter extends CustomPainter {
     double verticalOffset = -o1.dy.roundTowardsZero();
     double horizontalOffset = -(o1.dx.roundAwayFromZero());
 
-    if (drawBBox) {
-      o2 = o2.scale(height, height).translate(0, height * 2);
-
-      canvas.drawRect(
-        Rect.fromPoints(
-          o1.translate(horizontalOffset, verticalOffset),
-          o2.translate(horizontalOffset, verticalOffset),
-        ),
-        paint,
-      );
-    }
     // -------------------------
     // Glyph painting
     // --------------------------
@@ -81,5 +66,41 @@ class SimpleGlyphPainter extends CustomPainter {
       canvas,
       Offset(horizontalOffset, verticalOffset),
     );
+
+    // -------------------------
+    // DEBUG
+    // --------------------------
+    if (true) {
+      final boxPaint = Paint()
+        ..color = Color.fromRGBO(0, 0, 0, 0.5)
+        ..strokeWidth = 1.0
+        ..style = PaintingStyle.stroke;
+
+      o2 = o2.scale(height, height).translate(0, height * 2);
+
+      canvas.drawRect(
+        Rect.fromPoints(
+          o1.translate(horizontalOffset, verticalOffset),
+          o2.translate(horizontalOffset, verticalOffset),
+        ),
+        boxPaint,
+      );
+
+      final alignmentPaint = Paint()
+        ..color = Color.fromRGBO(255, 0, 0, 1)
+        ..strokeWidth = 3.0
+        ..style = PaintingStyle.stroke;
+
+      var halfBboxHeight = (bBox.toSize().height * height) / 2;
+
+      var alignment = bBox.toAlignment();
+      var alignmentAxisY = halfBboxHeight + (halfBboxHeight * alignment.y);
+
+      canvas.drawLine(
+        Offset(0, alignmentAxisY),
+        Offset(o2.dx + horizontalOffset, alignmentAxisY),
+        alignmentPaint,
+      );
+    }
   }
 }
