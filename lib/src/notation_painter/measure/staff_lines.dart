@@ -1,6 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
+import 'package:music_notation/src/notation_painter/layout/measure_element.dart';
+import 'package:music_notation/src/notation_painter/layout/positioning.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_barlines.dart';
+import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/painters/barline_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/staff_lines_painter.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
@@ -53,6 +56,7 @@ class StaffLines extends StatelessWidget {
     NotationLayoutProperties layoutProperties =
         NotationProperties.of(context)?.layout ??
             NotationLayoutProperties.standard();
+
     return CustomPaint(
       size: Size(double.maxFinite, layoutProperties.staveHeight),
       painter: StaffLinesPainter(
@@ -65,7 +69,7 @@ class StaffLines extends StatelessWidget {
   }
 }
 
-class Barline extends StatelessWidget {
+class BarlineStack extends StatelessWidget {
   /// Bottom position of base baseline.
   final double baseline;
 
@@ -74,7 +78,7 @@ class Barline extends StatelessWidget {
   final BarlineExtension type;
   final BarlineLocation location;
 
-  const Barline({
+  const BarlineStack({
     super.key,
     required this.type,
     required this.location,
@@ -135,5 +139,122 @@ class Barline extends StatelessWidget {
         ],
       );
     });
+  }
+}
+
+class PositionedBarlineElement extends BarlineElement implements MeasureWidget {
+  @override
+  final AlignmentOffset offset;
+
+  @override
+  final ElementPosition position;
+
+  @override
+  Size get size => throw UnimplementedError();
+
+  // /// Bottom position of base baseline.
+  // final double baseline;
+
+  // /// Height of base barline
+  // final BarlineExtension type;
+  // final BarlineLocation location;
+
+  const PositionedBarlineElement({
+    super.key,
+    required this.offset,
+    required this.position,
+    required super.height,
+  });
+
+  factory PositionedBarlineElement.extended({
+    required double height,
+    required BarlineExtension type,
+    required ElementPosition position,
+  }) {
+    double adjustedHeight = switch (type) {
+      BarlineExtension.none => height,
+      BarlineExtension.both => double.maxFinite,
+      BarlineExtension.top => double.maxFinite,
+      BarlineExtension.bottom => double.maxFinite,
+    };
+
+    AlignmentOffset offset = switch (type) {
+      BarlineExtension.none => AlignmentOffset.fromTop(
+          top: 0,
+          height: 4,
+          left: 0,
+        ),
+      BarlineExtension.both => AlignmentOffset.zero(),
+      BarlineExtension.top => AlignmentOffset.zero(),
+      BarlineExtension.bottom => AlignmentOffset.zero(),
+    };
+
+    return PositionedBarlineElement(
+      offset: offset,
+      position: position,
+      height: adjustedHeight,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MusicElement(
+      position: position,
+      offset: offset,
+      child: super.build(context),
+    );
+  }
+
+  //   double? left;
+  // double? right;
+  // switch (location) {
+  //   case BarlineLocation.start:
+  //     left = 0;
+  //     break;
+  //   case BarlineLocation.end:
+  //     right = 0;
+  //     break;
+  // }
+
+  // double bottom;
+  // double height;
+  // switch (type) {
+  //   case BarlineExtension.none:
+  //     height = baseHeight;
+  //     break;
+  //   case BarlineExtension.both:
+  //     height = constraints.maxHeight;
+  //     break;
+  //   case BarlineExtension.top:
+  //     bottom = baseline;
+  //     height = ;
+  //     break;
+  //   case BarlineExtension.bottom:
+  //     height = baseline + baseHeight;
+  //     bottom = 0;
+  //     break;
+  // }
+
+  // Size size = Size.fromWidth(layoutProperties.barlineThickness);
+}
+
+class BarlineElement extends StatelessWidget {
+  final double height;
+
+  const BarlineElement({
+    super.key,
+    required this.height,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    NotationLayoutProperties layoutProperties =
+        NotationProperties.of(context)?.layout ??
+            NotationLayoutProperties.standard();
+
+    return CustomPaint(
+      size: Size(layoutProperties.barlineThickness, height),
+      painter: BarlinePainter(),
+    );
   }
 }

@@ -1,4 +1,5 @@
-import 'dart:math';
+import 'dart:developer';
+import 'dart:math' as math;
 
 import 'package:collection/collection.dart';
 import 'package:flutter/rendering.dart';
@@ -85,7 +86,7 @@ class RenderMeasureStack extends RenderBox
   void _log(Object? object) {
     if (debug) {
       // ignore: avoid_print
-      print("$debugName: ${object.toString()}");
+      log(object.toString(), name: debugName);
     }
   }
 
@@ -107,6 +108,7 @@ class RenderMeasureStack extends RenderBox
 
     RenderBox? child = firstChild;
     while (child != null) {
+      _log(child.runtimeType);
       final MeasureStackParentData childParentData =
           child.parentData! as MeasureStackParentData;
 
@@ -175,7 +177,7 @@ class RenderMeasureStack extends RenderBox
       double maybeInfinity = (width * _staveSpace * 1.01);
       bool isInfinitive = maybeInfinity.isInfinite || width.isInfinite;
       if (!isInfinitive) {
-        maxWidth = max(entry.size.width, maxWidth);
+        maxWidth = math.max(entry.size.width, maxWidth);
       }
     }
     return maxWidth * _staveSpace;
@@ -193,7 +195,7 @@ class RenderMeasureStack extends RenderBox
     if (nonNull.isNotEmpty) {
       return _computeSizeByPositioned(nonNull);
     }
-    return size = _computeSizeByNonPositioned(
+    return _computeSizeByNonPositioned(
       constraints: constraints,
       layoutChild: ChildLayoutHelper.dryLayoutChild,
     );
@@ -219,11 +221,11 @@ class RenderMeasureStack extends RenderBox
         final Size childSize = child.size;
 
         if (childSize.width.isFinite) {
-          width = max(width, childSize.width);
+          width = math.max(width, childSize.width);
         }
 
         if (childSize.height.isFinite) {
-          height = max(height, childSize.height);
+          height = math.max(height, childSize.height);
         }
       }
 
@@ -239,7 +241,8 @@ class RenderMeasureStack extends RenderBox
     var positionedData = _computePositionedData(
       layoutChild: ChildLayoutHelper.dryLayoutChild,
     );
-
+    // _log("$constraints");
+    // _log("${_computeSize(positionedData)}");
     return _computeSize(positionedData);
   }
 
@@ -258,11 +261,15 @@ class RenderMeasureStack extends RenderBox
       }
       return true;
     }());
+
     final BoxConstraints constraints = this.constraints;
     var positionedData = _computePositionedData(
       layoutChild: ChildLayoutHelper.layoutChild,
     );
+
     var nonNullData = positionedData.nonNulls.toList();
+    _log("$constraints");
+    _log("${_computeSize(positionedData)}");
     size = constraints.constrain(_computeSize(positionedData));
 
     bool hasPositioned = nonNullData.isNotEmpty;

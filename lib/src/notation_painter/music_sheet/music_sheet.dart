@@ -206,15 +206,14 @@ class MusicSheet extends StatelessWidget {
           ),
         ),
         ColoredBox(
-          color: Color.fromRGBO(0, 0, 0, 1),
+          color: Color.fromRGBO(0, 0, 0, .5),
           child: SizedBox(
             width: 200,
             height: 1,
           ),
         ),
-        // abc,
         ColoredBox(
-          color: Color.fromRGBO(0, 0, 0, 1),
+          color: Color.fromRGBO(0, 0, 0, .5),
           child: SizedBox(
             width: 200,
             height: 1,
@@ -251,8 +250,21 @@ class MusicSheet extends StatelessWidget {
                 .toList(),
           ),
         ),
-
-        abc
+        ColoredBox(
+          color: Color.fromRGBO(18, 218, 0, .25),
+          child: SizedBox(
+            width: 200,
+            height: 1,
+          ),
+        ),
+        ColoredBox(
+          color: Color.fromRGBO(4, 68, 121, .25),
+          child: SizedBox(
+            width: 200,
+            height: 1,
+          ),
+        ),
+        // abc
       ],
     );
   }

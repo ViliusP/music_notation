@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:music_notation/src/models/elements/music_data/note/note_type.dart';
 import 'package:music_notation/src/notation_painter/layout/measure_stack.dart';
 
 import 'package:music_notation/src/notation_painter/measure/measure_grid.dart';
 import 'package:music_notation/src/notation_painter/measure/staff_lines.dart';
 import 'package:music_notation/src/notation_painter/layout/positioning.dart';
+import 'package:music_notation/src/notation_painter/models/range.dart';
 import 'package:music_notation/src/notation_painter/notes/beaming.dart';
 
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
@@ -13,6 +15,7 @@ import 'package:music_notation/src/notation_painter/layout/measure_element.dart'
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
+import 'package:music_notation/src/notation_painter/notes/note_parts.dart';
 import 'package:music_notation/src/notation_painter/notes/rest_element.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 
@@ -159,7 +162,6 @@ class MeasureContainer extends StatelessWidget {
         }
       }
     }
-
     return SizedBox(
       height: measureHeight.scaledByContext(context),
       width: measureWidth.scaledByContext(context),
@@ -169,14 +171,14 @@ class MeasureContainer extends StatelessWidget {
           children: [
             StaffLinesStack(bottom: staveBottom),
             if (barlineSettings.start != null)
-              Barline(
+              BarlineStack(
                 type: barlineSettings.start!,
                 location: BarlineLocation.start,
                 baseline: staveBottom,
                 baseHeight: layoutProperties.staveHeight,
               ),
             if (barlineSettings.end != null)
-              Barline(
+              BarlineStack(
                 type: barlineSettings.end!,
                 location: BarlineLocation.end,
                 baseline: staveBottom,
@@ -210,21 +212,9 @@ class MeasureContainerV2 extends StatelessWidget {
         NotationProperties.of(context)?.layout ??
             NotationLayoutProperties.standard();
 
-    DebugSettings? dSettings = DebugSettings.of(context);
-
-    double spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
-    ElementPosition bottomRef = measure.floor - 1;
-    ElementPosition topRef = measure.ceil;
-
-    // Stave bottom values
-    ElementPosition staveBottomRef = measure.staveBottom;
-    ElementPosition staveTopRef = measure.staveTop;
-    double staveBottom = staveBottomRef.distance(bottomRef) * spacePerPosition;
-    staveBottom = staveBottom.scaledByContext(context);
+    NotationProperties? properties = NotationProperties.of(context);
 
     double measureWidth = horizontalOffsets.last;
-    double measureHeight =
-        (topRef.numeric - bottomRef.numeric) * spacePerPosition;
 
     var positionedElements = <Widget>[];
 
@@ -232,10 +222,7 @@ class MeasureContainerV2 extends StatelessWidget {
       for (var cellEntry in entry.value.cells.entries) {
         var cell = cellEntry.value;
 
-        double? bottomOffset;
         AlignmentOffset offset = cell.offset;
-
-        bottomOffset = cell.distanceToPosition(bottomRef, BoxSide.bottom);
 
         double left = horizontalOffsets[index] + offset.left;
 
@@ -255,7 +242,6 @@ class MeasureContainerV2 extends StatelessWidget {
         }
 
         left = left.scaledByContext(context);
-        bottomOffset = bottomOffset.scaledByContext(context);
 
         Widget elementToAdd = cell;
 
@@ -280,69 +266,79 @@ class MeasureContainerV2 extends StatelessWidget {
         }
 
         positionedElements.add(
-          Positioned(
-            left: left,
-            bottom: bottomOffset,
-            child: elementToAdd,
+          MusicElement(
+            position: cell.position,
+            offset: cell.offset,
+            child: Padding(
+              padding: EdgeInsets.only(left: left),
+              child: elementToAdd,
+            ),
           ),
         );
 
-        if (dSettings != null) {
-          if (dSettings.paintBBoxBelowStaff) {
-            Size boxBelow = Size(
-              cell.size.width.scaledByContext(context),
-              cell
-                  .heightBelowReference(staveBottomRef)
-                  .scaledByContext(context),
-            );
-            positionedElements.add(
-              Positioned(
-                left: left,
-                bottom: staveBottom - boxBelow.height,
-                child: Container(
-                  width: boxBelow.width,
-                  height: boxBelow.height,
-                  color: Color.fromRGBO(255, 10, 100, 0.2),
-                ),
-              ),
-            );
-          }
-          Spacer();
-          if (dSettings.paintBBoxAboveStaff) {
-            Size boxAbove = Size(
-              cell.size.width.scaledByContext(context),
-              cell.heightAboveReference(staveTopRef).scaledByContext(context),
-            );
-            positionedElements.add(
-              Positioned(
-                left: left,
-                bottom: staveBottom + layoutProperties.staveHeight,
-                child: Container(
-                  width: boxAbove.width,
-                  height: boxAbove.height,
-                  color: Color.fromRGBO(3, 154, 255, 0.2),
-                ),
-              ),
-            );
-          }
-        }
+        // if (dSettings != null) {
+        //   if (dSettings.paintBBoxBelowStaff) {
+        //     Size boxBelow = Size(
+        //       cell.size.width.scaledByContext(context),
+        //       cell
+        //           .heightBelowReference(staveBottomRef)
+        //           .scaledByContext(context),
+        //     );
+        //     positionedElements.add(
+        //       Positioned(
+        //         left: left,
+        //         child: Container(
+        //           width: boxBelow.width,
+        //           height: boxBelow.height,
+        //           color: Color.fromRGBO(255, 10, 100, 0.2),
+        //         ),
+        //       ),
+        //     );
+        //   }
+
+        //   if (dSettings.paintBBoxAboveStaff) {
+        //     Size boxAbove = Size(
+        //       cell.size.width.scaledByContext(context),
+        //       cell.heightAboveReference(staveTopRef).scaledByContext(context),
+        //     );
+        //     positionedElements.add(
+        //       Positioned(
+        //         left: left,
+        //         bottom: staveBottom + layoutProperties.staveHeight,
+        //         child: Container(
+        //           width: boxAbove.width,
+        //           height: boxAbove.height,
+        //           color: Color.fromRGBO(3, 154, 255, 0.2),
+        //         ),
+        //       ),
+        //     );
+        //   }
+        // }
       }
     }
 
-    return SizedBox(
-      height: measureHeight.scaledByContext(context),
-      width: measureWidth.scaledByContext(context),
-      // child: BeamCanvas(
+    return BeamCanvas(
       child: MeasureStack(
+        range: PositionalRange(measure.ceil, measure.floor),
+        debug: true,
+        debugName: "In measure container",
         children: [
-          // StaffLinesStack(bottom: staveBottom),
-          // if (barlineSettings.start != null)
-          //   Barline(
-          //     type: barlineSettings.start!,
-          //     location: BarlineLocation.start,
-          //     baseline: staveBottom,
-          //     baseHeight: layoutProperties.staveHeight,
-          //   ),
+          MusicElement(
+            position: ElementPosition.staffTop,
+            offset: AlignmentOffset.fromTop(top: 0, height: 4, left: 0),
+            child: SizedBox(
+              width: measureWidth * layoutProperties.staveSpace,
+              child: StaffLines(),
+            ),
+          ),
+          ...positionedElements,
+          if (barlineSettings.start != null)
+            PositionedBarlineElement.extended(
+              position: ElementPosition.staffTop,
+              height: layoutProperties.staveHeight,
+              type: barlineSettings.start!,
+            )
+
           // if (barlineSettings.end != null)
           //   Barline(
           //     type: barlineSettings.end!,
@@ -350,10 +346,8 @@ class MeasureContainerV2 extends StatelessWidget {
           //     baseline: staveBottom,
           //     baseHeight: layoutProperties.staveHeight,
           //   ),
-          // ...positionedElements,
         ],
       ),
-      // ),
     );
   }
 }
