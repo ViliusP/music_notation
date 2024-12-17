@@ -9,7 +9,7 @@ import 'package:music_notation/src/notation_painter/layout/measure_element.dart'
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
 import 'package:music_notation/src/notation_painter/layout/measure_row.dart';
-import 'package:music_notation/src/notation_painter/layout/music_element.dart';
+import 'package:music_notation/src/notation_painter/layout/positioning.dart';
 import 'package:music_notation/src/notation_painter/properties/constants.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/augmentation_dots.dart';

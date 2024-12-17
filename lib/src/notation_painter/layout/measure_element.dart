@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
@@ -12,7 +13,7 @@ import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/layout/measure_stack.dart';
-import 'package:music_notation/src/notation_painter/layout/music_element.dart';
+import 'package:music_notation/src/notation_painter/layout/positioning.dart';
 import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rest_element.dart';
@@ -157,12 +158,16 @@ class MeasureElement extends StatelessWidget implements MeasureWidget {
   Widget build(BuildContext context) {
     DebugSettings? debugSettings = DebugSettings.of(context);
 
-    return CustomPaint(
-      foregroundPainter: AlignmentDebugPainter(
-        offset: offset.scaledByContext(context),
-        lines: debugSettings?.alignmentDebugOptions ?? {},
+    return MusicElement(
+      position: position,
+      offset: offset,
+      child: CustomPaint(
+        foregroundPainter: AlignmentDebugPainter(
+          offset: offset.scaledByContext(context),
+          lines: debugSettings?.alignmentDebugOptions ?? {},
+        ),
+        child: child,
       ),
-      child: child,
     );
   }
 
@@ -391,7 +396,70 @@ extension NoteWidgetization on Note {
   }
 }
 
-enum BoxSide {
-  top,
-  bottom,
+class MusicElement extends SingleChildRenderObjectWidget {
+  final AlignmentOffset offset;
+
+  final ElementPosition position;
+
+  const MusicElement({
+    super.key,
+    required this.position,
+    required this.offset,
+    required super.child,
+  });
+
+  @override
+  RenderObject createRenderObject(BuildContext context) {
+    return MusicElementRenderBox(position: position, alignment: offset);
+  }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    MusicElementRenderBox renderObject,
+  ) {
+    renderObject.position = position;
+    renderObject.alignment = offset;
+  }
+}
+
+/// Render box for the BeamElement widget.
+class MusicElementRenderBox extends RenderProxyBox {
+  /// List of beams managed by this element.
+  ElementPosition position;
+
+  AlignmentOffset alignment;
+
+  /// Constructor to initialize BeamElementRenderBox.
+  MusicElementRenderBox({
+    required this.position,
+    required this.alignment,
+  });
+
+  @override
+  void performLayout() {
+    // Layout the child with loosened constraints.
+    if (child != null) {
+      child!.layout(constraints.loosen(), parentUsesSize: true);
+    }
+
+    // Set the size of the render box based on the child or a default size.
+    size = constraints.constrain(Size(
+      child?.size.width ?? 0,
+      child?.size.height ?? 0,
+    ));
+
+    if (parentData is MeasureParentData) {
+      (parentData as MeasureParentData).position = position;
+      (parentData as MeasureParentData).alignment = alignment;
+    }
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    // Paint the child, if available.
+    if (child != null) {
+      context.paintChild(child!, offset);
+    }
+  }
 }

@@ -10,7 +10,7 @@ import 'package:music_notation/src/notation_painter/layout/measure_row.dart';
 import 'package:music_notation/src/notation_painter/layout/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/octaved_key_accidental.dart';
-import 'package:music_notation/src/notation_painter/layout/music_element.dart';
+import 'package:music_notation/src/notation_painter/layout/positioning.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';

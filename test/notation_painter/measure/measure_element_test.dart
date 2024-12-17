@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/notation_painter/layout/measure_element.dart';
-import 'package:music_notation/src/notation_painter/layout/music_element.dart';
+import 'package:music_notation/src/notation_painter/layout/positioning.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 
 const epsilon = 0.01;

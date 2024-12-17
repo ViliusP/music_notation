@@ -13,7 +13,7 @@ import 'package:music_notation/src/notation_painter/layout/measure_row.dart';
 import 'package:music_notation/src/notation_painter/layout/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/range.dart';
-import 'package:music_notation/src/notation_painter/layout/music_element.dart';
+import 'package:music_notation/src/notation_painter/layout/positioning.dart';
 import 'package:music_notation/src/notation_painter/notes/adjacency.dart';
 import 'package:music_notation/src/notation_painter/notes/augmentation_dots.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
@@ -181,7 +181,7 @@ class Chord extends StatelessWidget {
 
   MeasureElement? get _accidentals => accidentals?.children.isNotEmpty == true
       ? MeasureElement(
-          position: accidentals!.position!,
+          position: accidentals!.position,
           size: accidentals!.size,
           offset: accidentals!.offset,
           duration: 0,
@@ -192,7 +192,7 @@ class Chord extends StatelessWidget {
   MeasureElement? get _augmentationDots =>
       augmentationDots?.children.isNotEmpty == true
           ? MeasureElement(
-              position: augmentationDots!.position!,
+              position: augmentationDots!.position,
               size: augmentationDots!.size,
               offset: augmentationDots!.offset,
               duration: 0,
