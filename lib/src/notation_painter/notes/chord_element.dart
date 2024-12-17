@@ -245,7 +245,6 @@ class Chord extends StatelessWidget {
 
         if (posLeft == null && posRight == null) return null;
         stemPosition = [posLeft, posRight].nonNulls.maxOrNull;
-        print(stemPosition);
     }
 
     if (stemPosition == null) return null;

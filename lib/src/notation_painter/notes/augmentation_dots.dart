@@ -3,6 +3,7 @@ import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
+import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 import 'package:music_notation/src/smufl/glyph_class.dart';
 
@@ -16,35 +17,10 @@ class AugmentationDots extends StatelessWidget {
   final int count;
 
   /// The spacing between each augmentation dot.
-  final double spacing;
+  final double? spacing;
 
   /// Font metadata used for glyph dimensions and layout information.
   final FontMetadata font;
-
-  /// The default offset for positioning [AugmentationDots] on the right side of the note.
-  /// This offset is typically half of the stave space and is added to the note size,
-  /// so the dot aligns correctly in musical notation.
-  static const double defaultBaseOffset = 1 / 2;
-
-  /// The default spacing between two augmentation dots.
-  ///
-  /// *Value taken from [_defaultSize].
-  static const double _defaultSpacing = 2.376;
-
-  /// Calculates the total size of the augmentation dots.
-  ///
-  /// This method determines the combined width of all dots, factoring in
-  /// spacing between them, and returns the required [Size] object.
-  Size get size {
-    Size singleDotSize = _baseDotSize(font);
-    double width = count * singleDotSize.width + (spacing * (count - 1));
-
-    return Size(width, singleDotSize.height);
-  }
-
-  Alignment get alignment => Alignment.centerLeft;
-
-  ElementPosition get position => ElementPosition.staffMiddle;
 
   /// Constructor for [AugmentationDots].
   ///
@@ -55,19 +31,35 @@ class AugmentationDots extends StatelessWidget {
     super.key,
     required this.count,
     required this.font,
-    this.spacing = _defaultSpacing,
+    this.spacing,
   })  : assert(count > 0), // Ensure at least one dot
-        assert(spacing >= 0); // Ensure non-negative spacing
+        assert((spacing ?? 0) >= 0); // Ensure non-negative spacing
 
-  /// Retrieves the size of a single augmentation dot based on [font] metadata.
+  /// The default offset for positioning [AugmentationDots] on the right side of the note.
+  /// This offset is typically half of the stave space and is added to the note size,
+  /// so the dot aligns correctly in musical notation.
+  static const double defaultBaseOffset = 1 / 2;
+
+  /// Calculates the total size of the augmentation dots.
   ///
-  /// If the font provides specific glyph dimensions, those are used. Otherwise,
-  /// a default size scaled to the current stave height is calculated and returned.
-  static Size _baseDotSize(FontMetadata font) {
-    return font.glyphBBoxes[CombiningStaffPositions.augmentationDot]!
-        .toRect()
-        .size;
+  /// This method determines the combined width of all dots, factoring in
+  /// spacing between them, and returns the required [Size] object.
+  Size get size {
+    Size singleDotSize = _bbox.toSize();
+    double width =
+        (count * singleDotSize.width) + (_resolvedSpacing * (count - 1));
+
+    return Size(width, singleDotSize.height);
   }
+
+  Alignment get alignment => Alignment.centerLeft;
+
+  ElementPosition get position => ElementPosition.staffMiddle;
+
+  double get _resolvedSpacing => spacing ?? _bbox.toSize().width / 2;
+
+  GlyphBBox get _bbox =>
+      font.glyphBBoxes[CombiningStaffPositions.augmentationDot]!;
 
   @override
   Widget build(BuildContext context) {
@@ -75,16 +67,17 @@ class AugmentationDots extends StatelessWidget {
         NotationProperties.of(context)?.layout ??
             NotationLayoutProperties.standard();
 
-    Size singleDotSize = _baseDotSize(font).scaledByContext(context);
+    Size singleDotSize = _bbox.toSize().scaledByContext(context);
 
     return SizedBox.fromSize(
       size: size.scaledByContext(context),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           for (int i = 0; i < count; i++)
             Padding(
               padding: EdgeInsets.only(
-                left: (singleDotSize.width * i) + (spacing * i),
+                left: i == 0 ? 0 : _resolvedSpacing.scaledByContext(context),
               ),
               child: CustomPaint(
                 size: singleDotSize,
