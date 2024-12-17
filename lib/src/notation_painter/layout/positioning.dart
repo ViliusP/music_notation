@@ -92,6 +92,23 @@ class MeasureElementLayoutData extends MeasureElementPosition {
 
     return PositionalRange(min, max);
   }
+
+  /// [midpoint] offset from top or left side.
+  static double calculateSingleAxisAlignment(double a, double b) {
+    final midpoint = (a + b) / 2;
+    final halfDistance = (a - b).abs() / 2;
+    final shift = midpoint / halfDistance;
+
+    return shift;
+  }
+
+  // /// Returns value from [-1, 1].
+  // static double calculateVerticalAlignment(
+  //   List<MeasureElementLayoutData> children,
+  //   ElementPosition position,
+  // ) {
+  //   return
+  // }
 }
 
 abstract class MeasureWidget extends Widget

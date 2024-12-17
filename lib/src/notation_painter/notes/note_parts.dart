@@ -90,7 +90,7 @@ class StemElement extends StatelessWidget {
 
   Alignment get alignment => switch (direction) {
         StemDirection.up => Alignment.bottomLeft,
-        StemDirection.down => Alignment.bottomRight,
+        StemDirection.down => Alignment.topLeft,
       };
 
   Size get size {
@@ -226,18 +226,18 @@ class StemElement extends StatelessWidget {
       direction: direction,
       child: SizedBox.fromSize(
         size: size.scaledByContext(context),
-        child: Stack(children: [
-          CustomPaint(
-            size: size.scaledByContext(context),
-            painter: StemPainter(
-              direction: direction,
-              thickness: layoutProperties.stemStrokeWidth,
+        child: Stack(
+          alignment: _flagAlignment(direction),
+          children: [
+            CustomPaint(
+              size: size.scaledByContext(context),
+              painter: StemPainter(
+                direction: direction,
+                thickness: layoutProperties.stemStrokeWidth,
+              ),
             ),
-          ),
-          if (flagGlyph != null && length > 0)
-            AlignmentPositioned(
-              position: _flagPosition(direction),
-              child: CustomPaint(
+            if (flagGlyph != null && length > 0)
+              CustomPaint(
                 size: _baseFlagSize.scaledByContext(context),
                 painter: SimpleGlyphPainter(
                   flagGlyph.codepoint,
@@ -245,8 +245,8 @@ class StemElement extends StatelessWidget {
                   layoutProperties.staveSpace,
                 ),
               ),
-            ),
-        ]),
+          ],
+        ),
       ),
     );
   }

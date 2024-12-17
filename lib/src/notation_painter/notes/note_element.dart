@@ -10,6 +10,7 @@ import 'package:music_notation/src/notation_painter/models/element_position.dart
 import 'package:music_notation/src/notation_painter/models/ledger_lines.dart';
 import 'package:music_notation/src/notation_painter/layout/measure_row.dart';
 import 'package:music_notation/src/notation_painter/layout/positioning.dart';
+import 'package:music_notation/src/notation_painter/models/range.dart';
 import 'package:music_notation/src/notation_painter/properties/constants.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/notation_painter/notes/augmentation_dots.dart';
@@ -198,10 +199,14 @@ class NoteElement extends StatelessWidget {
     ];
   }
 
+  NumericalRange<double> get _verticalRange =>
+      MeasureElementLayoutData.columnVerticalRange(
+        _children,
+        position,
+      );
+
   Size get size {
-    double height = MeasureElementLayoutData.columnVerticalRange(
-      _children,
-    ).distance;
+    double height = _verticalRange.distance;
     double width = head.size.width;
 
     if (dots != null) {
@@ -226,18 +231,24 @@ class NoteElement extends StatelessWidget {
 
   Alignment get alignment {
     {
-      double left = 0;
+      double leftOffset = 0;
 
       if (accidental != null) {
-        left -= accidental!.size.width;
-        left -= NotationLayoutProperties.noteAccidentalDistance;
+        leftOffset = accidental!.size.width;
+        leftOffset = NotationLayoutProperties.noteAccidentalDistance;
       }
 
-      return AlignmentOffset.fromBottom(
-        height: size.height,
-        bottom: MeasureElementLayoutData.columnVerticalRange(_children).min,
-        left: left,
+      var x = -MeasureElementLayoutData.calculateSingleAxisAlignment(
+        -leftOffset,
+        size.width - leftOffset,
       );
+
+      var y = MeasureElementLayoutData.calculateSingleAxisAlignment(
+        _verticalRange.max,
+        _verticalRange.min,
+      );
+
+      return Alignment(x, y);
     }
   }
 
