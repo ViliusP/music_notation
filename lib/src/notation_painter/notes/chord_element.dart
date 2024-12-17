@@ -23,6 +23,8 @@ import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
+typedef PositionedElement<T> = ({ElementPosition position, T element});
+
 class Chord extends StatelessWidget {
   final List<PositionedNotehead> noteheadsLeft;
 
@@ -72,17 +74,20 @@ class Chord extends StatelessWidget {
 
     // ----------- NOTEHEAD COLUMNS ---------------------
 
-    List<NoteElement> notesElements = [];
-    List<ElementPosition> positions = [];
+    List<PositionedElement<NoteElement>> notesElements = [];
 
     for (var note in notes) {
-      notesElements.add(NoteElement.fromNote(
+      var noteElement = NoteElement.fromNote(
         note: note,
         clef: clef,
         font: font,
-      ));
-      positions.add(notesElements.last.position);
+      );
+      var position = NoteElement.determinePosition(note, clef);
+
+      notesElements.add((element: noteElement, position: position));
     }
+
+    var positions = notesElements.map((e) => e.position).toList();
 
     // Direction of real or imaginary (if stem isn't needed) stem.
     StemDirection direction =
@@ -93,7 +98,7 @@ class Chord extends StatelessWidget {
     List<PositionedNotehead> leftNoteheads = notesElements
         .whereIndexed((i, _) => sides[i] == NoteheadSide.left)
         .map((note) => PositionedNotehead.fromParent(
-              element: note.head,
+              element: note.element.head,
               position: note.position,
             ))
         .toList();
@@ -101,7 +106,7 @@ class Chord extends StatelessWidget {
     List<PositionedNotehead> rightNoteheads = notesElements
         .whereIndexed((i, _) => sides[i] == NoteheadSide.right)
         .map((note) => PositionedNotehead.fromParent(
-              element: note.head,
+              element: note.element.head,
               position: note.position,
             ))
         .toList();
@@ -116,7 +121,7 @@ class Chord extends StatelessWidget {
       stem = StemElement(
         type: type,
         font: font,
-        length: _stemStartLength(notesElements) +
+        length: _stemStartLength(positions) +
             NotationLayoutProperties.baseStandardStemLength,
         showFlag: beams.isEmpty,
         direction: stemDirection,
@@ -126,30 +131,30 @@ class Chord extends StatelessWidget {
     // ----------- ACCIDENTALS ---------------------
     MeasureColumn accidentalsColumn = MeasureColumn(
       children: notesElements
-          .where((e) => e.accidental != null)
+          .where((e) => e.element.accidental != null)
           .map((e) => MeasureElement(
                 position: e.position,
-                size: e.accidental!.size,
-                alignment: e.accidental!.alignment,
+                size: e.element.accidental!.size,
+                alignment: e.element.accidental!.alignment,
                 duration: 0,
-                child: e.accidental!,
+                child: e.element.accidental!,
               ))
           .toList(),
     );
 
     // ----------- DOTS ---------------------
     MeasureColumn augmentationDots = MeasureColumn(
-      children: notesElements.where((e) => e.dots != null).map((e) {
+      children: notesElements.where((e) => e.element.dots != null).map((e) {
         ElementPosition position = e.position;
         if (position.numeric % 2 == 0) {
           position = position.transpose(1);
         }
         return MeasureElement(
           position: position,
-          size: e.dots!.size,
-          alignment: e.dots!.alignment,
+          size: e.element.dots!.size,
+          alignment: e.element.dots!.alignment,
           duration: 0,
-          child: e.dots!,
+          child: e.element.dots!,
         );
       }).toList(),
     );
@@ -240,6 +245,7 @@ class Chord extends StatelessWidget {
 
         if (posLeft == null && posRight == null) return null;
         stemPosition = [posLeft, posRight].nonNulls.maxOrNull;
+        print(stemPosition);
     }
 
     if (stemPosition == null) return null;
@@ -266,13 +272,11 @@ class Chord extends StatelessWidget {
   }
 
   /// Calculates stem lenght
-  static double _stemStartLength(List<NoteElement> notes) {
-    var sortedNotes = notes.sortedBy(
-      (note) => note.position,
-    );
+  static double _stemStartLength(List<ElementPosition> positions) {
+    var sortedNotes = positions.sorted();
 
-    int lowestPosition = sortedNotes.last.position.numeric;
-    int highestPosition = sortedNotes.first.position.numeric;
+    int lowestPosition = sortedNotes.last.numeric;
+    int highestPosition = sortedNotes.first.numeric;
     int range = (highestPosition - lowestPosition).abs();
 
     return range * NotationLayoutProperties.baseSpacePerPosition;
@@ -287,11 +291,21 @@ class Chord extends StatelessWidget {
       return Alignment.topLeft;
     }
 
-    return AlignmentOffset.fromBottom(
-      left: 0,
-      bottom: _reference!.offset.bottom,
-      height: size.height,
+    double leftOffset = 0;
+
+    var x = MeasureElementLayoutData.calculateSingleAxisAlignment(
+      -leftOffset,
+      size.width - leftOffset,
+      Axis.horizontal,
     );
+
+    var y = MeasureElementLayoutData.calculateSingleAxisAlignment(
+      _verticalRange.max,
+      _verticalRange.min,
+      Axis.vertical,
+    );
+
+    return Alignment(x, y);
   }
 
   Size get size {
@@ -303,7 +317,7 @@ class Chord extends StatelessWidget {
 
   /// Lowest y of every chord elements
   NumericalRange<double> get _verticalRange {
-    return MeasureElementLayoutData.columnVerticalRange(_elements);
+    return _elements.columnVerticalRange(position);
   }
 
   double get _width {

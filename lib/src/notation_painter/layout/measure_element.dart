@@ -55,7 +55,7 @@ class MeasureElement extends StatelessWidget implements MeasureWidget {
       clef: clef,
     );
     return MeasureElement(
-      position: noteElement.position,
+      position: NoteElement.determinePosition(note, clef),
       size: noteElement.size,
       alignment: noteElement.alignment,
       duration: note.determineDuration(),
@@ -243,133 +243,6 @@ class MeasureElementV2 extends ParentDataWidget<MeasureStackParentData>
 }
 
 class ElementLayoutProperties {}
-
-// /// Defines specific alignment offsets for musical elements, used for vertical and
-// /// horizontal positioning within their container.
-// class AlignmentOffset {
-//   /// Vertical offset from the top of the bounding box, aligning the element with
-//   /// the staff line when positioned at `Y=0`.
-//   final double top;
-
-//   /// Vertical offset from the bottom of the bounding box, aligning the element with
-//   /// the staff line when positioned at `Y=container.height`.
-//   final double bottom;
-
-//   double get height => (top + bottom).abs();
-
-//   /// Horizontal offset from the left side of the element’s bounding box, aligning the
-//   /// element horizontally, typically at the visual or optical center.
-//   final double left;
-
-//   const AlignmentOffset({
-//     required this.top,
-//     required this.bottom,
-//     required this.left,
-//   });
-
-//   const AlignmentOffset.zero() : this(left: 0, top: 0, bottom: 0);
-
-//   factory AlignmentOffset.fromTop({
-//     required double left,
-//     required double top,
-//     required double height,
-//   }) {
-//     return AlignmentOffset(
-//       top: top,
-//       bottom: _effectiveBottom(bottom: null, top: top, height: height),
-//       left: left,
-//     );
-//   }
-
-//   factory AlignmentOffset.fromBottom({
-//     required double left,
-//     required double bottom,
-//     required double height,
-//   }) {
-//     return AlignmentOffset(
-//       top: _effectiveTop(bottom: bottom, top: null, height: height),
-//       bottom: bottom,
-//       left: left,
-//     );
-//   }
-
-//   AlignmentOffset.fromBbox({
-//     required double left,
-//     required GlyphBBox bBox,
-//   }) : this(left: left, top: -bBox.topRight.y, bottom: bBox.bottomLeft.y);
-
-//   AlignmentOffset.center({
-//     required double left,
-//     required Size size,
-//   }) : this(
-//           left: left,
-//           top: -size.height / 2,
-//           bottom: -size.height / 2,
-//         );
-
-//   AlignmentOffset scale(double scale) {
-//     return AlignmentOffset(
-//       left: left * scale,
-//       top: top * scale,
-//       bottom: bottom * scale,
-//     );
-//   }
-
-//   AlignmentOffset scaledByContext(BuildContext context) {
-//     NotationLayoutProperties layoutProperties =
-//         NotationProperties.of(context)?.layout ??
-//             NotationLayoutProperties.standard();
-
-//     return scale(layoutProperties.staveSpace);
-//   }
-
-//   /// Returns [bottom] if it is not null,
-//   /// otherwise, returns calculated top from [size] and [top].
-//   static double _effectiveBottom({
-//     required double height,
-//     required double? bottom,
-//     required double? top,
-//   }) {
-//     if (bottom != null) return bottom;
-//     double sign = top!.sign;
-//     if (sign == 0) {
-//       sign = -1;
-//     }
-//     return (top + height) * sign;
-//   }
-
-//   /// Returns [top] if it is not null,
-//   /// otherwise, returns calculated top from [size] and [bottom].
-//   static double _effectiveTop({
-//     required double height,
-//     required double? bottom,
-//     required double? top,
-//   }) {
-//     if (top != null) return top;
-//     double sign = bottom!.sign;
-//     if (sign == 0) {
-//       sign = -1;
-//     }
-//     return (bottom + height) * sign;
-//   }
-
-//   @override
-//   String toString() {
-//     return "AlignmentOffset(left: $left, top: $top, bottom: $bottom)";
-//   }
-// }
-
-// class AlignmentPositioned extends Positioned {
-//   AlignmentPositioned({
-//     super.key,
-//     required AlignmentOffset position,
-//     required super.child,
-//   }) : super(
-//           bottom: position.bottom,
-//           top: position.top,
-//           left: position.left,
-//         );
-// }
 
 extension NoteWidgetization on Note {
   double determineDuration() {

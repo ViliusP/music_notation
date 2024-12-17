@@ -10,8 +10,8 @@ class MeasureElementPosition {
   /// object to define note pitch and octave. This allows accurate placement on the staff.
   final ElementPosition position;
 
-  /// Optional positioning and alignment information for precise element placement
-  /// within its own container.
+  /// Defines specific alignment offsets for musical elements, used for vertical and
+  /// horizontal positioning within their container.
   final Alignment alignment;
 
   const MeasureElementPosition({
@@ -31,75 +31,16 @@ class MeasureElementLayoutData extends MeasureElementPosition {
   /// within the measure.
   final Size size;
 
-  /// TODO CHECK
-  /// Calculates how much does elements extent above [reference] and below [reference] position.
-  /// If reference is not given, the lowest position will be considered as reference position.
-  ///
-  /// Results are in stave staves
-  static NumericalRange<double> columnVerticalRange(
-    List<MeasureElementLayoutData> elements, [
-    ElementPosition? reference,
-  ]) {
-    if (elements.isEmpty) {
-      return NumericalRange<double>(0.0, 0.0);
-    }
-    ElementPosition ref;
-    if (reference != null) {
-      ref = reference;
-    } else {
-      ref = columnPositionalRange(elements)!.min;
-    }
-
-    var bottoms = elements.map(
-      (e) => e.distanceToPosition(ref, BoxSide.bottom),
-    );
-    var tops = elements.map(
-      (e) => e.distanceToPosition(ref, BoxSide.top),
-    );
-
-    return NumericalRange<double>(bottoms.min, tops.max);
-  }
-
-  /// TODO CHECK
-  ///
-  /// Maximum and minimun values of [elements] position.
-  static PositionalRange? columnPositionalRange(
-    List<MeasureElementLayoutData> elements,
-  ) {
-    if (elements.isEmpty) {
-      return null;
-    }
-    var positions = elements.map((e) => e.position);
-    var min = positions.min;
-    var max = positions.max;
-
-    return PositionalRange(min, max);
-  }
-
-  /// TODO CHECK
-  ///
-  /// Positions needed to fully fit column bound in container.
-  /// Do not mix with [columnPositionalRange].
-  static PositionalRange? columnPositionalBounds(
-    List<MeasureElementLayoutData> elements,
-  ) {
-    if (elements.isEmpty) {
-      return null;
-    }
-    var ranges = elements.map((e) => e.bounds);
-    var min = ranges.map((range) => range.min).min;
-    var max = ranges.map((range) => range.max).max;
-
-    return PositionalRange(min, max);
-  }
-
-  /// [midpoint] offset from top or left side.
-  static double calculateSingleAxisAlignment(double a, double b) {
+  static double calculateSingleAxisAlignment(double a, double b, Axis axis) {
     final midpoint = (a + b) / 2;
     final halfDistance = (a - b).abs() / 2;
     final shift = midpoint / halfDistance;
 
-    return shift;
+    // Because of Flutter vertical coordinates increases downward.
+    return switch (axis) {
+      Axis.vertical => shift,
+      Axis.horizontal => -shift,
+    };
   }
 
   // /// Returns value from [-1, 1].
@@ -204,6 +145,65 @@ extension MeasureElementDimensions on MeasureElementLayoutData {
     // If the value is negative, the element's bottom is above the reference,
     // meaning nothing extends below the reference, so the height is 0.
     return [0.0, belowReference].max;
+  }
+}
+
+extension MeasureList<T> on List<MeasureElementLayoutData> {
+  // /// TODO CHECK
+  // /// Calculates how much does elements extent above [reference] and below [reference] position.
+  // /// If reference is not given, the lowest position will be considered as reference position.
+  // ///
+  // /// Results are in stave staves
+  NumericalRange<double> columnVerticalRange([
+    ElementPosition? reference,
+  ]) {
+    if (isEmpty) {
+      return NumericalRange<double>(0.0, 0.0);
+    }
+    ElementPosition ref;
+    if (reference != null) {
+      ref = reference;
+    } else {
+      ref = this.columnPositionalRange()!.min;
+    }
+
+    var bottoms = map(
+      (e) => e.distanceToPosition(ref, BoxSide.bottom),
+    );
+    var tops = map(
+      (e) => e.distanceToPosition(ref, BoxSide.top),
+    );
+
+    return NumericalRange<double>(bottoms.min, tops.max);
+  }
+
+  /// TODO CHECK
+  ///
+  /// Maximum and minimun values of [elements] position.
+  PositionalRange? columnPositionalRange() {
+    if (isEmpty) {
+      return null;
+    }
+    var positions = map((e) => e.position);
+    var min = positions.min;
+    var max = positions.max;
+
+    return PositionalRange(min, max);
+  }
+
+  /// TODO CHECK
+  ///
+  /// Positions needed to fully fit column bound in container.
+  /// Do not mix with [columnPositionalRange].
+  PositionalRange? columnPositionalBounds() {
+    if (isEmpty) {
+      return null;
+    }
+    var ranges = map((e) => e.bounds);
+    var min = ranges.map((range) => range.min).min;
+    var max = ranges.map((range) => range.max).max;
+
+    return PositionalRange(min, max);
   }
 }
 

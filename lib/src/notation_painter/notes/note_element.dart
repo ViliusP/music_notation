@@ -19,19 +19,18 @@ import 'package:music_notation/src/notation_painter/notes/stemming.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
-const Map<String, Color> _voiceColors = {
-  "0": Color.fromRGBO(0, 0, 0, 1),
-  "1": Color.fromRGBO(121, 0, 0, 1),
-  "2": Color.fromRGBO(0, 133, 40, 1),
-  "3": Color.fromRGBO(206, 192, 0, 1),
-};
+// const Map<String, Color> _voiceColors = {
+//   "0": Color.fromRGBO(0, 0, 0, 1),
+//   "1": Color.fromRGBO(121, 0, 0, 1),
+//   "2": Color.fromRGBO(0, 133, 40, 1),
+//   "3": Color.fromRGBO(206, 192, 0, 1),
+// };
 
 class NoteElement extends StatelessWidget {
   final NoteheadElement head;
   final StemElement? stem;
   final AccidentalElement? accidental;
   final AugmentationDots? dots;
-  final ElementPosition position;
 
   const NoteElement({
     super.key,
@@ -41,7 +40,6 @@ class NoteElement extends StatelessWidget {
     this.dots,
     this.voice,
     this.stem,
-    required this.position,
   });
 
   final String? voice;
@@ -99,8 +97,101 @@ class NoteElement extends StatelessWidget {
       stem: stemElement,
       voice: note.editorialVoice.voice,
       beams: note.beams.isEmpty ? [] : note.beams,
-      position: position,
     );
+  }
+
+  ElementPosition get _position => ElementPosition.staffMiddle;
+
+  List<MeasureElement> get _children {
+    var direction = stem?.direction;
+
+    MeasureElement? measureStem;
+    if (stem != null) {
+      measureStem = MeasureElement(
+        position: _position,
+        size: stem!.size,
+        alignment: stem!.alignment,
+        duration: 0,
+        child: stem!,
+      );
+    }
+
+    return [
+      if (accidental != null)
+        MeasureElement(
+          position: _position,
+          size: accidental!.size,
+          alignment: accidental!.alignment,
+          duration: 0,
+          child: accidental!,
+        ),
+      if (stem != null && direction == StemDirection.down) measureStem!,
+      MeasureElement(
+        position: _position,
+        size: head.size,
+        alignment: head.alignment,
+        duration: 0,
+        child: head,
+      ),
+      if (stem != null && direction == StemDirection.up) measureStem!,
+      if (dots != null)
+        MeasureElement(
+          position: _position,
+          size: dots!.size,
+          alignment: dots!.alignment,
+          duration: 0,
+          child: dots!,
+        ),
+    ];
+  }
+
+  NumericalRange<double> get _verticalRange =>
+      _children.columnVerticalRange(_position);
+
+  Size get size {
+    double height = _verticalRange.distance;
+    double width = head.size.width;
+
+    if (dots != null) {
+      Size dotsSize = dots!.size;
+
+      width += dotsSize.width;
+      width += AugmentationDots.defaultBaseOffset;
+    }
+    if (accidental != null) {
+      Size accidentalSize = accidental!.size;
+
+      width += accidentalSize.width;
+      // Space between notehead and accidental.
+      width += NotationLayoutProperties.noteAccidentalDistance;
+    }
+
+    return Size(width, height);
+  }
+
+  Alignment get alignment {
+    {
+      double leftOffset = 0;
+
+      if (accidental != null) {
+        leftOffset = accidental!.size.width;
+        leftOffset = NotationLayoutProperties.noteAccidentalDistance;
+      }
+
+      var x = MeasureElementLayoutData.calculateSingleAxisAlignment(
+        -leftOffset,
+        size.width - leftOffset,
+        Axis.horizontal,
+      );
+
+      var y = MeasureElementLayoutData.calculateSingleAxisAlignment(
+        _verticalRange.max,
+        _verticalRange.min,
+        Axis.vertical,
+      );
+
+      return Alignment(x, y);
+    }
   }
 
   static ElementPosition determinePosition(Note note, Clef? clef) {
@@ -153,102 +244,6 @@ class NoteElement extends StatelessWidget {
         throw UnimplementedError(
           "This error shouldn't occur, TODO: make switch exhaustively matched",
         );
-    }
-  }
-
-  List<MeasureElement> get _children {
-    var direction = stem?.direction;
-
-    MeasureElement? measureStem;
-    if (stem != null) {
-      measureStem = MeasureElement(
-        position: position,
-        size: stem!.size,
-        alignment: stem!.alignment,
-        duration: 0,
-        child: stem!,
-      );
-    }
-
-    return [
-      if (accidental != null)
-        MeasureElement(
-          position: position,
-          size: accidental!.size,
-          alignment: accidental!.alignment,
-          duration: 0,
-          child: accidental!,
-        ),
-      if (stem != null && direction == StemDirection.down) measureStem!,
-      MeasureElement(
-        position: position,
-        size: head.size,
-        alignment: head.alignment,
-        duration: 0,
-        child: head,
-      ),
-      if (stem != null && direction == StemDirection.up) measureStem!,
-      if (dots != null)
-        MeasureElement(
-          position: position,
-          size: dots!.size,
-          alignment: dots!.alignment,
-          duration: 0,
-          child: dots!,
-        ),
-    ];
-  }
-
-  NumericalRange<double> get _verticalRange =>
-      MeasureElementLayoutData.columnVerticalRange(
-        _children,
-        position,
-      );
-
-  Size get size {
-    double height = _verticalRange.distance;
-    double width = head.size.width;
-
-    if (dots != null) {
-      Size dotsSize = dots!.size;
-
-      width += dotsSize.width;
-      width += AugmentationDots.defaultBaseOffset;
-    }
-    if (accidental != null) {
-      Size accidentalSize = accidental!.size;
-
-      width += accidentalSize.width;
-      // Space between notehead and accidental.
-      width += NotationLayoutProperties.noteAccidentalDistance;
-    }
-
-    return Size(width, height);
-  }
-
-  // ignore: unused_field
-  static const double _dotOffsetAdjustment = 0.1;
-
-  Alignment get alignment {
-    {
-      double leftOffset = 0;
-
-      if (accidental != null) {
-        leftOffset = accidental!.size.width;
-        leftOffset = NotationLayoutProperties.noteAccidentalDistance;
-      }
-
-      var x = -MeasureElementLayoutData.calculateSingleAxisAlignment(
-        -leftOffset,
-        size.width - leftOffset,
-      );
-
-      var y = MeasureElementLayoutData.calculateSingleAxisAlignment(
-        _verticalRange.max,
-        _verticalRange.min,
-      );
-
-      return Alignment(x, y);
     }
   }
 

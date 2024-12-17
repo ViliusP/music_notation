@@ -118,6 +118,7 @@ class MusicSheetGrid {
 class MeasuresColumn {
   List<MeasureGrid> _measures;
 
+  // ignore: unused_element
   MeasuresColumn._({
     required List<MeasureGrid> measures,
   }) : _measures = measures;
@@ -175,10 +176,8 @@ class MeasuresColumn {
       for (var measure in measures) {
         // Looping through cell in single measure column (section).
         for (var cell in measure.columns[key]!.cells.values) {
-          leftOffsets[i] = min(
-            cell.offset.left,
-            leftOffsets[i],
-          );
+          /// TODO:CHECK
+          leftOffsets[i] = min(cell.alignment.x, leftOffsets[i]);
 
           if (key.isRhytmic) {
             double a = cell.duration;

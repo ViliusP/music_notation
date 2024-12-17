@@ -37,7 +37,7 @@ class MeasureColumn extends StatelessWidget implements MeasureWidget {
 
   @override
   Size get size {
-    var range = MeasureElementLayoutData.columnVerticalRange(children);
+    var range = children.columnVerticalRange();
     double height = range.distance;
 
     double width = 0;

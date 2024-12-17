@@ -134,8 +134,8 @@ class RenderMeasureStack extends RenderBox
     // Distance between lowest element bottom side and highest element top side.
     // In stave spaces.
     var height = switch (strictBounds) {
-      true => MeasureElementLayoutData.columnVerticalRange(data).distance,
-      false => MeasureElementLayoutData.columnPositionalBounds(data)!.distance,
+      true => data.columnVerticalRange().distance,
+      false => data.columnPositionalBounds()!.distance,
     };
 
     height = switch (strictBounds) {
@@ -150,8 +150,8 @@ class RenderMeasureStack extends RenderBox
     List<MeasureElementLayoutData> data,
   ) {
     ElementPosition max = switch (strictBounds) {
-      true => MeasureElementLayoutData.columnPositionalRange(data)!.max,
-      false => MeasureElementLayoutData.columnPositionalBounds(data)!.max,
+      true => data.columnPositionalRange()!.max,
+      false => data.columnPositionalBounds()!.max,
     };
 
     var top = switch (strictBounds) {
