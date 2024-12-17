@@ -182,7 +182,7 @@ class StemElement extends StatelessWidget {
     }
   }
 
-  Alignment _flagPosition(StemDirection direction) {
+  Alignment _flagAlignment(StemDirection direction) {
     if (direction == StemDirection.down) {
       return Alignment.bottomLeft;
     }

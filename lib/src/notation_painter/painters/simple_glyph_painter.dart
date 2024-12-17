@@ -70,7 +70,7 @@ class SimpleGlyphPainter extends CustomPainter {
     // -------------------------
     // DEBUG
     // --------------------------
-    if (true) {
+    if (drawBBox) {
       final boxPaint = Paint()
         ..color = Color.fromRGBO(0, 0, 0, 0.5)
         ..strokeWidth = 1.0
