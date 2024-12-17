@@ -2,12 +2,12 @@ import 'package:flutter/widgets.dart';
 
 import 'package:music_notation/src/notation_painter/measure/measure_grid.dart';
 import 'package:music_notation/src/notation_painter/measure/staff_lines.dart';
-import 'package:music_notation/src/notation_painter/music_sheet/music_element.dart';
+import 'package:music_notation/src/notation_painter/layout/music_element.dart';
 import 'package:music_notation/src/notation_painter/notes/beaming.dart';
 
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_barlines.dart';
-import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
+import 'package:music_notation/src/notation_painter/layout/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';

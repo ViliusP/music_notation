@@ -2,10 +2,10 @@ import 'package:collection/collection.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
-import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
+import 'package:music_notation/src/notation_painter/layout/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/range.dart';
-import 'package:music_notation/src/notation_painter/music_sheet/measure_stack.dart';
+import 'package:music_notation/src/notation_painter/layout/measure_stack.dart';
 import 'package:music_notation/src/notation_painter/utilities/number_extensions.dart';
 
 class MeasureElementPosition {

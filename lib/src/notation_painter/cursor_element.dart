@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
+import 'package:music_notation/src/notation_painter/layout/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 

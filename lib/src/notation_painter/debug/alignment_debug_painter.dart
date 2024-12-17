@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
-import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
+import 'package:music_notation/src/notation_painter/layout/measure_element.dart';
 
 class AlignmentDebugPainter extends CustomPainter {
   final AlignmentOffset offset;

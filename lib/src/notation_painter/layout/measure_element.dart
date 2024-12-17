@@ -11,8 +11,8 @@ import 'package:music_notation/src/notation_painter/debug/alignment_debug_painte
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/key_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
-import 'package:music_notation/src/notation_painter/music_sheet/measure_stack.dart';
-import 'package:music_notation/src/notation_painter/music_sheet/music_element.dart';
+import 'package:music_notation/src/notation_painter/layout/measure_stack.dart';
+import 'package:music_notation/src/notation_painter/layout/music_element.dart';
 import 'package:music_notation/src/notation_painter/notes/chord_element.dart';
 import 'package:music_notation/src/notation_painter/notes/note_element.dart';
 import 'package:music_notation/src/notation_painter/notes/rest_element.dart';

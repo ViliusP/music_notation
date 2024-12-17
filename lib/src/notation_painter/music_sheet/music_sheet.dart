@@ -5,7 +5,7 @@ import 'package:music_notation/src/models/elements/music_data/note/note_type.dar
 import 'package:music_notation/src/models/elements/score/score.dart';
 import 'package:music_notation/src/notation_painter/debug/debug_settings.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_barlines.dart';
-import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
+import 'package:music_notation/src/notation_painter/layout/measure_element.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_grid.dart';
 import 'package:music_notation/src/notation_painter/measure/measure_layout.dart';
 import 'package:music_notation/src/notation_painter/measure/notation_widgetization.dart';
@@ -13,7 +13,7 @@ import 'package:music_notation/src/notation_painter/measure/staff_lines.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/notation_context.dart';
 import 'package:music_notation/src/notation_painter/music_grid.dart';
-import 'package:music_notation/src/notation_painter/music_sheet/measure_stack.dart';
+import 'package:music_notation/src/notation_painter/layout/measure_stack.dart';
 import 'package:music_notation/src/notation_painter/notes/note_parts.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 

@@ -5,12 +5,12 @@ import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/clef.dart';
 import 'package:music_notation/src/models/elements/music_data/attributes/key.dart'
     hide Key;
-import 'package:music_notation/src/notation_painter/music_sheet/measure_row.dart';
+import 'package:music_notation/src/notation_painter/layout/measure_row.dart';
 
-import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
+import 'package:music_notation/src/notation_painter/layout/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/octaved_key_accidental.dart';
-import 'package:music_notation/src/notation_painter/music_sheet/music_element.dart';
+import 'package:music_notation/src/notation_painter/layout/music_element.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';

@@ -4,9 +4,9 @@ import 'package:collection/collection.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
-import 'package:music_notation/src/notation_painter/measure/measure_element.dart';
+import 'package:music_notation/src/notation_painter/layout/measure_element.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
-import 'package:music_notation/src/notation_painter/music_sheet/music_element.dart';
+import 'package:music_notation/src/notation_painter/layout/music_element.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 
 class MeasureParentData extends ContainerBoxParentData<RenderBox> {
