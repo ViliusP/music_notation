@@ -100,6 +100,10 @@ abstract class MeasureWidget extends Widget
 }
 
 extension MeasureElementDimensions on MeasureElementLayoutData {
+  double get _halfHeight => size.height / 2;
+  double get _topHeight => _halfHeight + (alignment.y * _halfHeight);
+  double get _bottomHeight => _halfHeight - (alignment.y * _halfHeight);
+
   /// The bounds represents the vertical positions of an element within a layout system,
   /// with the positions adjusted based on the element's position, alignment and size.
   PositionalRange get bounds {
@@ -123,11 +127,11 @@ extension MeasureElementDimensions on MeasureElementLayoutData {
     int interval = position.numeric - reference.numeric;
     double distanceToReference = interval * spacePerPosition;
 
-    return distanceToReference + offset.bottom;
+    return distanceToReference - _bottomHeight;
   }
 
   /// Vertical Distance from [reference] position to provided vertical [side] of element.
-  /// Negative values means that [side] of [MeasureElementData] is positioned below [reference].
+  /// Negative values means that [side] of element is positioned below [reference].
   ///
   /// Results are provided in stave spaces
   double distanceToPosition(ElementPosition reference, BoxSide side) {
@@ -155,8 +159,7 @@ extension MeasureElementDimensions on MeasureElementLayoutData {
 
     // The height of the element extending above its own alignment offset.
     // A positive value means the element is entirely below its alignment axis.
-    double halfHeight = size.height / 2;
-    double extentAbove = halfHeight + (alignment.y * halfHeight);
+    double extentAbove = _topHeight;
     extentAbove = extentAbove.limit(bottom: 0);
 
     double aboveReference = extentAbove - distanceToReference;
@@ -177,8 +180,7 @@ extension MeasureElementDimensions on MeasureElementLayoutData {
     // The height of the element extending below its own alignment offset.
     // A positive value means the element is entirely above its alignment axis.
 
-    double halfHeight = size.height / 2;
-    double extentBelow = halfHeight - (alignment.y * halfHeight);
+    double extentBelow = _bottomHeight;
 
     double belowReference = extentBelow + distanceToReference;
 

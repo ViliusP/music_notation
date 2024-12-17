@@ -182,4 +182,97 @@ void main() {
       },
     );
   });
+
+  group("MeasureElement.distanceToPosition", () {
+    test(
+      "Distance of notehead sides to same position should be same as alignment",
+      () {
+        var element = MeasureElementLayoutData(
+          position: ElementPosition(step: Step.G, octave: 4),
+          size: noteheadSize,
+          alignment: noteheadBbox.toAlignment(),
+        );
+
+        var pos = ElementPosition(step: Step.G, octave: 4);
+
+        expect(
+          element.distanceToPosition(pos, BoxSide.bottom),
+          noteheadBbox.bBoxSW.y,
+        );
+        expect(
+          element.distanceToPosition(pos, BoxSide.top),
+          noteheadBbox.bBoxNE.y.abs(),
+        );
+      },
+    );
+  });
+  group("MeasureElement.distance", () {
+    test(
+      "Distance between two same elements should be zero",
+      () {
+        var element = MeasureElementLayoutData(
+          position: ElementPosition(step: Step.G, octave: 4),
+          size: noteheadSize,
+          alignment: noteheadBbox.toAlignment(),
+        );
+
+        expect(element.distance(element, BoxSide.top), 0);
+        expect(element.distance(element, BoxSide.bottom), 0);
+      },
+    );
+
+    test(
+      "Distance of betwween same noteheads should be stave space length",
+      () {
+        var element1 = MeasureElementLayoutData(
+          position: ElementPosition(step: Step.G, octave: 4),
+          size: noteheadSize,
+          alignment: noteheadBbox.toAlignment(),
+        );
+
+        var element2 = MeasureElementLayoutData(
+          position: ElementPosition(step: Step.C, octave: 5),
+          size: noteheadSize,
+          alignment: noteheadBbox.toAlignment(),
+        );
+
+        const staveSpacesBetweenPositions = -1.5;
+
+        expect(
+          element1.distance(element2, BoxSide.top),
+          staveSpacesBetweenPositions,
+        );
+        expect(
+          element1.distance(element2, BoxSide.bottom),
+          staveSpacesBetweenPositions,
+        );
+      },
+    );
+
+    test(
+      "Swapping elements should return same size but different sign",
+      () {
+        var element1 = MeasureElementLayoutData(
+          position: ElementPosition(step: Step.G, octave: 4),
+          size: noteheadSize,
+          alignment: noteheadBbox.toAlignment(),
+        );
+
+        var element2 = MeasureElementLayoutData(
+          position: ElementPosition(step: Step.C, octave: 5),
+          size: noteheadSize,
+          alignment: noteheadBbox.toAlignment(),
+        );
+
+        expect(
+          element1.distance(element2, BoxSide.top),
+          -element2.distance(element1, BoxSide.top),
+        );
+        expect(
+          element1.distance(element2, BoxSide.bottom),
+          -element2.distance(element1, BoxSide.bottom),
+        );
+      },
+    );
+  });
 }
