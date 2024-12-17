@@ -11,6 +11,7 @@ import 'package:music_notation/src/notation_painter/layout/measure_element.dart'
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/models/octaved_key_accidental.dart';
 import 'package:music_notation/src/notation_painter/layout/positioning.dart';
+import 'package:music_notation/src/notation_painter/models/range.dart';
 import 'package:music_notation/src/notation_painter/painters/simple_glyph_painter.dart';
 import 'package:music_notation/src/notation_painter/painters/utilities.dart';
 import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
@@ -260,10 +261,14 @@ class KeySignatureElement extends StatelessWidget {
 
   Alignment get alignment {
     if (_accidentals.isEmpty) return Alignment.topLeft;
-    SmuflGlyph glyph = _accidentalSmuflMapping[
-        _accidentals.first.accidental?.value ?? AccidentalValue.other]!;
 
-    return font.glyphBBoxes[glyph]!.toAlignment();
+    return Alignment(
+      0,
+      MeasureElementLayoutData.calculateSingleAxisAlignment(
+        _verticalRange.min,
+        _verticalRange.max,
+      ),
+    );
   }
 
   /// Returns how many keys are canceled.
@@ -306,6 +311,9 @@ class KeySignatureElement extends StatelessWidget {
     return accidentals.sublist(0, fifthsToShow);
   }
 
+  NumericalRange<double> get _verticalRange =>
+      MeasureElementLayoutData.columnVerticalRange(_children, position);
+
   Size get size {
     if (_accidentals.isEmpty) {
       return const Size(0, 0);
@@ -313,8 +321,7 @@ class KeySignatureElement extends StatelessWidget {
 
     var width = 0.0;
 
-    double height =
-        MeasureElementLayoutData.columnVerticalRange(_children).distance;
+    double height = _verticalRange.distance;
 
     double spacings = 0;
     for (var accidental in _children) {
@@ -335,8 +342,7 @@ class KeySignatureElement extends StatelessWidget {
   }
 
   ElementPosition get _position =>
-      MeasureElementLayoutData.columnPositionalRange(_children)?.min ??
-      ElementPosition.staffMiddle;
+      _children.firstOrNull?.position ?? ElementPosition.staffMiddle;
 
   ElementPosition get position => _position.transpose(_transposeInterval);
 
