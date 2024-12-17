@@ -59,10 +59,10 @@ class NotePainter extends CustomPainter {
         ledgerLinePaint,
       );
 
-      if (ledgerLines!.direction == LedgerDrawingDirection.up) {
+      if (ledgerLines!.direction == VerticalDirection.up) {
         level -= staveSpace;
       }
-      if (ledgerLines!.direction == LedgerDrawingDirection.down) {
+      if (ledgerLines!.direction == VerticalDirection.down) {
         level += staveSpace;
       }
     }

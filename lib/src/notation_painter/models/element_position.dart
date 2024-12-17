@@ -1,4 +1,5 @@
 import 'package:music_notation/src/models/data_types/step.dart';
+import 'package:music_notation/src/notation_painter/models/range.dart';
 import 'package:music_notation/src/notation_painter/properties/constants.dart';
 
 /// The position of a musical element in a diatonic scale.
@@ -232,15 +233,20 @@ class ElementPosition implements Comparable<ElementPosition> {
   );
 
   /// First ledger line below the staff (C4).
-  static const ElementPosition firstLedgerBelow = ElementPosition(
+  static const ElementPosition bottomFirstLedger = ElementPosition(
     step: Step.C,
     octave: 4,
   );
 
   /// First ledger line above the staff (A5).
-  static const ElementPosition firstLedgerAbove = ElementPosition(
+  static const ElementPosition topFirstLedger = ElementPosition(
     step: Step.A,
     octave: 5,
+  );
+
+  static const PositionalRange betweenLedgersRange = PositionalRange(
+    bottomFirstLedger,
+    topFirstLedger,
   );
 
   /// Second ledger line below the staff (A3).
@@ -308,4 +314,6 @@ class ElementPosition implements Comparable<ElementPosition> {
   int get distanceFromTop {
     return numeric - ElementPosition.staffTop.numeric;
   }
+
+  bool get betweenLedgers => betweenLedgersRange.contains(this);
 }

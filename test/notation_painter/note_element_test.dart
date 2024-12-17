@@ -23,7 +23,7 @@ void main() {
       LedgerLines(
           count: 2,
           start: LedgerPlacement.above,
-          direction: LedgerDrawingDirection.up),
+          direction: VerticalDirection.up),
       null
     ),
     (
@@ -31,11 +31,11 @@ void main() {
       LedgerLines(
           count: 1,
           start: LedgerPlacement.center,
-          direction: LedgerDrawingDirection.up),
+          direction: VerticalDirection.up),
       LedgerLines(
           count: 1,
           start: LedgerPlacement.center,
-          direction: LedgerDrawingDirection.down)
+          direction: VerticalDirection.down)
     ),
     (
       const RegularNote(
@@ -46,7 +46,7 @@ void main() {
       LedgerLines(
           count: 2,
           start: LedgerPlacement.center,
-          direction: LedgerDrawingDirection.down)
+          direction: VerticalDirection.down)
     ),
     (
       const RegularNote(form: Pitch(step: Step.G, octave: 4), duration: 1),
@@ -54,7 +54,7 @@ void main() {
       LedgerLines(
           count: 3,
           start: LedgerPlacement.center,
-          direction: LedgerDrawingDirection.down)
+          direction: VerticalDirection.down)
     ),
     (
       const RegularNote(
@@ -64,7 +64,7 @@ void main() {
       LedgerLines(
           count: 2,
           start: LedgerPlacement.center,
-          direction: LedgerDrawingDirection.up),
+          direction: VerticalDirection.up),
       null
     ),
     (
@@ -72,22 +72,22 @@ void main() {
       LedgerLines(
           count: 10,
           start: LedgerPlacement.center,
-          direction: LedgerDrawingDirection.up),
+          direction: VerticalDirection.up),
       LedgerLines(
           count: 4,
           start: LedgerPlacement.center,
-          direction: LedgerDrawingDirection.up)
+          direction: VerticalDirection.up)
     ),
     (
       const RegularNote(form: Pitch(step: Step.G, octave: 1), duration: 1),
       LedgerLines(
           count: 9,
           start: LedgerPlacement.above,
-          direction: LedgerDrawingDirection.up),
+          direction: VerticalDirection.up),
       LedgerLines(
           count: 3,
           start: LedgerPlacement.above,
-          direction: LedgerDrawingDirection.up)
+          direction: VerticalDirection.up)
     ),
     (
       const RegularNote(form: Pitch(step: Step.G, octave: 5), duration: 1),
@@ -95,29 +95,29 @@ void main() {
       LedgerLines(
           count: 6,
           start: LedgerPlacement.below,
-          direction: LedgerDrawingDirection.down)
+          direction: VerticalDirection.down)
     ),
     (
       const RegularNote(form: Pitch(step: Step.B, octave: 5), duration: 1),
       LedgerLines(
           count: 1,
           start: LedgerPlacement.below,
-          direction: LedgerDrawingDirection.down),
+          direction: VerticalDirection.down),
       LedgerLines(
           count: 7,
           start: LedgerPlacement.below,
-          direction: LedgerDrawingDirection.down)
+          direction: VerticalDirection.down)
     ),
     (
       const RegularNote(form: Pitch(step: Step.C, octave: 6), duration: 1),
       LedgerLines(
           count: 2,
           start: LedgerPlacement.center,
-          direction: LedgerDrawingDirection.down),
+          direction: VerticalDirection.down),
       LedgerLines(
           count: 8,
           start: LedgerPlacement.center,
-          direction: LedgerDrawingDirection.down)
+          direction: VerticalDirection.down)
     ),
     (
       const RegularNote(form: Pitch(step: Step.D, octave: 4), duration: 1),
@@ -125,7 +125,7 @@ void main() {
       LedgerLines(
           count: 1,
           start: LedgerPlacement.below,
-          direction: LedgerDrawingDirection.down)
+          direction: VerticalDirection.down)
     ),
   ];
 

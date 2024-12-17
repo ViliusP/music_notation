@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
@@ -19,22 +20,22 @@ void main() {
 
     test("Single ledger line below the staff", () {
       final result = LedgerLines.fromElementPosition(
-        ElementPosition.firstLedgerBelow,
+        ElementPosition.bottomFirstLedger,
       );
       expect(result, isNotNull);
       expect(result!.count, equals(1));
       expect(result.start, equals(LedgerPlacement.center));
-      expect(result.direction, equals(LedgerDrawingDirection.up));
+      expect(result.direction, equals(VerticalDirection.up));
     });
 
     test("Single ledger line above the staff", () {
       final result = LedgerLines.fromElementPosition(
-        ElementPosition.firstLedgerAbove,
+        ElementPosition.topFirstLedger,
       );
       expect(result, isNotNull);
       expect(result!.count, equals(1));
       expect(result.start, equals(LedgerPlacement.center));
-      expect(result.direction, equals(LedgerDrawingDirection.down));
+      expect(result.direction, equals(VerticalDirection.down));
     });
 
     test("Two ledger lines below the staff", () {
@@ -44,7 +45,7 @@ void main() {
       expect(result, isNotNull);
       expect(result!.count, equals(2));
       expect(result.start, equals(LedgerPlacement.center));
-      expect(result.direction, equals(LedgerDrawingDirection.up));
+      expect(result.direction, equals(VerticalDirection.up));
     });
 
     test("Two ledger lines above the staff", () {
@@ -54,7 +55,7 @@ void main() {
       expect(result, isNotNull);
       expect(result!.count, equals(2));
       expect(result.start, equals(LedgerPlacement.center));
-      expect(result.direction, equals(LedgerDrawingDirection.down));
+      expect(result.direction, equals(VerticalDirection.down));
     });
 
     test("Note D3 ledger lines", () {
@@ -63,7 +64,7 @@ void main() {
       expect(result, isNotNull);
       expect(result!.count, equals(4));
       expect(result.start, equals(LedgerPlacement.center));
-      expect(result.direction, equals(LedgerDrawingDirection.up));
+      expect(result.direction, equals(VerticalDirection.up));
     });
 
     test("Note F6 ledger lines", () {
@@ -72,7 +73,7 @@ void main() {
       expect(result, isNotNull);
       expect(result!.count, equals(3));
       expect(result.start, equals(LedgerPlacement.below));
-      expect(result.direction, equals(LedgerDrawingDirection.down));
+      expect(result.direction, equals(VerticalDirection.down));
     });
 
     test("Note B3 ledger lines", () {
@@ -81,7 +82,7 @@ void main() {
       expect(result, isNotNull);
       expect(result!.count, equals(1));
       expect(result.start, equals(LedgerPlacement.above));
-      expect(result.direction, equals(LedgerDrawingDirection.up));
+      expect(result.direction, equals(VerticalDirection.up));
     });
   });
 }

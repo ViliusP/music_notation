@@ -1,3 +1,4 @@
+import 'package:flutter/rendering.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 
 /// Enumerates the possible placements of ledger lines in relation to a note.
@@ -13,16 +14,6 @@ enum LedgerPlacement {
   center;
 }
 
-/// Specifies the direction in which ledger lines are drawn from the note.
-/// Lines are repeated upward or downward.
-enum LedgerDrawingDirection {
-  /// Ledger lines are drawn upwards from the starting point.
-  up,
-
-  /// Ledger lines are drawn downwards from the starting point.
-  down;
-}
-
 /// Represents the configuration of ledger lines for a specific note or element.
 class LedgerLines {
   /// The number of ledger lines needed for the note or element.
@@ -32,10 +23,14 @@ class LedgerLines {
   final LedgerPlacement start;
 
   /// The direction in which the ledger lines are drawn from the starting point.
-  final LedgerDrawingDirection direction;
+  /// Lines are repeated upward or downward.
+  ///
+  /// if [direction] is [VerticalDirection.up] ledger lines are drawn upwards from the starting point.
+  /// if [direction] is [VerticalDirection.down] Ledger lines are drawn downwards from the starting point.
+  final VerticalDirection direction;
 
   /// Constructs a [LedgerLines] instance with the specified [count], [start], and [direction].
-  LedgerLines({
+  const LedgerLines({
     required this.count,
     required this.start,
     required this.direction,
@@ -49,23 +44,23 @@ class LedgerLines {
   ///
   /// - Returns `null` if no ledger lines are required for the position.
   static LedgerLines? fromElementPosition(ElementPosition position) {
-    if (position >= ElementPosition.firstLedgerAbove) {
-      int distance = position.distance(ElementPosition.firstLedgerAbove);
+    if (position >= ElementPosition.topFirstLedger) {
+      int distance = position.distance(ElementPosition.topFirstLedger);
 
       return LedgerLines(
           count: (distance / 2).floor() + 1,
-          direction: LedgerDrawingDirection.down,
+          direction: VerticalDirection.down,
           start: distance % 2 == 0
               ? LedgerPlacement.center
               : LedgerPlacement.below);
     }
 
-    if (position <= ElementPosition.firstLedgerBelow) {
-      int distance = position.distance(ElementPosition.firstLedgerBelow);
+    if (position <= ElementPosition.bottomFirstLedger) {
+      int distance = position.distance(ElementPosition.bottomFirstLedger);
 
       return LedgerLines(
           count: (distance / 2).floor() + 1,
-          direction: LedgerDrawingDirection.up,
+          direction: VerticalDirection.up,
           start: distance % 2 == 0
               ? LedgerPlacement.center
               : LedgerPlacement.above);
@@ -82,7 +77,7 @@ class LedgerLines {
   LedgerLines copyWith({
     int? count,
     LedgerPlacement? start,
-    LedgerDrawingDirection? direction,
+    VerticalDirection? direction,
   }) {
     return LedgerLines(
       count: count ?? this.count,
