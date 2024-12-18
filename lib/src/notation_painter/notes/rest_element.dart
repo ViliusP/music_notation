@@ -67,7 +67,10 @@ class RestElement extends StatelessWidget {
         position: position,
         alignment: _bBox.toAlignment(),
       ),
-    ].columnVerticalRange(position);
+    ].columnVerticalRange(
+      NotationLayoutProperties.baseSpacePerPosition,
+      position,
+    );
 
     return Alignment(
         0,

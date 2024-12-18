@@ -263,7 +263,7 @@ class KeySignatureElement extends StatelessWidget {
     if (_accidentals.isEmpty) return Alignment.topLeft;
 
     return Alignment(
-      0,
+      -1,
       MeasureElementLayoutData.calculateSingleAxisAlignment(
         _verticalRange.min,
         _verticalRange.max,
@@ -312,8 +312,10 @@ class KeySignatureElement extends StatelessWidget {
     return accidentals.sublist(0, fifthsToShow);
   }
 
-  NumericalRange<double> get _verticalRange =>
-      _children.columnVerticalRange(position);
+  NumericalRange<double> get _verticalRange => _children.columnVerticalRange(
+        NotationLayoutProperties.baseSpacePerPosition,
+        position,
+      );
 
   Size get size {
     if (_accidentals.isEmpty) {

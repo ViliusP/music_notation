@@ -145,8 +145,8 @@ class NoteElement extends StatelessWidget {
     ];
   }
 
-  NumericalRange<double> get _verticalRange =>
-      _children.columnVerticalRange(_position);
+  NumericalRange<double> get _verticalRange => _children.columnVerticalRange(
+      NotationLayoutProperties.baseSpacePerPosition, _position);
 
   Size get size {
     double height = _verticalRange.distance;

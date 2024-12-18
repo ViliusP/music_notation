@@ -5,7 +5,6 @@ import 'package:flutter/widgets.dart';
 import 'package:music_notation/music_notation.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
 import 'package:music_notation/src/notation_painter/layout/positioning.dart';
-import 'package:music_notation/src/notation_painter/utilities/size_extensions.dart';
 
 class MeasureColumn extends StatelessWidget implements MeasureWidget {
   final List<MeasureWidget> children;
@@ -37,7 +36,9 @@ class MeasureColumn extends StatelessWidget implements MeasureWidget {
 
   @override
   Size get size {
-    var range = children.columnVerticalRange();
+    var heightPerPosition = NotationLayoutProperties.baseSpacePerPosition;
+
+    var range = children.columnVerticalRange(heightPerPosition);
     double height = range.distance;
 
     double width = 0;
@@ -58,11 +59,7 @@ class MeasureColumn extends StatelessWidget implements MeasureWidget {
             NotationLayoutProperties.standard();
 
     return CustomMultiChildLayout(
-      delegate: _MeasureColumnDelegate(
-        children: children,
-        strictlyBounded: true,
-        scale: layoutProperties.staveSpace,
-      ),
+      delegate: _MeasureColumnDelegate(children: children),
       children: [
         for (int i = 0; i < children.length; i++)
           LayoutId(id: i, child: children[i]),
@@ -73,25 +70,23 @@ class MeasureColumn extends StatelessWidget implements MeasureWidget {
 
 class _MeasureColumnDelegate extends MultiChildLayoutDelegate {
   final List<MeasureWidget> children;
-  final bool strictlyBounded;
-  final double scale;
 
   _MeasureColumnDelegate({
     required this.children,
-    required this.scale,
-    this.strictlyBounded = false,
   });
 
   @override
   void performLayout(Size size) {
+    double heightPerPosition = NotationLayoutProperties.baseSpacePerPosition;
+
     MeasureElementLayoutData reference =
         children.sorted((a, b) => a.position.compareTo(b.position)).last;
     for (int i = 0; i < children.length; i++) {
       final child = children[i];
 
-      layoutChild(i, BoxConstraints.loose(child.size.scale(scale)));
+      layoutChild(i, BoxConstraints.loose(child.size));
 
-      double top = -child.distance(reference, BoxSide.top) * scale;
+      double top = -child.distance(reference, BoxSide.top, heightPerPosition);
 
       positionChild(i, Offset(0, top));
     }

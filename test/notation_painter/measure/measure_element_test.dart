@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:music_notation/src/models/data_types/step.dart';
 import 'package:music_notation/src/notation_painter/layout/positioning.dart';
 import 'package:music_notation/src/notation_painter/models/element_position.dart';
+import 'package:music_notation/src/notation_painter/properties/layout_properties.dart';
 import 'package:music_notation/src/smufl/font_metadata.dart';
 
 const epsilon = 0.001;
@@ -194,13 +195,14 @@ void main() {
         );
 
         var pos = ElementPosition(step: Step.G, octave: 4);
+        var spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
 
         expect(
-          element.distanceToPosition(pos, BoxSide.bottom),
+          element.distanceToPosition(pos, BoxSide.bottom, spacePerPosition),
           noteheadBbox.bBoxSW.y,
         );
         expect(
-          element.distanceToPosition(pos, BoxSide.top),
+          element.distanceToPosition(pos, BoxSide.top, spacePerPosition),
           noteheadBbox.bBoxNE.y.abs(),
         );
       },
@@ -216,8 +218,10 @@ void main() {
           alignment: noteheadBbox.toAlignment(),
         );
 
-        expect(element.distance(element, BoxSide.top), 0);
-        expect(element.distance(element, BoxSide.bottom), 0);
+        var spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
+
+        expect(element.distance(element, BoxSide.top, spacePerPosition), 0);
+        expect(element.distance(element, BoxSide.bottom, spacePerPosition), 0);
       },
     );
 
@@ -238,12 +242,14 @@ void main() {
 
         const staveSpacesBetweenPositions = -1.5;
 
+        var spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
+
         expect(
-          element1.distance(element2, BoxSide.top),
+          element1.distance(element2, BoxSide.top, spacePerPosition),
           staveSpacesBetweenPositions,
         );
         expect(
-          element1.distance(element2, BoxSide.bottom),
+          element1.distance(element2, BoxSide.bottom, spacePerPosition),
           staveSpacesBetweenPositions,
         );
       },
@@ -264,13 +270,15 @@ void main() {
           alignment: noteheadBbox.toAlignment(),
         );
 
+        var spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
+
         expect(
-          element1.distance(element2, BoxSide.top),
-          -element2.distance(element1, BoxSide.top),
+          element1.distance(element2, BoxSide.top, spacePerPosition),
+          -element2.distance(element1, BoxSide.top, spacePerPosition),
         );
         expect(
-          element1.distance(element2, BoxSide.bottom),
-          -element2.distance(element1, BoxSide.bottom),
+          element1.distance(element2, BoxSide.bottom, spacePerPosition),
+          -element2.distance(element1, BoxSide.bottom, spacePerPosition),
         );
       },
     );

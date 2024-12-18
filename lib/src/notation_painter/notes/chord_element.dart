@@ -316,7 +316,8 @@ class Chord extends StatelessWidget {
 
   /// Lowest y of every chord elements
   NumericalRange<double> get _verticalRange {
-    return _elements.columnVerticalRange(position);
+    return _elements.columnVerticalRange(
+        NotationLayoutProperties.baseSpacePerPosition, position);
   }
 
   double get _width {

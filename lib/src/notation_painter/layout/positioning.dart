@@ -79,11 +79,12 @@ extension MeasureElementDimensions on MeasureElementLayoutData {
     return PositionalRange(top, bottom);
   }
 
-  double _distanceToBottom(ElementPosition reference) {
-    double spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
-
+  double _distanceToBottom(
+    ElementPosition reference,
+    double heightPerPosition,
+  ) {
     int interval = position.numeric - reference.numeric;
-    double distanceToReference = interval * spacePerPosition;
+    double distanceToReference = interval * heightPerPosition;
 
     return distanceToReference - _bottomHeight;
   }
@@ -92,19 +93,28 @@ extension MeasureElementDimensions on MeasureElementLayoutData {
   /// Negative values means that [side] of element is positioned below [reference].
   ///
   /// Results are provided in stave spaces
-  double distanceToPosition(ElementPosition reference, BoxSide side) {
+  double distanceToPosition(
+    ElementPosition reference,
+    BoxSide side,
+    double heightPerPosition,
+  ) {
+    var distanceToBotttom = _distanceToBottom(reference, heightPerPosition);
     return switch (side) {
-      BoxSide.top => _distanceToBottom(reference) + size.height,
-      BoxSide.bottom => _distanceToBottom(reference),
+      BoxSide.top => distanceToBotttom + size.height,
+      BoxSide.bottom => distanceToBotttom,
     };
   }
 
   /// Vertical distance from element [side] to [reference] element [side].
   /// Negative values means that [side] of element is below [reference] element [side].
-  double distance(MeasureElementLayoutData reference, BoxSide side) {
+  double distance(
+    MeasureElementLayoutData reference,
+    BoxSide side,
+    double heightPerPosition,
+  ) {
     ElementPosition upperBound = reference.bounds.max;
-    return distanceToPosition(upperBound, side) -
-        reference.distanceToPosition(upperBound, side);
+    return distanceToPosition(upperBound, side, heightPerPosition) -
+        reference.distanceToPosition(upperBound, side, heightPerPosition);
   }
 
   /// Calculates the height of the bounding box for elements extending above
@@ -154,7 +164,8 @@ extension MeasureList<T> on List<MeasureElementLayoutData> {
   // /// If reference is not given, the lowest position will be considered as reference position.
   // ///
   // /// Results are in stave staves
-  NumericalRange<double> columnVerticalRange([
+  NumericalRange<double> columnVerticalRange(
+    double heightPerPosition, [
     ElementPosition? reference,
   ]) {
     if (isEmpty) {
@@ -168,10 +179,10 @@ extension MeasureList<T> on List<MeasureElementLayoutData> {
     }
 
     var bottoms = map(
-      (e) => e.distanceToPosition(ref, BoxSide.bottom),
+      (e) => e.distanceToPosition(ref, BoxSide.bottom, heightPerPosition),
     );
     var tops = map(
-      (e) => e.distanceToPosition(ref, BoxSide.top),
+      (e) => e.distanceToPosition(ref, BoxSide.top, heightPerPosition),
     );
 
     return NumericalRange<double>(bottoms.min, tops.max);

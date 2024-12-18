@@ -287,8 +287,8 @@ class GlyphBBox {
     final shift = midpoint / halfDistance;
 
     return switch (noHorizontalAlignment) {
-      true => Alignment(0, shift),
-      false => Alignment(0, shift)
+      true => Alignment(-1, shift),
+      false => Alignment(-1, shift)
     };
   }
 

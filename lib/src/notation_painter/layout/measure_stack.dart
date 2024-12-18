@@ -120,7 +120,7 @@ class RenderMeasureStack extends RenderBox
         data.add(MeasureElementLayoutData(
           position: childParentData.position!,
           size: childSize.scale(1 / _staveSpace),
-          offset: childParentData.alignment ?? AlignmentOffset.zero(),
+          alignment: childParentData.alignment ?? Alignment.topLeft,
         ));
       } else {
         data.add(null);
@@ -131,10 +131,12 @@ class RenderMeasureStack extends RenderBox
   }
 
   double _computeHeightByPositioned(List<MeasureElementLayoutData> data) {
+    var heightPerPosition = NotationLayoutProperties.baseSpacePerPosition;
+
     // Distance between lowest element bottom side and highest element top side.
     // In stave spaces.
     var height = switch (strictBounds) {
-      true => data.columnVerticalRange().distance,
+      true => data.columnVerticalRange(heightPerPosition).distance,
       false => data.columnPositionalBounds()!.distance,
     };
 
@@ -154,12 +156,13 @@ class RenderMeasureStack extends RenderBox
       false => data.columnPositionalBounds()!.max,
     };
 
+    // TODO CHECK
     var top = switch (strictBounds) {
       true => data
           .sorted((a, b) => a.bounds.max.compareTo(b.bounds.max))
           .last
-          .offset
-          .top,
+          .alignment
+          .y,
       false => 0.0,
     };
 
@@ -279,12 +282,12 @@ class RenderMeasureStack extends RenderBox
       // it means it is child of RenderMeasureStack
       if (parentData is MeasureStackParentData) {
         (parentData as MeasureStackParentData).position = reference.position;
-        (parentData as MeasureStackParentData).alignment =
-            AlignmentOffset.fromTop(
-          left: 0,
-          top: reference.top,
-          height: size.height / _staveSpace,
-        );
+        // TODO FIX
+        // (parentData as MeasureStackParentData).alignment = Alignment.fromTop(
+        //   left: 0,
+        //   top: reference.top,
+        //   height: size.height / _staveSpace,
+        // );
       }
       _layoutChildren(
         data: positionedData,
@@ -317,6 +320,8 @@ class RenderMeasureStack extends RenderBox
     required double top,
     required Size size,
   }) {
+    var heightPerPosition = NotationLayoutProperties.baseSpacePerPosition;
+
     int i = 0;
     RenderBox? child = firstChild;
     while (child != null) {
@@ -330,7 +335,11 @@ class RenderMeasureStack extends RenderBox
 
       if (positionalData != null) {
         child.layout(BoxConstraints.loose(size), parentUsesSize: true);
-        double y = positionalData.distanceToPosition(reference, BoxSide.top);
+        double y = positionalData.distanceToPosition(
+          reference,
+          BoxSide.top,
+          heightPerPosition,
+        );
         // Strict bounds means that top element will have negative Y,
         // so we need to shift every element by that top element's top offset.
         y = y + top;

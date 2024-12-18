@@ -44,19 +44,19 @@ class MeasureContainer extends StatelessWidget {
 
     DebugSettings? dSettings = DebugSettings.of(context);
 
-    double spacePerPosition = NotationLayoutProperties.baseSpacePerPosition;
+    double heightPerPosition = NotationLayoutProperties.baseSpacePerPosition;
     ElementPosition bottomRef = measure.floor - 1;
     ElementPosition topRef = measure.ceil;
 
     // Stave bottom values
     ElementPosition staveBottomRef = measure.staveBottom;
     ElementPosition staveTopRef = measure.staveTop;
-    double staveBottom = staveBottomRef.distance(bottomRef) * spacePerPosition;
+    double staveBottom = staveBottomRef.distance(bottomRef) * heightPerPosition;
     staveBottom = staveBottom.scaledByContext(context);
 
     double measureWidth = horizontalOffsets.last;
     double measureHeight =
-        (topRef.numeric - bottomRef.numeric) * spacePerPosition;
+        (topRef.numeric - bottomRef.numeric) * heightPerPosition;
 
     var positionedElements = <Widget>[];
 
@@ -67,9 +67,15 @@ class MeasureContainer extends StatelessWidget {
         double? bottomOffset;
         Alignment alignment = cell.alignment;
 
-        bottomOffset = cell.distanceToPosition(bottomRef, BoxSide.bottom);
+        bottomOffset = cell.distanceToPosition(
+          bottomRef,
+          BoxSide.bottom,
+          heightPerPosition,
+        );
 
-        double left = horizontalOffsets[index] + offset.left;
+        double halfWidth = cell.size.width;
+        double alignmentLeft = halfWidth + halfWidth * alignment.x;
+        double left = horizontalOffsets[index] + alignmentLeft;
 
         var maybeRest = cell.child.tryAs<RestElement>();
         if (maybeRest is RestElement && maybeRest.isMeasure) {
@@ -220,7 +226,9 @@ class MeasureContainerV2 extends StatelessWidget {
 
         Alignment alignment = cell.alignment;
 
-        double left = horizontalOffsets[index] + offset.left;
+        double halfWidth = cell.size.width;
+        double alignmentLeft = halfWidth + halfWidth * alignment.x;
+        double left = horizontalOffsets[index] + alignmentLeft;
 
         var maybeRest = cell.child.tryAs<RestElement>();
         if (maybeRest is RestElement && maybeRest.isMeasure) {

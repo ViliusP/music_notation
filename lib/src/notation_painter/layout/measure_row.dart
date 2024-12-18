@@ -56,6 +56,8 @@ class _MeasureRowDelegate extends MultiChildLayoutDelegate {
 
   @override
   void performLayout(Size size) {
+    var heightPerPosition = NotationLayoutProperties.baseSpacePerPosition;
+
     double left = 0;
 
     double maxOverflow = 0;
@@ -69,13 +71,21 @@ class _MeasureRowDelegate extends MultiChildLayoutDelegate {
       );
       left += childSize.width + spaceBetween * scale;
 
-      double top = -child.distance(children.first, BoxSide.top);
+      double top = -child.distance(
+        children.first,
+        BoxSide.top,
+        heightPerPosition,
+      );
       maxOverflow = [maxOverflow, -top].max;
     }
 
     for (int i = 0; i < children.length; i++) {
       final child = children[i];
-      double top = -child.distance(children.first, BoxSide.top);
+      double top = -child.distance(
+        children.first,
+        BoxSide.top,
+        heightPerPosition,
+      );
       top = top + maxOverflow.abs();
       top = top * scale;
       positionChild(i, Offset(lefts[i], top));
